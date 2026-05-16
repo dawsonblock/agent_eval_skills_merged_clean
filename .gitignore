@@ -9,3 +9,10 @@ ToolForge/toolforge_registry.json
 .coverage
 .pytest_cache/
 htmlcov/
+
+# Type-checker and linter caches
+.mypy_cache/
+.ruff_cache/
+
+# Demo temp dirs (created by scripts/demo_csv_cleaner.sh)
+/tmp/toolforge_demo_*
