@@ -9,14 +9,21 @@ from packages.core.repo_hygiene import scan_repo_hygiene
 def test_repo_hygiene_detects_conflict_markers(tmp_path: Path) -> None:
     root = tmp_path / "ToolForge"
     root.mkdir()
+    marker_start = "<" * 7 + " HEAD"
+    marker_mid = "=" * 7
+    marker_end = ">" * 7 + " branch"
     (root / "sample.py").write_text(
-        """def ok():
-    return 1
-
-<<<<<<< HEAD
-=======
->>>>>>> branch
-""",
+        "\n".join(
+            [
+                "def ok():",
+                "    return 1",
+                "",
+                marker_start,
+                marker_mid,
+                marker_end,
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
 

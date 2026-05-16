@@ -260,7 +260,7 @@ def validate(slug: str) -> None:
 
     # MCP
     mcp_dir = td / "mcp"
-    if mcp_dir.exists():
+    if spec.mcp.enabled:
         console.print("[bold]MCP validation...[/]", end=" ")
         mcp_errors = validate_mcp_server(spec, mcp_dir)
         if mcp_errors:
@@ -273,25 +273,25 @@ def validate(slug: str) -> None:
 
     # Skill
     skill_path = td / "skill" / "SKILL.md"
-    if skill_path.exists():
+    if spec.skill.enabled:
         console.print("[bold]Skill validation...[/]", end=" ")
-        skill_errors = validate_skill_file(skill_path)
-        if skill_errors:
-            console.print("[red]✗[/]")
-            for err in skill_errors:
-                console.print(f"  [red]{err}[/]")
-            all_ok = False
+        if skill_path.exists():
+            skill_errors = validate_skill_file(skill_path)
+            if skill_errors:
+                console.print("[red]✗[/]")
+                for err in skill_errors:
+                    console.print(f"  [red]{err}[/]")
+                all_ok = False
+            else:
+                console.print("[green]✓[/]")
         else:
-            console.print("[green]✓[/]")
-    elif (td / "skill").exists():
-        console.print("[bold]Skill validation...[/]", end=" ")
-        console.print("[red]✗[/]")
-        console.print("  [red]Missing skill/SKILL.md[/]")
-        all_ok = False
+            console.print("[red]✗[/]")
+            console.print("  [red]Missing skill/SKILL.md[/]")
+            all_ok = False
 
     # Eval artifacts
     evals_dir = td / "evals"
-    if evals_dir.exists():
+    if spec.eval.enabled:
         console.print("[bold]Eval artifact validation...[/]", end=" ")
         cases_dir = evals_dir / "cases"
         if not (evals_dir / "task_config.json").exists() or not cases_dir.exists() or not list(cases_dir.glob("*.json")):

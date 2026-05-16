@@ -285,7 +285,7 @@ def test_validation_error_has_hint():
 #### 4.3 Toolathlon Integration
 - **Current:** 0% coverage on adapters
 - **Need:** Tests for toolathlon task runner integration
-- **Benefit:** Production-ready for toolathlon gym
+- **Benefit:** Improve reliability for Toolathlon GYM integration
 - **Time:** 2 hours
 
 ---

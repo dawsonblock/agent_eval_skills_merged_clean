@@ -124,6 +124,33 @@ def build_package(
             encoding="utf-8",
         )
 
+    required_files = [
+        tool_dir / "toolforge.yaml",
+        tool_dir / spec.entry_point,
+        tool_dir / "README.md",
+        tool_dir / "SECURITY.md",
+    ]
+    required_dirs = [
+        tool_dir / "examples",
+        tool_dir / "tests",
+        tool_dir / "mcp",
+        tool_dir / "skill",
+        tool_dir / "evals",
+    ]
+    missing: list[str] = []
+    for required in required_files:
+        if not required.exists():
+            missing.append(str(required.relative_to(tool_dir)))
+    for required in required_dirs:
+        if not required.exists() or not required.is_dir():
+            missing.append(str(required.relative_to(tool_dir)) + "/")
+    if missing:
+        missing_list = ", ".join(sorted(missing))
+        raise FileNotFoundError(
+            "Cannot package tool; required artifacts are missing: "
+            + missing_list
+        )
+
     # Build manifest with file list and SHA256 hashes
     manifest: dict = {
         "name": spec.name,
