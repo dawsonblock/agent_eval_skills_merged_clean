@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "toolforge"
+version = "0.1.0"
+description = "ToolForge — a CLI-first platform for building, testing, packaging, and evaluating AI tools, MCP servers, agent skills, and workflow automations"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "ToolForge Contributors" }]
+dependencies = [
+    "click>=8.1",
+    "pydantic>=2.7",
+    "jinja2>=3.1",
+    "ruamel.yaml>=0.18",
+    "jsonschema>=4.23",
+    "rich>=13.7",
+    "termcolor>=2.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+llm = ["openai>=1.30", "anthropic>=0.28"]
+
+[project.scripts]
+toolforge = "toolforge_cli.main:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "apps/cli/toolforge_cli",
+    "packages/core",
+    "packages/validators",
+    "packages/runners",
+    "packages/integrations",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

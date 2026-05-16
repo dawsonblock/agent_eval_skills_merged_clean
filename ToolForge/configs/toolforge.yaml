@@ -1,0 +1,31 @@
+# ToolForge configuration
+version: "0.1.0"
+
+# Default sandbox level for tool execution
+# 0=none, 1=env-isolation, 2=subprocess-timeout+env, 3=docker+network, 4=docker+no-network
+sandbox_default_level: 2
+
+# Timeout for tool execution (seconds)
+execution_timeout_seconds: 60
+
+# Tool registry path (relative to ToolForge root)
+registry_path: "toolforge_registry.json"
+
+# Template directory
+templates_dir: "packages/templates"
+
+# Output directories
+tools_generated_dir: "tools/generated"
+skills_generated_dir: "skills/generated"
+evals_generated_dir: "evals/generated"
+runs_dir: "runs"
+dist_dir: "dist"
+
+# Default language for new tools
+default_tool_language: "python"
+
+# Whether to require explicit approval before running tools in sandbox level >= 3
+require_confirmation_level: 3
+
+# Model provider for spec-from-prompt (rule_based | openai | anthropic | local_model)
+spec_generator_provider: "rule_based"

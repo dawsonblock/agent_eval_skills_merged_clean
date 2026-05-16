@@ -1,0 +1,49 @@
+# ToolForge Sandbox Policy
+# Defines behavior at each sandbox isolation level.
+
+levels:
+  0:
+    name: "none"
+    description: "No isolation. Tool runs directly in the host process."
+    allowed_capabilities: ["read_files", "manipulate_data"]
+    requires_explicit_opt_in: false
+    docker_required: false
+
+  1:
+    name: "env-isolation"
+    description: "Environment variables are stripped; only TOOLFORGE_ prefixed vars are passed."
+    allowed_capabilities: ["read_files", "manipulate_data", "call_http"]
+    requires_explicit_opt_in: false
+    docker_required: false
+
+  2:
+    name: "subprocess-timeout"
+    description: "Runs in isolated subprocess with timeout, stripped env, and working-dir restriction."
+    allowed_capabilities: ["read_files", "write_files", "manipulate_data", "call_http", "execute_code"]
+    requires_explicit_opt_in: false
+    docker_required: false
+    subprocess_timeout_seconds: 60
+
+  3:
+    name: "docker-network"
+    description: "Runs inside a Docker container with network access (filtered by security policy)."
+    allowed_capabilities: ["read_files", "write_files", "manipulate_data", "call_http", "execute_code", "call_database", "run_shell"]
+    requires_explicit_opt_in: true
+    docker_required: true
+    docker_image: "toolforge-sandbox:latest"
+    network_mode: "bridge"
+
+  4:
+    name: "docker-no-network"
+    description: "Runs inside a Docker container with NO network access. Maximum isolation."
+    allowed_capabilities: ["read_files", "write_files", "manipulate_data", "execute_code"]
+    requires_explicit_opt_in: true
+    docker_required: true
+    docker_image: "toolforge-sandbox:latest"
+    network_mode: "none"
+
+# Workspace bind-mount configuration for Docker levels (3 and 4)
+docker_workspace:
+  mount_point: "/workspace"
+  readonly: false
+  max_size_mb: 512

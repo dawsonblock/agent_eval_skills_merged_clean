@@ -1,0 +1,33 @@
+# ToolForge Model Policy
+# Controls which model providers and models are allowed for spec generation and eval judging.
+
+spec_generation:
+  allowed_providers:
+    - rule_based   # Always available; no API key required
+    - openai
+    - anthropic
+    - local_model
+  default_provider: rule_based
+  # API key env var names (keys must NOT appear in code or toolforge.yaml files)
+  env_vars:
+    openai: "OPENAI_API_KEY"
+    anthropic: "ANTHROPIC_API_KEY"
+    local_model: "LOCAL_MODEL_URL"
+
+eval_judging:
+  allowed_providers:
+    - rule_based
+    - openai
+    - anthropic
+  default_provider: rule_based
+
+# Models allowed for LLM-backed spec generation
+allowed_models:
+  openai:
+    - "gpt-4o"
+    - "gpt-4o-mini"
+    - "gpt-4-turbo"
+  anthropic:
+    - "claude-opus-4-5"
+    - "claude-sonnet-4-5"
+    - "claude-3-5-haiku-20241022"

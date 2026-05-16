@@ -1,0 +1,72 @@
+---
+name: {{ spec.slug }}
+description: >
+  {{ spec.description }}
+  WHEN: {% for trigger in spec.skill.when_to_use %}{{ trigger }}{% if not loop.last %}, {% endif %}{% endfor %}.
+  {% if spec.skill.not_when %}DO NOT USE FOR: {% for nt in spec.skill.not_when %}{{ nt }}{% if not loop.last %}, {% endif %}{% endfor %}.{% endif %}
+---
+
+# {{ spec.name }} Skill
+
+## Overview
+
+{{ spec.long_description or spec.description }}
+
+## Usage
+
+{{ spec.description }}
+
+### Parameters
+
+{% for p in spec.parameters %}
+- **`{{ p.name }}`** (`{{ p.type }}`{% if not p.required %}, optional, default: `{{ p.default }}`{% endif %}): {{ p.description }}
+{% endfor %}
+
+### Output
+
+{{ spec.output.description }}
+
+## Examples
+
+{% for case in spec.eval.cases[:3] %}
+### Example: {{ case.description or case.id }}
+
+**Input:**
+```json
+{{ case.inputs | tojson(indent=2) }}
+```
+
+{% if case.expected_output is not none %}
+**Expected Output:**
+```json
+{{ case.expected_output | tojson(indent=2) }}
+```
+{% endif %}
+{% endfor %}
+
+## When to Use
+
+Use this skill when you need to:
+
+{% for trigger in spec.skill.when_to_use %}
+- {{ trigger }}
+{% endfor %}
+
+{% if spec.skill.not_when %}
+## Do Not Use When
+
+{% for nt in spec.skill.not_when %}
+- {{ nt }}
+{% endfor %}
+{% endif %}
+
+## Security
+
+- **Privacy level:** {{ spec.security.privacy_level }}
+- **Requires network:** {{ spec.security.requires_network }}
+- **Sandbox level:** {{ spec.sandbox_level }}
+- **Required capabilities:** {{ spec.security.required_capabilities | join(", ") or "none" }}
+
+## Tags
+
+{{ spec.tags | join(", ") or "general" }}

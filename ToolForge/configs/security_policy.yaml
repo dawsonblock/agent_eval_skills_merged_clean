@@ -1,0 +1,88 @@
+# ToolForge Security Policy
+# Deny-by-default: all capabilities are off unless explicitly enabled in the tool spec.
+
+filesystem:
+  # Deny path traversal sequences in any allowed_path value
+  deny_path_traversal: true
+  # Deny access to system directories even if explicitly listed
+  deny_system_paths:
+    - "/etc"
+    - "/proc"
+    - "/sys"
+    - "/dev"
+    - "/root"
+    - "/home"
+    - "/var/log"
+    - "~/.ssh"
+    - "~/.aws"
+    - "~/.config"
+  # Allow only these extensions by default when write is enabled (tool can override)
+  default_write_extensions:
+    - ".json"
+    - ".csv"
+    - ".txt"
+    - ".md"
+    - ".yaml"
+    - ".xml"
+    - ".html"
+
+network:
+  # Deny all outbound unless requires_network=true in ToolSpec
+  deny_by_default: true
+  # Even when enabled, block private/loopback ranges (SSRF prevention)
+  deny_private_ranges: true
+  # Blocked URL patterns
+  deny_url_patterns:
+    - "169.254.169.254"  # AWS metadata
+    - "metadata.google.internal"
+    - "localhost"
+    - "127.0.0.1"
+    - "::1"
+
+shell:
+  # Deny subprocess/shell execution unless requires_shell=true in ToolSpec
+  deny_by_default: true
+  # Even when enabled, block these commands
+  blocked_commands:
+    - "rm -rf"
+    - "dd if="
+    - "mkfs"
+    - "chmod 777"
+    - "curl | bash"
+    - "wget | sh"
+    - "sudo"
+    - "su "
+
+secrets:
+  # Reject toolforge.yaml files containing these patterns in any string value
+  deny_patterns:
+    - "sk-"
+    - "AKIA"
+    - "password="
+    - "secret="
+    - "token="
+    - "api_key="
+
+execution:
+  # Maximum sandbox level required per capability
+  capability_min_sandbox_level:
+    call_http: 1
+    run_shell: 2
+    execute_code: 2
+    read_files: 1
+    write_files: 1
+    call_database: 2
+  # Deny dangerous Python imports in generated tool source
+  deny_python_imports:
+    - "subprocess"
+    - "os.system"
+    - "eval("
+    - "exec("
+    - "pickle.loads"
+    - "__import__"
+
+privacy:
+  # Warn when tool spec declares sensitive or evidence-grade privacy level
+  warn_on_levels:
+    - "sensitive"
+    - "evidence-grade"

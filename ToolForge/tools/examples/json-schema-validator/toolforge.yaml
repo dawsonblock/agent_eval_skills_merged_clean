@@ -1,0 +1,65 @@
+name: JSON Schema Validator
+slug: json-schema-validator
+version: "0.1.0"
+description: Validates a JSON file or string against a JSON Schema and reports errors.
+long_description: |
+  json-schema-validator accepts a JSON data payload and a JSON Schema, validates
+  the data against the schema, and returns a structured report of any validation
+  errors. Supports both inline JSON strings and file paths.
+tags: [json, validation, schema, lint]
+author: ToolForge
+language: python
+entry_point: tool.py
+dependencies:
+  - python: ">=3.12"
+  - jsonschema: ">=4.0"
+parameters:
+  - name: data
+    type: string
+    description: JSON string or path to a JSON file to validate.
+    required: true
+  - name: schema
+    type: string
+    description: JSON Schema string or path to a JSON Schema file.
+    required: true
+output:
+  type: string
+  description: JSON report with 'valid' boolean and list of 'errors'.
+security:
+  allow_file_read: true
+  allow_file_write: false
+  allow_network: false
+sandbox_level: 1
+mcp:
+  enabled: true
+  transport: stdio
+skill:
+  enabled: true
+  category: coding-agents-and-ides
+eval:
+  enabled: true
+  baseline_pass_rate: 0.9
+  criteria:
+    - name: no_error
+      type: no_error
+      description: Tool runs without errors
+      weight: 1.0
+    - name: valid_json_output
+      type: contains
+      description: Output contains 'valid' key
+      weight: 0.5
+  cases:
+    - id: smoke-valid
+      description: Valid JSON against its schema
+      inputs:
+        data: '{"name": "Alice", "age": 30}'
+        schema: '{"type": "object", "properties": {"name": {"type": "string"}, "age": {"type": "integer"}}, "required": ["name"]}'
+      expected_output: '"valid": true'
+      tags: [smoke]
+    - id: smoke-invalid
+      description: Invalid JSON missing required field
+      inputs:
+        data: '{"age": 30}'
+        schema: '{"type": "object", "required": ["name"]}'
+      expected_output: '"valid": false'
+      tags: [smoke]

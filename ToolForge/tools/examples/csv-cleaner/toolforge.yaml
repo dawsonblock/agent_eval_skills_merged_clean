@@ -1,0 +1,57 @@
+name: CSV Cleaner
+slug: csv-cleaner
+version: "0.1.0"
+description: Cleans a CSV file by removing blank rows, stripping whitespace, and deduplicating entries.
+long_description: |
+  csv-cleaner reads a CSV from the given path (or stdin), removes fully blank rows,
+  strips leading/trailing whitespace from all cells, and removes duplicate rows.
+  The cleaned CSV is written to stdout or an optional output path.
+tags: [csv, file, clean, deduplicate, text]
+author: ToolForge
+language: python
+entry_point: tool.py
+dependencies:
+  - python: ">=3.12"
+parameters:
+  - name: input_path
+    type: string
+    description: Path to the input CSV file.
+    required: true
+  - name: output_path
+    type: string
+    description: Path to write cleaned CSV (optional; defaults to stdout).
+    required: false
+output:
+  type: string
+  description: Cleaned CSV content (if no output_path given) or confirmation message.
+security:
+  allow_file_read: true
+  allow_file_write: true
+  allow_network: false
+  max_file_size_mb: 50
+sandbox_level: 1
+mcp:
+  enabled: true
+  transport: stdio
+skill:
+  enabled: true
+  category: pdf-and-documents
+eval:
+  enabled: true
+  baseline_pass_rate: 0.9
+  criteria:
+    - name: no_error
+      type: no_error
+      description: Tool runs without errors
+      weight: 1.0
+    - name: output_contains_csv
+      type: contains
+      description: Output contains CSV header row
+      weight: 0.5
+  cases:
+    - id: smoke-01
+      description: Basic smoke test with tiny CSV
+      inputs:
+        input_path: examples/input.csv
+      expected_output: "name,age"
+      tags: [smoke]

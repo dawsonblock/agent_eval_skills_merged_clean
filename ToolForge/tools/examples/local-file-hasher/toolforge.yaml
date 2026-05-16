@@ -1,0 +1,58 @@
+name: Local File Hasher
+slug: local-file-hasher
+version: "0.1.0"
+description: Computes the cryptographic hash (MD5/SHA256/SHA512) of a local file.
+long_description: |
+  local-file-hasher reads a file from disk and returns its hex-encoded hash using
+  the specified algorithm (default: sha256). Useful for integrity checking and
+  deduplication workflows.
+tags: [file, hash, integrity, crypto, sha256]
+author: ToolForge
+language: python
+entry_point: tool.py
+dependencies:
+  - python: ">=3.12"
+parameters:
+  - name: file_path
+    type: string
+    description: Path to the file to hash.
+    required: true
+  - name: algorithm
+    type: string
+    description: Hash algorithm — md5, sha256 (default), or sha512.
+    required: false
+    default: sha256
+output:
+  type: string
+  description: JSON with 'algorithm', 'file', and 'hash' fields.
+security:
+  allow_file_read: true
+  allow_file_write: false
+  allow_network: false
+sandbox_level: 1
+mcp:
+  enabled: true
+  transport: stdio
+skill:
+  enabled: true
+  category: coding-agents-and-ides
+eval:
+  enabled: true
+  baseline_pass_rate: 0.9
+  criteria:
+    - name: no_error
+      type: no_error
+      description: Tool runs without errors
+      weight: 1.0
+    - name: output_contains_hash
+      type: contains
+      description: Output contains hash field
+      weight: 0.5
+  cases:
+    - id: smoke-01
+      description: Hash an existing file
+      inputs:
+        file_path: examples/sample.txt
+        algorithm: sha256
+      expected_output: '"algorithm": "sha256"'
+      tags: [smoke]
