@@ -22,7 +22,7 @@ This repository is a controlled-merge of three interconnected systems designed f
 
 | Component | Purpose | Scale |
 |-----------|---------|-------|
-| [**ToolForge**](ToolForge/) | Create, validate, package, and deploy AI tools as MCP servers and Copilot Skills | CLI platform |
+| [**ToolForge**](ToolForge/) | Create, validate, run, and package AI tool prototypes as MCP servers and Copilot Skills | CLI platform |
 | [**Agent Skills**](agent-skills-curated/) | Curated registry of reusable agent skills with built-in evaluation | 10+ curated skills |
 | [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers |
 
@@ -31,6 +31,8 @@ This repository is a controlled-merge of three interconnected systems designed f
 ## ToolForge
 
 > **CLI-first platform for creating, validating, running, and packaging AI tools.**
+
+ToolForge is a local-first prototype workflow, not a production deployment framework. Generated tools require human review and additional hardening before any sensitive or production use.
 
 ToolForge turns a natural-language description into a structured prototype tool with an MCP server, skill file, evaluation harness, and packaged `.zip` artifact for local development workflows.
 
