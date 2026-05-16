@@ -21,7 +21,7 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from packages.core.tool_spec import ToolSpec
+from packages.core.tool_spec import ToolLanguage, ToolSpec
 
 
 # Files/patterns to exclude from package
@@ -144,6 +144,25 @@ def build_package(
     for required in required_dirs:
         if not required.exists() or not required.is_dir():
             missing.append(str(required.relative_to(tool_dir)) + "/")
+
+    mcp_entry = (
+        tool_dir / "mcp" / "src" / "index.ts"
+        if spec.mcp.server_language == ToolLanguage.TYPESCRIPT
+        else tool_dir / "mcp" / "server.py"
+    )
+
+    required_nested_files = [
+        mcp_entry,
+        tool_dir / "skill" / "SKILL.md",
+        tool_dir / "evals" / "task_config.json",
+    ]
+    for required in required_nested_files:
+        if not required.exists() or not required.is_file():
+            missing.append(str(required.relative_to(tool_dir)))
+
+    eval_case_files = list((tool_dir / "evals" / "cases").glob("*.json"))
+    if not eval_case_files:
+        missing.append("evals/cases/*.json")
     if missing:
         missing_list = ", ".join(sorted(missing))
         raise FileNotFoundError(

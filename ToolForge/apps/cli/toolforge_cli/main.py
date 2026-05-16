@@ -121,7 +121,15 @@ def new_tool(
         spec = spec.model_copy(update={"slug": slug})
 
     output_root = workspace_root / "tools" / "generated"
-    created = scaffold_tool(spec, output_root, overwrite=overwrite)
+    try:
+        created = scaffold_tool(spec, output_root, overwrite=overwrite)
+    except FileExistsError:
+        err_console.print(
+            "[red]Tool scaffold already exists.[/] "
+            "Use [bold]--overwrite[/] to replace files or [bold]--slug[/] "
+            "to generate a new tool."
+        )
+        sys.exit(1)
 
     for p in created:
         console.print(f"  [green]+[/] {p.relative_to(workspace_root)}")
@@ -311,6 +319,11 @@ def validate(slug: str) -> None:
         else:
             console.print(f"[red]✗ {report.failed} failed, {report.errors} errors[/]")
             all_ok = False
+    else:
+        console.print("[bold]Running tests...[/]", end=" ")
+        console.print("[red]✗[/]")
+        console.print("  [red]Missing tests/ directory[/]")
+        all_ok = False
 
     # Static safety analysis
     console.print("[bold]Static safety analysis...[/]", end=" ")

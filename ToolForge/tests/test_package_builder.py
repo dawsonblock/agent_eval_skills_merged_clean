@@ -99,3 +99,24 @@ def test_package_fails_when_required_artifacts_missing(tmp_path: Path) -> None:
 
     with pytest.raises(FileNotFoundError):
         build_package(spec, tool_dir, dist_dir)
+
+
+def test_package_fails_when_nested_required_files_missing(tmp_path: Path) -> None:
+    spec = _spec()
+    tool_dir = tmp_path / spec.slug
+    dist_dir = tmp_path / "dist"
+    tool_dir.mkdir(parents=True)
+
+    spec.to_yaml(tool_dir / "toolforge.yaml")
+    (tool_dir / "tool.py").write_text("def run(input: str = ''): return input\n", encoding="utf-8")
+    (tool_dir / "README.md").write_text("# Package Tool\n", encoding="utf-8")
+    (tool_dir / "SECURITY.md").write_text("# Security Notes\n", encoding="utf-8")
+
+    (tool_dir / "examples").mkdir(parents=True, exist_ok=True)
+    (tool_dir / "tests").mkdir(parents=True, exist_ok=True)
+    (tool_dir / "mcp").mkdir(parents=True, exist_ok=True)
+    (tool_dir / "skill").mkdir(parents=True, exist_ok=True)
+    (tool_dir / "evals" / "cases").mkdir(parents=True, exist_ok=True)
+
+    with pytest.raises(FileNotFoundError):
+        build_package(spec, tool_dir, dist_dir)
