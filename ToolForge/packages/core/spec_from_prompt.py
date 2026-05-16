@@ -142,10 +142,12 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
             slug = _to_slug(name)
 
         language = _detect_language(prompt)
+        if slug in {"csv-cleaner", "json-schema-validator", "local-file-hasher"}:
+            language = ToolLanguage.PYTHON
         category = _infer_category(prompt)
         tags = _extract_tags(prompt)
 
-        # Generate parameters — CSV cleaner uses file-based input_path and output_path
+        # Generate parameters for known file-based tool types.
         if slug == "csv-cleaner":
             params: list[ParameterSpec] = [
                 ParameterSpec(
@@ -162,6 +164,51 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                     default="outputs/cleaned.csv",
                 )
             ]
+        elif slug == "json-schema-validator":
+            params = [
+                ParameterSpec(
+                    name="data_path",
+                    type="string",
+                    description="Path to JSON data file to validate (e.g., examples/data_valid.json)",
+                    required=True,
+                ),
+                ParameterSpec(
+                    name="schema_path",
+                    type="string",
+                    description="Path to JSON schema file (e.g., examples/schema.json)",
+                    required=True,
+                ),
+                ParameterSpec(
+                    name="output_path",
+                    type="string",
+                    description="Path where validation report JSON is written",
+                    required=False,
+                    default="outputs/validation_report.json",
+                ),
+            ]
+        elif slug == "local-file-hasher":
+            params = [
+                ParameterSpec(
+                    name="file_path",
+                    type="string",
+                    description="Path to local file to hash (e.g., examples/sample.txt)",
+                    required=True,
+                ),
+                ParameterSpec(
+                    name="algorithm",
+                    type="string",
+                    description="Hash algorithm to use (md5, sha256, sha512)",
+                    required=False,
+                    default="sha256",
+                ),
+                ParameterSpec(
+                    name="output_path",
+                    type="string",
+                    description="Optional path to write hash metadata JSON",
+                    required=False,
+                    default="outputs/hash_report.json",
+                ),
+            ]
         else:
             params = [
                 ParameterSpec(
@@ -176,41 +223,34 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
         requires_filesystem = any(kw in prompt.lower() for kw in _FILE_KEYWORDS)
         requires_network = any(kw in prompt.lower() for kw in _WEB_KEYWORDS)
 
-        # Build eval cases with 4 defaults: success, invalid input, path safety, empty input
-        eval_cases = [
-            EvalCase(
-                id="case-01-success",
-                description="Clean valid CSV file",
-                inputs={"input_path": "examples/input.csv"} if slug == "csv-cleaner" else {"input": "test_data"},
-                expected_success=True,
-                expected_output_contains="cleaned_path" if slug == "csv-cleaner" else None,
-                expected_files=[
-                    EvalCase.ExpectedFile(path="outputs/cleaned.csv", should_exist=True)
-                ] if slug == "csv-cleaner" else [],
-                expected_output=None,
-                tags=["smoke"],
-            ),
-            EvalCase(
-                id="case-02-invalid-input",
-                description="Reject missing input file",
-                inputs={"input_path": "examples/missing.csv"} if slug == "csv-cleaner" else {"input": ""},
-                expected_success=False if slug == "csv-cleaner" else True,
-                expected_error_contains="not found" if slug == "csv-cleaner" else None,
-                expected_output=None,
-                tags=["edge-case"],
-            ),
-        ]
-        
-        # Add safety-boundary and empty-input cases for file-based tools
-        if requires_filesystem and slug == "csv-cleaner":
-            eval_cases.extend([
+        # Build deterministic eval cases for known proof-path tools.
+        if slug == "csv-cleaner":
+            eval_cases = [
+                EvalCase(
+                    id="case-01-success",
+                    description="Clean valid CSV file",
+                    inputs={"input_path": "examples/input.csv"},
+                    expected_success=True,
+                    expected_output_contains="cleaned_path",
+                    expected_files=[
+                        EvalCase.ExpectedFile(path="outputs/cleaned.csv", should_exist=True)
+                    ],
+                    tags=["smoke"],
+                ),
+                EvalCase(
+                    id="case-02-invalid-input",
+                    description="Reject missing input file",
+                    inputs={"input_path": "examples/missing.csv"},
+                    expected_success=False,
+                    expected_error_contains="not found",
+                    tags=["edge-case"],
+                ),
                 EvalCase(
                     id="case-03-safety-boundary",
                     description="Path traversal attempt (should be blocked)",
                     inputs={"input_path": "../../../etc/passwd"},
                     expected_success=False,
                     expected_error_contains="Path validation failed",
-                    expected_output=None,
                     tags=["safety"],
                 ),
                 EvalCase(
@@ -227,27 +267,12 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                             should_exist=True,
                         )
                     ],
-                    expected_output=None,
                     tags=["edge-case"],
-                )
-            ])
-        elif requires_filesystem:
-            eval_cases.append(
-                EvalCase(
-                    id="case-03-safety-boundary",
-                    description="Path traversal attempt (should be blocked)",
-                    inputs={"input": "../../../etc/passwd"},
-                    expected_output=None,
-                    tags=["safety"],
-                )
-            )
-
-        # Eval spec with criteria
-        # For file-based tools, only count success cases (case-01, case-04) toward pass rate
-        if requires_filesystem and slug == "csv-cleaner":
+                ),
+            ]
             eval_spec = EvalSpec(
                 enabled=True,
-                baseline_pass_rate=0.75,  # 3 out of 4: success, empty-file, and safety blocks properly
+                baseline_pass_rate=0.75,
                 criteria=[
                     EvalCriterion(
                         name="no_error",
@@ -260,11 +285,123 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                         type=EvalCriterionType.NO_ERROR,
                         description="Invalid-input and path-safety cases fail gracefully",
                         weight=0.5,
+                    ),
+                ],
+                cases=eval_cases,
+            )
+        elif slug == "json-schema-validator":
+            eval_cases = [
+                EvalCase(
+                    id="case-01-valid",
+                    description="Validate correct JSON against schema",
+                    inputs={
+                        "data_path": "examples/data_valid.json",
+                        "schema_path": "examples/schema.json",
+                    },
+                    expected_success=True,
+                    expected_output_contains='"valid": true',
+                    expected_files=[
+                        EvalCase.ExpectedFile(path="outputs/validation_report.json", should_exist=True)
+                    ],
+                    tags=["smoke"],
+                ),
+                EvalCase(
+                    id="case-02-invalid-data",
+                    description="Invalid payload should produce validation errors",
+                    inputs={
+                        "data_path": "examples/data_invalid.json",
+                        "schema_path": "examples/schema.json",
+                        "output_path": "outputs/validation_invalid_report.json",
+                    },
+                    expected_success=True,
+                    expected_output_contains='"valid": false',
+                    expected_files=[
+                        EvalCase.ExpectedFile(path="outputs/validation_invalid_report.json", should_exist=True)
+                    ],
+                    tags=["edge-case"],
+                ),
+                EvalCase(
+                    id="case-03-safety-boundary",
+                    description="Traversal attempt should be blocked",
+                    inputs={
+                        "data_path": "../../../etc/passwd",
+                        "schema_path": "examples/schema.json",
+                    },
+                    expected_success=False,
+                    expected_error_contains="Path validation failed",
+                    tags=["safety"],
+                ),
+            ]
+            eval_spec = EvalSpec(
+                enabled=True,
+                baseline_pass_rate=1.0,
+                criteria=[
+                    EvalCriterion(
+                        name="no_error",
+                        type=EvalCriterionType.NO_ERROR,
+                        description="Tool runs without crashes for expected-success cases",
+                        weight=1.0,
+                    )
+                ],
+                cases=eval_cases,
+            )
+        elif slug == "local-file-hasher":
+            eval_cases = [
+                EvalCase(
+                    id="case-01-success",
+                    description="Hash sample file with default sha256",
+                    inputs={"file_path": "examples/sample.txt"},
+                    expected_success=True,
+                    expected_output_contains='"algorithm": "sha256"',
+                    tags=["smoke"],
+                ),
+                EvalCase(
+                    id="case-02-with-output",
+                    description="Hash sample file and write report",
+                    inputs={
+                        "file_path": "examples/sample.txt",
+                        "algorithm": "sha512",
+                        "output_path": "outputs/hash_report.json",
+                    },
+                    expected_success=True,
+                    expected_output_contains='"algorithm": "sha512"',
+                    expected_files=[
+                        EvalCase.ExpectedFile(path="outputs/hash_report.json", should_exist=True)
+                    ],
+                    tags=["edge-case"],
+                ),
+                EvalCase(
+                    id="case-03-safety-boundary",
+                    description="Traversal attempt should be blocked",
+                    inputs={"file_path": "../../../etc/passwd"},
+                    expected_success=False,
+                    expected_error_contains="Path validation failed",
+                    tags=["safety"],
+                ),
+            ]
+            eval_spec = EvalSpec(
+                enabled=True,
+                baseline_pass_rate=1.0,
+                criteria=[
+                    EvalCriterion(
+                        name="no_error",
+                        type=EvalCriterionType.NO_ERROR,
+                        description="Tool runs without crashes for expected-success cases",
+                        weight=1.0,
                     )
                 ],
                 cases=eval_cases,
             )
         else:
+            eval_cases = [
+                EvalCase(
+                    id="case-01-success",
+                    description="Basic tool invocation",
+                    inputs={"input": "test_data"},
+                    expected_success=True,
+                    tags=["smoke"],
+                )
+            ]
             eval_spec = EvalSpec(
                 enabled=True,
                 baseline_pass_rate=0.8,
@@ -279,17 +416,51 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                 cases=eval_cases,
             )
 
-        # Security spec with inferred permissions
-        security_spec = SecuritySpec(
-            requires_filesystem=requires_filesystem,
-            requires_network=requires_network,
-            required_capabilities=[],
-            allowed_read_paths=["./examples/**", "./inputs/**"] if requires_filesystem else [],
-            allowed_write_paths=["./outputs/**"] if requires_filesystem else [],
-            allowed_extensions=[".csv"] if slug == "csv-cleaner" else ([".csv", ".json", ".txt"] if requires_filesystem else []),
-            max_file_size_mb=50,
-            privacy_level=PrivacyLevel.INTERNAL,
-        )
+        # Security spec with inferred permissions.
+        if slug == "csv-cleaner":
+            security_spec = SecuritySpec(
+                requires_filesystem=True,
+                requires_network=False,
+                required_capabilities=[],
+                allowed_read_paths=["./examples/**", "./inputs/**"],
+                allowed_write_paths=["./outputs/**"],
+                allowed_extensions=[".csv"],
+                max_file_size_mb=50,
+                privacy_level=PrivacyLevel.INTERNAL,
+            )
+        elif slug == "json-schema-validator":
+            security_spec = SecuritySpec(
+                requires_filesystem=True,
+                requires_network=False,
+                required_capabilities=[],
+                allowed_read_paths=["./examples/**", "./inputs/**"],
+                allowed_write_paths=["./outputs/**"],
+                allowed_extensions=[".json"],
+                max_file_size_mb=50,
+                privacy_level=PrivacyLevel.INTERNAL,
+            )
+        elif slug == "local-file-hasher":
+            security_spec = SecuritySpec(
+                requires_filesystem=True,
+                requires_network=False,
+                required_capabilities=[],
+                allowed_read_paths=["./examples/**", "./inputs/**"],
+                allowed_write_paths=["./outputs/**"],
+                allowed_extensions=[],
+                max_file_size_mb=100,
+                privacy_level=PrivacyLevel.INTERNAL,
+            )
+        else:
+            security_spec = SecuritySpec(
+                requires_filesystem=requires_filesystem,
+                requires_network=requires_network,
+                required_capabilities=[],
+                allowed_read_paths=["./examples/**", "./inputs/**"] if requires_filesystem else [],
+                allowed_write_paths=["./outputs/**"] if requires_filesystem else [],
+                allowed_extensions=[".csv", ".json", ".txt"] if requires_filesystem else [],
+                max_file_size_mb=50,
+                privacy_level=PrivacyLevel.INTERNAL,
+            )
 
         return ToolSpec(
             name=name,
@@ -300,6 +471,7 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
             tags=tags,
             language=language,
             entry_point="tool.py" if language == ToolLanguage.PYTHON else "index.ts",
+            dependencies=["jsonschema>=4.0"] if slug == "json-schema-validator" else [],
             parameters=params,
             security=security_spec,
             mcp=MCPSpec(enabled=True),

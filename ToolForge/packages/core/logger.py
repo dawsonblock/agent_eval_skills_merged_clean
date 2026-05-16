@@ -32,7 +32,7 @@ class ToolForgeFormatter(logging.Formatter):
         if hasattr(record, "context"):
             log_data["context"] = record.context
 
-        return json.dumps(log_data)
+        return json.dumps(log_data, default=str)
 
 
 def get_logger(name: str, level: str = "INFO") -> logging.Logger:

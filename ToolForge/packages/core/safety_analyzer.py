@@ -94,6 +94,12 @@ def analyze_safety(spec: ToolSpec, tool_dir: Path) -> SafetyReport:
         try:
             lines = py_file.read_text(encoding="utf-8").splitlines()
         except OSError:
+            report.issues.append(SafetyIssue(
+                severity="warning",
+                code="UNREADABLE_FILE",
+                message=f"Could not read {rel}: skipped from safety analysis",
+                file=rel,
+            ))
             continue
 
         for lineno, line in enumerate(lines, start=1):

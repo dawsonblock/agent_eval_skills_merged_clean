@@ -77,3 +77,26 @@ def test_rejects_symlink_when_disabled(tmp_path: Path, security: SecuritySpec) -
 
     with pytest.raises(PathViolationError):
         validate_all_path_inputs({"input_path": "examples/link.csv"}, security, tmp_path)
+
+
+def test_accepts_data_and_schema_paths_for_json_tools(tmp_path: Path) -> None:
+    security = SecuritySpec(
+        requires_filesystem=True,
+        allowed_read_paths=["./examples/**"],
+        allowed_write_paths=["./outputs/**"],
+        allowed_extensions=[".json"],
+    )
+    examples = tmp_path / "examples"
+    examples.mkdir()
+    (examples / "data.json").write_text('{"ok": true}', encoding="utf-8")
+    (examples / "schema.json").write_text('{"type": "object"}', encoding="utf-8")
+
+    validate_all_path_inputs(
+        {
+            "data_path": "examples/data.json",
+            "schema_path": "examples/schema.json",
+            "output_path": "outputs/report.json",
+        },
+        security,
+        tmp_path,
+    )

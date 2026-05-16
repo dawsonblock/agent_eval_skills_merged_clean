@@ -39,18 +39,6 @@ class MCPGenerationError(ToolForgeError):
     pass
 
 
-class SkillGenerationError(ToolForgeError):
-    """Skill generation failed."""
-
-    pass
-
-
-class EvalGenerationError(ToolForgeError):
-    """Evaluation harness generation failed."""
-
-    pass
-
-
 class PackagingError(ToolForgeError):
     """Tool packaging failed."""
 

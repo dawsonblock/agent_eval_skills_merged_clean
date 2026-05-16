@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "editables"]
 build-backend = "hatchling.build"
 
 [project]
@@ -45,7 +45,7 @@ addopts = [
     "--cov=apps",
     "--cov-report=html",
     "--cov-report=term-missing",
-    "--cov-fail-under=30",
+    "--cov-fail-under=60",
 ]
 
 [tool.coverage.run]

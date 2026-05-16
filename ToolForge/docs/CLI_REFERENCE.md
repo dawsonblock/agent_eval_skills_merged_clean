@@ -137,6 +137,10 @@ toolforge eval csv-cleaner --timeout 60
 
 Displays a Rich table with per-case pass/fail/score. Exits 1 if overall pass rate is below baseline.
 
+Case loading behavior:
+- Canonical source: `tools/generated/{slug}/evals/cases/*.json`
+- Fallback source: `toolforge.yaml` `eval.cases` when no case files are present
+
 ---
 
 ## `toolforge package SLUG [--dist-dir PATH]`

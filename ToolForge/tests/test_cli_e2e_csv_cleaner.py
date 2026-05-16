@@ -115,6 +115,11 @@ def test_cli_e2e_csv_cleaner(tmp_path: Path) -> None:
         assert metadata["eval_path"]
         assert metadata["last_validation"]
         assert metadata["last_run"]
+        assert metadata["last_run_success"] is False
+        assert metadata["last_run_type"] == "safety_test"
+        assert metadata["operational_last_run_success"] is True
+        assert metadata["last_successful_run"]
+        assert metadata["last_failed_run"]
         assert metadata["eval_score"] is not None
         assert metadata["package_path"]
     finally:

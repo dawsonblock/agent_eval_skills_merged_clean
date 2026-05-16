@@ -19,7 +19,7 @@ def load_toolathlon_task(task_path: Path) -> dict:
     return json.loads(text)
 
 
-def task_to_eval_cases(task: dict) -> list[EvalCase]:
+def task_to_eval_cases(task: dict, idx: int = 0) -> list[EvalCase]:
     """
     Convert a single toolathlon task dict into a list of ToolForge EvalCase objects.
 
@@ -32,7 +32,7 @@ def task_to_eval_cases(task: dict) -> list[EvalCase]:
         "tags": [...]
       }
     """
-    task_id = str(task.get("task_id", "task-01"))
+    task_id = str(task.get("task_id") or f"task-{idx:04d}")
     inputs = task.get("inputs") or {}
     expected_output = task.get("expected_output")
     tags = list(task.get("tags", []))
@@ -54,7 +54,7 @@ def load_eval_cases_from_dir(tasks_dir: Path) -> list[EvalCase]:
     Walk *tasks_dir* and aggregate all toolathlon tasks into EvalCase objects.
     """
     cases: list[EvalCase] = []
-    for task_file in sorted(tasks_dir.rglob("*.json")):
+    for idx, task_file in enumerate(sorted(tasks_dir.rglob("*.json"))):
         task = load_toolathlon_task(task_file)
-        cases.extend(task_to_eval_cases(task))
+        cases.extend(task_to_eval_cases(task, idx=idx))
     return cases

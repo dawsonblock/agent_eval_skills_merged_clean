@@ -74,6 +74,8 @@ toolforge run local-file-hasher --input file_path=README.md
 toolforge eval local-file-hasher
 ```
 
+`toolforge eval` reads tool-local eval case files from `tools/generated/<slug>/evals/cases/*.json` when present. If those files are missing, it falls back to `eval.cases` in `toolforge.yaml`.
+
 ### Package
 
 ```bash

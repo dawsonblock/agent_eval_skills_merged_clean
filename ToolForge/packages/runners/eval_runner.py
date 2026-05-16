@@ -5,10 +5,11 @@ from __future__ import annotations
 
 import json
 import re
+import jsonschema
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from packages.core.tool_spec import EvalCriterionType, ToolSpec
+from packages.core.tool_spec import EvalCase, EvalCriterion, EvalCriterionType, ToolSpec
 from packages.runners.tool_runner import ToolRunResult, run_tool
 
 
@@ -39,7 +40,9 @@ class EvalReport:
 
 
 def _score_result(
-    spec: ToolSpec, case_id: str, result: ToolRunResult, expected_output: str | None
+    case: EvalCase,
+    result: ToolRunResult,
+    global_criteria: list[EvalCriterion],
 ) -> tuple[bool, float, str]:
     """
     Score a single ToolRunResult against eval criteria.
@@ -49,17 +52,8 @@ def _score_result(
     if not result.success:
         return False, 0.0, f"Tool failed: exit_code={result.exit_code}, error={result.error[:100]}"
 
-    # Find criteria: first try case-specific, then fall back to global
-    case_criteria = []
-    if spec.eval:
-        # Look for case-specific criteria (embedded in case)
-        for case in spec.eval.cases:
-            if case.id == case_id and case.criteria:
-                case_criteria = case.criteria
-                break
-        # If no case-specific, use global criteria
-        if not case_criteria:
-            case_criteria = spec.eval.criteria or []
+    # Case-specific criteria override global criteria.
+    case_criteria = case.criteria or global_criteria
 
     if not case_criteria:
         # No criteria → pass/fail based on exit code only
@@ -77,8 +71,8 @@ def _score_result(
             detail_parts.append(f"{criterion.name}: no_error {'✓' if ok else '✗'}")
 
         elif criterion.type == EvalCriterionType.EXACT_MATCH:
-            if expected_output is not None:
-                ok = result.output.strip() == str(expected_output).strip()
+            if case.expected_output is not None:
+                ok = result.output.strip() == str(case.expected_output).strip()
                 scores.append(weight if ok else 0.0)
                 detail_parts.append(f"{criterion.name}: exact_match {'✓' if ok else '✗'}")
             else:
@@ -91,8 +85,7 @@ def _score_result(
                 scores.append(weight if ok else 0.0)
                 detail_parts.append(f"{criterion.name}: contains '{str(criterion.target)[:30]}' {'✓' if ok else '✗'}")
             else:
-                scores.append(0.0)
-                detail_parts.append(f"{criterion.name}: contains (no target)")
+                raise ValueError(f"Criterion '{criterion.name}' has type CONTAINS but no target specified")
 
         elif criterion.type == EvalCriterionType.REGEX_MATCH:
             if criterion.target is not None:
@@ -104,17 +97,19 @@ def _score_result(
                     scores.append(0.0)
                     detail_parts.append(f"{criterion.name}: regex_match (invalid pattern: {e})")
             else:
-                scores.append(0.0)
-                detail_parts.append(f"{criterion.name}: regex_match (no pattern)")
+                raise ValueError(f"Criterion '{criterion.name}' has type REGEX_MATCH but no target specified")
 
         elif criterion.type == EvalCriterionType.JSON_SCHEMA:
             try:
-                json.loads(result.output)
+                parsed_output = json.loads(result.output)
                 if criterion.target is not None and isinstance(criterion.target, dict):
-                    # Simple schema validation (full jsonschema validation optional)
-                    ok = True  # Placeholder — would need jsonschema library for full validation
-                    scores.append(weight if ok else 0.0)
-                    detail_parts.append(f"{criterion.name}: json_schema ✓ (parsed)")
+                    try:
+                        jsonschema.validate(instance=parsed_output, schema=criterion.target)
+                        scores.append(weight)
+                        detail_parts.append(f"{criterion.name}: json_schema ✓ (schema valid)")
+                    except jsonschema.ValidationError as schema_err:
+                        scores.append(0.0)
+                        detail_parts.append(f"{criterion.name}: json_schema ✗ ({schema_err.message[:80]})")
                 else:
                     scores.append(weight)
                     detail_parts.append(f"{criterion.name}: json_schema ✓ (valid JSON)")
@@ -167,6 +162,41 @@ def _check_expected_files(tool_dir: Path, case) -> tuple[bool, str]:
     return True, ""
 
 
+def _load_eval_cases(
+    spec: ToolSpec,
+    tool_dir: Path,
+) -> tuple[list[EvalCase], list[EvalResult]]:
+    """Load eval cases from tool-local eval files, with YAML fallback."""
+    case_dir = tool_dir / "evals" / "cases"
+    load_failures: list[EvalResult] = []
+
+    if case_dir.exists():
+        loaded_cases: list[EvalCase] = []
+        for case_file in sorted(case_dir.glob("*.json")):
+            try:
+                raw = json.loads(case_file.read_text(encoding="utf-8"))
+                if isinstance(raw, dict) and "id" not in raw:
+                    raw["id"] = case_file.stem
+                loaded_cases.append(EvalCase.model_validate(raw))
+            except Exception as exc:  # noqa: BLE001
+                load_failures.append(
+                    EvalResult(
+                        case_id=case_file.stem,
+                        passed=False,
+                        score=0.0,
+                        details="",
+                        error=f"Failed to load eval case file {case_file.name}: {exc}",
+                    )
+                )
+        if loaded_cases:
+            return loaded_cases, load_failures
+
+    if spec.eval and spec.eval.cases:
+        return list(spec.eval.cases), load_failures
+
+    return [], load_failures
+
+
 def run_evals(
     spec: ToolSpec,
     tool_dir: Path,
@@ -180,10 +210,18 @@ def run_evals(
         baseline_pass_rate=spec.eval.baseline_pass_rate if spec.eval else 0.8
     )
 
-    if not spec.eval or not spec.eval.cases:
+    if not spec.eval:
         return report
 
-    for case in spec.eval.cases:
+    cases, load_failures = _load_eval_cases(spec, tool_dir)
+    if load_failures:
+        report.results.extend(load_failures)
+    if not cases:
+        return report
+
+    global_criteria = spec.eval.criteria or []
+
+    for case in cases:
         try:
             tool_result = run_tool(
                 spec=spec,
@@ -195,10 +233,9 @@ def run_evals(
 
             if expected_success:
                 passed, score, details = _score_result(
-                    spec,
-                    case.id,
+                    case,
                     tool_result,
-                    case.expected_output,
+                    global_criteria,
                 )
                 if passed and case.expected_output_contains:
                     if case.expected_output_contains not in tool_result.output:

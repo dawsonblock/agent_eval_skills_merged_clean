@@ -93,3 +93,49 @@ def test_csv_cleaner_scaffolds_examples(tmp_path: Path) -> None:
     base = tmp_path / "csv-cleaner"
     assert (base / "examples" / "input.csv").exists()
     assert (base / "examples" / "empty.csv").exists()
+
+
+def test_json_schema_validator_generation_uses_file_params(tmp_path: Path) -> None:
+    spec = _make_spec(
+        name="JSON Schema Validator",
+        slug="json-schema-validator",
+        parameters=[
+            ParameterSpec(name="data_path", type="string", description="data path"),
+            ParameterSpec(name="schema_path", type="string", description="schema path"),
+        ],
+    )
+    scaffold_tool(spec, tmp_path)
+    tool_file = tmp_path / "json-schema-validator" / "tool.py"
+    content = tool_file.read_text(encoding="utf-8")
+    assert "def run(data_path: str, schema_path: str" in content
+
+
+def test_json_schema_validator_scaffolds_examples(tmp_path: Path) -> None:
+    spec = _make_spec(name="JSON Schema Validator", slug="json-schema-validator")
+    scaffold_tool(spec, tmp_path)
+    base = tmp_path / "json-schema-validator"
+    assert (base / "examples" / "schema.json").exists()
+    assert (base / "examples" / "data_valid.json").exists()
+    assert (base / "examples" / "data_invalid.json").exists()
+
+
+def test_local_file_hasher_generation_uses_file_params(tmp_path: Path) -> None:
+    spec = _make_spec(
+        name="Local File Hasher",
+        slug="local-file-hasher",
+        parameters=[
+            ParameterSpec(name="file_path", type="string", description="file path"),
+            ParameterSpec(name="algorithm", type="string", description="algorithm", required=False),
+        ],
+    )
+    scaffold_tool(spec, tmp_path)
+    tool_file = tmp_path / "local-file-hasher" / "tool.py"
+    content = tool_file.read_text(encoding="utf-8")
+    assert "def run(file_path: str, algorithm: str = \"sha256\"" in content
+
+
+def test_local_file_hasher_scaffolds_examples(tmp_path: Path) -> None:
+    spec = _make_spec(name="Local File Hasher", slug="local-file-hasher")
+    scaffold_tool(spec, tmp_path)
+    base = tmp_path / "local-file-hasher"
+    assert (base / "examples" / "sample.txt").exists()

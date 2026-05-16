@@ -10,11 +10,13 @@ Each entry tracks:
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator, Literal
 
 from packages.core.tool_spec import ToolSpec
+from pydantic import ValidationError
 
 # Tool lifecycle statuses
 ToolStatus = Literal[
@@ -34,7 +36,13 @@ class ToolRegistry:
         self._path = registry_path
         self._entries: dict[str, dict] = {}  # {slug: {spec, metadata}}
         if registry_path.exists():
-            self._entries = json.loads(registry_path.read_text(encoding="utf-8"))
+            try:
+                self._entries = json.loads(registry_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, ValueError) as exc:
+                logging.getLogger(__name__).warning(
+                    "Registry file %s is corrupt or unreadable (%s); starting empty.", registry_path, exc
+                )
+                self._entries = {}
 
     # ------------------------------------------------------------------
     # Mutation
@@ -51,6 +59,11 @@ class ToolRegistry:
                 "updated_at": now,
                 "eval_score": None,
                 "last_run": None,
+                "last_run_type": None,
+                "last_run_success": None,
+                "operational_last_run_success": None,
+                "last_successful_run": None,
+                "last_failed_run": None,
                 "last_eval": None,
                 "last_validation": None,
                 "package_path": None,
@@ -95,14 +108,27 @@ class ToolRegistry:
         self._save()
         return True
 
-    def set_last_run(self, slug: str, success: bool) -> bool:
+    def set_last_run(
+        self,
+        slug: str,
+        success: bool,
+        run_type: str = "normal",
+        operational_success: bool | None = None,
+    ) -> bool:
         """Record runtime invocation timestamp and outcome."""
         if slug not in self._entries:
             return False
         now = datetime.now(timezone.utc).isoformat()
         meta = self._entries[slug]["metadata"]
         meta["last_run"] = now
+        meta["last_run_type"] = run_type
         meta["last_run_success"] = success
+        effective_operational = success if operational_success is None else operational_success
+        meta["operational_last_run_success"] = effective_operational
+        if success:
+            meta["last_successful_run"] = now
+        else:
+            meta["last_failed_run"] = now
         meta["updated_at"] = now
         self._save()
         return True
@@ -165,7 +191,11 @@ class ToolRegistry:
         if data is None:
             return None
         spec_data = data.get("spec") or data  # Fallback for old format
-        return ToolSpec.model_validate(spec_data)
+        try:
+            return ToolSpec.model_validate(spec_data)
+        except ValidationError as exc:
+            logging.getLogger(__name__).warning("Skipping corrupt spec for slug %r: %s", slug, exc)
+            return None
 
     def get_metadata(self, slug: str) -> dict | None:
         """Return the metadata for a registered tool."""
@@ -179,7 +209,10 @@ class ToolRegistry:
         specs = []
         for v in self._entries.values():
             spec_data = v.get("spec") or v  # Fallback for old format
-            specs.append(ToolSpec.model_validate(spec_data))
+            try:
+                specs.append(ToolSpec.model_validate(spec_data))
+            except ValidationError as exc:
+                logging.getLogger(__name__).warning("Skipping corrupt entry in list_all: %s", exc)
         return specs
 
     def list_by_status(self, status: ToolStatus) -> list[ToolSpec]:
@@ -188,7 +221,10 @@ class ToolRegistry:
         for entry in self._entries.values():
             if entry.get("metadata", {}).get("status") == status:
                 spec_data = entry.get("spec") or entry
-                specs.append(ToolSpec.model_validate(spec_data))
+                try:
+                    specs.append(ToolSpec.model_validate(spec_data))
+                except ValidationError as exc:
+                    logging.getLogger(__name__).warning("Skipping corrupt entry in list_by_status: %s", exc)
         return specs
 
     def search_by_tag(self, tag: str) -> list[ToolSpec]:
@@ -198,7 +234,10 @@ class ToolRegistry:
         for v in self._entries.values():
             spec_data = v.get("spec") or v
             if any(t.lower() == tag_lower for t in spec_data.get("tags", [])):
-                specs.append(ToolSpec.model_validate(spec_data))
+                try:
+                    specs.append(ToolSpec.model_validate(spec_data))
+                except ValidationError as exc:
+                    logging.getLogger(__name__).warning("Skipping corrupt entry in search_by_tag: %s", exc)
         return specs
 
     def __iter__(self) -> Iterator[ToolSpec]:

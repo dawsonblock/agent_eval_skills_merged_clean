@@ -368,7 +368,30 @@ def run(slug: str, inputs: tuple[str, ...], timeout: float) -> None:
 
     from packages.core.registry import ToolRegistry
     registry = ToolRegistry(_registry_path(workspace_root))
-    registry.set_last_run(slug, success=result.success)
+    run_type = "normal"
+    operational_success = result.success
+    # Only treat a path failure as a confirmed safety probe when the error
+    # message indicates the guardrail itself fired (traversal blocked, symlink
+    # blocked, or blocked_paths policy matched).  User misconfigurations such
+    # as wrong extension, missing file, or unconfigured roots are NOT safety
+    # probes and should remain operational failures.
+    _GUARDRAIL_PHRASES = (
+        "resolved outside allowed_read_paths",
+        "resolved outside allowed_write_paths",
+        "matches blocked_paths policy",
+        "Symlink inputs are not allowed",
+    )
+    if (not result.success) and any(
+        phrase in result.error for phrase in _GUARDRAIL_PHRASES
+    ):
+        run_type = "safety_test"
+        operational_success = True
+    registry.set_last_run(
+        slug,
+        success=result.success,
+        run_type=run_type,
+        operational_success=operational_success,
+    )
 
     if result.success:
         console.print(result.output)

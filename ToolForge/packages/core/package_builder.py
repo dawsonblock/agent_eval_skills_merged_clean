@@ -14,6 +14,7 @@ Archive layout:
 """
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 import zipfile
@@ -33,7 +34,7 @@ _EXCLUDE_PATTERNS = frozenset({
     ".git", ".gitignore", ".DS_Store",
     "*.pyc", "*.pyo",
     "dist", "build", "*.egg-info",
-    "runs", "logs", ".venv", "venv",
+    "runs", "logs", "outputs", ".venv", "venv",
 })
 
 _EXCLUDE_SUFFIXES = frozenset({".pyc", ".pyo", ".env"})
@@ -47,14 +48,20 @@ def _should_exclude(file_path: Path) -> bool:
     # Check exact matches and wildcards
     if name in _EXCLUDE_PATTERNS:
         return True
+    path_parts = set(Path(rel_path).parts)
     for pattern in _EXCLUDE_PATTERNS:
         if "*" in pattern:
-            # Simple glob: e.g. "credentials*" matches "credentials.txt"
-            prefix = pattern.replace("*", "")
-            if name.startswith(prefix) or name.endswith(prefix):
+            if fnmatch.fnmatch(name, pattern):
                 return True
-        if pattern in rel_path:
-            return True
+        elif "/" not in pattern:
+            # Non-wildcard, non-path patterns must match a whole path component
+            # to avoid false positives (e.g. "outputs" must not match
+            # "expected_outputs" as a substring).
+            if pattern in path_parts:
+                return True
+        else:
+            if pattern in rel_path:
+                return True
     
     # Check suffixes
     if file_path.suffix in _EXCLUDE_SUFFIXES:

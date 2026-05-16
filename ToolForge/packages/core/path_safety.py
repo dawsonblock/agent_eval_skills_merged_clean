@@ -16,6 +16,10 @@ class PathViolationError(Exception):
 
 
 _READ_KEYS = {
+    "data_path",
+    "data_file",
+    "schema_path",
+    "schema_file",
     "input_path",
     "input_file",
     "source_path",
@@ -84,7 +88,7 @@ def is_path_like_key(key: str) -> bool:
 
 def classify_path_mode(key: str) -> Literal["read", "write", "unknown"]:
     lowered = key.strip().lower()
-    if lowered.startswith(("input_", "source_", "read_")):
+    if lowered.startswith(("input_", "source_", "read_", "data_", "schema_")):
         return "read"
     if lowered == "file_path":
         return "read"
@@ -120,6 +124,19 @@ def _enforce_symlink(path: Path, security: SecuritySpec) -> None:
         return
     if path.exists() and path.is_symlink():
         raise PathViolationError("Symlink inputs are not allowed")
+    if _has_symlink_ancestor(path):
+        raise PathViolationError("Symlink inputs are not allowed")
+
+
+def _has_symlink_ancestor(p: Path) -> bool:
+    """Return True if any parent component of *p* is a symlink."""
+    for parent in p.parents:
+        try:
+            if parent.is_symlink():
+                return True
+        except OSError:
+            pass
+    return False
 
 
 def _enforce_max_size(path: Path, security: SecuritySpec) -> None:
@@ -174,7 +191,10 @@ def validate_path_input(
         and raw_workspace_path.is_symlink()
     ):
         raise PathViolationError("Symlink inputs are not allowed")
-    if not security.allow_symlinks and raw_resolved.exists() and raw_resolved.is_symlink():
+    if not security.allow_symlinks and (
+        (raw_resolved.exists() and raw_resolved.is_symlink())
+        or _has_symlink_ancestor(raw_resolved)
+    ):
         raise PathViolationError("Symlink inputs are not allowed")
 
     resolved = _resolve_input_path(value, workspace_root)
