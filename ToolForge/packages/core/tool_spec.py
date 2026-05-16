@@ -247,10 +247,19 @@ class EvalCriterion(BaseModel):
 class EvalCase(BaseModel):
     """A single eval test case (input → expected)."""
 
+    class ExpectedFile(BaseModel):
+        path: str
+        should_exist: bool = True
+
     id: str
     description: str = ""
     inputs: dict[str, Any] = Field(default_factory=dict)
     expected_output: Any = None
+    expected_success: bool = True
+    expected_error_contains: str | None = None
+    expected_output_contains: str | None = None
+    expected_files: list[ExpectedFile] = Field(default_factory=list)
+    json_schema: dict[str, Any] | None = None
     criteria: list[EvalCriterion] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
 
@@ -336,22 +345,22 @@ class ToolSpec(BaseModel):
         description="Input parameters (order defines CLI arg order)",
     )
     output: OutputSpec = Field(
-        default_factory=lambda: OutputSpec(type="string", description="Tool output"),  # type: ignore[call-arg]
+        default_factory=lambda: OutputSpec(type="string", description="Tool output"),
         description="Output type declaration",
     )
 
     # --- Security ---
-    security: SecuritySpec = Field(default_factory=lambda: SecuritySpec())  # type: ignore[call-arg]
+    security: SecuritySpec = Field(default_factory=lambda: SecuritySpec())
     sandbox_level: SandboxLevel = Field(SandboxLevel.SUBPROCESS_TIMEOUT)
 
     # --- MCP wrapping ---
-    mcp: MCPSpec = Field(default_factory=lambda: MCPSpec())  # type: ignore[call-arg]
+    mcp: MCPSpec = Field(default_factory=lambda: MCPSpec())
 
     # --- Agent skill ---
-    skill: SkillSpec = Field(default_factory=lambda: SkillSpec())  # type: ignore[call-arg]
+    skill: SkillSpec = Field(default_factory=lambda: SkillSpec())
 
     # --- Eval ---
-    eval: EvalSpec = Field(default_factory=lambda: EvalSpec())  # type: ignore[call-arg]
+    eval: EvalSpec = Field(default_factory=lambda: EvalSpec())
 
     # --- Metadata ---
     created_at: str | None = Field(None, description="ISO-8601 creation timestamp (set by toolforge)")

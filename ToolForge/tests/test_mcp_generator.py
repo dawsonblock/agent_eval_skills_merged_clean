@@ -3,8 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from packages.core.mcp_generator import generate_mcp_server
 from packages.core.tool_spec import MCPSpec, ParameterSpec, ToolLanguage, ToolSpec
 

@@ -66,6 +66,8 @@ python_version = "3.12"
 strict = false
 ignore_missing_imports = true
 warn_unused_ignores = true
+explicit_package_bases = true
+plugins = ["pydantic.mypy"]
 
 [tool.ruff]
 line-length = 100

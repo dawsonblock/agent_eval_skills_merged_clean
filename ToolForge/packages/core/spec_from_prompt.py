@@ -180,15 +180,22 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
         eval_cases = [
             EvalCase(
                 id="case-01-success",
-                description="Basic success case with valid CSV",
+                description="Clean valid CSV file",
                 inputs={"input_path": "examples/input.csv"} if slug == "csv-cleaner" else {"input": "test_data"},
+                expected_success=True,
+                expected_output_contains="cleaned_path" if slug == "csv-cleaner" else None,
+                expected_files=[
+                    EvalCase.ExpectedFile(path="outputs/cleaned.csv", should_exist=True)
+                ] if slug == "csv-cleaner" else [],
                 expected_output=None,
                 tags=["smoke"],
             ),
             EvalCase(
                 id="case-02-invalid-input",
-                description="Invalid input — file not found",
-                inputs={"input_path": "/tmp/nonexistent.csv"} if slug == "csv-cleaner" else {"input": ""},
+                description="Reject missing input file",
+                inputs={"input_path": "examples/missing.csv"} if slug == "csv-cleaner" else {"input": ""},
+                expected_success=False if slug == "csv-cleaner" else True,
+                expected_error_contains="not found" if slug == "csv-cleaner" else None,
                 expected_output=None,
                 tags=["edge-case"],
             ),
@@ -201,13 +208,25 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                     id="case-03-safety-boundary",
                     description="Path traversal attempt (should be blocked)",
                     inputs={"input_path": "../../../etc/passwd"},
+                    expected_success=False,
+                    expected_error_contains="Path validation failed",
                     expected_output=None,
                     tags=["safety"],
                 ),
                 EvalCase(
                     id="case-04-empty-file",
                     description="Empty CSV file",
-                    inputs={"input_path": "examples/empty.csv"},
+                    inputs={
+                        "input_path": "examples/empty.csv",
+                        "output_path": "outputs/empty_cleaned.csv",
+                    },
+                    expected_success=True,
+                    expected_files=[
+                        EvalCase.ExpectedFile(
+                            path="outputs/empty_cleaned.csv",
+                            should_exist=True,
+                        )
+                    ],
                     expected_output=None,
                     tags=["edge-case"],
                 )
@@ -267,7 +286,7 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
             required_capabilities=[],
             allowed_read_paths=["./examples/**", "./inputs/**"] if requires_filesystem else [],
             allowed_write_paths=["./outputs/**"] if requires_filesystem else [],
-            allowed_extensions=[".csv", ".json", ".txt"] if requires_filesystem else [],
+            allowed_extensions=[".csv"] if slug == "csv-cleaner" else ([".csv", ".json", ".txt"] if requires_filesystem else []),
             max_file_size_mb=50,
             privacy_level=PrivacyLevel.INTERNAL,
         )
@@ -346,6 +365,8 @@ class LLMSpecGenerator(SpecGeneratorProvider):
             response_format={"type": "json_object"},
         )
         data = response.choices[0].message.content
+        if not data:
+            raise ValueError("OpenAI response did not contain JSON content")
         return ToolSpec.model_validate_json(data)
 
     def _generate_anthropic(self, prompt: str) -> ToolSpec:

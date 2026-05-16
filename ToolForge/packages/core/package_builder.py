@@ -25,6 +25,7 @@ from packages.core.tool_spec import ToolSpec
 
 # Files/patterns to exclude from package
 _EXCLUDE_PATTERNS = frozenset({
+    ".coverage",
     ".env", ".env.local", ".env.*.local",
     "*.pem", "*.key", "*.p12", "*.pfx", "*.crt",
     "credentials*", "token*", "secret*", "password*",
@@ -75,6 +76,46 @@ def build_package(
     archive_name = f"{spec.slug}-{spec.version}.zip"
     archive_path = dist_dir / archive_name
 
+    # Ensure SECURITY.md exists for packaged artifacts.
+    security_md = tool_dir / "SECURITY.md"
+    if not security_md.exists():
+        security_md.write_text(
+            "\n".join(
+                [
+                    f"# Security Notes: {spec.name}",
+                    "",
+                    "## Declared Permissions",
+                    f"- requires_filesystem: {spec.security.requires_filesystem}",
+                    f"- requires_network: {spec.security.requires_network}",
+                    f"- requires_shell: {spec.security.requires_shell}",
+                    "",
+                    "## Filesystem Restrictions",
+                    f"- allowed_read_paths: {spec.security.allowed_read_paths}",
+                    f"- allowed_write_paths: {spec.security.allowed_write_paths}",
+                    f"- blocked_paths: {spec.security.blocked_paths}",
+                    "",
+                    "## Network Restrictions",
+                    f"- allowed_domains: {spec.security.allowed_domains}",
+                    f"- blocked_domains: {spec.security.blocked_domains}",
+                    "",
+                    "## Shell Restrictions",
+                    f"- allowed_commands: {spec.security.allowed_commands}",
+                    f"- blocked_commands: {spec.security.blocked_commands}",
+                    "",
+                    "## Sandbox",
+                    f"- sandbox_level: {spec.sandbox_level}",
+                    "",
+                    "## Known Limitations",
+                    "- Generated tools require human review before sensitive use.",
+                    "- Path safety and static checks reduce risk but are not a full security audit.",
+                    "",
+                    "## Review Warning",
+                    "- Do not treat this package as production-ready without additional hardening.",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
     # Build manifest with file list and SHA256 hashes
     manifest: dict = {
         "name": spec.name,
@@ -82,10 +123,12 @@ def build_package(
         "version": spec.version,
         "description": spec.description,
         "language": spec.language.value,
-        "built_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "toolforge_version": "0.1.0",
         "tags": spec.tags,
         "author": spec.author,
+        "validation_status": "unknown",
+        "eval_status": "unknown",
         "files": [],
         "sha256": {},
     }

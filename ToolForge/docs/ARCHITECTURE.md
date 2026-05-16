@@ -35,7 +35,7 @@ ToolForge/
 ├── dist/             # Packaged .zip archives
 ├── tests/            # Unit tests (pytest)
 ├── docs/             # This directory
-└── legacy/           # Imported source repos
+└── toolforge/        # Package entrypoint and metadata
 ```
 
 ---

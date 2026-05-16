@@ -25,7 +25,7 @@ _TBD — Category placeholder for future skills._
 
 | Skill | Description |
 | --- | --- |
-| [`frontend-design`](skills/web-and-frontend-development/frontend-design/SKILL.md) | Create distinctive, production-grade frontend interfaces with high design quality. Generates creative, polished web components, pages, and applications that avoid generic AI aesthetics. |
+| [`frontend-design`](skills/web-and-frontend-development/frontend-design/SKILL.md) | Create distinctive frontend interfaces with strong design direction. Generates creative, polished web components, pages, and applications that avoid generic AI aesthetics. |
 | [`brand-guidelines`](skills/web-and-frontend-development/brand-guidelines/SKILL.md) | Apply Anthropic's official brand colors and typography to artifacts. Use when brand styling, visual formatting, or company design standards apply. |
 | [`web-artifacts-builder`](skills/web-and-frontend-development/web-artifacts-builder/SKILL.md) | Build elaborate, multi-component claude.ai HTML artifacts using React, Tailwind CSS, and shadcn/ui. Includes project scaffolding and single-file bundling scripts. |
 | [`theme-factory`](skills/web-and-frontend-development/theme-factory/SKILL.md) | Apply professional color and font themes to artifacts like slides, docs, reports, and landing pages. Includes 10 curated themes with a visual showcase PDF. |
@@ -197,7 +197,7 @@ Examples:
 - "Ingest this Markdown file into Mintlify docs and update docs.json navigation."
 - "Create a generative art piece with flow fields and particle systems."
 - "Design a poster with bold typography and intentional composition."
-- "Build a landing page with distinctive, production-grade design."
+- "Build a landing page with distinctive, high-quality design."
 - "Create a Word document with tracked changes and comments."
 - "Apply Anthropic brand colors to this component."
 - "Make me a GIF of a spinning logo for Slack."

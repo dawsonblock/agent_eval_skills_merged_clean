@@ -20,7 +20,7 @@ from packages.integrations.agent_skills.importer import import_skill
 from pathlib import Path
 
 created = import_skill(
-    skill_path=Path("legacy/agent-skills-curated/skills/browser-and-automation/webapp-testing/SKILL.md"),
+    skill_path=Path("../agent-skills-curated/skills/browser-and-automation/webapp-testing/SKILL.md"),
     skills_root=Path("skills/generated"),
 )
 # → [skills/generated/browser-and-automation/webapp-testing/SKILL.md]
@@ -36,7 +36,7 @@ created = import_skill(
 **CLI equivalent:**
 
 ```bash
-toolforge install ./legacy/agent-skills-curated/skills/pdf-and-documents/pdf/SKILL.md
+toolforge install ../agent-skills-curated/skills/pdf-and-documents/pdf/SKILL.md
 ```
 
 ---
@@ -60,7 +60,7 @@ Converts a parsed toolathlon task dict to `EvalCase` objects.
 ```python
 from packages.integrations.toolathlon.task_adapter import load_toolathlon_task, task_to_eval_cases
 
-task = load_toolathlon_task(Path("legacy/toolathlon-gym-curated/tasks/finalpool/arxiv-search.json"))
+task = load_toolathlon_task(Path("../toolathlon-gym-curated/tasks/finalpool/arxiv-search.json"))
 cases = task_to_eval_cases(task)
 ```
 
@@ -81,7 +81,7 @@ Recursively loads all `.json` task files from a directory.
 ```python
 from packages.integrations.toolathlon.task_adapter import load_eval_cases_from_dir
 
-cases = load_eval_cases_from_dir(Path("legacy/toolathlon-gym-curated/tasks/finalpool"))
+cases = load_eval_cases_from_dir(Path("../toolathlon-gym-curated/tasks/finalpool"))
 ```
 
 ---
@@ -108,7 +108,7 @@ from packages.integrations.toolathlon.config_bridge import (
     toolathlon_config_to_partial_spec,
 )
 
-config = load_toolathlon_config(Path("legacy/toolathlon-gym-curated/configs/mcp_servers/arxiv-latex-mcp.yaml"))
+config = load_toolathlon_config(Path("../toolathlon-gym-curated/configs/mcp_servers/arxiv-latex-mcp.yaml"))
 spec = toolathlon_config_to_partial_spec(config, slug="arxiv-latex-mcp")
 ```
 
@@ -128,7 +128,7 @@ from packages.integrations.toolathlon.runner_bridge import run_toolathlon_tasks
 report = run_toolathlon_tasks(
     spec=spec,
     tool_dir=Path("tools/generated/arxiv-latex-mcp"),
-    tasks_dir=Path("legacy/toolathlon-gym-curated/tasks/finalpool"),
+    tasks_dir=Path("../toolathlon-gym-curated/tasks/finalpool"),
     timeout_s=60.0,
 )
 
@@ -146,20 +146,15 @@ for result in report.results:
 
 ---
 
-## Working with Legacy Repos
+## Working with Companion Repos
 
-Both legacy repos are available under `ToolForge/legacy/`:
+The companion repositories live at workspace root level:
 
-```
-legacy/
+```text
+agent_eval_skills_merged_clean/
+├── ToolForge/
 ├── agent-skills-curated/
-│   └── skills/
-│       ├── browser-and-automation/webapp-testing/SKILL.md
-│       ├── coding-agents-and-ides/mcp-builder/SKILL.md
-│       └── ...
 └── toolathlon-gym-curated/
-    ├── configs/mcp_servers/    # toolathlon YAML configs
-    └── tasks/finalpool/        # toolathlon task JSON files
 ```
 
 ### Bulk import all legacy skills
@@ -169,7 +164,7 @@ from pathlib import Path
 from packages.integrations.agent_skills.importer import import_skill
 
 skills_root = Path("skills/generated")
-legacy_skills = Path("legacy/agent-skills-curated/skills")
+legacy_skills = Path("../agent-skills-curated/skills")
 
 for skill_md in legacy_skills.rglob("SKILL.md"):
     import_skill(skill_md, skills_root)

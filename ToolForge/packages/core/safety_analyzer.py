@@ -117,7 +117,7 @@ def analyze_safety(spec: ToolSpec, tool_dir: Path) -> SafetyReport:
             # Shell execution
             if _SHELL_EXEC_PATTERN.search(line) and not spec.security.requires_shell:
                 report.issues.append(SafetyIssue(
-                    severity="warning", code="UNEXPECTED_SHELL",
+                    severity="error", code="UNEXPECTED_SHELL",
                     message=(
                         f"Shell/exec call found but requires_shell=False: {line.strip()[:80]}"
                     ),
@@ -128,7 +128,7 @@ def analyze_safety(spec: ToolSpec, tool_dir: Path) -> SafetyReport:
             for denied in _DENIED_IMPORTS:
                 if re.search(rf'\b{re.escape(denied)}\b', line) and not spec.security.requires_shell:
                     report.issues.append(SafetyIssue(
-                        severity="warning", code="DENIED_IMPORT",
+                        severity="error", code="DENIED_IMPORT",
                         message=f"Suspicious import/usage of {denied!r} in {rel}:{lineno}",
                         file=rel, line=lineno,
                     ))

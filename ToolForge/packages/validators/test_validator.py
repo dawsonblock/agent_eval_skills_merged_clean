@@ -4,6 +4,7 @@ Test validator — runs pytest against a tool's test directory and reports resul
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -45,10 +46,23 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
     cmd = [
         sys.executable, "-m", "pytest",
         str(tests_dir),
+        "-o",
+        "addopts=",
         "--tb=short",
         "-q",
         "--json-report",
         f"--json-report-file={json_output}",
+    ]
+
+    fallback_cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        str(tests_dir),
+        "-o",
+        "addopts=",
+        "--tb=short",
+        "-q",
     ]
 
     try:
@@ -69,19 +83,27 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         report.failures.append({"message": "pytest not found in current environment"})
         return report
 
-    # Check if pytest failed (returncode != 0)
-    if result.returncode != 0:
-        # Only treat as test failure if we couldn't parse the JSON report
-        # (pytest itself returning nonzero means tests failed, which is still a failure)
-        if not json_output.exists():
+    combined_output = (result.stdout or "") + "\n" + (result.stderr or "")
+    if result.returncode != 0 and "unrecognized arguments: --json-report" in combined_output:
+        try:
+            result = subprocess.run(
+                fallback_cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=str(tool_dir),
+            )
+        except subprocess.TimeoutExpired:
             report.errors = 1
-            report.failures.append({
-                "message": f"pytest exited with code {result.returncode}",
-                "output": result.stdout + result.stderr,
-            })
+            report.failures.append({"message": f"Tests timed out after {timeout}s"})
+            return report
+
+    had_json_report = json_output.exists()
+    parsed_json = False
+    parse_error = ""
 
     # Parse JSON report if available
-    if json_output.exists():
+    if had_json_report:
         try:
             data = json.loads(json_output.read_text())
             summary = data.get("summary", {})
@@ -90,25 +112,58 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
             report.errors = summary.get("errors", 0)
             report.skipped = summary.get("skipped", 0)
             report.duration = data.get("duration", 0.0)
+            parsed_json = True
             for test in data.get("tests", []):
                 if test.get("outcome") in ("failed", "error"):
                     report.failures.append({
                         "nodeid": test.get("nodeid", ""),
                         "message": test.get("call", {}).get("longrepr", ""),
                     })
-        except (json.JSONDecodeError, KeyError):
-            pass
+        except (json.JSONDecodeError, KeyError) as exc:
+            parse_error = str(exc)
         finally:
             json_output.unlink(missing_ok=True)
     else:
         # Fallback: parse stdout line "N passed, M failed"
-        for line in result.stdout.splitlines():
-            m_passed = __import__("re").search(r'(\d+) passed', line)
-            m_failed = __import__("re").search(r'(\d+) failed', line)
+        for line in (result.stdout + "\n" + result.stderr).splitlines():
+            m_passed = re.search(r"(\d+) passed", line)
+            m_failed = re.search(r"(\d+) failed", line)
+            m_error = re.search(r"(\d+) error", line)
             if m_passed:
                 report.passed = int(m_passed.group(1))
             if m_failed:
                 report.failed = int(m_failed.group(1))
+            if m_error:
+                report.errors = int(m_error.group(1))
+
+    # Pytest returning nonzero must fail validation, even with parsed JSON.
+    if result.returncode != 0 and report.failed == 0 and report.errors == 0:
+        report.errors = 1
+
+    if result.returncode != 0:
+        report.failures.append(
+            {
+                "message": f"pytest exited with code {result.returncode}",
+                "stdout": result.stdout[-2000:],
+                "stderr": result.stderr[-2000:],
+            }
+        )
+
+    if had_json_report and not parsed_json:
+        report.errors = max(report.errors, 1)
+        report.failures.append(
+            {
+                "message": "pytest JSON report could not be parsed",
+                "error": parse_error,
+            }
+        )
+
+    # If tests directory exists but nothing collected, fail for generated tools.
+    if report.total == 0:
+        report.errors = max(report.errors, 1)
+        report.failures.append({"message": "No tests were collected"})
+
+    return report
 
 def run_safety_checks(spec: ToolSpec, tool_dir: Path) -> TestReport:
     """
@@ -132,10 +187,8 @@ def run_safety_checks(spec: ToolSpec, tool_dir: Path) -> TestReport:
         else:
             # Safety checks passed
             report.passed = 1
-    except Exception as e:
+    except Exception as exc:
         report.errors = 1
-        report.failures.append({"message": f"Safety analysis failed: {e}"})
+        report.failures.append({"message": f"Safety analysis failed: {exc}"})
     
-    return report
-
     return report

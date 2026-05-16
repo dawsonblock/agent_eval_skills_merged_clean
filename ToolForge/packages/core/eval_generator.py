@@ -23,7 +23,10 @@ def generate_eval(spec: ToolSpec, output_root: Path, overwrite: bool = False) ->
     """
     Generate an eval task directory for *spec* under *output_root/{spec.slug}/*.
     """
-    eval_dir = output_root / spec.slug
+    if output_root.name == "evals":
+        eval_dir = output_root
+    else:
+        eval_dir = output_root / spec.slug
     eval_dir.mkdir(parents=True, exist_ok=True)
     (eval_dir / "cases").mkdir(exist_ok=True)
 

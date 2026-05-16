@@ -66,4 +66,15 @@ def generate_mcp_server(spec: ToolSpec, output_root: Path, overwrite: bool = Fal
     if write_rendered(dockerfile, df_content, overwrite):
         written.append(dockerfile)
 
+    readme = mcp_dir / "README.md"
+    readme_content = (
+        f"# MCP Server: {spec.slug}\n\n"
+        "This directory contains the generated MCP server for this tool.\n\n"
+        f"- Tool: {spec.slug}\n"
+        f"- Version: {spec.version}\n"
+        f"- Language: {spec.mcp.server_language.value}\n"
+    )
+    if write_rendered(readme, readme_content, overwrite):
+        written.append(readme)
+
     return written

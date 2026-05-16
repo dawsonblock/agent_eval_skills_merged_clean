@@ -192,7 +192,7 @@ toolforge registry info csv-cleaner
 Import a legacy SKILL.md into the workspace.
 
 ```bash
-toolforge install ./legacy/agent-skills-curated/skills/browser-and-automation/webapp-testing/SKILL.md
+toolforge install ../agent-skills-curated/skills/browser-and-automation/webapp-testing/SKILL.md
 toolforge install ./some-skill-directory/
 ```
 

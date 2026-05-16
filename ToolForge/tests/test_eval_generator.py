@@ -26,7 +26,12 @@ def _make_spec() -> ToolSpec:
         eval=EvalSpec(
             enabled=True,
             cases=[
-                EvalCase(id="case-01", inputs={"x": "hello"}, description="Smoke test"),
+                EvalCase(
+                    id="case-01",
+                    inputs={"x": "hello"},
+                    description="Smoke test",
+                    expected_success=True,
+                ),
             ],
             criteria=[
                 EvalCriterion(name="no_error", type=EvalCriterionType.NO_ERROR, weight=1.0),
@@ -63,3 +68,11 @@ def test_eval_case_file_created(tmp_path: Path) -> None:
     # At least one case file should exist
     case_files = [p for p in created if "case" in p.name.lower()]
     assert len(case_files) >= 1
+
+
+def test_eval_case_serializes_expected_success(tmp_path: Path) -> None:
+    spec = _make_spec()
+    created = generate_eval(spec, tmp_path)
+    case_file = next(p for p in created if p.name == "case-01.json")
+    data = json.loads(case_file.read_text(encoding="utf-8"))
+    assert data["expected_success"] is True

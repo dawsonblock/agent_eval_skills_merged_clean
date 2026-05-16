@@ -2,13 +2,13 @@
 
 # Agent Eval & Skills Platform
 
-**A unified infrastructure for building, evaluating, and deploying AI agent tools at scale.**
+**A unified workspace for building and evaluating AI agent tools.**
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://python.org)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Protocol-6B46C1)](https://modelcontextprotocol.io)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)](LICENSE)
+[![License: Apache--2.0](https://img.shields.io/badge/License-Apache--2.0-22c55e)](LICENSE)
 
 [ToolForge](#-toolforge) · [Agent Skills](#-agent-skills) · [Toolathlon GYM](#-toolathlon-gym) · [Getting Started](#-getting-started) · [Architecture](#-architecture)
 
@@ -32,7 +32,7 @@ This repository is a controlled-merge of three interconnected systems designed f
 
 > **CLI-first platform for creating, validating, running, and packaging AI tools.**
 
-ToolForge turns a natural-language description into a fully-specified, sandboxed, production-ready tool — complete with an MCP server, a Copilot Skill, an evaluation harness, and a packaged `.zip` artifact.
+ToolForge turns a natural-language description into a structured prototype tool with an MCP server, skill file, evaluation harness, and packaged `.zip` artifact for local development workflows.
 
 ```bash
 # Turn a prompt into a complete tool scaffold
@@ -46,7 +46,7 @@ toolforge generate skill csv-cleaner
 toolforge validate csv-cleaner
 
 # Run the tool locally with sandboxing
-toolforge run csv-cleaner --input file_path=data.csv
+toolforge run csv-cleaner --input input_path=examples/input.csv
 
 # Evaluate against the generated test harness
 toolforge eval csv-cleaner
@@ -61,7 +61,7 @@ toolforge package csv-cleaner
 - **Spec-from-prompt** — Natural language → structured `ToolSpec` via rule-based inference or LLM (OpenAI/Anthropic)
 - **Full scaffolding** — Generates `tool.py`, `toolforge.yaml`, `README.md`, and a pytest test suite
 - **MCP server generation** — Python (`mcp>=1.10.1`) or TypeScript (`@modelcontextprotocol/sdk`)
-- **Copilot Skill generation** — Ready-to-use `SKILL.md` files placed in the correct category directory
+- **Copilot Skill generation** — Ready-to-use `SKILL.md` files generated with tool-local packaging support
 - **Evaluation harness** — `task_config.json`, per-case JSON files, and automated scoring
 - **Five validators** — schema, security, MCP, skill, and test validators in one command
 - **Safety analyzer** — Static scan for hardcoded secrets, path traversal, and dangerous system calls
@@ -90,8 +90,8 @@ ToolForge/
 ├── tools/
 │   ├── examples/              # csv-cleaner, json-schema-validator, local-file-hasher
 │   └── generated/             # CLI-generated tools (git-ignored)
-├── skills/generated/          # Generated SKILL.md files
-├── evals/generated/           # Generated eval harnesses
+├── skills/generated/          # Legacy/global skill outputs (optional)
+├── evals/generated/           # Legacy/global eval outputs (optional)
 └── docs/                      # ARCHITECTURE, CLI_REFERENCE, TOOL_SPEC, VALIDATORS
 ```
 
@@ -111,7 +111,7 @@ ToolForge/
 - Inputs passed via `TOOLFORGE_INPUTS` env var — no shell injection through CLI args
 - Credential env vars (`*_KEY`, `*_SECRET`, `*_TOKEN`, `*_PASSWORD`) stripped before subprocess execution
 - Static safety analysis on every generated tool
-- OWASP Top 10 compliance verified
+- Includes path-safety and static safety checks, but generated tools still require human review and additional hardening before sensitive or production use.
 
 ---
 
@@ -134,7 +134,7 @@ A collection of high-quality skill definitions for AI coding agents, organized b
 
 | Skill | Description |
 |-------|-------------|
-| [`frontend-design`](agent-skills-curated/skills/web-and-frontend-development/frontend-design/) | Generate distinctive, production-grade frontend interfaces — avoids generic AI aesthetics |
+| [`frontend-design`](agent-skills-curated/skills/web-and-frontend-development/frontend-design/) | Generate distinctive frontend interfaces with intentional design direction — avoids generic AI aesthetics |
 | [`web-artifacts-builder`](agent-skills-curated/skills/web-and-frontend-development/web-artifacts-builder/) | Build multi-component HTML artifacts with React, Tailwind CSS, and shadcn/ui |
 | [`excalidraw`](agent-skills-curated/skills/web-and-frontend-development/excalidraw/) | Generate valid `.excalidraw` architecture diagrams from codebase analysis |
 

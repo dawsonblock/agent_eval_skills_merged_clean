@@ -46,5 +46,16 @@ def test_skill_md_contains_required_sections(tmp_path: Path) -> None:
     created = generate_skill(spec, tmp_path)
     skill_md = next(p for p in created if p.name == "SKILL.md")
     content = skill_md.read_text(encoding="utf-8")
-    for section in ("Overview", "Usage", "Parameters", "Output", "Examples"):
+    for section in (
+        "Purpose",
+        "Use When",
+        "Do Not Use When",
+        "Inputs",
+        "Outputs",
+        "Safety Rules",
+        "Procedure",
+        "Validation Checklist",
+        "Failure Modes",
+        "Examples",
+    ):
         assert section in content, f"Missing section: {section}"

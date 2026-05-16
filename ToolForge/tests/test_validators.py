@@ -7,7 +7,7 @@ import pytest
 
 from packages.core.tool_spec import ToolLanguage, ToolSpec
 from packages.validators.schema_validator import SchemaValidationError, validate_yaml_file
-from packages.validators.security_validator import SecurityViolation, validate_security
+from packages.validators.security_validator import validate_security
 from packages.validators.skill_validator import validate_skill_file
 
 
@@ -70,29 +70,35 @@ _VALID_SKILL = """\
 name: My Skill
 description: Does something useful.
 ---
-## Overview
+## Purpose
 What this skill does.
 
-## Usage
-How to use it.
+## Use When
+When this skill should be used.
 
-## Parameters
+## Do Not Use When
+When this skill should not be used.
+
+## Inputs
 None.
 
-## Output
+## Outputs
 A string.
+
+## Safety Rules
+No sensitive data.
+
+## Procedure
+1. Run the tool.
+
+## Validation Checklist
+- Output shape validated.
+
+## Failure Modes
+- Missing input.
 
 ## Examples
 Example 1.
-
-## When to Use
-When you need it.
-
-## Security
-No sensitive data.
-
-## Tags
-general
 """
 
 
@@ -114,7 +120,18 @@ def test_skill_validator_missing_frontmatter_key(tmp_path: Path) -> None:
     skill_md = tmp_path / "SKILL.md"
     # Missing 'description' key
     content = "---\nname: X\n---\n" + "\n".join(f"## {s}\nContent\n" for s in
-        ["Overview", "Usage", "Parameters", "Output", "Examples", "When to Use", "Security", "Tags"])
+        [
+            "Purpose",
+            "Use When",
+            "Do Not Use When",
+            "Inputs",
+            "Outputs",
+            "Safety Rules",
+            "Procedure",
+            "Validation Checklist",
+            "Failure Modes",
+            "Examples",
+        ])
     skill_md.write_text(content, encoding="utf-8")
     errors = validate_skill_file(skill_md)
     assert any("description" in e.lower() for e in errors)

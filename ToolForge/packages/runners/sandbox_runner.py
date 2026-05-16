@@ -33,6 +33,14 @@ _DOCKER_CPU_LIMIT = "0.5"
 _DOCKER_MEM_LIMIT = "128m"
 
 
+def _to_text(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
 @dataclass
 class SandboxResult:
     stdout: str
@@ -108,8 +116,8 @@ def run_in_sandbox(
     except subprocess.TimeoutExpired as exc:
         wall_ms = (time.monotonic() - start) * 1000
         return SandboxResult(
-            stdout=exc.stdout or "",
-            stderr=exc.stderr or "",
+            stdout=_to_text(exc.stdout),
+            stderr=_to_text(exc.stderr),
             exit_code=-1,
             timed_out=True,
             wall_time_ms=wall_ms,
@@ -189,8 +197,8 @@ def _run_docker(
     except subprocess.TimeoutExpired as exc:
         wall_ms = (time.monotonic() - start) * 1000
         return SandboxResult(
-            stdout=exc.stdout or "",
-            stderr=exc.stderr or "",
+            stdout=_to_text(exc.stdout),
+            stderr=_to_text(exc.stderr),
             exit_code=-1,
             timed_out=True,
             wall_time_ms=wall_ms,

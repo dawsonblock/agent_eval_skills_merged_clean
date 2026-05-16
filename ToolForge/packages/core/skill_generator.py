@@ -21,7 +21,10 @@ def generate_skill(spec: ToolSpec, output_root: Path, overwrite: bool = False) -
     if not spec.skill.enabled:
         return []
 
-    skill_dir = output_root / spec.skill.category / spec.slug
+    if output_root.name == "skill":
+        skill_dir = output_root
+    else:
+        skill_dir = output_root / spec.skill.category / spec.slug
     skill_dir.mkdir(parents=True, exist_ok=True)
 
     ctx: dict[str, Any] = {"spec": spec, "toolforge_version": TOOLFORGE_VERSION}

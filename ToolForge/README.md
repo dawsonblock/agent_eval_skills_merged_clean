@@ -1,6 +1,6 @@
 # ToolForge
 
-**ToolForge** is a CLI-first platform for creating, validating, running, and packaging AI tools — each optionally exposed as an MCP server, a Copilot Skill, and a reproducible evaluation harness.
+**ToolForge** is a CLI-first prototype for creating, validating, running, and packaging AI tools — each optionally exposed as an MCP server, a Copilot Skill, and a reproducible evaluation harness.
 
 ```bash
 toolforge new tool --from-prompt "Create a tool that cleans CSV files"
@@ -17,7 +17,7 @@ toolforge package        csv-cleaner
 - **Spec-from-prompt** — turn a natural-language description into a fully-structured `ToolSpec`
 - **Scaffolding** — generates `tool.py`, `toolforge.yaml`, `README.md`, and a pytest test suite
 - **MCP server generation** — Python (`mcp>=1.10.1`) or TypeScript (`@modelcontextprotocol/sdk`)
-- **Copilot Skill generation** — ready-to-use `SKILL.md` files under the correct category directory
+- **Copilot Skill generation** — ready-to-use `SKILL.md` files with tool-local packaging support
 - **Evaluation harness** — `task_config.json`, per-case JSON files, and scoring logic
 - **Validators** — schema, security, MCP, skill, and test validators in a single `toolforge validate` command
 - **Safety analyzer** — static scan for hardcoded secrets, path traversal, and shell execution
@@ -109,12 +109,12 @@ ToolForge/
 ├── tools/
 │   ├── examples/              # csv-cleaner, json-schema-validator, local-file-hasher
 │   └── generated/             # CLI-generated tools (git-ignored)
-├── skills/generated/          # Generated SKILL.md files
-├── evals/generated/           # Generated eval harnesses
+├── skills/generated/          # Optional legacy/global generated SKILL.md files
+├── evals/generated/           # Optional legacy/global generated eval harnesses
 ├── dist/                      # Packaged .zip archives
 ├── tests/                     # Package-level unit tests (pytest)
 ├── docs/                      # Documentation
-└── legacy/                    # Imported source repos (git submodules or copies)
+└── toolforge/                 # Package entrypoint and module metadata
 ```
 
 ---
@@ -146,4 +146,4 @@ cd tools/examples/csv-cleaner && pytest tests/ -v
 
 ## License
 
-MIT
+Apache-2.0

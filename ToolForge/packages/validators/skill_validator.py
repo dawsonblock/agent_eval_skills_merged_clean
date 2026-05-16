@@ -11,14 +11,16 @@ from pathlib import Path
 
 # Required top-level sections every SKILL.md must contain
 REQUIRED_SECTIONS = [
-    "Overview",
-    "Usage",
-    "Parameters",
-    "Output",
+    "Purpose",
+    "Use When",
+    "Do Not Use When",
+    "Inputs",
+    "Outputs",
+    "Safety Rules",
+    "Procedure",
+    "Validation Checklist",
+    "Failure Modes",
     "Examples",
-    "When to Use",
-    "Security",
-    "Tags",
 ]
 
 # YAML frontmatter keys that must be present

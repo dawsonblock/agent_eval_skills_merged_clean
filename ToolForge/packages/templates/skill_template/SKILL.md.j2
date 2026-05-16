@@ -6,67 +6,78 @@ description: >
   {% if spec.skill.not_when %}DO NOT USE FOR: {% for nt in spec.skill.not_when %}{{ nt }}{% if not loop.last %}, {% endif %}{% endfor %}.{% endif %}
 ---
 
-# {{ spec.name }} Skill
+# Skill: {{ spec.name }}
 
-## Overview
+## Purpose
 
 {{ spec.long_description or spec.description }}
 
-## Usage
+## Use When
 
-{{ spec.description }}
-
-### Parameters
-
-{% for p in spec.parameters %}
-- **`{{ p.name }}`** (`{{ p.type }}`{% if not p.required %}, optional, default: `{{ p.default }}`{% endif %}): {{ p.description }}
-{% endfor %}
-
-### Output
-
-{{ spec.output.description }}
-
-## Examples
-
-{% for case in spec.eval.cases[:3] %}
-### Example: {{ case.description or case.id }}
-
-**Input:**
-```json
-{{ case.inputs | tojson(indent=2) }}
-```
-
-{% if case.expected_output is not none %}
-**Expected Output:**
-```json
-{{ case.expected_output | tojson(indent=2) }}
-```
-{% endif %}
-{% endfor %}
-
-## When to Use
-
-Use this skill when you need to:
-
+{% if spec.skill.when_to_use %}
 {% for trigger in spec.skill.when_to_use %}
 - {{ trigger }}
 {% endfor %}
+{% else %}
+- You need local CSV cleaning for file-based workflows.
+{% endif %}
 
-{% if spec.skill.not_when %}
 ## Do Not Use When
 
+{% if spec.skill.not_when %}
 {% for nt in spec.skill.not_when %}
 - {{ nt }}
 {% endfor %}
+{% else %}
+- The input is Excel, PDF, a database table, or a URL.
+- You need unrestricted file system access.
 {% endif %}
 
-## Security
+## Inputs
 
-- **Privacy level:** {{ spec.security.privacy_level }}
-- **Requires network:** {{ spec.security.requires_network }}
-- **Sandbox level:** {{ spec.sandbox_level }}
-- **Required capabilities:** {{ spec.security.required_capabilities | join(", ") or "none" }}
+{% for p in spec.parameters %}
+- {{ p.name }} ({{ p.type }}{% if not p.required %}, optional{% endif %}){% if p.default is not none %}, default={{ p.default }}{% endif %}: {{ p.description }}
+{% endfor %}
 
-## Tags
+## Outputs
 
-{{ spec.tags | join(", ") or "general" }}
+- {{ spec.output.description }}
+
+## Safety Rules
+
+- File access is restricted by ToolForge path policy.
+- Path traversal and blocked paths must be rejected before execution.
+- Non-CSV inputs must be rejected for CSV-only tools.
+
+## Procedure
+
+1. Validate input parameters.
+2. Verify path constraints and extension rules.
+3. Run the tool and capture structured output.
+4. Confirm expected output files are present.
+
+## Validation Checklist
+
+- `cleaned_path` exists in output payload for success cases.
+- Row and header counts are consistent.
+- Output file exists when expected.
+- Unsafe path inputs fail safely.
+
+## Failure Modes
+
+- Missing input file.
+- Invalid extension.
+- Path policy violation.
+- Unexpected runtime exception.
+
+## Examples
+
+{% for case in spec.eval.cases[:4] %}
+### {{ case.id }}
+
+{{ case.description or case.id }}
+
+```json
+{{ case.inputs | tojson(indent=2) }}
+```
+{% endfor %}

@@ -151,6 +151,22 @@ def _score_result(
     return passed, round(final_score, 4), "; ".join(detail_parts)
 
 
+def _check_expected_files(tool_dir: Path, case) -> tuple[bool, str]:
+    if not getattr(case, "expected_files", None):
+        return True, ""
+    failures: list[str] = []
+    for expected in case.expected_files:
+        path = (tool_dir / expected.path).resolve(strict=False)
+        exists = path.exists()
+        if expected.should_exist and not exists:
+            failures.append(f"Expected file missing: {expected.path}")
+        if not expected.should_exist and exists:
+            failures.append(f"Unexpected file exists: {expected.path}")
+    if failures:
+        return False, "; ".join(failures)
+    return True, ""
+
+
 def run_evals(
     spec: ToolSpec,
     tool_dir: Path,
@@ -175,9 +191,46 @@ def run_evals(
                 inputs=case.inputs,
                 timeout_s=timeout_s,
             )
-            passed, score, details = _score_result(
-                spec, case.id, tool_result, case.expected_output
-            )
+            expected_success = getattr(case, "expected_success", True)
+
+            if expected_success:
+                passed, score, details = _score_result(
+                    spec,
+                    case.id,
+                    tool_result,
+                    case.expected_output,
+                )
+                if passed and case.expected_output_contains:
+                    if case.expected_output_contains not in tool_result.output:
+                        passed = False
+                        score = 0.0
+                        details = (
+                            f"Expected output to contain '{case.expected_output_contains}'"
+                        )
+                if passed:
+                    files_ok, file_details = _check_expected_files(tool_dir, case)
+                    if not files_ok:
+                        passed = False
+                        score = 0.0
+                        details = file_details
+            else:
+                error_text = (tool_result.error or "") + "\n" + (tool_result.output or "")
+                if tool_result.success:
+                    passed = False
+                    score = 0.0
+                    details = "Case expected failure, but tool succeeded"
+                elif case.expected_error_contains and case.expected_error_contains not in error_text:
+                    passed = False
+                    score = 0.0
+                    details = (
+                        "Case failed as expected, but error text did not contain "
+                        f"'{case.expected_error_contains}'"
+                    )
+                else:
+                    passed = True
+                    score = 1.0
+                    details = "Expected failure observed"
+
             report.results.append(
                 EvalResult(
                     case_id=case.id,

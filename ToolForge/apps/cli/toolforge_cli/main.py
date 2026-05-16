@@ -159,6 +159,11 @@ def generate_mcp(slug: str, overwrite: bool) -> None:
     created = generate_mcp_server(spec, td, overwrite=overwrite)
     for p in created:
         console.print(f"  [green]+[/] {p.relative_to(workspace_root)}")
+
+    from packages.core.registry import ToolRegistry
+    registry = ToolRegistry(_registry_path(workspace_root))
+    registry.set_mcp_path(slug, td / "mcp")
+
     console.print(f"[bold green]✓ MCP server generated for '{slug}'.[/]")
 
 
@@ -174,10 +179,15 @@ def generate_skill(slug: str, overwrite: bool) -> None:
     td = _tool_dir(workspace_root, slug)
     spec = ToolSpec.from_yaml(td / "toolforge.yaml")
 
-    skills_root = workspace_root / "skills" / "generated"
-    created = _gen(spec, skills_root, overwrite=overwrite)
+    skill_root = td / "skill"
+    created = _gen(spec, skill_root, overwrite=overwrite)
     for p in created:
         console.print(f"  [green]+[/] {p.relative_to(workspace_root)}")
+
+    from packages.core.registry import ToolRegistry
+    registry = ToolRegistry(_registry_path(workspace_root))
+    registry.set_skill_path(slug, td / "skill")
+
     console.print(f"[bold green]✓ Skill generated for '{slug}'.[/]")
 
 
@@ -193,10 +203,15 @@ def generate_eval(slug: str, overwrite: bool) -> None:
     td = _tool_dir(workspace_root, slug)
     spec = ToolSpec.from_yaml(td / "toolforge.yaml")
 
-    evals_root = workspace_root / "evals" / "generated"
+    evals_root = td / "evals"
     created = _gen(spec, evals_root, overwrite=overwrite)
     for p in created:
         console.print(f"  [green]+[/] {p.relative_to(workspace_root)}")
+
+    from packages.core.registry import ToolRegistry
+    registry = ToolRegistry(_registry_path(workspace_root))
+    registry.set_eval_path(slug, td / "evals")
+
     console.print(f"[bold green]✓ Eval harness generated for '{slug}'.[/]")
 
 
@@ -213,7 +228,7 @@ def validate(slug: str) -> None:
     from packages.validators.schema_validator import SchemaValidationError, validate_yaml_file
     from packages.validators.security_validator import validate_security
     from packages.validators.skill_validator import validate_skill_file
-    from packages.validators.test_validator import run_tests
+    from packages.validators.test_validator import run_safety_checks, run_tests
 
     workspace_root = _find_workspace_root()
     td = _tool_dir(workspace_root, slug)
@@ -257,16 +272,32 @@ def validate(slug: str) -> None:
             console.print("[green]✓[/]")
 
     # Skill
-    skill_path = (
-        workspace_root / "skills" / "generated" / spec.skill.category / slug / "SKILL.md"
-    )
+    skill_path = td / "skill" / "SKILL.md"
     if skill_path.exists():
         console.print("[bold]Skill validation...[/]", end=" ")
         skill_errors = validate_skill_file(skill_path)
         if skill_errors:
-            console.print("[yellow]⚠[/]")
+            console.print("[red]✗[/]")
             for err in skill_errors:
-                console.print(f"  [yellow]{err}[/]")
+                console.print(f"  [red]{err}[/]")
+            all_ok = False
+        else:
+            console.print("[green]✓[/]")
+    elif (td / "skill").exists():
+        console.print("[bold]Skill validation...[/]", end=" ")
+        console.print("[red]✗[/]")
+        console.print("  [red]Missing skill/SKILL.md[/]")
+        all_ok = False
+
+    # Eval artifacts
+    evals_dir = td / "evals"
+    if evals_dir.exists():
+        console.print("[bold]Eval artifact validation...[/]", end=" ")
+        cases_dir = evals_dir / "cases"
+        if not (evals_dir / "task_config.json").exists() or not cases_dir.exists() or not list(cases_dir.glob("*.json")):
+            console.print("[red]✗[/]")
+            console.print("  [red]Eval artifacts are incomplete (task_config.json and case files required)[/]")
+            all_ok = False
         else:
             console.print("[green]✓[/]")
 
@@ -275,11 +306,32 @@ def validate(slug: str) -> None:
     if tests_dir.exists():
         console.print("[bold]Running tests...[/]", end=" ")
         report = run_tests(td)
-        if report.all_passed:
+        if report.all_passed and report.passed > 0:
             console.print(f"[green]✓ {report.passed} passed[/]")
         else:
             console.print(f"[red]✗ {report.failed} failed, {report.errors} errors[/]")
             all_ok = False
+
+    # Static safety analysis
+    console.print("[bold]Static safety analysis...[/]", end=" ")
+    safety_report = run_safety_checks(spec, td)
+    if safety_report.all_passed:
+        console.print("[green]✓[/]")
+    else:
+        console.print("[red]✗[/]")
+        for failure in safety_report.failures:
+            code = failure.get("code", "SAFETY")
+            msg = failure.get("message", "")
+            file_path = failure.get("file")
+            line = failure.get("line")
+            location = f" ({file_path}:{line})" if file_path and line else ""
+            console.print(f"  [red]{code}: {msg}{location}[/]")
+        all_ok = False
+
+    from packages.core.registry import ToolRegistry
+    registry = ToolRegistry(_registry_path(workspace_root))
+    registry.set_validation_result(slug, all_ok)
+    registry.set_status(slug, "validated" if all_ok else "failed")
 
     if not all_ok:
         sys.exit(1)
@@ -314,6 +366,10 @@ def run(slug: str, inputs: tuple[str, ...], timeout: float) -> None:
 
     result = run_tool(spec, td, parsed, timeout_s=timeout)
 
+    from packages.core.registry import ToolRegistry
+    registry = ToolRegistry(_registry_path(workspace_root))
+    registry.set_last_run(slug, success=result.success)
+
     if result.success:
         console.print(result.output)
     else:
@@ -339,6 +395,11 @@ def eval_cmd(slug: str, timeout: float) -> None:
     spec = ToolSpec.from_yaml(td / "toolforge.yaml")
 
     report = run_evals(spec, td, timeout_s=timeout)
+
+    from packages.core.registry import ToolRegistry
+    registry = ToolRegistry(_registry_path(workspace_root))
+    registry.set_eval_score(slug, report.pass_rate)
+    registry.set_status(slug, "eval_passed" if report.overall_pass else "failed")
 
     table = Table(title=f"Eval: {slug}", show_header=True)
     table.add_column("Case ID")
@@ -376,6 +437,12 @@ def package(slug: str, dist_dir: str | None) -> None:
 
     dist = Path(dist_dir) if dist_dir else workspace_root / "dist"
     archive = build_package(spec, td, dist)
+
+    from packages.core.registry import ToolRegistry
+    registry = ToolRegistry(_registry_path(workspace_root))
+    registry.set_package_path(slug, archive)
+    registry.set_status(slug, "packaged")
+
     console.print(f"[green]✓[/] Package built: {archive}")
 
 
@@ -451,6 +518,16 @@ def registry_info(slug: str) -> None:
     console.print(f"  Tags:     {', '.join(spec.tags) or '—'}")
     if spec.author:
         console.print(f"  Author:   {spec.author}")
+    meta = reg.get_metadata(slug) or {}
+    console.print(f"  Status:   {meta.get('status', 'unknown')}")
+    console.print(f"  Last validation: {meta.get('last_validation') or '—'}")
+    console.print(f"  Last run: {meta.get('last_run') or '—'}")
+    console.print(f"  Last eval: {meta.get('last_eval') or '—'}")
+    console.print(f"  Eval score: {meta.get('eval_score')}")
+    console.print(f"  MCP path: {meta.get('mcp_path') or '—'}")
+    console.print(f"  Skill path: {meta.get('skill_path') or '—'}")
+    console.print(f"  Eval path: {meta.get('eval_path') or '—'}")
+    console.print(f"  Package path: {meta.get('package_path') or '—'}")
 
 
 # ---------------------------------------------------------------------------

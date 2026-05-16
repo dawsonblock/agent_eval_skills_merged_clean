@@ -1,23 +1,14 @@
 """Unit tests for packages.core.tool_spec."""
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
 
 from packages.core.tool_spec import (
-    EvalCase,
-    EvalCriterion,
     EvalCriterionType,
-    EvalSpec,
-    MCPSpec,
     ParameterSpec,
-    PrivacyLevel,
     SandboxLevel,
-    SecuritySpec,
-    SkillSpec,
-    ToolCapability,
     ToolLanguage,
     ToolSpec,
 )

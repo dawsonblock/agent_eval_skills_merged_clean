@@ -17,7 +17,14 @@ from typing import Iterator, Literal
 from packages.core.tool_spec import ToolSpec
 
 # Tool lifecycle statuses
-ToolStatus = Literal["generated", "validated", "packaged", "published"]
+ToolStatus = Literal[
+    "generated",
+    "validated",
+    "eval_passed",
+    "packaged",
+    "published",
+    "failed",
+]
 
 
 class ToolRegistry:
@@ -35,17 +42,21 @@ class ToolRegistry:
 
     def register(self, spec: ToolSpec, status: ToolStatus = "generated") -> None:
         """Add or update a tool spec in the registry with initial metadata."""
+        now = datetime.now(timezone.utc).isoformat()
         self._entries[spec.slug] = {
             "spec": json.loads(spec.model_dump_json()),
             "metadata": {
                 "status": status,
-                "registered_at": datetime.now(timezone.utc).isoformat(),
+                "registered_at": now,
+                "updated_at": now,
                 "eval_score": None,
                 "last_run": None,
+                "last_eval": None,
                 "last_validation": None,
                 "package_path": None,
                 "mcp_path": None,
                 "skill_path": None,
+                "eval_path": None,
             },
         }
         self._save()
@@ -54,8 +65,10 @@ class ToolRegistry:
         """Update the status of a registered tool. Returns True if updated."""
         if slug not in self._entries:
             return False
+        now = datetime.now(timezone.utc).isoformat()
         self._entries[slug]["metadata"]["status"] = status
-        self._entries[slug]["metadata"]["status_updated_at"] = datetime.now(timezone.utc).isoformat()
+        self._entries[slug]["metadata"]["status_updated_at"] = now
+        self._entries[slug]["metadata"]["updated_at"] = now
         self._save()
         return True
 
@@ -63,8 +76,10 @@ class ToolRegistry:
         """Record an eval score for a tool."""
         if slug not in self._entries:
             return False
+        now = datetime.now(timezone.utc).isoformat()
         self._entries[slug]["metadata"]["eval_score"] = score
-        self._entries[slug]["metadata"]["last_eval"] = datetime.now(timezone.utc).isoformat()
+        self._entries[slug]["metadata"]["last_eval"] = now
+        self._entries[slug]["metadata"]["updated_at"] = now
         self._save()
         return True
 
@@ -72,9 +87,23 @@ class ToolRegistry:
         """Record validation result."""
         if slug not in self._entries:
             return False
+        now = datetime.now(timezone.utc).isoformat()
         meta = self._entries[slug]["metadata"]
-        meta["last_validation"] = datetime.now(timezone.utc).isoformat()
+        meta["last_validation"] = now
         meta["validation_passed"] = valid
+        meta["updated_at"] = now
+        self._save()
+        return True
+
+    def set_last_run(self, slug: str, success: bool) -> bool:
+        """Record runtime invocation timestamp and outcome."""
+        if slug not in self._entries:
+            return False
+        now = datetime.now(timezone.utc).isoformat()
+        meta = self._entries[slug]["metadata"]
+        meta["last_run"] = now
+        meta["last_run_success"] = success
+        meta["updated_at"] = now
         self._save()
         return True
 
@@ -82,7 +111,9 @@ class ToolRegistry:
         """Record the path to a packaged distribution."""
         if slug not in self._entries:
             return False
+        now = datetime.now(timezone.utc).isoformat()
         self._entries[slug]["metadata"]["package_path"] = str(path)
+        self._entries[slug]["metadata"]["updated_at"] = now
         self._save()
         return True
 
@@ -90,7 +121,9 @@ class ToolRegistry:
         """Record the path to an MCP server."""
         if slug not in self._entries:
             return False
+        now = datetime.now(timezone.utc).isoformat()
         self._entries[slug]["metadata"]["mcp_path"] = str(path)
+        self._entries[slug]["metadata"]["updated_at"] = now
         self._save()
         return True
 
@@ -98,7 +131,19 @@ class ToolRegistry:
         """Record the path to a skill."""
         if slug not in self._entries:
             return False
+        now = datetime.now(timezone.utc).isoformat()
         self._entries[slug]["metadata"]["skill_path"] = str(path)
+        self._entries[slug]["metadata"]["updated_at"] = now
+        self._save()
+        return True
+
+    def set_eval_path(self, slug: str, path: str | Path) -> bool:
+        """Record the path to tool-local eval artifacts."""
+        if slug not in self._entries:
+            return False
+        now = datetime.now(timezone.utc).isoformat()
+        self._entries[slug]["metadata"]["eval_path"] = str(path)
+        self._entries[slug]["metadata"]["updated_at"] = now
         self._save()
         return True
 
