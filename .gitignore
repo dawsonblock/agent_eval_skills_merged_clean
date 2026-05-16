@@ -1,0 +1,11 @@
+# ToolForge generated outputs
+ToolForge/dist/
+ToolForge/tools/generated/
+ToolForge/toolforge_registry.json
+
+# Python generated artifacts
+**/__pycache__/
+*.py[cod]
+.coverage
+.pytest_cache/
+htmlcov/
