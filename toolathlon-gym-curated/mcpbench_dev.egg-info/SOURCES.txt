@@ -1,0 +1,8 @@
+LICENSE
+README.md
+pyproject.toml
+mcpbench_dev.egg-info/PKG-INFO
+mcpbench_dev.egg-info/SOURCES.txt
+mcpbench_dev.egg-info/dependency_links.txt
+mcpbench_dev.egg-info/requires.txt
+mcpbench_dev.egg-info/top_level.txt

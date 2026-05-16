@@ -109,7 +109,7 @@ def _score_result(
 
         elif criterion.type == EvalCriterionType.JSON_SCHEMA:
             try:
-                output_obj = json.loads(result.output)
+                json.loads(result.output)
                 if criterion.target is not None and isinstance(criterion.target, dict):
                     # Simple schema validation (full jsonschema validation optional)
                     ok = True  # Placeholder — would need jsonschema library for full validation

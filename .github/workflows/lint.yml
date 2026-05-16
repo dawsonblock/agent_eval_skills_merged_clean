@@ -1,0 +1,36 @@
+name: Lint & Type Check
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.12"
+
+            - name: Install dependencies
+              working-directory: ./ToolForge
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -e ".[dev]"
+
+            - name: Lint with ruff
+              working-directory: ./ToolForge
+              run: ruff check packages/ apps/ --show-fixes
+
+            - name: Format check
+              working-directory: ./ToolForge
+              run: ruff format packages/ apps/ --check
+
+            - name: Type check with mypy
+              working-directory: ./ToolForge
+              run: mypy packages/ apps/ --pretty --no-error-summary

@@ -268,7 +268,6 @@ class LLMSpecGenerator(SpecGeneratorProvider):
             response_format={"type": "json_object"},
         )
         data = response.choices[0].message.content
-        import json  # noqa: PLC0415
         return ToolSpec.model_validate_json(data)
 
     def _generate_anthropic(self, prompt: str) -> ToolSpec:

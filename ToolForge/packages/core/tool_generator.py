@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from packages.core.tool_spec import ToolSpec, ToolLanguage
+from packages.core.tool_spec import ToolSpec
 from packages.core.generator_utils import render_template, write_rendered, TOOLFORGE_VERSION
 
 

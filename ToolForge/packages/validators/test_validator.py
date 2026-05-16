@@ -45,7 +45,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         str(tests_dir),
         "--tb=short",
         "-q",
-        f"--json-report",
+        "--json-report",
         f"--json-report-file={json_output}",
     ]
 

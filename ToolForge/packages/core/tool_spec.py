@@ -14,7 +14,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -101,9 +101,15 @@ class ParameterSpec(BaseModel):
 class OutputSpec(BaseModel):
     """Declares the output contract of a tool."""
 
+    model_config = ConfigDict(populate_by_name=True)
+
     type: str = Field(..., description="JSON-Schema type of the primary output")
     description: str = Field("", description="Human-readable description of the output")
-    schema: dict[str, Any] | None = Field(None, description="Full JSON Schema for structured outputs")
+    output_schema: dict[str, Any] | None = Field(
+        None,
+        alias="schema",
+        description="Full JSON Schema for structured outputs",
+    )
     examples: list[Any] = Field(default_factory=list, description="Example outputs")
 
 
@@ -330,22 +336,22 @@ class ToolSpec(BaseModel):
         description="Input parameters (order defines CLI arg order)",
     )
     output: OutputSpec = Field(
-        default_factory=lambda: OutputSpec(type="string", description="Tool output"),
+        default_factory=lambda: OutputSpec(type="string", description="Tool output"),  # type: ignore[call-arg]
         description="Output type declaration",
     )
 
     # --- Security ---
-    security: SecuritySpec = Field(default_factory=SecuritySpec)
+    security: SecuritySpec = Field(default_factory=lambda: SecuritySpec())  # type: ignore[call-arg]
     sandbox_level: SandboxLevel = Field(SandboxLevel.SUBPROCESS_TIMEOUT)
 
     # --- MCP wrapping ---
-    mcp: MCPSpec = Field(default_factory=MCPSpec)
+    mcp: MCPSpec = Field(default_factory=lambda: MCPSpec())  # type: ignore[call-arg]
 
     # --- Agent skill ---
-    skill: SkillSpec = Field(default_factory=SkillSpec)
+    skill: SkillSpec = Field(default_factory=lambda: SkillSpec())  # type: ignore[call-arg]
 
     # --- Eval ---
-    eval: EvalSpec = Field(default_factory=EvalSpec)
+    eval: EvalSpec = Field(default_factory=lambda: EvalSpec())  # type: ignore[call-arg]
 
     # --- Metadata ---
     created_at: str | None = Field(None, description="ISO-8601 creation timestamp (set by toolforge)")

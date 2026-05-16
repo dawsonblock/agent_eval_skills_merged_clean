@@ -16,7 +16,6 @@ Commands:
 """
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -209,7 +208,6 @@ def generate_eval(slug: str, overwrite: bool) -> None:
 @click.argument("slug")
 def validate(slug: str) -> None:
     """Run all validators against tool SLUG."""
-    from packages.core.tool_spec import ToolSpec
     from packages.validators.mcp_validator import validate_mcp_server
     from packages.validators.schema_validator import SchemaValidationError, validate_yaml_file
     from packages.validators.security_validator import validate_security

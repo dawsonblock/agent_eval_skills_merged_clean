@@ -6,7 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from packages.core.tool_spec import ToolSpec, PrivacyLevel, SandboxLevel
+from packages.core.tool_spec import ToolSpec, PrivacyLevel
 
 
 class SecurityViolation(Exception):
@@ -49,7 +49,6 @@ def validate_security(spec: ToolSpec, policy_path: Path | None = None) -> list[s
             )
 
     # Check denied Python imports
-    denied_imports = execution_policy.get("deny_python_imports", [])
     # (actual import scan is done by safety_analyzer; here we check spec-level)
 
     # Check privacy level / approval

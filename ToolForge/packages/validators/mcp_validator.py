@@ -9,7 +9,6 @@ Checks:
 from __future__ import annotations
 
 import py_compile
-import re
 from pathlib import Path
 
 from packages.core.tool_spec import ToolSpec, ToolLanguage
