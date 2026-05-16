@@ -23,12 +23,12 @@ def _ctx(spec: ToolSpec) -> dict[str, Any]:
 def generate_mcp_server(spec: ToolSpec, output_root: Path, overwrite: bool = False) -> list[Path]:
     """
     Generate an MCP server in the language specified by ``spec.mcp.server_language``.
-    Writes files under *output_root/{spec.slug}/mcp/*.
+    Writes files under *output_root/mcp/*.
     """
     if not spec.mcp.enabled:
         return []
 
-    mcp_dir = output_root / spec.slug / "mcp"
+    mcp_dir = output_root / spec.slug
     mcp_dir.mkdir(parents=True, exist_ok=True)
 
     ctx = _ctx(spec)

@@ -36,6 +36,10 @@ class SafetyReport:
         return any(i.severity == "error" for i in self.issues)
 
     @property
+    def issue_count(self) -> int:
+        return len(self.issues)
+
+    @property
     def has_warnings(self) -> bool:
         return any(i.severity == "warning" for i in self.issues)
 

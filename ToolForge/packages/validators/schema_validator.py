@@ -28,7 +28,11 @@ def validate_yaml_file(yaml_path: Path) -> ToolSpec:
     with open(yaml_path, "r") as fh:
         data = yaml.load(fh) or {}
 
-    errors = validate_spec_dict(data)
+    try:
+        errors = validate_spec_dict(data)
+    except ValueError as exc:
+        msgs = [line for line in str(exc).splitlines() if line and not line.startswith("Spec")]
+        raise SchemaValidationError(msgs or [str(exc)]) from exc
     if errors:
         raise SchemaValidationError(errors)
 

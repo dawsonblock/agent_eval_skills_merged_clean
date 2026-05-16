@@ -53,9 +53,12 @@ class ToolCapability(str, Enum):
 
 
 class EvalCriterionType(str, Enum):
+    NO_ERROR = "no_error"
+    CONTAINS = "contains"
     EXACT_MATCH = "exact_match"
     REGEX_MATCH = "regex_match"
     JSON_SCHEMA = "json_schema"
+    PERFORMANCE = "performance"
     SEMANTIC_SIMILARITY = "semantic_similarity"
     CUSTOM_SCRIPT = "custom_script"
 
@@ -117,14 +120,95 @@ class SecuritySpec(BaseModel):
     )
     requires_network: bool = Field(False, description="Tool needs outbound network access")
     requires_shell: bool = Field(False, description="Tool needs shell/subprocess execution")
-    allowed_paths: list[str] = Field(
+    requires_filesystem: bool = Field(False, description="Tool needs filesystem write access")
+    
+    # File access patterns (replaces generic allowed_paths)
+    allowed_read_paths: list[str] = Field(
         default_factory=list,
-        description="Filesystem paths the tool is allowed to read/write (glob patterns OK)",
+        description="Filesystem paths the tool is allowed to read (glob patterns OK)",
     )
-    max_memory_mb: int | None = Field(None, description="Memory ceiling; None = no limit")
-    max_cpu_seconds: int | None = Field(None, description="CPU time ceiling; None = uses global timeout")
+    allowed_write_paths: list[str] = Field(
+        default_factory=list,
+        description="Filesystem paths the tool is allowed to write (glob patterns OK)",
+    )
+    blocked_paths: list[str] = Field(
+        default_factory=lambda: [
+            "~/.ssh/**", "~/.aws/**", "~/.config/**",
+            "/etc/**", "/var/**", "/root/**",
+        ],
+        description="Filesystem paths blocked regardless of tool permissions",
+    )
+    
+    # File constraints
+    allowed_extensions: list[str] = Field(
+        default_factory=list,
+        description="File extensions allowed (e.g. ['.csv', '.json']); empty = all allowed",
+    )
+    max_file_size_mb: int = Field(50, ge=1, description="Maximum file size in MB")
+    allow_symlinks: bool = Field(False, description="Allow reading/following symlinks")
+    
+    # Network constraints
+    allowed_domains: list[str] = Field(
+        default_factory=list,
+        description="Domains tool is allowed to contact; empty = block all",
+    )
+    blocked_domains: list[str] = Field(
+        default_factory=list,
+        description="Domains explicitly blocked",
+    )
+    
+    # Command execution constraints
+    allowed_commands: list[str] = Field(
+        default_factory=list,
+        description="Commands allowed via subprocess; empty = only safe defaults",
+    )
+    blocked_commands: list[str] = Field(
+        default_factory=lambda: [
+            "rm", "sudo", "chmod", "chown", "curl", "wget",
+            "ssh", "scp", "kubectl", "docker", "aws",
+        ],
+        description="Commands explicitly blocked",
+    )
+    
+    # Resource limits
+    max_memory_mb: int | None = Field(None, ge=1, description="Memory ceiling; None = no limit")
+    max_cpu_seconds: int | None = Field(None, ge=1, description="CPU time ceiling; None = uses global timeout")
+    
+    # Metadata
     privacy_level: PrivacyLevel = Field(PrivacyLevel.INTERNAL, description="Data sensitivity level")
     approved_by: str | None = Field(None, description="Identity that reviewed and approved security posture")
+    
+    @model_validator(mode="before")
+    @classmethod
+    def _parse_legacy_fields(cls, data: dict) -> dict:
+        """Translate legacy security fields to new format with deprecation warning."""
+        if isinstance(data, dict):
+            # Legacy allow_file_read/write → requires_filesystem + paths
+            if "allow_file_read" in data:
+                import warnings
+                warnings.warn(
+                    "security.allow_file_read is deprecated; use requires_filesystem and allowed_read_paths",
+                    DeprecationWarning,
+                    stacklevel=2
+                )
+                if data.pop("allow_file_read"):
+                    data["requires_filesystem"] = True
+            
+            if "allow_file_write" in data:
+                import warnings
+                warnings.warn(
+                    "security.allow_file_write is deprecated; use requires_filesystem and allowed_write_paths",
+                    DeprecationWarning,
+                    stacklevel=2
+                )
+                if data.pop("allow_file_write"):
+                    data["requires_filesystem"] = True
+            
+            # Legacy allow_network → requires_network
+            if "allow_network" in data:
+                data["requires_network"] = data.pop("allow_network")
+        
+        return data
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +223,7 @@ class EvalCriterion(BaseModel):
     description: str = ""
     target: Any = Field(None, description="Expected value / pattern / schema / threshold")
     weight: float = Field(1.0, ge=0.0, description="Relative importance (higher = more important)")
+    max_duration_ms: float | None = Field(None, description="Max duration in ms (for PERFORMANCE criterion)")
     script_path: str | None = Field(None, description="Relative path to evaluator script (custom_script type)")
 
     @field_validator("name")
@@ -167,6 +252,8 @@ class EvalCase(BaseModel):
 class EvalSpec(BaseModel):
     """Bundled eval configuration for a tool."""
 
+    enabled: bool = Field(True, description="Whether eval is enabled")
+    criteria: list[EvalCriterion] = Field(default_factory=list, description="Global criteria applied to all cases")
     cases: list[EvalCase] = Field(default_factory=list)
     baseline_pass_rate: float = Field(0.8, ge=0.0, le=1.0, description="Minimum fraction of cases that must pass")
     judge_provider: str = Field("rule_based", description="How to judge complex criteria (rule_based | openai | anthropic)")

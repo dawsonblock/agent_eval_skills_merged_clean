@@ -26,9 +26,16 @@ output:
   type: string
   description: JSON report with 'valid' boolean and list of 'errors'.
 security:
-  allow_file_read: true
-  allow_file_write: false
-  allow_network: false
+  requires_filesystem: true
+  requires_network: false
+  allowed_read_paths:
+    - ./examples/**
+    - ./inputs/**
+  allowed_write_paths: []
+  allowed_extensions:
+    - .json
+  max_file_size_mb: 50
+  max_memory_mb: 256
 sandbox_level: 1
 mcp:
   enabled: true

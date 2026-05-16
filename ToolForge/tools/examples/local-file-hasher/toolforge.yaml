@@ -26,9 +26,14 @@ output:
   type: string
   description: JSON with 'algorithm', 'file', and 'hash' fields.
 security:
-  allow_file_read: true
-  allow_file_write: false
-  allow_network: false
+  requires_filesystem: true
+  requires_network: false
+  allowed_read_paths:
+    - ./**
+  allowed_write_paths: []
+  allowed_extensions: []
+  max_file_size_mb: 100
+  max_memory_mb: 256
 sandbox_level: 1
 mcp:
   enabled: true

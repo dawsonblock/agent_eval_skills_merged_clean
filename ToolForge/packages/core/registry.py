@@ -2,22 +2,30 @@
 ToolRegistry — persistent index of registered ToolForge tools.
 
 Registry file: toolforge_registry.json (in the ToolForge workspace root).
+
+Each entry tracks:
+  - spec: the full ToolSpec
+  - metadata: {status, eval_score, last_run, last_validation, paths, ...}
 """
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Literal
 
 from packages.core.tool_spec import ToolSpec
 
+# Tool lifecycle statuses
+ToolStatus = Literal["generated", "validated", "packaged", "published"]
+
 
 class ToolRegistry:
-    """Load/save a flat JSON registry of tool specs."""
+    """Load/save a flat JSON registry of tool specs with metadata."""
 
     def __init__(self, registry_path: Path) -> None:
         self._path = registry_path
-        self._entries: dict[str, dict] = {}
+        self._entries: dict[str, dict] = {}  # {slug: {spec, metadata}}
         if registry_path.exists():
             self._entries = json.loads(registry_path.read_text(encoding="utf-8"))
 
@@ -25,13 +33,77 @@ class ToolRegistry:
     # Mutation
     # ------------------------------------------------------------------
 
-    def register(self, spec: ToolSpec) -> None:
-        """Add or update a tool spec in the registry."""
-        self._entries[spec.slug] = json.loads(spec.model_dump_json())
+    def register(self, spec: ToolSpec, status: ToolStatus = "generated") -> None:
+        """Add or update a tool spec in the registry with initial metadata."""
+        self._entries[spec.slug] = {
+            "spec": json.loads(spec.model_dump_json()),
+            "metadata": {
+                "status": status,
+                "registered_at": datetime.now(timezone.utc).isoformat(),
+                "eval_score": None,
+                "last_run": None,
+                "last_validation": None,
+                "package_path": None,
+                "mcp_path": None,
+                "skill_path": None,
+            },
+        }
         self._save()
 
+    def set_status(self, slug: str, status: ToolStatus) -> bool:
+        """Update the status of a registered tool. Returns True if updated."""
+        if slug not in self._entries:
+            return False
+        self._entries[slug]["metadata"]["status"] = status
+        self._entries[slug]["metadata"]["status_updated_at"] = datetime.now(timezone.utc).isoformat()
+        self._save()
+        return True
+
+    def set_eval_score(self, slug: str, score: float) -> bool:
+        """Record an eval score for a tool."""
+        if slug not in self._entries:
+            return False
+        self._entries[slug]["metadata"]["eval_score"] = score
+        self._entries[slug]["metadata"]["last_eval"] = datetime.now(timezone.utc).isoformat()
+        self._save()
+        return True
+
+    def set_validation_result(self, slug: str, valid: bool) -> bool:
+        """Record validation result."""
+        if slug not in self._entries:
+            return False
+        meta = self._entries[slug]["metadata"]
+        meta["last_validation"] = datetime.now(timezone.utc).isoformat()
+        meta["validation_passed"] = valid
+        self._save()
+        return True
+
+    def set_package_path(self, slug: str, path: str | Path) -> bool:
+        """Record the path to a packaged distribution."""
+        if slug not in self._entries:
+            return False
+        self._entries[slug]["metadata"]["package_path"] = str(path)
+        self._save()
+        return True
+
+    def set_mcp_path(self, slug: str, path: str | Path) -> bool:
+        """Record the path to an MCP server."""
+        if slug not in self._entries:
+            return False
+        self._entries[slug]["metadata"]["mcp_path"] = str(path)
+        self._save()
+        return True
+
+    def set_skill_path(self, slug: str, path: str | Path) -> bool:
+        """Record the path to a skill."""
+        if slug not in self._entries:
+            return False
+        self._entries[slug]["metadata"]["skill_path"] = str(path)
+        self._save()
+        return True
+
     def deregister(self, slug: str) -> bool:
-        """Remove *slug* from the registry.  Returns True if it existed."""
+        """Remove *slug* from the registry. Returns True if it existed."""
         existed = slug in self._entries
         self._entries.pop(slug, None)
         if existed:
@@ -47,20 +119,42 @@ class ToolRegistry:
         data = self._entries.get(slug)
         if data is None:
             return None
-        return ToolSpec.model_validate(data)
+        spec_data = data.get("spec") or data  # Fallback for old format
+        return ToolSpec.model_validate(spec_data)
+
+    def get_metadata(self, slug: str) -> dict | None:
+        """Return the metadata for a registered tool."""
+        data = self._entries.get(slug)
+        if data is None:
+            return None
+        return data.get("metadata", {})
 
     def list_all(self) -> list[ToolSpec]:
         """Return all registered tool specs."""
-        return [ToolSpec.model_validate(v) for v in self._entries.values()]
+        specs = []
+        for v in self._entries.values():
+            spec_data = v.get("spec") or v  # Fallback for old format
+            specs.append(ToolSpec.model_validate(spec_data))
+        return specs
+
+    def list_by_status(self, status: ToolStatus) -> list[ToolSpec]:
+        """Return specs with a specific status."""
+        specs = []
+        for entry in self._entries.values():
+            if entry.get("metadata", {}).get("status") == status:
+                spec_data = entry.get("spec") or entry
+                specs.append(ToolSpec.model_validate(spec_data))
+        return specs
 
     def search_by_tag(self, tag: str) -> list[ToolSpec]:
         """Return specs whose tags include *tag* (case-insensitive)."""
         tag_lower = tag.lower()
-        return [
-            ToolSpec.model_validate(v)
-            for v in self._entries.values()
-            if any(t.lower() == tag_lower for t in v.get("tags", []))
-        ]
+        specs = []
+        for v in self._entries.values():
+            spec_data = v.get("spec") or v
+            if any(t.lower() == tag_lower for t in spec_data.get("tags", [])):
+                specs.append(ToolSpec.model_validate(spec_data))
+        return specs
 
     def __iter__(self) -> Iterator[ToolSpec]:
         return iter(self.list_all())

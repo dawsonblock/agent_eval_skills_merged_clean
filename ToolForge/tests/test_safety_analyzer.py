@@ -9,7 +9,7 @@ from packages.core.safety_analyzer import SafetyReport, analyze_safety
 from packages.core.tool_spec import SecuritySpec, ToolLanguage, ToolSpec
 
 
-def _make_spec(allow_network: bool = False) -> ToolSpec:
+def _make_spec(requires_network: bool = False) -> ToolSpec:
     return ToolSpec(
         name="Safety Test",
         slug="safety-test",
@@ -17,7 +17,7 @@ def _make_spec(allow_network: bool = False) -> ToolSpec:
         description="Tool for safety testing",
         language=ToolLanguage.PYTHON,
         entry_point="tool.py",
-        security=SecuritySpec(allow_network=allow_network),
+        security=SecuritySpec(requires_network=requires_network),
     )
 
 

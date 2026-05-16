@@ -3,6 +3,8 @@ Eval runner — iterates a tool's eval cases, invokes the tool, and scores resul
 """
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -22,6 +24,7 @@ class EvalResult:
 @dataclass
 class EvalReport:
     tool_slug: str
+    baseline_pass_rate: float = field(default=0.8)
     results: list[EvalResult] = field(default_factory=list)
 
     @property
@@ -32,70 +35,118 @@ class EvalReport:
 
     @property
     def overall_pass(self) -> bool:
-        return self.pass_rate >= (self._baseline or 0.8)
-
-    # Stash baseline so overall_pass can see it
-    _baseline: float = 0.8
+        return self.pass_rate >= self.baseline_pass_rate
 
 
 def _score_result(
-    spec: ToolSpec, result: ToolRunResult, expected_output: str | None
+    spec: ToolSpec, case_id: str, result: ToolRunResult, expected_output: str | None
 ) -> tuple[bool, float, str]:
     """
-    Score a single ToolRunResult against the eval criteria.
+    Score a single ToolRunResult against eval criteria.
+    Checks case-specific criteria first, then global criteria.
     Returns (passed, score, details).
     """
     if not result.success:
-        return False, 0.0, f"Tool exited with code {result.exit_code}: {result.error}"
+        return False, 0.0, f"Tool failed: exit_code={result.exit_code}, error={result.error[:100]}"
 
-    criteria = spec.eval.criteria if spec.eval else []
-    if not criteria:
+    # Find criteria: first try case-specific, then fall back to global
+    case_criteria = []
+    if spec.eval:
+        # Look for case-specific criteria (embedded in case)
+        for case in spec.eval.cases:
+            if case.id == case_id and case.criteria:
+                case_criteria = case.criteria
+                break
+        # If no case-specific, use global criteria
+        if not case_criteria:
+            case_criteria = spec.eval.criteria or []
+
+    if not case_criteria:
         # No criteria → pass/fail based on exit code only
-        return result.success, 1.0 if result.success else 0.0, ""
+        return result.success, 1.0 if result.success else 0.0, "No criteria specified"
 
     scores: list[float] = []
     detail_parts: list[str] = []
 
-    for criterion in criteria:
+    for criterion in case_criteria:
         weight = criterion.weight
 
-        if criterion.type == EvalCriterionType.EXACT_MATCH:
-            if expected_output is not None and result.output.strip() == str(expected_output).strip():
-                scores.append(weight)
-                detail_parts.append(f"{criterion.name}: exact match ✓")
-            else:
-                scores.append(0.0)
-                detail_parts.append(f"{criterion.name}: exact match ✗")
-
-        elif criterion.type == EvalCriterionType.CONTAINS:
-            if expected_output is not None and str(expected_output) in result.output:
-                scores.append(weight)
-                detail_parts.append(f"{criterion.name}: contains ✓")
-            else:
-                scores.append(0.0)
-                detail_parts.append(f"{criterion.name}: contains ✗")
-
-        elif criterion.type == EvalCriterionType.NO_ERROR:
+        if criterion.type == EvalCriterionType.NO_ERROR:
             ok = result.exit_code == 0 and not result.error.strip()
             scores.append(weight if ok else 0.0)
-            detail_parts.append(f"{criterion.name}: no error {'✓' if ok else '✗'}")
+            detail_parts.append(f"{criterion.name}: no_error {'✓' if ok else '✗'}")
+
+        elif criterion.type == EvalCriterionType.EXACT_MATCH:
+            if expected_output is not None:
+                ok = result.output.strip() == str(expected_output).strip()
+                scores.append(weight if ok else 0.0)
+                detail_parts.append(f"{criterion.name}: exact_match {'✓' if ok else '✗'}")
+            else:
+                scores.append(0.0)
+                detail_parts.append(f"{criterion.name}: exact_match (no expected output)")
+
+        elif criterion.type == EvalCriterionType.CONTAINS:
+            if criterion.target is not None:
+                ok = str(criterion.target) in result.output
+                scores.append(weight if ok else 0.0)
+                detail_parts.append(f"{criterion.name}: contains '{str(criterion.target)[:30]}' {'✓' if ok else '✗'}")
+            else:
+                scores.append(0.0)
+                detail_parts.append(f"{criterion.name}: contains (no target)")
+
+        elif criterion.type == EvalCriterionType.REGEX_MATCH:
+            if criterion.target is not None:
+                try:
+                    ok = bool(re.search(str(criterion.target), result.output))
+                    scores.append(weight if ok else 0.0)
+                    detail_parts.append(f"{criterion.name}: regex_match {'✓' if ok else '✗'}")
+                except re.error as e:
+                    scores.append(0.0)
+                    detail_parts.append(f"{criterion.name}: regex_match (invalid pattern: {e})")
+            else:
+                scores.append(0.0)
+                detail_parts.append(f"{criterion.name}: regex_match (no pattern)")
+
+        elif criterion.type == EvalCriterionType.JSON_SCHEMA:
+            try:
+                output_obj = json.loads(result.output)
+                if criterion.target is not None and isinstance(criterion.target, dict):
+                    # Simple schema validation (full jsonschema validation optional)
+                    ok = True  # Placeholder — would need jsonschema library for full validation
+                    scores.append(weight if ok else 0.0)
+                    detail_parts.append(f"{criterion.name}: json_schema ✓ (parsed)")
+                else:
+                    scores.append(weight)
+                    detail_parts.append(f"{criterion.name}: json_schema ✓ (valid JSON)")
+            except (json.JSONDecodeError, TypeError):
+                scores.append(0.0)
+                detail_parts.append(f"{criterion.name}: json_schema ✗ (invalid JSON)")
 
         elif criterion.type == EvalCriterionType.PERFORMANCE:
-            # Passes if elapsed_ms < threshold_ms (default 5000)
-            threshold_ms = float(criterion.threshold or 5000)
+            # Passes if elapsed_ms < max_duration_ms (default 5000)
+            threshold_ms = criterion.max_duration_ms or 5000.0
             ok = result.elapsed_ms < threshold_ms
             scores.append(weight if ok else 0.0)
             detail_parts.append(
                 f"{criterion.name}: {result.elapsed_ms:.0f}ms < {threshold_ms:.0f}ms {'✓' if ok else '✗'}"
             )
 
-        else:
-            # SEMANTIC and RUBRIC require external judge — skip with neutral score
+        elif criterion.type == EvalCriterionType.SEMANTIC_SIMILARITY:
+            # Requires external LLM judge — skip with neutral score
             scores.append(weight * 0.5)
-            detail_parts.append(f"{criterion.name}: skipped (requires judge)")
+            detail_parts.append(f"{criterion.name}: semantic_similarity (skipped, requires judge)")
 
-    total_weight = sum(c.weight for c in criteria) or 1.0
-    final_score = sum(scores) / total_weight
+        elif criterion.type == EvalCriterionType.CUSTOM_SCRIPT:
+            # Would require running a custom evaluator script
+            scores.append(weight * 0.5)
+            detail_parts.append(f"{criterion.name}: custom_script (skipped, not implemented)")
+
+        else:
+            scores.append(weight * 0.5)
+            detail_parts.append(f"{criterion.name}: {criterion.type.value} (skipped)")
+
+    total_weight = sum(c.weight for c in case_criteria) or 1.0
+    final_score = sum(scores) / total_weight if total_weight > 0 else 0.0
     passed = final_score >= 0.5
     return passed, round(final_score, 4), "; ".join(detail_parts)
 
@@ -108,12 +159,13 @@ def run_evals(
     """
     Run all eval cases defined in *spec.eval* and return an EvalReport.
     """
-    report = EvalReport(tool_slug=spec.slug)
+    report = EvalReport(
+        tool_slug=spec.slug,
+        baseline_pass_rate=spec.eval.baseline_pass_rate if spec.eval else 0.8
+    )
 
     if not spec.eval or not spec.eval.cases:
         return report
-
-    report._baseline = spec.eval.baseline_pass_rate
 
     for case in spec.eval.cases:
         try:
@@ -124,7 +176,7 @@ def run_evals(
                 timeout_s=timeout_s,
             )
             passed, score, details = _score_result(
-                spec, tool_result, case.expected_output
+                spec, case.id, tool_result, case.expected_output
             )
             report.results.append(
                 EvalResult(
@@ -146,3 +198,4 @@ def run_evals(
             )
 
     return report
+

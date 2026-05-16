@@ -39,14 +39,15 @@ def test_tool_language_values() -> None:
 
 
 def test_sandbox_level_ordering() -> None:
-    assert SandboxLevel.NONE < SandboxLevel.DOCKER_READONLY
+    assert SandboxLevel.NONE < SandboxLevel.DOCKER_NO_NETWORK
 
 
 def test_eval_criterion_type_values() -> None:
     types = {e.value for e in EvalCriterionType}
     assert "exact_match" in types
     assert "no_error" in types
-    assert "semantic" in types
+    assert "semantic_similarity" in types
+    assert "performance" in types
 
 
 # ---------------------------------------------------------------------------

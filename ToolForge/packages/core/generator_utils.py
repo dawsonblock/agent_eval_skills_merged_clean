@@ -42,7 +42,7 @@ def write_rendered(output_path: Path, content: str, overwrite: bool = False) -> 
     Returns True if written, False if skipped (already exists + overwrite=False).
     """
     if output_path.exists() and not overwrite:
-        return False
+        raise FileExistsError(f"{output_path} already exists; use overwrite=True to replace it")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(content, encoding="utf-8")
     return True

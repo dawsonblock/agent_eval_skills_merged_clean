@@ -43,4 +43,6 @@ def validate_spec_dict(data: dict[str, Any]) -> list[str]:
         for e in exc.errors():
             loc = " -> ".join(str(x) for x in e["loc"])
             errors.append(f"[{loc}] {e['msg']}")
+    if errors:
+        raise ValueError("Spec validation failed:\n" + "\n".join(errors))
     return errors

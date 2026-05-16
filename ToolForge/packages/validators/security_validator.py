@@ -62,7 +62,7 @@ def validate_security(spec: ToolSpec, policy_path: Path | None = None) -> list[s
     # Secrets in allowed_paths
     fs_policy = policy.get("filesystem", {})
     blocked_paths: list[str] = fs_policy.get("deny_system_paths", [])
-    for allowed in spec.security.allowed_paths:
+    for allowed in (spec.security.allowed_read_paths or []) + (spec.security.allowed_write_paths or []):
         for blocked in blocked_paths:
             if allowed.startswith(blocked):
                 violations.append(

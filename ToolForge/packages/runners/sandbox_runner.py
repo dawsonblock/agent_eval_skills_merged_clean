@@ -125,6 +125,30 @@ def _run_docker(
     image: str,
     start: float,
 ) -> SandboxResult:
+    """
+    Run a command inside a Docker container.
+    Maps host paths to container mount points and replaces absolute interpreters.
+    """
+    # Normalize cmd paths: replace host Python paths and tool paths
+    norm_cmd: list[str] = []
+    for arg in cmd:
+        if arg.startswith("/") and arg.endswith(".py"):
+            # Tool script: if in cwd, map to /workspace
+            if cwd and arg.startswith(cwd):
+                rel_path = arg[len(cwd):].lstrip("/")
+                norm_cmd.append(f"/workspace/{rel_path}")
+            else:
+                norm_cmd.append(arg)
+        elif arg.startswith("/usr/local/bin/python") or arg.startswith("/usr/bin/python"):
+            # Python interpreter: normalize to /usr/bin/python3 in container
+            norm_cmd.append("/usr/bin/python3")
+        elif arg.startswith("/") and cwd and arg.startswith(cwd):
+            # Any path within cwd: map to /workspace
+            rel_path = arg[len(cwd):].lstrip("/")
+            norm_cmd.append(f"/workspace/{rel_path}")
+        else:
+            norm_cmd.append(arg)
+
     docker_cmd = [
         "docker", "run",
         "--rm",
@@ -137,7 +161,7 @@ def _run_docker(
         docker_cmd.append("--read-only")
 
     if cwd:
-        docker_cmd += ["-v", f"{cwd}:/workspace:ro", "-w", "/workspace"]
+        docker_cmd += ["-v", f"{cwd}:/workspace", "-w", "/workspace"]
 
     # Pass env vars explicitly (secrets already stripped)
     safe_env = _minimal_env(env)
@@ -145,7 +169,7 @@ def _run_docker(
         docker_cmd += ["-e", f"{k}={v}"]
 
     docker_cmd.append(image)
-    docker_cmd.extend(cmd)
+    docker_cmd.extend(norm_cmd)
 
     try:
         proc = subprocess.run(

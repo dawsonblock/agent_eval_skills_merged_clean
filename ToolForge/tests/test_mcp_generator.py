@@ -18,7 +18,7 @@ def _make_spec(language: ToolLanguage = ToolLanguage.PYTHON) -> ToolSpec:
         language=language,
         entry_point="tool.py",
         parameters=[ParameterSpec(name="query", type="string", description="Query input")],
-        mcp=MCPSpec(enabled=True, transport="stdio"),
+        mcp=MCPSpec(enabled=True, transport="stdio", server_language=language),
     )
 
 

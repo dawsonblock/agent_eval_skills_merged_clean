@@ -18,6 +18,8 @@ from packages.core.tool_spec import (
     EvalSpec,
     MCPSpec,
     ParameterSpec,
+    PrivacyLevel,
+    SecuritySpec,
     SkillSpec,
     ToolLanguage,
     ToolSpec,
@@ -131,7 +133,41 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
             )
         ]
 
-        # Eval spec with one smoke-test case
+        # Infer if tool needs filesystem/network access from prompt
+        requires_filesystem = any(kw in prompt.lower() for kw in _FILE_KEYWORDS)
+        requires_network = any(kw in prompt.lower() for kw in _WEB_KEYWORDS)
+
+        # Build eval cases with 3 defaults: success, invalid input, safety boundary
+        eval_cases = [
+            EvalCase(
+                id="case-01-success",
+                description="Basic success case",
+                inputs={"input": "test_data"},
+                expected_output=None,
+                tags=["smoke"],
+            ),
+            EvalCase(
+                id="case-02-invalid-input",
+                description="Invalid or empty input",
+                inputs={"input": ""},
+                expected_output=None,
+                tags=["edge-case"],
+            ),
+        ]
+        
+        # Add safety-boundary case if filesystem access is involved
+        if requires_filesystem:
+            eval_cases.append(
+                EvalCase(
+                    id="case-03-safety-boundary",
+                    description="Path traversal attempt (should be blocked)",
+                    inputs={"input": "../../../etc/passwd"},
+                    expected_output=None,
+                    tags=["safety"],
+                )
+            )
+
+        # Eval spec with criteria
         eval_spec = EvalSpec(
             enabled=True,
             baseline_pass_rate=0.8,
@@ -143,15 +179,19 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                     weight=1.0,
                 )
             ],
-            cases=[
-                EvalCase(
-                    id="smoke-01",
-                    description="Basic smoke test",
-                    inputs={"input": "test"},
-                    expected_output=None,
-                    tags=["smoke"],
-                )
-            ],
+            cases=eval_cases,
+        )
+
+        # Security spec with inferred permissions
+        security_spec = SecuritySpec(
+            requires_filesystem=requires_filesystem,
+            requires_network=requires_network,
+            required_capabilities=[],
+            allowed_read_paths=["./examples/**", "./inputs/**"] if requires_filesystem else [],
+            allowed_write_paths=["./outputs/**"] if requires_filesystem else [],
+            allowed_extensions=[".csv", ".json", ".txt"] if requires_filesystem else [],
+            max_file_size_mb=50,
+            privacy_level=PrivacyLevel.INTERNAL,
         )
 
         return ToolSpec(
@@ -164,11 +204,12 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
             language=language,
             entry_point="tool.py" if language == ToolLanguage.PYTHON else "index.ts",
             parameters=params,
+            security=security_spec,
             mcp=MCPSpec(enabled=True),
             skill=SkillSpec(enabled=True, category=category),
             eval=eval_spec,
             source_prompt=prompt,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc).isoformat(),
         )
 
 
