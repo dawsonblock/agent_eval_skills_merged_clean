@@ -24,6 +24,7 @@ from rich.console import Console
 from rich.table import Table
 
 console = Console()
+err_console = Console(stderr=True)
 
 # ---------------------------------------------------------------------------
 # Workspace helpers
@@ -316,7 +317,7 @@ def run(slug: str, inputs: tuple[str, ...], timeout: float) -> None:
     if result.success:
         console.print(result.output)
     else:
-        console.print(f"[red]Error (exit {result.exit_code}):[/] {result.error}", err=True)
+        err_console.print(f"[red]Error (exit {result.exit_code}):[/] {result.error}")
         sys.exit(result.exit_code)
 
 
@@ -469,6 +470,47 @@ def install(skill_path: str) -> None:
     for p in created:
         console.print(f"  [green]+[/] {p}")
     console.print("[bold green]✓ Skill installed.[/]")
+
+
+# ---------------------------------------------------------------------------
+# doctor
+# ---------------------------------------------------------------------------
+
+
+@cli.command()
+def doctor() -> None:
+    """Check ToolForge environment and dependencies."""
+    import importlib
+
+    checks: list[tuple[str, str]] = [
+        ("Python ≥ 3.9", ""),
+        ("pydantic", "pydantic"),
+        ("click", "click"),
+        ("jinja2", "jinja2"),
+        ("ruamel.yaml", "ruamel.yaml"),
+        ("rich", "rich"),
+        ("jsonschema", "jsonschema"),
+        ("pytest", "pytest"),
+    ]
+    all_ok = True
+    for label, module in checks:
+        if not module:
+            ok = sys.version_info >= (3, 9)
+        else:
+            try:
+                importlib.import_module(module)
+                ok = True
+            except ImportError:
+                ok = False
+        status = "[green]✓[/]" if ok else "[red]✗[/]"
+        console.print(f"  {status} {label}")
+        if not ok:
+            all_ok = False
+    if all_ok:
+        console.print("\n[bold green]ToolForge environment OK.[/]")
+    else:
+        console.print("\n[bold red]Some checks failed.[/]")
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

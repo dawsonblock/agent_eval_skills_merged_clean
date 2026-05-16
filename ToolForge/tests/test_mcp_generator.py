@@ -50,8 +50,8 @@ def test_dockerfile_always_created(tmp_path: Path) -> None:
     assert "Dockerfile" in names
 
 
-def test_output_under_slug_dir(tmp_path: Path) -> None:
+def test_output_under_mcp_subdir(tmp_path: Path) -> None:
     spec = _make_spec()
     created = generate_mcp_server(spec, tmp_path)
     for p in created:
-        assert spec.slug in str(p)
+        assert "mcp" in p.parts, f"Expected 'mcp' subdir in path: {p}"

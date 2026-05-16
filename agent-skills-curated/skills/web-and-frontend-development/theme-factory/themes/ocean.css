@@ -1,0 +1,36 @@
+/* Ocean — cool blues and teals */
+:root {
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 93%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 93%;
+  --muted-foreground: 215 20% 45%;
+  --accent: 174 72% 40%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 88%;
+  --input: 214 32% 88%;
+  --ring: 199 89% 48%;
+  --radius: 0.5rem;
+}
+.dark {
+  --background: 222 47% 8%;
+  --foreground: 210 40% 96%;
+  --primary: 199 89% 55%;
+  --primary-foreground: 222 47% 8%;
+  --secondary: 217 33% 16%;
+  --secondary-foreground: 210 40% 96%;
+  --muted: 217 33% 16%;
+  --muted-foreground: 215 20% 60%;
+  --accent: 174 72% 45%;
+  --accent-foreground: 222 47% 8%;
+  --destructive: 0 63% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 199 89% 55%;
+}

@@ -28,7 +28,7 @@ def generate_mcp_server(spec: ToolSpec, output_root: Path, overwrite: bool = Fal
     if not spec.mcp.enabled:
         return []
 
-    mcp_dir = output_root / spec.slug
+    mcp_dir = output_root / "mcp"
     mcp_dir.mkdir(parents=True, exist_ok=True)
 
     ctx = _ctx(spec)
@@ -42,7 +42,7 @@ def generate_mcp_server(spec: ToolSpec, output_root: Path, overwrite: bool = Fal
         ]
     else:  # Python default
         # Copy tool.py stub too so server.py can import from it
-        tool_src = output_root / spec.slug / "tool.py"
+        tool_src = output_root / "tool.py"
         if tool_src.exists():
             import shutil
             dst = mcp_dir / "tool.py"

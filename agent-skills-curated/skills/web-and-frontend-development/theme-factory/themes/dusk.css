@@ -1,0 +1,36 @@
+/* Dusk — warm purples and rose */
+:root {
+  --background: 300 20% 98%;
+  --foreground: 285 25% 12%;
+  --primary: 272 68% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 300 20% 93%;
+  --secondary-foreground: 285 25% 12%;
+  --muted: 300 20% 93%;
+  --muted-foreground: 285 10% 48%;
+  --accent: 340 82% 57%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 300 18% 87%;
+  --input: 300 18% 87%;
+  --ring: 272 68% 50%;
+  --radius: 0.5rem;
+}
+.dark {
+  --background: 285 25% 8%;
+  --foreground: 300 20% 96%;
+  --primary: 272 68% 62%;
+  --primary-foreground: 285 25% 8%;
+  --secondary: 285 20% 15%;
+  --secondary-foreground: 300 20% 96%;
+  --muted: 285 20% 15%;
+  --muted-foreground: 285 10% 62%;
+  --accent: 340 82% 63%;
+  --accent-foreground: 285 25% 8%;
+  --destructive: 0 63% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 285 20% 19%;
+  --input: 285 20% 19%;
+  --ring: 272 68% 62%;
+}

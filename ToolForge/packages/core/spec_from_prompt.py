@@ -116,22 +116,54 @@ def _extract_tags(prompt: str) -> list[str]:
 class RuleBasedSpecGenerator(SpecGeneratorProvider):
     """Heuristic spec generator — no external calls required."""
 
+    # Keyword-based name/slug override rules: (keywords_any, slug, human_name)
+    _SLUG_OVERRIDES: list[tuple[set[str], str, str]] = [
+        ({"csv", "comma-separated"}, "csv-cleaner", "CSV Cleaner"),
+        ({"json", "schema", "validate"}, "json-schema-validator", "JSON Schema Validator"),
+        ({"hash", "sha256", "checksum"}, "local-file-hasher", "Local File Hasher"),
+        ({"fetch", "scrape", "crawl"}, "web-fetcher", "Web Fetcher"),
+    ]
+
     def generate(self, prompt: str) -> ToolSpec:
-        name = _extract_name(prompt)
-        slug = _to_slug(name)
+        lower_prompt = prompt.lower()
+
+        # Apply keyword-based overrides before generic extraction
+        name: str | None = None
+        slug: str | None = None
+        for keywords, rule_slug, rule_name in self._SLUG_OVERRIDES:
+            if any(kw in lower_prompt for kw in keywords):
+                slug = rule_slug
+                name = rule_name
+                break
+
+        if name is None:
+            name = _extract_name(prompt)
+        if slug is None:
+            slug = _to_slug(name)
+
         language = _detect_language(prompt)
         category = _infer_category(prompt)
         tags = _extract_tags(prompt)
 
-        # Generate a minimal ParameterSpec from keywords
-        params: list[ParameterSpec] = [
-            ParameterSpec(
-                name="input",
-                type="string",
-                description="Primary input for the tool",
-                required=True,
-            )
-        ]
+        # Generate parameters — CSV cleaner uses inline content (not file path)
+        if slug == "csv-cleaner":
+            params: list[ParameterSpec] = [
+                ParameterSpec(
+                    name="input",
+                    type="string",
+                    description="CSV content to clean (inline string, not a file path)",
+                    required=True,
+                )
+            ]
+        else:
+            params = [
+                ParameterSpec(
+                    name="input",
+                    type="string",
+                    description="Primary input for the tool",
+                    required=True,
+                )
+            ]
 
         # Infer if tool needs filesystem/network access from prompt
         requires_filesystem = any(kw in prompt.lower() for kw in _FILE_KEYWORDS)
