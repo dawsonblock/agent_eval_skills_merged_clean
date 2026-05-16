@@ -582,6 +582,8 @@ def doctor() -> None:
     """Check ToolForge environment and dependencies."""
     import importlib
 
+    from packages.core.repo_hygiene import scan_repo_hygiene
+
     checks: list[tuple[str, str]] = [
         ("Python ≥ 3.9", ""),
         ("pydantic", "pydantic"),
@@ -606,6 +608,20 @@ def doctor() -> None:
         console.print(f"  {status} {label}")
         if not ok:
             all_ok = False
+
+    workspace_root = _find_workspace_root()
+    hygiene_root = workspace_root / "ToolForge" if (workspace_root / "ToolForge").exists() else workspace_root
+    hygiene_report = scan_repo_hygiene(hygiene_root)
+    if hygiene_report.has_issues:
+        all_ok = False
+        console.print("  [red]✗[/] repository hygiene")
+        for issue in hygiene_report.issues:
+            location = f" {issue.path}"
+            if issue.line is not None:
+                location += f":{issue.line}"
+            console.print(f"    [red]{issue.kind}:{location}[/] {issue.message}")
+    else:
+        console.print("  [green]✓[/] repository hygiene")
     if all_ok:
         console.print("\n[bold green]ToolForge environment OK.[/]")
     else:

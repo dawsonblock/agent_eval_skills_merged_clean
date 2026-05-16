@@ -27,6 +27,7 @@ from packages.core.tool_spec import ToolSpec
 # Files/patterns to exclude from package
 _EXCLUDE_PATTERNS = frozenset({
     ".coverage",
+    ".pytest_report.json",
     ".env", ".env.local", ".env.*.local",
     "*.pem", "*.key", "*.p12", "*.pfx", "*.crt",
     "credentials*", "token*", "secret*", "password*",
@@ -34,7 +35,7 @@ _EXCLUDE_PATTERNS = frozenset({
     ".git", ".gitignore", ".DS_Store",
     "*.pyc", "*.pyo",
     "dist", "build", "*.egg-info",
-    "runs", "logs", "outputs", ".venv", "venv",
+    "runs", "logs", "outputs", "htmlcov", ".venv", "venv",
 })
 
 _EXCLUDE_SUFFIXES = frozenset({".pyc", ".pyo", ".env"})
@@ -44,7 +45,7 @@ def _should_exclude(file_path: Path) -> bool:
     """Check if a file should be excluded from the package."""
     name = file_path.name
     rel_path = str(file_path)
-    
+
     # Check exact matches and wildcards
     if name in _EXCLUDE_PATTERNS:
         return True
@@ -62,11 +63,11 @@ def _should_exclude(file_path: Path) -> bool:
         else:
             if pattern in rel_path:
                 return True
-    
+
     # Check suffixes
     if file_path.suffix in _EXCLUDE_SUFFIXES:
         return True
-    
+
     return False
 
 
@@ -152,16 +153,16 @@ def build_package(
                     continue
 
                 arc_name = str(file_path.relative_to(tool_dir))
-                
+
                 # Compute SHA256
                 sha256_hash = hashlib.sha256()
                 with open(file_path, "rb") as f:
                     for chunk in iter(lambda: f.read(4096), b""):
                         sha256_hash.update(chunk)
-                
+
                 manifest["files"].append(arc_name)
                 manifest["sha256"][arc_name] = sha256_hash.hexdigest()
-                
+
                 temp_files.append((file_path, arc_name))
 
         # Write manifest

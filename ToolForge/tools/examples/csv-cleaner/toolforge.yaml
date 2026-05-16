@@ -1,11 +1,11 @@
 name: CSV Cleaner
 slug: csv-cleaner
 version: "0.1.0"
-description: Cleans a CSV file by removing blank rows, stripping whitespace, and deduplicating entries.
+description: Cleans CSV files by normalizing headers, trimming cells, removing empty rows, and writing a cleaned CSV.
 long_description: |
-  csv-cleaner reads a CSV from the given path (or stdin), removes fully blank rows,
-  strips leading/trailing whitespace from all cells, and removes duplicate rows.
-  The cleaned CSV is written to stdout or an optional output path.
+  csv-cleaner reads a CSV file from disk, normalizes headers, trims whitespace
+  in every cell, removes fully empty rows, and writes the cleaned CSV to an
+  output path.
 tags: [csv, file, clean, deduplicate, text]
 author: ToolForge
 language: python
@@ -15,15 +15,15 @@ dependencies:
 parameters:
   - name: input_path
     type: string
-    description: Path to the input CSV file.
+    description: Path to the input CSV file inside the allowed workspace.
     required: true
   - name: output_path
     type: string
-    description: Path to write cleaned CSV (optional; defaults to stdout).
+    description: Optional path to write the cleaned CSV.
     required: false
 output:
-  type: string
-  description: Cleaned CSV content (if no output_path given) or confirmation message.
+  type: object
+  description: JSON summary describing the cleaned CSV artifact.
 security:
   requires_filesystem: true
   requires_network: false
@@ -34,7 +34,6 @@ security:
     - ./outputs/**
   allowed_extensions:
     - .csv
-    - .txt
   max_file_size_mb: 50
   max_memory_mb: 256
 sandbox_level: 1
@@ -54,33 +53,43 @@ eval:
       weight: 1.0
     - name: output_contains_csv
       type: contains
-      description: Output contains CSV header row
+      description: Output contains the cleaned_path field
       weight: 0.5
   cases:
-    - id: smoke-01
+    - id: case-01-success
       description: Basic smoke test with tiny CSV
       inputs:
         input_path: examples/input.csv
-      expected_output: "name,age"
+      expected_success: true
+      expected_output_contains: cleaned_path
+      expected_files:
+        - path: outputs/cleaned.csv
+          should_exist: true
       tags: [smoke]
 
     - id: case-02-invalid-input
       description: Invalid CSV file (should fail gracefully)
       inputs:
-        input_path: /nonexistent/input.csv
-      expected_error: "File not found"
+        input_path: examples/missing.csv
+      expected_success: false
+      expected_error_contains: not found
       tags: [invalid-input, expected-failure]
 
     - id: case-03-safety-boundary
       description: Path traversal attempt (should be blocked)
       inputs:
         input_path: ../../../etc/passwd
-      expected_error: "path.*not.*allowed|Path violation"
+      expected_success: false
+      expected_error_contains: Path validation failed
       tags: [safety-boundary, expected-failure]
 
     - id: case-04-empty-file
       description: Empty CSV file
       inputs:
         input_path: examples/empty.csv
-      expected_output: ""
+        output_path: outputs/empty_cleaned.csv
+      expected_success: true
+      expected_files:
+        - path: outputs/empty_cleaned.csv
+          should_exist: true
       tags: [empty-file]

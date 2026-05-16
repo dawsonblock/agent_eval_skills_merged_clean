@@ -1,11 +1,10 @@
 name: JSON Schema Validator
 slug: json-schema-validator
 version: "0.1.0"
-description: Validates a JSON file or string against a JSON Schema and reports errors.
+description: Validates JSON files against a JSON Schema and reports a structured result.
 long_description: |
-  json-schema-validator accepts a JSON data payload and a JSON Schema, validates
-  the data against the schema, and returns a structured report of any validation
-  errors. Supports both inline JSON strings and file paths.
+  json-schema-validator reads a JSON data file and a JSON Schema from disk,
+  validates the data against the schema, and returns a structured JSON report.
 tags: [json, validation, schema, lint]
 author: ToolForge
 language: python
@@ -14,17 +13,17 @@ dependencies:
   - "python>=3.12"
   - "jsonschema>=4.0"
 parameters:
-  - name: data
+  - name: data_path
     type: string
-    description: JSON string or path to a JSON file to validate.
+    description: Path to the JSON data file to validate.
     required: true
-  - name: schema
+  - name: schema_path
     type: string
-    description: JSON Schema string or path to a JSON Schema file.
+    description: Path to the JSON Schema file.
     required: true
 output:
-  type: string
-  description: JSON report with 'valid' boolean and list of 'errors'.
+  type: object
+  description: JSON report with valid boolean and list of errors.
 security:
   requires_filesystem: true
   requires_network: false
@@ -53,20 +52,29 @@ eval:
       weight: 1.0
     - name: valid_json_output
       type: contains
-      description: Output contains 'valid' key
+      description: Output contains the valid key
       weight: 0.5
   cases:
-    - id: smoke-valid
+    - id: case-01-valid
       description: Valid JSON against its schema
       inputs:
-        data: '{"name": "Alice", "age": 30}'
-        schema: '{"type": "object", "properties": {"name": {"type": "string"}, "age": {"type": "integer"}}, "required": ["name"]}'
-      expected_output: '"valid": true'
+        data_path: examples/data_valid.json
+        schema_path: examples/schema.json
+      expected_success: true
+      expected_output_contains: '"valid": true'
+      expected_files:
+        - path: outputs/validation_report.json
+          should_exist: true
       tags: [smoke]
-    - id: smoke-invalid
+    - id: case-02-invalid
       description: Invalid JSON missing required field
       inputs:
-        data: '{"age": 30}'
-        schema: '{"type": "object", "required": ["name"]}'
-      expected_output: '"valid": false'
+        data_path: examples/data_invalid.json
+        schema_path: examples/schema.json
+        output_path: outputs/validation_invalid_report.json
+      expected_success: true
+      expected_output_contains: '"valid": false'
+      expected_files:
+        - path: outputs/validation_invalid_report.json
+          should_exist: true
       tags: [smoke]

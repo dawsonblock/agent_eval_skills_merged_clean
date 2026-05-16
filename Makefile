@@ -48,6 +48,10 @@ check: lint typecheck test  ## lint + typecheck + test (full CI gate)
 demo:           ## Run the end-to-end CSV-cleaner proof path in a fresh tmp dir
 	@bash scripts/demo_csv_cleaner.sh
 
+.PHONY: demo-csv-tool
+demo-csv-tool:  ## Alias for the CSV proof-path demo
+	@bash scripts/demo_csv_cleaner.sh
+
 # ── toolforge commands ───────────────────────
 
 .PHONY: doctor
