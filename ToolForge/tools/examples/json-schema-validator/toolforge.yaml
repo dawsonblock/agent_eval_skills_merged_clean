@@ -11,8 +11,8 @@ author: ToolForge
 language: python
 entry_point: tool.py
 dependencies:
-  - python: ">=3.12"
-  - jsonschema: ">=4.0"
+  - "python>=3.12"
+  - "jsonschema>=4.0"
 parameters:
   - name: data
     type: string

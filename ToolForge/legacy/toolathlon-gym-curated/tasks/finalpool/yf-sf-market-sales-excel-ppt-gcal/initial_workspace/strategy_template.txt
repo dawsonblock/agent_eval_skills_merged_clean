@@ -1,7 +1,0 @@
-Strategic Analysis Template:
-- Market conditions summary
-- Internal performance metrics
-- Cross-reference analysis
-- Risk assessment
-- Opportunity identification
-- Recommended actions

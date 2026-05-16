@@ -11,7 +11,7 @@ author: ToolForge
 language: python
 entry_point: tool.py
 dependencies:
-  - python: ">=3.12"
+  - "python>=3.12"
 parameters:
   - name: file_path
     type: string

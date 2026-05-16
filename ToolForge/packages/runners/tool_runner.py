@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from packages.core.tool_spec import ToolSpec
+from packages.core.path_safety import validate_path, PathViolationError
 from packages.runners.sandbox_runner import SandboxResult, run_in_sandbox
 
 
@@ -58,6 +59,27 @@ def run_tool(
     # Pass inputs via environment variable to avoid shell injection
     run_env = dict(env or {})
     run_env["TOOLFORGE_INPUTS"] = json.dumps(inputs)
+
+    # Validate file paths before execution (path safety enforcement)
+    for param_name, param_value in inputs.items():
+        if isinstance(param_value, str) and (param_name.endswith("_path") or param_name.endswith("_file")):
+            # This is a file path parameter — validate it
+            allowed_read = getattr(spec.security, "allowed_read_paths", [])
+            allowed_write = getattr(spec.security, "allowed_write_paths", [])
+            
+            # Guess if this is a read or write path based on context
+            # For now, check against both lists
+            allowed = allowed_read + allowed_write if (allowed_read or allowed_write) else None
+            try:
+                validate_path(param_value, allowed, str(tool_dir))
+            except PathViolationError as e:
+                return ToolRunResult(
+                    output="",
+                    error=f"Path validation failed: {e}",
+                    elapsed_ms=0.0,
+                    exit_code=1,
+                )
+
 
     start = time.monotonic()
     result: SandboxResult = run_in_sandbox(

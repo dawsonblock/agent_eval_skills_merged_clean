@@ -11,7 +11,7 @@ author: ToolForge
 language: python
 entry_point: tool.py
 dependencies:
-  - python: ">=3.12"
+  - "python>=3.12"
 parameters:
   - name: input_path
     type: string
@@ -63,3 +63,24 @@ eval:
         input_path: examples/input.csv
       expected_output: "name,age"
       tags: [smoke]
+
+    - id: case-02-invalid-input
+      description: Invalid CSV file (should fail gracefully)
+      inputs:
+        input_path: /nonexistent/input.csv
+      expected_error: "File not found"
+      tags: [invalid-input, expected-failure]
+
+    - id: case-03-safety-boundary
+      description: Path traversal attempt (should be blocked)
+      inputs:
+        input_path: ../../../etc/passwd
+      expected_error: "path.*not.*allowed|Path violation"
+      tags: [safety-boundary, expected-failure]
+
+    - id: case-04-empty-file
+      description: Empty CSV file
+      inputs:
+        input_path: examples/empty.csv
+      expected_output: ""
+      tags: [empty-file]

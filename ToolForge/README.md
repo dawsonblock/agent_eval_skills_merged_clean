@@ -144,16 +144,6 @@ cd tools/examples/csv-cleaner && pytest tests/ -v
 
 ---
 
-## Security
-
-- Inputs passed via `TOOLFORGE_INPUTS` env var — no shell injection via CLI args
-- Env vars matching `*_KEY`, `*_SECRET`, `*_TOKEN`, `*_PASSWORD` are stripped before subprocess
-- Safety analyzer scans for hardcoded secrets, path traversal, and dangerous system calls
-- Progressive Docker sandbox isolation (levels 0–4) for untrusted tools
-- OWASP Top 10 compliance verified
-
----
-
 ## License
 
 MIT

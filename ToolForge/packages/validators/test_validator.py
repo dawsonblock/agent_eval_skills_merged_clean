@@ -8,6 +8,8 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from packages.core.safety_analyzer import analyze_safety
+from packages.core.tool_spec import ToolSpec
 
 
 @dataclass
@@ -67,6 +69,17 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         report.failures.append({"message": "pytest not found in current environment"})
         return report
 
+    # Check if pytest failed (returncode != 0)
+    if result.returncode != 0:
+        # Only treat as test failure if we couldn't parse the JSON report
+        # (pytest itself returning nonzero means tests failed, which is still a failure)
+        if not json_output.exists():
+            report.errors = 1
+            report.failures.append({
+                "message": f"pytest exited with code {result.returncode}",
+                "output": result.stdout + result.stderr,
+            })
+
     # Parse JSON report if available
     if json_output.exists():
         try:
@@ -96,5 +109,33 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
                 report.passed = int(m_passed.group(1))
             if m_failed:
                 report.failed = int(m_failed.group(1))
+
+def run_safety_checks(spec: ToolSpec, tool_dir: Path) -> TestReport:
+    """
+    Run static safety analysis against tool source code.
+    Returns a TestReport with errors if unsafe patterns detected.
+    """
+    report = TestReport()
+    
+    try:
+        safety_report = analyze_safety(spec, tool_dir)
+        if safety_report.has_errors:
+            report.errors = len([i for i in safety_report.issues if i.severity == "error"])
+            for issue in safety_report.issues:
+                if issue.severity == "error":
+                    report.failures.append({
+                        "code": issue.code,
+                        "message": issue.message,
+                        "file": issue.file,
+                        "line": issue.line,
+                    })
+        else:
+            # Safety checks passed
+            report.passed = 1
+    except Exception as e:
+        report.errors = 1
+        report.failures.append({"message": f"Safety analysis failed: {e}"})
+    
+    return report
 
     return report
