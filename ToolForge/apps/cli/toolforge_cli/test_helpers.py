@@ -25,7 +25,10 @@ def find_toolforge_root() -> Path:
 def build_toolforge_command(env: dict[str, str]) -> tuple[list[str], Path | None, dict[str, str]]:
     """Build the toolforge command and cleaned environment for subprocess execution."""
     root = find_toolforge_root()
-    use_module = env.get("TOOLFORGE_TEST_USE_MODULE_CLI") == "1"
+    use_module = (
+        env.get("TOOLFORGE_TEST_USE_MODULE_CLI") == "1"
+        or "PYTEST_CURRENT_TEST" in env
+    )
     
     cleaned_env = env.copy()
     for key in (
