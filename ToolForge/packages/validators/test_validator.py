@@ -48,6 +48,10 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         sys.executable,
         "-m",
         "pytest",
+        "-p",
+        "pytest_jsonreport.plugin",
+        "-p",
+        "pytest_cov.plugin",
         str(tests_dir),
         "-o",
         "addopts=",
@@ -62,6 +66,8 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         sys.executable,
         "-m",
         "pytest",
+        "-p",
+        "pytest_cov.plugin",
         str(tests_dir),
         "-o",
         "addopts=",
@@ -74,7 +80,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
     nested_env.pop("PYTEST_CURRENT_TEST", None)
     nested_env.pop("PYTEST_ADDOPTS", None)
     nested_env.pop("PYTEST_PLUGINS", None)
-    nested_env.pop("PYTEST_DISABLE_PLUGIN_AUTOLOAD", None)
+    nested_env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
     nested_env["PYTHONDONTWRITEBYTECODE"] = "1"
     nested_env["TOOLFORGE_NESTED_PYTEST"] = "1"
 
@@ -98,7 +104,12 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         return report
 
     combined_output = (result.stdout or "") + "\n" + (result.stderr or "")
-    if result.returncode != 0 and "unrecognized arguments: --json-report" in combined_output:
+    # Fall back if pytest_jsonreport plugin is not available or --json-report not recognized
+    if result.returncode != 0 and (
+        "unrecognized arguments: --json-report" in combined_output
+        or "unknown option" in combined_output
+        or "error: unrecognized arguments" in combined_output
+    ):
         try:
             result = subprocess.run(
                 fallback_cmd,
