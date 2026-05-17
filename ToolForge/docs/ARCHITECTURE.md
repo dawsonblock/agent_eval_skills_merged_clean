@@ -167,4 +167,4 @@ spec_from_prompt  →  ToolSpec  →  scaffold_tool  →  tools/generated/{slug}
 - **Secret stripping**: env vars matching `*_KEY`, `*_SECRET`, `*_TOKEN`, `*_PASSWORD`, etc. are stripped before subprocess
 - **Safety analyzer**: scans tool source for hardcoded secrets, path traversal, `os.system`/`subprocess` calls, and denied imports
 - **Sandbox levels**: progressively tighter Docker isolation for untrusted tools
-- **OWASP Top 10** compliance verified at code review time
+- Security checks are implemented for selected local execution risks, but this project has not undergone a formal OWASP audit

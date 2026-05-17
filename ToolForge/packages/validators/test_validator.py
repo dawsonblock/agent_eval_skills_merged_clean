@@ -4,6 +4,7 @@ Test validator — runs pytest against a tool's test directory and reports resul
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -67,6 +68,12 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         "-q",
     ]
 
+    nested_env = os.environ.copy()
+    nested_env.pop("PYTEST_CURRENT_TEST", None)
+    nested_env.pop("PYTEST_ADDOPTS", None)
+    nested_env["PYTHONDONTWRITEBYTECODE"] = "1"
+    nested_env["TOOLFORGE_NESTED_PYTEST"] = "1"
+
     try:
         result = subprocess.run(
             cmd,
@@ -74,6 +81,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
             text=True,
             timeout=timeout,
             cwd=str(tool_dir),
+            env=nested_env,
         )
     except subprocess.TimeoutExpired:
         report.errors = 1
@@ -94,6 +102,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
                 text=True,
                 timeout=timeout,
                 cwd=str(tool_dir),
+                env=nested_env,
             )
         except subprocess.TimeoutExpired:
             report.errors = 1

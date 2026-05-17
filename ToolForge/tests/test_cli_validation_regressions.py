@@ -3,91 +3,66 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from click.testing import CliRunner
-
-from apps.cli.toolforge_cli.main import cli
+from apps.cli.toolforge_cli.test_helpers import combined_output, run_toolforge
 
 
 def test_new_tool_duplicate_slug_fails_gracefully(tmp_path: Path) -> None:
-    runner = CliRunner()
+    result = run_toolforge(["init", str(tmp_path)], cwd=tmp_path)
+    assert result.returncode == 0, combined_output(result)
 
-    result = runner.invoke(cli, ["init", str(tmp_path)], catch_exceptions=False)
-    assert result.exit_code == 0, result.output
+    first = run_toolforge(
+        [
+            "new",
+            "tool",
+            "--from-prompt",
+            "Create a tool that cleans CSV files",
+        ],
+        cwd=tmp_path,
+    )
+    assert first.returncode == 0, combined_output(first)
 
-    old_cwd = Path.cwd()
-    try:
-        import os
-
-        os.chdir(tmp_path)
-        first = runner.invoke(
-            cli,
-            [
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that cleans CSV files",
-            ],
-            catch_exceptions=False,
-        )
-        assert first.exit_code == 0, first.output
-
-        second = runner.invoke(
-            cli,
-            [
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that cleans CSV files",
-            ],
-            catch_exceptions=False,
-        )
-        assert second.exit_code == 1
-        assert "Tool scaffold already exists" in second.output
-        assert "--overwrite" in second.output
-    finally:
-        import os
-
-        os.chdir(old_cwd)
+    second = run_toolforge(
+        [
+            "new",
+            "tool",
+            "--from-prompt",
+            "Create a tool that cleans CSV files",
+        ],
+        cwd=tmp_path,
+    )
+    assert second.returncode == 1
+    output = combined_output(second)
+    assert "Tool scaffold already exists" in output
+    assert "--overwrite" in output
 
 
 def test_validate_fails_when_tests_directory_missing(tmp_path: Path) -> None:
-    runner = CliRunner()
+    result = run_toolforge(["init", str(tmp_path)], cwd=tmp_path)
+    assert result.returncode == 0, combined_output(result)
 
-    result = runner.invoke(cli, ["init", str(tmp_path)], catch_exceptions=False)
-    assert result.exit_code == 0, result.output
+    result = run_toolforge(
+        [
+            "new",
+            "tool",
+            "--from-prompt",
+            "Create a tool that cleans CSV files",
+        ],
+        cwd=tmp_path,
+    )
+    assert result.returncode == 0, combined_output(result)
 
-    old_cwd = Path.cwd()
-    try:
-        import os
+    tool_dir = tmp_path / "tools" / "generated" / "csv-cleaner"
+    (tool_dir / "tests").rename(tool_dir / "tests_backup")
 
-        os.chdir(tmp_path)
-        result = runner.invoke(
-            cli,
-            [
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that cleans CSV files",
-            ],
-            catch_exceptions=False,
-        )
-        assert result.exit_code == 0, result.output
+    mcp_result = run_toolforge(["generate", "mcp", "csv-cleaner"], cwd=tmp_path)
+    assert mcp_result.returncode == 0, combined_output(mcp_result)
 
-        tool_dir = tmp_path / "tools" / "generated" / "csv-cleaner"
-        (tool_dir / "tests").rename(tool_dir / "tests_backup")
+    skill_result = run_toolforge(["generate", "skill", "csv-cleaner"], cwd=tmp_path)
+    assert skill_result.returncode == 0, combined_output(skill_result)
 
-        runner.invoke(cli, ["generate", "mcp", "csv-cleaner"], catch_exceptions=False)
-        runner.invoke(cli, ["generate", "skill", "csv-cleaner"], catch_exceptions=False)
-        runner.invoke(cli, ["generate", "eval", "csv-cleaner"], catch_exceptions=False)
+    eval_result = run_toolforge(["generate", "eval", "csv-cleaner"], cwd=tmp_path)
+    assert eval_result.returncode == 0, combined_output(eval_result)
 
-        validate = runner.invoke(
-            cli,
-            ["validate", "csv-cleaner"],
-            catch_exceptions=False,
-        )
-        assert validate.exit_code == 1
-        assert "Missing tests/ directory" in validate.output
-    finally:
-        import os
-
-        os.chdir(old_cwd)
+    validate = run_toolforge(["validate", "csv-cleaner"], cwd=tmp_path)
+    assert validate.returncode == 1
+    assert "Missing tests/ directory" in combined_output(validate)

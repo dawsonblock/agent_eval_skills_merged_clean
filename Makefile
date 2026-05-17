@@ -19,7 +19,7 @@ install:        ## Install ToolForge in editable mode with dev extras
 	cd $(TOOLFORGE_DIR) && pip install -e ".[dev]" -q
 
 .PHONY: test
-test:           ## Run the full test suite (67 tests)
+test:           ## Run the full test suite
 	cd $(TOOLFORGE_DIR) && pytest -q
 
 .PHONY: test-cov

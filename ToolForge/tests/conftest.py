@@ -1,6 +1,7 @@
 """Test configuration and process-state isolation for pytest runs."""
 from __future__ import annotations
 
+import logging
 import os
 import sys
 from pathlib import Path
@@ -28,3 +29,16 @@ def restore_process_state() -> None:
         sys.path[:] = original_syspath
         os.environ.clear()
         os.environ.update(original_env)
+
+
+@pytest.fixture(autouse=True)
+def restore_logging_state() -> None:
+    """Prevent logging handler/level leakage between tests."""
+    root = logging.getLogger()
+    original_handlers = root.handlers[:]
+    original_level = root.level
+    try:
+        yield
+    finally:
+        root.handlers[:] = original_handlers
+        root.setLevel(original_level)

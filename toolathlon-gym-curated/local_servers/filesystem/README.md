@@ -11,6 +11,10 @@ Node.js server implementing Model Context Protocol (MCP) for filesystem operatio
 - Get file metadata
 - Dynamic directory access control via [Roots](https://modelcontextprotocol.io/docs/learn/client-concepts#roots)
 
+## Repository Notes
+
+The `dist/` directory in this local server is intentionally committed. It contains bundled runtime artifacts used by toolathlon local-server workflows that execute the filesystem server without a fresh TypeScript build step.
+
 ## Directory Access Control
 
 The server uses a flexible directory access control system. Directories can be specified via command-line arguments or dynamically via [Roots](https://modelcontextprotocol.io/docs/learn/client-concepts#roots).
