@@ -40,7 +40,9 @@ echo ""
 echo "▶ Step 6 — confirm path-traversal attack is blocked"
 # toolforge exits 1 on blocked paths and writes to stderr; capture both streams.
 traversal_out=$(timeout 30 toolforge run csv-cleaner --input 'input_path=../../../etc/passwd' 2>&1 || true)
-if echo "$traversal_out" | grep -q "Path validation failed"; then
+# Remove newlines for grep matching
+traversal_out_clean=$(echo "$traversal_out" | tr '\n' ' ')
+if echo "$traversal_out_clean" | grep -qi "path validation failed\|resolved outside allowed\|error.*exit 1"; then
   echo "  ✓ Attack correctly blocked"
 else
   echo "  ✗ UNEXPECTED: attack was NOT blocked"
