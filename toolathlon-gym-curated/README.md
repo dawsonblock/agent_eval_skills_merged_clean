@@ -17,6 +17,12 @@ The dataset is designed to stress-test agent capabilities that matter in practic
 
 - Docker and Docker Compose
 
+### Legacy Build Artifacts Note
+
+The directory `local_servers/filesystem/dist/` is intentionally kept in this repository.
+That server package declares a Node.js binary entrypoint at `dist/index.js` in its `package.json`,
+so removing `dist/` breaks direct local execution unless a fresh TypeScript build is performed first.
+
 ### 1. Build and Start
 
 ```bash

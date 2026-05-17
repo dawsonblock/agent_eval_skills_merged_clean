@@ -13,6 +13,7 @@ authors = [{ name = "ToolForge Contributors" }]
 dependencies = [
     "click>=8.1",
     "pydantic>=2.7",
+    "eval_type_backport>=0.2",
     "jinja2>=3.1",
     "ruamel.yaml>=0.18",
     "jsonschema>=4.23",
@@ -28,6 +29,7 @@ dev = [
     "pytest-json-report>=1.5.0",
     "ruff>=0.4",
     "mypy>=1.10",
+    "types-PyYAML>=6.0",
 ]
 llm = ["openai>=1.30", "anthropic>=0.28"]
 

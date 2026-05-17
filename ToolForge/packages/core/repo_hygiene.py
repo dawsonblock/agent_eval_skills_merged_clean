@@ -34,6 +34,10 @@ _SKIP_DIRS = {
     "venv",
 }
 
+_MARKER_LEFT = "<" * 7
+_MARKER_MID = "=" * 7
+_MARKER_RIGHT = ">" * 7
+
 
 @dataclass
 class HygieneIssue:
@@ -76,7 +80,11 @@ def scan_conflict_markers(root: Path) -> list[HygieneIssue]:
             continue
         for line_number, line in enumerate(text.splitlines(), start=1):
             stripped = line.strip()
-            if stripped.startswith("<<<<<<< ") or stripped == "=======" or stripped.startswith(">>>>>>> "):
+            if (
+                stripped.startswith(f"{_MARKER_LEFT} ")
+                or stripped == _MARKER_MID
+                or stripped.startswith(f"{_MARKER_RIGHT} ")
+            ):
                 issues.append(
                     HygieneIssue(
                         kind="conflict_marker",

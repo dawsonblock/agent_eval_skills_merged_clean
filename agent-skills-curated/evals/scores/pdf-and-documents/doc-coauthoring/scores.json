@@ -59,7 +59,7 @@
       },
       {
         "name": "no-merge-conflicts",
-        "rule": "No `<<<<<<<` markers in file",
+        "rule": "No merge conflict markers in file",
         "passed": true,
         "severity": "error",
         "message": "No merge conflict markers"

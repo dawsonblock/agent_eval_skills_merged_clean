@@ -185,7 +185,7 @@ function checkNoMergeConflicts(content) {
   const has = /^<{7}\s/m.test(content);
   return {
     name: "no-merge-conflicts",
-    rule: "No `<<<<<<<` markers in file",
+    rule: "No merge conflict markers in file",
     passed: !has,
     severity: "error",
     message: has
