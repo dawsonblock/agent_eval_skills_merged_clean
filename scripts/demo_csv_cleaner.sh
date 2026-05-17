@@ -58,8 +58,8 @@ toolforge package csv-cleaner
 
 echo ""
 echo "▶ Step 9 — registry"
-toolforge registry list
-toolforge registry info csv-cleaner
+timeout 30 toolforge registry list || { echo "Registry list timed out or failed"; exit 1; }
+timeout 30 toolforge registry info csv-cleaner || { echo "Registry info timed out or failed"; exit 1; }
 
 echo ""
 echo "══════════════════════════════════════════════════════"

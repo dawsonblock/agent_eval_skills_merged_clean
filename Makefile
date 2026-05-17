@@ -21,6 +21,7 @@ install:        ## Install ToolForge in editable mode with dev extras
 .PHONY: test
 test:           ## Run the full test suite
 	cd $(TOOLFORGE_DIR) && \
+	TOOLFORGE_TEST_USE_MODULE_CLI=1 \
 	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
 	python -m pytest \
 		-p pytest_cov.plugin \
@@ -28,6 +29,7 @@ test:           ## Run the full test suite
 		-p pytest_timeout \
 		-p pytest_asyncio.plugin \
 		-q
+# CI recommendation: wrap with outer timeout, e.g., timeout 240 make test
 
 .PHONY: test-cov
 test-cov:       ## Run tests with HTML coverage report

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -14,12 +13,8 @@ _ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def _resolve_toolforge_command() -> tuple[list[str], Path | None]:
-    cli_path = shutil.which("toolforge")
-    if cli_path:
-        return [cli_path], None  # No PYTHONPATH needed for installed toolforge
-    # Fallback keeps tests runnable from source when console-script shims
-    # are unavailable in the current environment. Return the toolforge root
-    # so PYTHONPATH can be set.
+    # During tests, always use module execution with explicit PYTHONPATH
+    # to avoid subprocess hangs that occur with installed console scripts under pytest
     toolforge_root = Path(__file__).parent.parent.parent.parent
     return [sys.executable, "-m", "apps.cli.toolforge_cli.main"], toolforge_root
 
@@ -35,6 +30,17 @@ def run_toolforge(
     if env:
         effective_env.update(env)
     effective_env.setdefault("PYTHONUNBUFFERED", "1")
+
+    # Strip pytest environment variables to prevent subprocess hangs
+    for key in (
+        "PYTEST_CURRENT_TEST",
+        "PYTEST_VERSION",
+        "PYTEST_ADDOPTS",
+        "PYTEST_PLUGINS",
+    ):
+        effective_env.pop(key, None)
+    effective_env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    effective_env["PYTHONDONTWRITEBYTECODE"] = "1"
 
     cmd, toolforge_root = _resolve_toolforge_command()
     if toolforge_root:
