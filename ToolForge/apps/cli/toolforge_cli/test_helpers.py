@@ -22,12 +22,22 @@ def find_toolforge_root() -> Path:
     raise RuntimeError("Could not locate ToolForge root")
 
 
+def running_under_pytest(env: dict[str, str]) -> bool:
+    """Detect if running under pytest by checking for pytest environment variables."""
+    return (
+        "PYTEST_CURRENT_TEST" in env
+        or "PYTEST_VERSION" in env
+        or "PYTEST_ADDOPTS" in env
+        or "PYTEST_XDIST_WORKER" in env
+    )
+
+
 def build_toolforge_command(env: dict[str, str]) -> tuple[list[str], Path | None, dict[str, str]]:
     """Build the toolforge command and cleaned environment for subprocess execution."""
     root = find_toolforge_root()
     use_module = (
         env.get("TOOLFORGE_TEST_USE_MODULE_CLI") == "1"
-        or "PYTEST_CURRENT_TEST" in env
+        or running_under_pytest(env)
     )
     
     cleaned_env = env.copy()
@@ -36,6 +46,7 @@ def build_toolforge_command(env: dict[str, str]) -> tuple[list[str], Path | None
         "PYTEST_VERSION",
         "PYTEST_ADDOPTS",
         "PYTEST_PLUGINS",
+        "COVERAGE_PROCESS_START",
     ):
         cleaned_env.pop(key, None)
     cleaned_env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
