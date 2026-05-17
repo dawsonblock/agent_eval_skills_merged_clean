@@ -45,7 +45,9 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
     json_output = tool_dir / ".pytest_report.json"
 
     cmd = [
-        sys.executable, "-m", "pytest",
+        sys.executable,
+        "-m",
+        "pytest",
         str(tests_dir),
         "-o",
         "addopts=",
@@ -71,6 +73,8 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
     nested_env = os.environ.copy()
     nested_env.pop("PYTEST_CURRENT_TEST", None)
     nested_env.pop("PYTEST_ADDOPTS", None)
+    nested_env.pop("PYTEST_PLUGINS", None)
+    nested_env.pop("PYTEST_DISABLE_PLUGIN_AUTOLOAD", None)
     nested_env["PYTHONDONTWRITEBYTECODE"] = "1"
     nested_env["TOOLFORGE_NESTED_PYTEST"] = "1"
 

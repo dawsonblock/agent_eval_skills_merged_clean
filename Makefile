@@ -20,11 +20,25 @@ install:        ## Install ToolForge in editable mode with dev extras
 
 .PHONY: test
 test:           ## Run the full test suite
-	cd $(TOOLFORGE_DIR) && pytest -q
+	cd $(TOOLFORGE_DIR) && \
+	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+	python -m pytest \
+		-p pytest_cov.plugin \
+		-p pytest_jsonreport.plugin \
+		-p pytest_timeout \
+		-p pytest_asyncio.plugin \
+		-q
 
 .PHONY: test-cov
 test-cov:       ## Run tests with HTML coverage report
-	cd $(TOOLFORGE_DIR) && pytest --cov=packages --cov=apps --cov-report=html -q
+	cd $(TOOLFORGE_DIR) && \
+	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+	python -m pytest \
+		-p pytest_cov.plugin \
+		-p pytest_jsonreport.plugin \
+		-p pytest_timeout \
+		-p pytest_asyncio.plugin \
+		--cov=packages --cov=apps --cov-report=html -q
 	@echo "Coverage report: $(TOOLFORGE_DIR)/htmlcov/index.html"
 
 .PHONY: lint

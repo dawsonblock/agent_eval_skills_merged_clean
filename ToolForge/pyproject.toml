@@ -46,6 +46,12 @@ asyncio_mode = "auto"
 timeout = 120
 timeout_method = "thread"
 addopts = [
+    "-p",
+    "no:ddtrace",
+    "-p",
+    "no:ddtrace.pytest_bdd",
+    "-p",
+    "no:ddtrace.pytest_benchmark",
     "--cov=packages",
     "--cov=apps",
     "--cov-report=html",
