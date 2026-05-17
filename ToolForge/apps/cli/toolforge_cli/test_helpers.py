@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -12,11 +13,47 @@ from typing import Sequence
 _ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
-def _resolve_toolforge_command() -> tuple[list[str], Path | None]:
-    # During tests, always use module execution with explicit PYTHONPATH
-    # to avoid subprocess hangs that occur with installed console scripts under pytest
-    toolforge_root = Path(__file__).parent.parent.parent.parent
-    return [sys.executable, "-m", "apps.cli.toolforge_cli.main"], toolforge_root
+def find_toolforge_root() -> Path:
+    """Locate the ToolForge root directory by looking for pyproject.toml and packages/."""
+    here = Path(__file__).resolve()
+    for parent in [here, *here.parents]:
+        if (parent / "pyproject.toml").exists() and (parent / "packages").exists():
+            return parent
+    raise RuntimeError("Could not locate ToolForge root")
+
+
+def build_toolforge_command(env: dict[str, str]) -> tuple[list[str], Path | None, dict[str, str]]:
+    """Build the toolforge command and cleaned environment for subprocess execution."""
+    root = find_toolforge_root()
+    use_module = env.get("TOOLFORGE_TEST_USE_MODULE_CLI") == "1"
+    
+    cleaned_env = env.copy()
+    for key in (
+        "PYTEST_CURRENT_TEST",
+        "PYTEST_VERSION",
+        "PYTEST_ADDOPTS",
+        "PYTEST_PLUGINS",
+    ):
+        cleaned_env.pop(key, None)
+    cleaned_env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    cleaned_env["PYTHONDONTWRITEBYTECODE"] = "1"
+    cleaned_env["PYTHONUNBUFFERED"] = "1"
+    
+    existing_pythonpath = cleaned_env.get("PYTHONPATH", "")
+    paths = [str(root), str(root / "apps" / "cli")]
+    if existing_pythonpath:
+        paths.append(existing_pythonpath)
+    cleaned_env["PYTHONPATH"] = os.pathsep.join(paths)
+    
+    if use_module:
+        return [sys.executable, "-m", "apps.cli.toolforge_cli.main"], root, cleaned_env
+    
+    cli_path = shutil.which("toolforge")
+    if cli_path:
+        return [cli_path], None, cleaned_env
+    
+    # Fallback should be deterministic, not implicit-PYTHONPATH-dependent
+    return [sys.executable, "-m", "apps.cli.toolforge_cli.main"], root, cleaned_env
 
 
 def run_toolforge(
@@ -29,33 +66,19 @@ def run_toolforge(
     effective_env = os.environ.copy()
     if env:
         effective_env.update(env)
-    effective_env.setdefault("PYTHONUNBUFFERED", "1")
-
-    # Strip pytest environment variables to prevent subprocess hangs
-    for key in (
-        "PYTEST_CURRENT_TEST",
-        "PYTEST_VERSION",
-        "PYTEST_ADDOPTS",
-        "PYTEST_PLUGINS",
-    ):
-        effective_env.pop(key, None)
-    effective_env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
-    effective_env["PYTHONDONTWRITEBYTECODE"] = "1"
-
-    cmd, toolforge_root = _resolve_toolforge_command()
-    if toolforge_root:
-        # Add PYTHONPATH to ensure ToolForge packages can be imported
-        effective_env["PYTHONPATH"] = str(toolforge_root)
-
-    return subprocess.run(
-        [*cmd, *args],
+    
+    cmd_prefix, _, cleaned_env = build_toolforge_command(effective_env)
+    
+    result = subprocess.run(
+        [*cmd_prefix, *args],
         cwd=str(cwd),
         text=True,
         capture_output=True,
         timeout=timeout,
-        env=effective_env,
+        env=cleaned_env,
         check=False,
     )
+    return result
 
 
 def combined_output(result: subprocess.CompletedProcess[str]) -> str:

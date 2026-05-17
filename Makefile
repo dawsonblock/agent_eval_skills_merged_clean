@@ -28,6 +28,24 @@ test:           ## Run the full test suite
 		-p pytest_jsonreport.plugin \
 		-p pytest_timeout \
 		-p pytest_asyncio.plugin \
+		-o addopts= \
+		--cov=packages \
+		--cov=apps \
+		--cov-report=html \
+		--cov-report=term-missing \
+		--cov-fail-under=60 \
+		-q
+
+.PHONY: test-no-cov
+test-no-cov:    ## Run tests without coverage
+	cd $(TOOLFORGE_DIR) && \
+	TOOLFORGE_TEST_USE_MODULE_CLI=1 \
+	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+	python -m pytest \
+		-p pytest_jsonreport.plugin \
+		-p pytest_timeout \
+		-p pytest_asyncio.plugin \
+		-o addopts= \
 		-q
 # CI recommendation: wrap with outer timeout, e.g., timeout 240 make test
 
