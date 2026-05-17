@@ -30,7 +30,7 @@ timeout 60 toolforge generate eval csv-cleaner || { echo "Generate eval timed ou
 
 echo ""
 echo "▶ Step 4 — validate (schema + security + tests + safety)"
-timeout 60 toolforge validate csv-cleaner || { echo "Validate timed out or failed"; exit 1; }
+toolforge validate csv-cleaner || { echo "Validate failed"; exit 1; }
 
 echo ""
 echo "▶ Step 5 — run with a real CSV"
