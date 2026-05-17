@@ -48,6 +48,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         str(tests_dir),
         "-o",
         "addopts=",
+        "--no-cov",
         "--tb=short",
         "-q",
         "--json-report",
@@ -61,6 +62,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         str(tests_dir),
         "-o",
         "addopts=",
+        "--no-cov",
         "--tb=short",
         "-q",
     ]

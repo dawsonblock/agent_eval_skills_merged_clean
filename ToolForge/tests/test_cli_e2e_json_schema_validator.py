@@ -2,12 +2,20 @@
 from __future__ import annotations
 
 import json
+import re
 import zipfile
 from pathlib import Path
 
 from click.testing import CliRunner
 
 from apps.cli.toolforge_cli.main import cli
+
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _strip_ansi(text: str) -> str:
+    return _ANSI_RE.sub("", text)
 
 
 def test_cli_e2e_json_schema_validator(tmp_path: Path) -> None:
@@ -61,7 +69,8 @@ def test_cli_e2e_json_schema_validator(tmp_path: Path) -> None:
             ]
         )
         assert result.exit_code == 0, result.output
-        assert '"valid": true' in result.output
+        clean = _strip_ansi(result.output)
+        assert '"valid": true' in clean
 
         result = invoke(
             [
