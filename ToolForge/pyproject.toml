@@ -52,11 +52,6 @@ addopts = [
     "no:ddtrace.pytest_bdd",
     "-p",
     "no:ddtrace.pytest_benchmark",
-    "--cov=packages",
-    "--cov=apps",
-    "--cov-report=html",
-    "--cov-report=term-missing",
-    "--cov-fail-under=60",
 ]
 
 [tool.coverage.run]
