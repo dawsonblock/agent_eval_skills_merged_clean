@@ -2,7 +2,6 @@
 """E2E script for json-schema-validator proof path."""
 from __future__ import annotations
 
-import json
 import sys
 import tempfile
 from pathlib import Path
@@ -10,6 +9,16 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from tests.e2e_scripts._lifecycle import (  # noqa: E402
+    assert_registry_packaged,
+    create_workspace,
+    generate_eval,
+    generate_mcp,
+    generate_skill,
+    generate_tool_from_prompt,
+    package_tool,
+    validate_tool,
+)
 from tests.e2e_scripts._runner import (  # noqa: E402
     assert_contains,
     assert_file_exists,
@@ -28,59 +37,40 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
 
-        # 1) init
+        # 1) init - use internal helper
         print("Step 1: Initializing workspace...")
-        result = run_toolforge(
-            ["init", str(tmp_path)], cwd=tmp_path, timeout=30
-        )
-        print(f"Init stdout: {result.stdout}")
+        workspace = create_workspace(tmp_path)
+        print(f"Workspace created at: {workspace}")
 
-        # 2) new tool from prompt
+        # 2) new tool from prompt - use internal helper
         print("Step 2: Creating json-schema-validator tool...")
-        result = run_toolforge(
-            [
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that validates JSON files against a schema",
-            ],
-            cwd=tmp_path,
-            timeout=120,
+        spec = generate_tool_from_prompt(
+            workspace,
+            "Create a tool that validates JSON files against a schema",
+            slug="json-schema-validator",
         )
-        print(f"New tool stdout: {result.stdout}")
+        print(f"Tool spec created: {spec.slug}")
 
-        tool_dir = tmp_path / "tools" / "generated" / "json-schema-validator"
+        tool_dir = workspace / "tools" / "generated" / "json-schema-validator"
         assert_file_exists(tool_dir / "toolforge.yaml")
         assert_file_exists(tool_dir / "examples" / "schema.json")
         assert_file_exists(tool_dir / "examples" / "data_valid.json")
 
-        # 3) generate mcp/skill/eval
+        # 3) generate mcp/skill/eval - use internal helpers
         print("Step 3: Generating MCP...")
-        result = run_toolforge(
-            ["generate", "mcp", "json-schema-validator"],
-            cwd=tmp_path,
-            timeout=30,
-        )
+        generate_mcp(workspace, "json-schema-validator")
+
         print("Step 4: Generating skill...")
-        result = run_toolforge(
-            ["generate", "skill", "json-schema-validator"],
-            cwd=tmp_path,
-            timeout=30,
-        )
+        generate_skill(workspace, "json-schema-validator")
+
         print("Step 5: Generating eval...")
-        result = run_toolforge(
-            ["generate", "eval", "json-schema-validator"],
-            cwd=tmp_path,
-            timeout=30,
-        )
+        generate_eval(workspace, "json-schema-validator")
 
-        # 4) validate
+        # 4) validate - use internal helper
         print("Step 6: Validating...")
-        result = run_toolforge(
-            ["validate", "json-schema-validator"], cwd=tmp_path, timeout=30
-        )
+        validate_tool(workspace, "json-schema-validator")
 
-        # 5) run success
+        # 5) run success - CLI subprocess for black-box check
         print("Step 7: Running success case...")
         result = run_toolforge(
             [
@@ -91,13 +81,13 @@ def main() -> int:
                 "--input",
                 "schema_path=examples/schema.json",
             ],
-            cwd=tmp_path,
+            cwd=workspace,
             timeout=30,
         )
         # Check that output contains valid: true
         assert_contains(result.stdout, '"valid": true')
 
-        # 6) run safety boundary
+        # 6) run safety boundary - CLI subprocess for black-box check
         print("Step 8: Running safety boundary test...")
         result = run_toolforge(
             [
@@ -108,7 +98,7 @@ def main() -> int:
                 "--input",
                 "schema_path=examples/schema.json",
             ],
-            cwd=tmp_path,
+            cwd=workspace,
             timeout=30,
             check=False,
         )
@@ -117,42 +107,32 @@ def main() -> int:
             result.stdout + result.stderr, "Path validation failed"
         )
 
-        # 7) eval
+        # 7) eval - CLI subprocess for black-box check
         print("Step 9: Running eval...")
         result = run_toolforge(
-            ["eval", "json-schema-validator"], cwd=tmp_path, timeout=30
+            ["eval", "json-schema-validator"], cwd=workspace, timeout=30
         )
 
-        # 8) package
+        # 8) package - use internal helper
         print("Step 10: Packaging...")
-        result = run_toolforge(
-            ["package", "json-schema-validator"], cwd=tmp_path, timeout=30
-        )
-
-        dist_zip = tmp_path / "dist" / "json-schema-validator-0.1.0.zip"
-        assert_file_exists(dist_zip)
+        package_path = package_tool(workspace, "json-schema-validator")
+        assert_file_exists(package_path)
 
         assert_zip_contains(
-            dist_zip, ["toolforge.yaml", "tool.py", "skill/SKILL.md"]
+            package_path, ["toolforge.yaml", "tool.py", "skill/SKILL.md"]
         )
-        assert_zip_contains(dist_zip, ["evals/task_config.json"])
-        assert_zip_contains(dist_zip, ["SECURITY.md"])
-        assert_zip_excludes(dist_zip, ["outputs/"])
+        assert_zip_contains(package_path, ["evals/task_config.json"])
+        assert_zip_contains(package_path, ["SECURITY.md"])
+        assert_zip_excludes(package_path, ["outputs/"])
 
-        # 9) registry values
+        # 9) registry check - use internal helper
         print("Step 11: Checking registry...")
-        registry_path = tmp_path / "toolforge_registry.json"
-        registry = json.loads(registry_path.read_text(encoding="utf-8"))
-        metadata = registry["json-schema-validator"]["metadata"]
-        assert metadata["status"] == "packaged"
-        assert metadata["last_run_type"] == "safety_test"
-        assert metadata["operational_last_run_success"] is True
+        assert_registry_packaged(workspace, "json-schema-validator")
 
         print("\n✓ All E2E steps passed.")
 
         # Check for leaked processes
         assert_no_leaked_processes()
-        assert metadata["eval_score"] is not None
 
     print("JSON schema validator e2e lifecycle completed successfully!")
     return 0

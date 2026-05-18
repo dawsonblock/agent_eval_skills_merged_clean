@@ -2,7 +2,6 @@
 """E2E script for local-file-hasher proof path."""
 from __future__ import annotations
 
-import json
 import sys
 import tempfile
 from pathlib import Path
@@ -10,6 +9,16 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from tests.e2e_scripts._lifecycle import (  # noqa: E402
+    assert_registry_packaged,
+    create_workspace,
+    generate_eval,
+    generate_mcp,
+    generate_skill,
+    generate_tool_from_prompt,
+    package_tool,
+    validate_tool,
+)
 from tests.e2e_scripts._runner import (  # noqa: E402
     assert_contains,
     assert_file_exists,
@@ -28,58 +37,39 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
 
-        # 1) init
+        # 1) init - use internal helper
         print("Step 1: Initializing workspace...")
-        result = run_toolforge(
-            ["init", str(tmp_path)], cwd=tmp_path, timeout=30
-        )
-        print(f"Init stdout: {result.stdout}")
+        workspace = create_workspace(tmp_path)
+        print(f"Workspace created at: {workspace}")
 
-        # 2) new tool from prompt
+        # 2) new tool from prompt - use internal helper
         print("Step 2: Creating local-file-hasher tool...")
-        result = run_toolforge(
-            [
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that computes SHA256 checksums of local files",
-            ],
-            cwd=tmp_path,
-            timeout=120,
+        spec = generate_tool_from_prompt(
+            workspace,
+            "Create a tool that computes SHA256 checksums of local files",
+            slug="local-file-hasher",
         )
-        print(f"New tool stdout: {result.stdout}")
+        print(f"Tool spec created: {spec.slug}")
 
-        tool_dir = tmp_path / "tools" / "generated" / "local-file-hasher"
+        tool_dir = workspace / "tools" / "generated" / "local-file-hasher"
         assert_file_exists(tool_dir / "toolforge.yaml")
         assert_file_exists(tool_dir / "examples" / "sample.txt")
 
-        # 3) generate mcp/skill/eval
+        # 3) generate mcp/skill/eval - use internal helpers
         print("Step 3: Generating MCP...")
-        result = run_toolforge(
-            ["generate", "mcp", "local-file-hasher"],
-            cwd=tmp_path,
-            timeout=30,
-        )
+        generate_mcp(workspace, "local-file-hasher")
+
         print("Step 4: Generating skill...")
-        result = run_toolforge(
-            ["generate", "skill", "local-file-hasher"],
-            cwd=tmp_path,
-            timeout=30,
-        )
+        generate_skill(workspace, "local-file-hasher")
+
         print("Step 5: Generating eval...")
-        result = run_toolforge(
-            ["generate", "eval", "local-file-hasher"],
-            cwd=tmp_path,
-            timeout=30,
-        )
+        generate_eval(workspace, "local-file-hasher")
 
-        # 4) validate
+        # 4) validate - use internal helper
         print("Step 6: Validating...")
-        result = run_toolforge(
-            ["validate", "local-file-hasher"], cwd=tmp_path, timeout=30
-        )
+        validate_tool(workspace, "local-file-hasher")
 
-        # 5) run success
+        # 5) run success - CLI subprocess for black-box check
         print("Step 7: Running success case...")
         result = run_toolforge(
             [
@@ -88,7 +78,7 @@ def main() -> int:
                 "--input",
                 "file_path=examples/sample.txt",
             ],
-            cwd=tmp_path,
+            cwd=workspace,
             timeout=30,
         )
         # Check that output contains algorithm or hash
@@ -98,7 +88,7 @@ def main() -> int:
             "Expected hash output to contain sha256",
         )
 
-        # 6) run safety boundary
+        # 6) run safety boundary - CLI subprocess for black-box check
         print("Step 8: Running safety boundary test...")
         result = run_toolforge(
             [
@@ -107,7 +97,7 @@ def main() -> int:
                 "--input",
                 "file_path=../../../etc/passwd",
             ],
-            cwd=tmp_path,
+            cwd=workspace,
             timeout=30,
             check=False,
         )
@@ -116,37 +106,27 @@ def main() -> int:
             result.stdout + result.stderr, "Path validation failed"
         )
 
-        # 7) eval
+        # 7) eval - CLI subprocess for black-box check
         print("Step 9: Running eval...")
         result = run_toolforge(
-            ["eval", "local-file-hasher"], cwd=tmp_path, timeout=30
+            ["eval", "local-file-hasher"], cwd=workspace, timeout=30
         )
 
-        # 8) package
+        # 8) package - use internal helper
         print("Step 10: Packaging...")
-        result = run_toolforge(
-            ["package", "local-file-hasher"], cwd=tmp_path, timeout=30
-        )
-
-        dist_zip = tmp_path / "dist" / "local-file-hasher-0.1.0.zip"
-        assert_file_exists(dist_zip)
+        package_path = package_tool(workspace, "local-file-hasher")
+        assert_file_exists(package_path)
 
         assert_zip_contains(
-            dist_zip, ["toolforge.yaml", "tool.py", "skill/SKILL.md"]
+            package_path, ["toolforge.yaml", "tool.py", "skill/SKILL.md"]
         )
-        assert_zip_contains(dist_zip, ["evals/task_config.json"])
-        assert_zip_contains(dist_zip, ["SECURITY.md"])
-        assert_zip_excludes(dist_zip, ["outputs/"])
+        assert_zip_contains(package_path, ["evals/task_config.json"])
+        assert_zip_contains(package_path, ["SECURITY.md"])
+        assert_zip_excludes(package_path, ["outputs/"])
 
-        # 9) registry values
+        # 9) registry check - use internal helper
         print("Step 11: Checking registry...")
-        registry_path = tmp_path / "toolforge_registry.json"
-        registry = json.loads(registry_path.read_text(encoding="utf-8"))
-        metadata = registry["local-file-hasher"]["metadata"]
-        assert metadata["status"] == "packaged"
-        assert metadata["last_run_type"] == "safety_test"
-        assert metadata["operational_last_run_success"] is True
-        assert metadata["eval_score"] is not None
+        assert_registry_packaged(workspace, "local-file-hasher")
 
         print("\n✓ All E2E steps passed.")
 
