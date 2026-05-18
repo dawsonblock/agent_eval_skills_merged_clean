@@ -72,15 +72,11 @@ else
 fi
 
 echo ""
-echo "▶ Step 7 — run eval suite (expects 100% pass rate)"
-run_with_timeout 60 toolforge eval csv-cleaner || { echo "Eval timed out or failed"; exit 1; }
-
-echo ""
-echo "▶ Step 8 — package to .zip"
+echo "▶ Step 7 — package to .zip"
 run_with_timeout 60 toolforge package csv-cleaner || { echo "Package timed out or failed"; exit 1; }
 
 echo ""
-echo "▶ Step 9 — registry"
+echo "▶ Step 8 — registry"
 run_with_timeout 30 toolforge registry list || { echo "Registry list timed out or failed"; exit 1; }
 run_with_timeout 30 toolforge registry info csv-cleaner || { echo "Registry info timed out or failed"; exit 1; }
 

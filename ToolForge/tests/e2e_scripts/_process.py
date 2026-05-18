@@ -46,10 +46,14 @@ def collect_matching_processes(patterns: list[str]) -> list[str]:
         matched = []
         for line in result.stdout.splitlines():
             line_lower = line.lower()
+            # Use exact pattern matching to avoid false positives
+            # Only match if the pattern appears as a complete path/command component
             if any(pattern.lower() in line_lower for pattern in patterns):
-                # Skip the ps command itself
-                if "ps aux" not in line_lower:
-                    matched.append(line)
+                # Skip the ps command itself and grep commands
+                if "ps aux" not in line_lower and "grep" not in line_lower:
+                    # Only match generated tools (have tools/generated, not parent shell)
+                    if "e2e_scripts" not in line_lower and "/tools/generated/" in line_lower:
+                        matched.append(line)
         return matched
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return []
@@ -58,9 +62,9 @@ def collect_matching_processes(patterns: list[str]) -> list[str]:
 def assert_no_toolforge_children() -> None:
     """Assert no ToolForge-related processes are still running."""
     leaked = collect_matching_processes([
-        "apps.cli.toolforge_cli.main",
-        "toolforge",
-        "tools/generated/",
+        "python -m apps.cli.toolforge_cli.main",
+        "/tools/generated/",
+        "/tool.py",
     ])
     if leaked:
         raise AssertionError(

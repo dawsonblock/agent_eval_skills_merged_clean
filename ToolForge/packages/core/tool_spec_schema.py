@@ -13,14 +13,8 @@ IMPORTANT: AI ROLE BOUNDARIES
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
 
 from packages.core.tool_spec import (
-    EvalSpec,
-    MCPSpec,
-    ParameterSpec,
-    SecuritySpec,
-    SkillSpec,
     ToolCapability,
     ToolSpec,
 )

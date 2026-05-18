@@ -226,3 +226,101 @@ def test_run_cli_exit() -> None:
         # May fail if tool generation didn't produce a working tool,
         # but should not hang and should return a valid exit code
         assert result.returncode is not None
+
+
+def test_csv_cleaner_commands_exit() -> None:
+    """Test csv-cleaner specific commands exit cleanly without hangs."""
+    root = Path(__file__).parent.parent
+    env = build_clean_env(root)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
+            cwd=root,
+            env=env,
+            timeout=30,
+        )
+        assert result.returncode == 0
+
+        # Generate csv-cleaner tool
+        result = run_process_tree(
+            [
+                sys.executable,
+                "-m",
+                "apps.cli.toolforge_cli.main",
+                "new",
+                "tool",
+                "--from-prompt",
+                "Create a tool that cleans CSV files",
+            ],
+            cwd=tmp_path,
+            env=env,
+            timeout=120,
+        )
+        assert result.returncode == 0
+
+        # Test validate command
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "validate", "csv-cleaner"],
+            cwd=tmp_path,
+            env=env,
+            timeout=60,
+        )
+        # May fail if validation finds issues, but should not hang
+        assert result.returncode is not None
+
+        # Test package command
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "package", "csv-cleaner"],
+            cwd=tmp_path,
+            env=env,
+            timeout=60,
+        )
+        # May fail if tool generation didn't produce a complete tool,
+        # but should not hang and should return a valid exit code
+        assert result.returncode is not None
+
+
+def test_json_schema_validator_commands_exit() -> None:
+    """Test json-schema-validator specific commands exit cleanly without hangs."""
+    root = Path(__file__).parent.parent
+    env = build_clean_env(root)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
+            cwd=root,
+            env=env,
+            timeout=30,
+        )
+        assert result.returncode == 0
+
+        # Generate json-schema-validator tool
+        result = run_process_tree(
+            [
+                sys.executable,
+                "-m",
+                "apps.cli.toolforge_cli.main",
+                "new",
+                "tool",
+                "--from-prompt",
+                "Create a tool that validates JSON files against a schema",
+            ],
+            cwd=tmp_path,
+            env=env,
+            timeout=120,
+        )
+        assert result.returncode == 0
+
+        # Test package command
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "package", "json-schema-validator"],
+            cwd=tmp_path,
+            env=env,
+            timeout=60,
+        )
+        # May fail if tool generation didn't produce a complete tool,
+        # but should not hang and should return a valid exit code
+        assert result.returncode is not None

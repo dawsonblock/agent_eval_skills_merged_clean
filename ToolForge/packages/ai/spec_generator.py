@@ -212,7 +212,7 @@ class AISpecGenerator:
             raise ImportError("openai package required: pip install openai")
 
         # DeepSeek uses OpenAI-compatible API
-        from packages.ai.providers_base import DeepSeekProvider
+        from packages.ai.providers.deepseek_provider import DeepSeekProvider
 
         provider = DeepSeekProvider(
             model=self._model or "deepseek-chat",
