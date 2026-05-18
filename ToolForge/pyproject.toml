@@ -52,8 +52,6 @@ addopts = [
     "no:ddtrace.pytest_bdd",
     "-p",
     "no:ddtrace.pytest_benchmark",
-    "-m",
-    "not e2e_isolated",
 ]
 
 [tool.coverage.run]
