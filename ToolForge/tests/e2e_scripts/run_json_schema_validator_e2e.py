@@ -120,7 +120,7 @@ def main() -> int:
         # 7) eval
         print("Step 9: Running eval...")
         result = run_toolforge(
-            ["eval", "json-schema-validator"], cwd=tmp_path, timeout=60
+            ["eval", "json-schema-validator"], cwd=tmp_path, timeout=30
         )
 
         # 8) package

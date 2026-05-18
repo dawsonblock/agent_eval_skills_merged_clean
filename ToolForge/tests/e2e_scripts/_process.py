@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import signal
 import subprocess
+import time
 from pathlib import Path
 
 
@@ -45,10 +46,8 @@ def run_process_tree(
         stdout, stderr = proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired as exc:
         # Kill entire process group
-        try:
-            os.killpg(proc.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        kill_process_tree(proc.pid)
+        time.sleep(0.25)
         # Wait for process to actually terminate
         try:
             proc.wait(timeout=5)
@@ -67,10 +66,8 @@ def run_process_tree(
     finally:
         # Ensure process group is cleaned up even on success
         if proc.poll() is None:
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
+            kill_process_tree(proc.pid)
+            time.sleep(0.25)
             try:
                 proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
@@ -82,3 +79,45 @@ def run_process_tree(
         stdout=stdout,
         stderr=stderr,
     )
+
+
+def kill_process_tree(pid: int) -> None:
+    """Kill entire process group for given PID."""
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        return
+
+
+def collect_matching_processes(patterns: list[str]) -> list[str]:
+    """Collect processes matching given patterns using ps."""
+    try:
+        result = subprocess.run(
+            ["ps", "aux"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        matched = []
+        for line in result.stdout.splitlines():
+            line_lower = line.lower()
+            if any(pattern.lower() in line_lower for pattern in patterns):
+                # Skip the ps command itself
+                if "ps aux" not in line_lower:
+                    matched.append(line)
+        return matched
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return []
+
+
+def assert_no_toolforge_children() -> None:
+    """Assert no ToolForge-related processes are still running."""
+    leaked = collect_matching_processes([
+        "apps.cli.toolforge_cli.main",
+        "toolforge",
+        "tools/generated/",
+    ])
+    if leaked:
+        raise AssertionError(
+            "Found leaked ToolForge processes:\n" + "\n".join(leaked)
+        )

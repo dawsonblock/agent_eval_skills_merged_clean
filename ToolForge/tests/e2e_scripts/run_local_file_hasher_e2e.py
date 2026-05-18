@@ -119,7 +119,7 @@ def main() -> int:
         # 7) eval
         print("Step 9: Running eval...")
         result = run_toolforge(
-            ["eval", "local-file-hasher"], cwd=tmp_path, timeout=60
+            ["eval", "local-file-hasher"], cwd=tmp_path, timeout=30
         )
 
         # 8) package
