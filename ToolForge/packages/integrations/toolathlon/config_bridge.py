@@ -8,14 +8,14 @@ from pathlib import Path
 from packages.core.tool_spec import MCPSpec, ToolLanguage, ToolSpec
 
 
-def load_toolathlon_config(config_path: Path) -> dict:
+def load_toolathlon_config(config_path: Path) -> dict[str, object]:
     """Return a toolathlon MCP server config as a plain dict."""
     import yaml  # noqa: PLC0415
 
     return yaml.safe_load(config_path.read_text(encoding="utf-8"))
 
 
-def toolathlon_config_to_mcp_spec(config: dict) -> MCPSpec:
+def toolathlon_config_to_mcp_spec(config: dict[str, object]) -> MCPSpec:
     """
     Convert a toolathlon server config dict to a ToolForge MCPSpec.
 
@@ -33,7 +33,7 @@ def toolathlon_config_to_mcp_spec(config: dict) -> MCPSpec:
     )
 
 
-def toolathlon_config_to_partial_spec(config: dict, slug: str | None = None) -> ToolSpec:
+def toolathlon_config_to_partial_spec(config: dict[str, object], slug: str | None = None) -> ToolSpec:
     """
     Build a minimal ToolSpec from a toolathlon MCP server config.
     Useful for importing toolathlon server configs into the ToolForge registry.
