@@ -8,8 +8,33 @@ sandbox_default_level: 2
 # Timeout for tool execution (seconds)
 execution_timeout_seconds: 60
 
-# Tool registry path (relative to ToolForge root)
-registry_path: "toolforge_registry.json"
+# ToolForge workspace configuration
+
+# Paths (relative to workspace root)
+paths:
+  tools: tools/generated
+  skills: skills/generated
+  evals: evals/generated
+  dist: dist
+
+# AI configuration
+ai:
+  spec_generator:
+    provider: rule_based  # rule_based | openai | anthropic | ollama | azure_openai
+    model: null  # Override default model (e.g., gpt-4o, claude-3-haiku, llama3)
+    timeout_seconds: 30
+    max_retries: 3
+    retry_backoff_seconds: 1
+    fallback_to_rule_based: true
+    interactive: false
+    ollama_base_url: "http://localhost:11434"
+    azure_openai:
+      endpoint: null  # Azure OpenAI endpoint URL
+      deployment: null  # Azure OpenAI deployment name
+      api_version: "2024-02-15-preview"
+
+# Registry
+registry_path: toolforge_registry.json
 
 # Template directory
 templates_dir: "packages/templates"
@@ -26,6 +51,3 @@ default_tool_language: "python"
 
 # Whether to require explicit approval before running tools in sandbox level >= 3
 require_confirmation_level: 3
-
-# Model provider for spec-from-prompt (rule_based | openai | anthropic | local_model)
-spec_generator_provider: "rule_based"

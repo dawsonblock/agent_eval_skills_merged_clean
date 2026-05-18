@@ -125,3 +125,104 @@ def test_new_tool_cli_exit() -> None:
             timeout=60,
         )
         assert result.returncode == 0
+
+
+def test_validate_cli_exit() -> None:
+    """Test validate command exits cleanly without hangs."""
+    root = Path(__file__).parent.parent
+    env = build_clean_env(root)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
+            cwd=root,
+            env=env,
+            timeout=30,
+        )
+        assert result.returncode == 0
+
+        # First create a simple tool
+        result = run_process_tree(
+            [
+                sys.executable,
+                "-m",
+                "apps.cli.toolforge_cli.main",
+                "new",
+                "tool",
+                "--from-prompt",
+                "Create a simple tool",
+                "--slug",
+                "simple-tool",
+            ],
+            cwd=tmp_path,
+            env=env,
+            timeout=60,
+        )
+        assert result.returncode == 0
+
+        # Test validate command - may fail if tool generation didn't produce a complete tool
+        # but should not hang
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "validate", "simple-tool"],
+            cwd=tmp_path,
+            env=env,
+            timeout=60,
+        )
+        # Exit code may be 0 or non-zero depending on validation results
+        # The important thing is it doesn't hang and returns a valid exit code
+        assert result.returncode is not None
+
+
+def test_run_cli_exit() -> None:
+    """Test run command exits cleanly without hangs."""
+    root = Path(__file__).parent.parent
+    env = build_clean_env(root)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
+            cwd=root,
+            env=env,
+            timeout=30,
+        )
+        assert result.returncode == 0
+
+        # Create a simple tool
+        result = run_process_tree(
+            [
+                sys.executable,
+                "-m",
+                "apps.cli.toolforge_cli.main",
+                "new",
+                "tool",
+                "--from-prompt",
+                "Create a tool that echoes text",
+                "--slug",
+                "echo-tool",
+            ],
+            cwd=tmp_path,
+            env=env,
+            timeout=60,
+        )
+        assert result.returncode == 0
+
+        # Test run command with a simple input
+        result = run_process_tree(
+            [
+                sys.executable,
+                "-m",
+                "apps.cli.toolforge_cli.main",
+                "run",
+                "echo-tool",
+                "--input",
+                "text=hello",
+            ],
+            cwd=tmp_path,
+            env=env,
+            timeout=30,
+        )
+        # May fail if tool generation didn't produce a working tool,
+        # but should not hang and should return a valid exit code
+        assert result.returncode is not None

@@ -8,8 +8,10 @@ Providers:
 from __future__ import annotations
 
 import re
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
+from typing import Any
 
 from packages.core.tool_spec import (
     EvalCase,
@@ -493,18 +495,76 @@ class LLMSpecGenerator(SpecGeneratorProvider):
 
     Requires the ``openai`` package and ``OPENAI_API_KEY`` env var,
     or the ``anthropic`` package and ``ANTHROPIC_API_KEY`` env var.
+
+    Supports retry logic with exponential backoff for transient errors.
     """
 
-    def __init__(self, backend: str = "openai", model: str | None = None) -> None:
+    def __init__(
+        self,
+        backend: str = "openai",
+        model: str | None = None,
+        max_retries: int = 3,
+        timeout_seconds: int = 30,
+        retry_backoff_seconds: int = 1,
+    ) -> None:
         self._backend = backend
         self._model = model
+        self._max_retries = max_retries
+        self._timeout_seconds = timeout_seconds
+        self._retry_backoff_seconds = retry_backoff_seconds
 
     def generate(self, prompt: str) -> ToolSpec:
         if self._backend == "openai":
-            return self._generate_openai(prompt)
+            return self._generate_with_retry(self._generate_openai, prompt)
         if self._backend == "anthropic":
-            return self._generate_anthropic(prompt)
+            return self._generate_with_retry(self._generate_anthropic, prompt)
         raise ValueError(f"Unknown LLM backend: {self._backend!r}")
+
+    def _generate_with_retry(
+        self, generator_func: Any, prompt: str
+    ) -> ToolSpec:
+        """Generate spec with retry logic for transient errors."""
+        last_error: Exception | None = None
+
+        for attempt in range(self._max_retries):
+            try:
+                return generator_func(prompt)
+            except Exception as e:
+                last_error = e
+                # Don't retry on auth errors or invalid prompts
+                if self._is_non_retryable_error(e):
+                    raise
+
+                if attempt < self._max_retries - 1:
+                    backoff = self._retry_backoff_seconds * (2**attempt)
+                    import warnings
+
+                    warnings.warn(
+                        f"LLM generation attempt {attempt + 1} failed: {e}. "
+                        f"Retrying in {backoff}s..."
+                    )
+                    time.sleep(backoff)
+                else:
+                    raise RuntimeError(
+                        f"LLM generation failed after {self._max_retries} attempts: {e}"
+                    ) from last_error
+
+        raise RuntimeError("Unexpected error in retry logic") from last_error
+
+    def _is_non_retryable_error(self, error: Exception) -> bool:
+        """Check if error should not be retried."""
+        error_str = str(error).lower()
+        # Check non-retryable patterns first - these should fail immediately
+        non_retryable_patterns = [
+            "authentication",
+            "api key",
+            "unauthorized",
+            "malformed",
+        ]
+        if any(pattern in error_str for pattern in non_retryable_patterns):
+            return True
+        # If error doesn't match non-retryable patterns, allow retry by default
+        return False
 
     def _generate_openai(self, prompt: str) -> ToolSpec:
         try:
@@ -514,7 +574,16 @@ class LLMSpecGenerator(SpecGeneratorProvider):
 
         import os
 
-        client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        if "OPENAI_API_KEY" not in os.environ:
+            raise ValueError(
+                "OPENAI_API_KEY environment variable not set. "
+                "Set it to use OpenAI backend."
+            )
+
+        client = openai.OpenAI(
+            api_key=os.environ["OPENAI_API_KEY"],
+            timeout=self._timeout_seconds,
+        )
         schema = ToolSpec.model_json_schema()
         system = (
             "You are ToolForge, a tool-spec generator. "
@@ -550,7 +619,16 @@ class LLMSpecGenerator(SpecGeneratorProvider):
         import json
         import os
 
-        client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        if "ANTHROPIC_API_KEY" not in os.environ:
+            raise ValueError(
+                "ANTHROPIC_API_KEY environment variable not set. "
+                "Set it to use Anthropic backend."
+            )
+
+        client = anthropic.Anthropic(
+            api_key=os.environ["ANTHROPIC_API_KEY"],
+            timeout=self._timeout_seconds,
+        )
         schema = ToolSpec.model_json_schema()
         message = client.messages.create(
             model=self._model or "claude-3-haiku-20240307",
@@ -567,7 +645,94 @@ class LLMSpecGenerator(SpecGeneratorProvider):
                 }
             ],
         )
-        return ToolSpec.model_validate_json(message.content[0].text)
+        # Extract text content from the response with robust handling
+        if not message.content or len(message.content) == 0:
+            raise ValueError("Anthropic response did not contain any content blocks")
+
+        content = message.content[0]
+        if hasattr(content, "text"):
+            text = content.text
+        else:
+            # Fallback for unexpected content types
+            text = str(content)
+
+        if not text or not text.strip():
+            raise ValueError("Anthropic response contained empty text content")
+
+        try:
+            return ToolSpec.model_validate_json(text)
+        except Exception as e:
+            raise ValueError(
+                f"Failed to validate Anthropic response as ToolSpec: {e}"
+            ) from e
+
+
+class OpenAISpecGenerator(SpecGeneratorProvider):
+    """
+    Generate a ToolSpec via OpenAI with structured output.
+
+    Wrapper around LLMSpecGenerator with backend="openai".
+    Provides a dedicated class for OpenAI-specific configuration.
+
+    Note: API key must be set via OPENAI_API_KEY environment variable.
+    """
+
+    def __init__(
+        self,
+        model: str | None = None,
+        max_retries: int = 3,
+        timeout_seconds: int = 30,
+        retry_backoff_seconds: int = 1,
+    ) -> None:
+        self._model = model
+        self._max_retries = max_retries
+        self._timeout_seconds = timeout_seconds
+        self._retry_backoff_seconds = retry_backoff_seconds
+
+    def generate(self, prompt: str) -> ToolSpec:
+        """Generate spec using OpenAI with retry logic."""
+        gen = LLMSpecGenerator(
+            backend="openai",
+            model=self._model,
+            max_retries=self._max_retries,
+            timeout_seconds=self._timeout_seconds,
+            retry_backoff_seconds=self._retry_backoff_seconds,
+        )
+        return gen.generate(prompt)
+
+
+class AnthropicSpecGenerator(SpecGeneratorProvider):
+    """
+    Generate a ToolSpec via Anthropic with structured output.
+
+    Wrapper around LLMSpecGenerator with backend="anthropic".
+    Provides a dedicated class for Anthropic-specific configuration.
+
+    Note: API key must be set via ANTHROPIC_API_KEY environment variable.
+    """
+
+    def __init__(
+        self,
+        model: str | None = None,
+        max_retries: int = 3,
+        timeout_seconds: int = 30,
+        retry_backoff_seconds: int = 1,
+    ) -> None:
+        self._model = model
+        self._max_retries = max_retries
+        self._timeout_seconds = timeout_seconds
+        self._retry_backoff_seconds = retry_backoff_seconds
+
+    def generate(self, prompt: str) -> ToolSpec:
+        """Generate spec using Anthropic with retry logic."""
+        gen = LLMSpecGenerator(
+            backend="anthropic",
+            model=self._model,
+            max_retries=self._max_retries,
+            timeout_seconds=self._timeout_seconds,
+            retry_backoff_seconds=self._retry_backoff_seconds,
+        )
+        return gen.generate(prompt)
 
 
 # ---------------------------------------------------------------------------
@@ -580,6 +745,9 @@ def generate_spec_from_prompt(
     provider: str = "rule_based",
     backend: str = "openai",
     model: str | None = None,
+    max_retries: int = 3,
+    timeout_seconds: int = 30,
+    retry_backoff_seconds: int = 1,
 ) -> ToolSpec:
     """
     Generate a ToolSpec from *prompt* using the given *provider*.
@@ -589,9 +757,18 @@ def generate_spec_from_prompt(
         provider: "rule_based" (default) or "llm".
         backend:  LLM backend when provider="llm" — "openai" or "anthropic".
         model:    Override the default model for the chosen backend.
+        max_retries: Number of retry attempts for LLM providers (default: 3).
+        timeout_seconds: Timeout in seconds for LLM API calls (default: 30).
+        retry_backoff_seconds: Base backoff in seconds for retry logic (default: 1).
     """
     if provider == "llm":
-        gen: SpecGeneratorProvider = LLMSpecGenerator(backend=backend, model=model)
+        gen: SpecGeneratorProvider = LLMSpecGenerator(
+            backend=backend,
+            model=model,
+            max_retries=max_retries,
+            timeout_seconds=timeout_seconds,
+            retry_backoff_seconds=retry_backoff_seconds,
+        )
     else:
         gen = RuleBasedSpecGenerator()
     return gen.generate(prompt)

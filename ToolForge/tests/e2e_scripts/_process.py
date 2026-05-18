@@ -1,11 +1,10 @@
 """Process-tree killing helper for pytest e2e wrappers."""
 from __future__ import annotations
 
-import os
-import signal
 import subprocess
-import time
 from pathlib import Path
+
+from tests.e2e_scripts._timeout import run_with_process_tree_timeout
 
 
 def run_process_tree(
@@ -32,67 +31,7 @@ def run_process_tree(
     Raises:
         AssertionError: If the command times out or returns non-zero exit code
     """
-    proc = subprocess.Popen(
-        cmd,
-        cwd=cwd,
-        env=env,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        start_new_session=True,
-    )
-
-    try:
-        stdout, stderr = proc.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired as exc:
-        # Kill entire process group
-        kill_process_tree(proc.pid)
-        time.sleep(0.25)
-        # Wait for process to actually terminate
-        try:
-            proc.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            pass
-        # Get any remaining output
-        stdout, stderr = proc.communicate()
-        raise AssertionError(
-            "E2E subprocess timed out and was killed\n"
-            f"cmd: {cmd}\n"
-            f"cwd: {cwd}\n"
-            f"timeout: {timeout}\n"
-            f"stdout:\n{stdout}\n"
-            f"stderr:\n{stderr}\n"
-        ) from exc
-    finally:
-        # Ensure process group is cleaned up even on success
-        if proc.poll() is None:
-            kill_process_tree(proc.pid)
-            time.sleep(0.25)
-            try:
-                proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                pass
-
-    return subprocess.CompletedProcess(
-        args=cmd,
-        returncode=proc.returncode,
-        stdout=stdout,
-        stderr=stderr,
-    )
-
-
-def kill_process_tree(pid: int) -> None:
-    """Kill entire process group for given PID with SIGTERM/SIGKILL escalation."""
-    try:
-        os.killpg(pid, signal.SIGTERM)
-        time.sleep(0.5)
-    except ProcessLookupError:
-        return
-
-    try:
-        os.killpg(pid, signal.SIGKILL)
-    except ProcessLookupError:
-        return
+    return run_with_process_tree_timeout(cmd, cwd, env, timeout)
 
 
 def collect_matching_processes(patterns: list[str]) -> list[str]:

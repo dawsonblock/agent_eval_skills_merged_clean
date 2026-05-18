@@ -185,14 +185,16 @@ def read_registry(workspace: Path) -> dict:
 
 def run_eval_internal(workspace: Path, slug: str) -> None:
     """Run eval harness internally for a tool."""
-    from packages.runners.eval_runner import run_eval as _run_eval
+    from packages.runners.eval_runner import run_evals as _run_evals
 
     tool_dir = workspace / "tools" / "generated" / slug
-    eval_dir = tool_dir / "evals"
     spec = ToolSpec.from_yaml(tool_dir / "toolforge.yaml")
 
     # Run eval harness
-    _run_eval(spec, eval_dir)
+    report = _run_evals(spec, tool_dir)
+    print(f"Eval pass rate: {report.pass_rate:.1%}")
+    if not report.overall_pass:
+        raise AssertionError(f"Eval failed: pass rate {report.pass_rate:.1%} < baseline {report.baseline_pass_rate:.1%}")
 
 
 def assert_package_contains(zip_path: Path, required: list[str]) -> None:

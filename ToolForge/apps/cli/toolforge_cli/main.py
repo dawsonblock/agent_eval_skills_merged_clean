@@ -3,6 +3,7 @@ ToolForge CLI — main entry point.
 
 Commands:
   toolforge init                          — initialise a ToolForge workspace
+  toolforge ai spec                       — generate tool spec via AI
   toolforge new tool --from-prompt TEXT   — create a tool from a prompt
   toolforge generate mcp SLUG             — generate MCP server for a tool
   toolforge generate skill SLUG           — generate SKILL.md for a tool
@@ -25,6 +26,17 @@ from rich.table import Table
 
 console = Console()
 err_console = Console(stderr=True)
+
+
+def _validate_azure_openai_params(azure_deployment: str | None, azure_endpoint: str | None) -> None:
+    """Validate Azure OpenAI provider parameters."""
+    if not azure_deployment:
+        console.print("[red]Error: --azure-deployment is required for azure_openai provider[/]")
+        sys.exit(1)
+    if not azure_endpoint:
+        console.print("[red]Error: --azure-endpoint is required for azure_openai provider[/]")
+        sys.exit(1)
+
 
 # ---------------------------------------------------------------------------
 # Workspace helpers
@@ -85,6 +97,106 @@ def init(directory: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# ai
+# ---------------------------------------------------------------------------
+
+
+@cli.group()
+def ai() -> None:
+    """AI-powered tool generation commands."""
+
+
+@ai.command("spec")
+@click.option("--prompt", "-p", required=True, help="Natural-language tool description.")
+@click.option(
+    "--provider",
+    default="rule_based",
+    type=click.Choice(["rule_based", "mock", "openai", "anthropic", "ollama", "azure_openai", "deepseek"]),
+    help="AI provider to use for spec generation.",
+)
+@click.option("--backend", default="openai", type=click.Choice(["openai", "anthropic"]), help="LLLM backend for llm provider.")
+@click.option("--model", default=None, help="Override default model for the provider.")
+@click.option("--azure-deployment", default=None, help="Azure OpenAI deployment name (required for azure_openai provider).")
+@click.option("--azure-endpoint", default=None, help="Azure OpenAI endpoint URL (required for azure_openai provider).")
+@click.option("--output", "-o", default=None, type=click.Path(), help="Output file path (default: stdout).")
+@click.option("--stdout", is_flag=True, help="Print spec to stdout instead of writing file.")
+@click.option("--interactive", is_flag=True, help="Interactive mode: review spec before writing.")
+@click.option("--dry-run", is_flag=True, help="Generate spec without writing any files.")
+@click.option("--max-retries", default=3, type=int, help="Number of retry attempts for transient errors.")
+@click.option("--timeout", default=30, type=int, help="Timeout in seconds for API calls.")
+@click.option("--fallback-to-rule-based", is_flag=True, help="Fallback to rule-based on AI failure.")
+def ai_spec(
+    prompt: str,
+    provider: str,
+    backend: str,
+    model: str | None,
+    azure_deployment: str | None,
+    azure_endpoint: str | None,
+    output: str | None,
+    stdout: bool,
+    interactive: bool,
+    dry_run: bool,
+    max_retries: int,
+    timeout: int,
+    fallback_to_rule_based: bool,
+) -> None:
+    """
+    Generate a tool spec from a natural-language prompt using AI.
+
+    IMPORTANT: AI ROLE BOUNDARIES
+    - AI returns structured data (ToolSpec objects), NOT file writes
+    - User approval is required before using AI-generated specs
+    - Fallback to rule-based generation is mandatory on AI failure
+    - No autonomous file writes or command execution
+    - See ToolForge/docs/AI_ROLE_BOUNDARIES.md for full boundaries
+    """
+    from packages.ai.spec_generator import AISpecGenerator
+
+    console.print("[bold]Generating tool spec...[/]")
+
+    # Validate required parameters for azure_openai provider
+    if provider == "azure_openai":
+        _validate_azure_openai_params(azure_deployment, azure_endpoint)
+
+    gen = AISpecGenerator(
+        provider=provider,
+        backend=backend,
+        model=model,
+        max_retries=max_retries,
+        timeout_seconds=timeout,
+        fallback_to_rule_based=fallback_to_rule_based,
+        azure_openai_deployment=azure_deployment,
+        azure_openai_endpoint=azure_endpoint,
+    )
+
+    spec = gen.generate(prompt)
+
+    import yaml
+
+    yaml_output = yaml.dump(spec.model_dump(mode="python", exclude_none=True), sort_keys=False)
+
+    if stdout:
+        console.print(yaml_output)
+        return
+
+    if interactive:
+        console.print("\n[bold]Generated spec:[/]")
+        console.print(yaml_output)
+        if not click.confirm("\nAccept this spec?"):
+            console.print("[yellow]Spec rejected.[/]")
+            sys.exit(0)
+
+    if dry_run:
+        console.print("[yellow]Dry run: spec not written.[/]")
+        console.print(yaml_output)
+        return
+
+    output_path = Path(output) if output else Path(f"{spec.slug}.yaml")
+    output_path.write_text(yaml_output, encoding="utf-8")
+    console.print(f"[green]✓[/] Spec written to {output_path}")
+
+
+# ---------------------------------------------------------------------------
 # new
 # ---------------------------------------------------------------------------
 
@@ -97,17 +209,29 @@ def new() -> None:
 @new.command("tool")
 @click.option("--from-prompt", "prompt", required=True, help="Natural-language tool description.")
 @click.option("--slug", default=None, help="Override the generated slug.")
-@click.option("--provider", default="rule_based", type=click.Choice(["rule_based", "llm"]))
-@click.option("--llm-backend", default="openai", type=click.Choice(["openai", "anthropic"]))
-@click.option("--model", default=None, help="Override default LLM model.")
+@click.option("--provider", default="rule_based", type=click.Choice(["rule_based", "llm", "openai", "anthropic", "ollama", "azure_openai"]))
+@click.option("--llm-backend", default="openai", type=click.Choice(["openai", "anthropic"]), help="LLM backend for llm provider.")
+@click.option("--model", default=None, help="Override default model for the provider.")
+@click.option("--azure-deployment", default=None, help="Azure OpenAI deployment name (required for azure_openai provider).")
+@click.option("--azure-endpoint", default=None, help="Azure OpenAI endpoint URL (required for azure_openai provider).")
 @click.option("--overwrite", is_flag=True, help="Overwrite existing files.")
+@click.option("--review", is_flag=True, help="Review spec before scaffolding.")
+@click.option("--fallback-to-rule-based", is_flag=True, help="Fallback to rule-based on AI failure.")
+@click.option("--max-retries", default=3, type=int, help="Number of retry attempts for transient errors.")
+@click.option("--timeout", default=30, type=int, help="Timeout in seconds for API calls.")
 def new_tool(
     prompt: str,
     slug: str | None,
     provider: str,
     llm_backend: str,
     model: str | None,
+    azure_deployment: str | None,
+    azure_endpoint: str | None,
     overwrite: bool,
+    review: bool,
+    fallback_to_rule_based: bool,
+    max_retries: int,
+    timeout: int,
 ) -> None:
     """Generate a tool spec and scaffold from a natural-language PROMPT."""
     from packages.core.spec_from_prompt import generate_spec_from_prompt
@@ -116,9 +240,50 @@ def new_tool(
     workspace_root = _find_workspace_root()
 
     console.print("[bold]Generating spec...[/]")
-    spec = generate_spec_from_prompt(prompt, provider=provider, backend=llm_backend, model=model)
+
+    # Validate required parameters for azure_openai provider
+    if provider == "azure_openai":
+        _validate_azure_openai_params(azure_deployment, azure_endpoint)
+
+    # Use new AI integration for AI providers
+    if provider in ("openai", "anthropic", "ollama", "azure_openai"):
+        from packages.ai.spec_generator import AISpecGenerator
+
+        gen = AISpecGenerator(
+            provider=provider,
+            backend=llm_backend,
+            model=model,
+            max_retries=max_retries,
+            timeout_seconds=timeout,
+            fallback_to_rule_based=fallback_to_rule_based,
+            azure_openai_deployment=azure_deployment,
+            azure_openai_endpoint=azure_endpoint,
+        )
+        spec = gen.generate(prompt)
+    elif provider == "llm":
+        spec = generate_spec_from_prompt(
+            prompt,
+            provider="llm",
+            backend=llm_backend,
+            model=model,
+            max_retries=max_retries,
+            timeout_seconds=timeout,
+        )
+    else:
+        spec = generate_spec_from_prompt(prompt, provider="rule_based")
+
     if slug:
         spec = spec.model_copy(update={"slug": slug})
+
+    # Review mode
+    if review:
+        import yaml
+
+        console.print("\n[bold]Generated spec:[/]")
+        console.print(yaml.dump(spec.model_dump(mode="python", exclude_none=True), sort_keys=False))
+        if not click.confirm("\nProceed with scaffolding?"):
+            console.print("[yellow]Scaffolding cancelled.[/]")
+            sys.exit(0)
 
     output_root = workspace_root / "tools" / "generated"
     try:

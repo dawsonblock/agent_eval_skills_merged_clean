@@ -6,11 +6,11 @@ from __future__ import annotations
 import json
 import os
 import re
-import signal
-import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from packages.core.process_timeout import run_with_process_tree_timeout
 from packages.core.safety_analyzer import analyze_safety
 from packages.core.tool_spec import ToolSpec
 
@@ -86,43 +86,14 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
     nested_env["TOOLFORGE_NESTED_PYTEST"] = "1"
 
     try:
-        proc = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            cwd=str(tool_dir),
-            env=nested_env,
-            start_new_session=True,
+        result = run_with_process_tree_timeout(
+            cmd, tool_dir, nested_env, timeout, grace_period=0.5
         )
-        try:
-            stdout, stderr = proc.communicate(timeout=timeout)
-            result = subprocess.CompletedProcess(
-                args=cmd,
-                returncode=proc.returncode,
-                stdout=stdout,
-                stderr=stderr,
-            )
-        except subprocess.TimeoutExpired:
-            # Try SIGTERM first
-            try:
-                os.killpg(proc.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            # Wait a bit for graceful shutdown
-            try:
-                proc.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                # Force kill with SIGKILL
-                try:
-                    os.killpg(proc.pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
-                proc.wait(timeout=2)
-            stdout, stderr = proc.communicate()
-            report.errors = 1
-            report.failures.append({"message": f"Tests timed out after {timeout}s"})
-            return report
+    except AssertionError as exc:
+        # Timeout occurred - consolidated helper already killed process
+        report.errors = 1
+        report.failures.append({"message": str(exc)})
+        return report
     except FileNotFoundError:
         # pytest not installed; fall back to counting with regex
         report.errors = 1
@@ -137,46 +108,13 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         or "error: unrecognized arguments" in combined_output
     ):
         try:
-            proc = subprocess.Popen(
-                fallback_cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                cwd=str(tool_dir),
-                env=nested_env,
-                start_new_session=True,
+            result = run_with_process_tree_timeout(
+                fallback_cmd, tool_dir, nested_env, timeout, grace_period=0.5
             )
-            try:
-                stdout, stderr = proc.communicate(timeout=timeout)
-                result = subprocess.CompletedProcess(
-                    args=fallback_cmd,
-                    returncode=proc.returncode,
-                    stdout=stdout,
-                    stderr=stderr,
-                )
-            except subprocess.TimeoutExpired:
-                # Try SIGTERM first
-                try:
-                    os.killpg(proc.pid, signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
-                # Wait a bit for graceful shutdown
-                try:
-                    proc.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    # Force kill with SIGKILL
-                    try:
-                        os.killpg(proc.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    proc.wait(timeout=2)
-                stdout, stderr = proc.communicate()
-                report.errors = 1
-                report.failures.append({"message": f"Tests timed out after {timeout}s"})
-                return report
-        except subprocess.TimeoutExpired:
+        except AssertionError as exc:
+            # Timeout occurred - consolidated helper already killed process
             report.errors = 1
-            report.failures.append({"message": f"Tests timed out after {timeout}s"})
+            report.failures.append({"message": str(exc)})
             return report
 
     had_json_report = json_output.exists()

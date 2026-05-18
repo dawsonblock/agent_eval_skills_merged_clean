@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import os
-import signal
 import subprocess
 import sys
 import zipfile
 from pathlib import Path
+
+from tests.e2e_scripts._timeout import run_with_process_tree_timeout
 
 
 def find_toolforge_root() -> Path:
@@ -70,62 +71,17 @@ def run_toolforge(
     env = build_clean_env()
     cmd = [sys.executable, "-m", "apps.cli.toolforge_cli.main", *args]
 
-    proc = subprocess.Popen(
-        cmd,
-        cwd=cwd,
-        env=env,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        start_new_session=True,
-    )
+    result = run_with_process_tree_timeout(cmd, cwd, env, timeout)
 
-    try:
-        stdout, stderr = proc.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired as exc:
-        try:
-            os.killpg(proc.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        # Wait for process to actually terminate
-        try:
-            proc.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            pass
-        stdout, stderr = proc.communicate()
-        if check:
-            raise AssertionError(
-                f"Command timed out after {timeout}s: {cmd}\n"
-                f"cwd={cwd}\n"
-                f"stdout:\n{stdout}\n"
-                f"stderr:\n{stderr}"
-            ) from exc
-        return subprocess.CompletedProcess(
-            args=cmd, returncode=-1, stdout=stdout, stderr=stderr
-        )
-    finally:
-        # Ensure process group is cleaned up even on success
-        if proc.poll() is None:
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            try:
-                proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                pass
-
-    if check and proc.returncode != 0:
+    if check and result.returncode != 0:
         raise AssertionError(
-            f"Command failed with return code {proc.returncode}: {cmd}\n"
+            f"Command failed with return code {result.returncode}: {cmd}\n"
             f"cwd={cwd}\n"
-            f"stdout:\n{stdout}\n"
-            f"stderr:\n{stderr}"
+            f"stdout:\n{result.stdout}\n"
+            f"stderr:\n{result.stderr}"
         )
 
-    return subprocess.CompletedProcess(
-        args=cmd, returncode=proc.returncode, stdout=stdout, stderr=stderr
-    )
+    return result
 
 
 def assert_contains(text: str, substring: str, message: str = "") -> None:
