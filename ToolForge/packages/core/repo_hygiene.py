@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Iterator
 
 
 _TEXT_SUFFIXES = {
@@ -60,7 +61,7 @@ def _should_skip(path: Path) -> bool:
     return any(part in _SKIP_DIRS for part in path.parts)
 
 
-def _iter_text_files(root: Path) -> list[Path]:
+def _iter_text_files(root: Path) -> Iterator[Path]:
     for file_path in sorted(root.rglob("*")):
         if not file_path.is_file():
             continue

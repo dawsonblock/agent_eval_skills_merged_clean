@@ -5,9 +5,12 @@ import json
 import zipfile
 from pathlib import Path
 
+import pytest
+
 from apps.cli.toolforge_cli.test_helpers import combined_output, run_toolforge
 
 
+@pytest.mark.e2e_isolated
 def test_cli_e2e_csv_cleaner(tmp_path: Path) -> None:
     def invoke(args: list[str]):
         return run_toolforge(args, cwd=tmp_path)

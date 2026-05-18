@@ -9,7 +9,7 @@ from pathlib import Path
 from packages.core.tool_spec import EvalCase
 
 
-def load_toolathlon_task(task_path: Path) -> dict[str, object]:
+def load_toolathlon_task(task_path: Path) -> dict:
     """Load a toolathlon task JSON or YAML and return as dict."""
     text = task_path.read_text(encoding="utf-8")
     if task_path.suffix in (".yaml", ".yml"):
@@ -19,7 +19,7 @@ def load_toolathlon_task(task_path: Path) -> dict[str, object]:
     return json.loads(text)
 
 
-def task_to_eval_cases(task: dict[str, object], idx: int = 0) -> list[EvalCase]:
+def task_to_eval_cases(task: dict, idx: int = 0) -> list[EvalCase]:
     """
     Convert a single toolathlon task dict into a list of ToolForge EvalCase objects.
 

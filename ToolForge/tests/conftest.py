@@ -14,6 +14,13 @@ if str(toolforge_root) not in sys.path:
     sys.path.insert(0, str(toolforge_root))
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    """Configure pytest markers."""
+    config.addinivalue_line(
+        "markers", "e2e_isolated: mark test as requiring process isolation"
+    )
+
+
 @pytest.fixture(autouse=True)
 def restore_process_state() -> None:
     """Prevent process-global leakage between tests (cwd/env/argv/sys.path)."""
