@@ -60,7 +60,7 @@ def _should_skip(path: Path) -> bool:
     return any(part in _SKIP_DIRS for part in path.parts)
 
 
-def _iter_text_files(root: Path):
+def _iter_text_files(root: Path) -> list[Path]:
     for file_path in sorted(root.rglob("*")):
         if not file_path.is_file():
             continue
