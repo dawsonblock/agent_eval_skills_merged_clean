@@ -5,6 +5,10 @@ set -euo pipefail
 
 # Set module-mode CLI for consistent behavior
 export TOOLFORGE_TEST_USE_MODULE_CLI=1
+export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(cd "$(dirname "$0")/.." && pwd)"
+
+# Get repo root before changing directories
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Cross-platform timeout function using Python wrapper
 run_with_timeout() {
@@ -12,7 +16,12 @@ run_with_timeout() {
     shift
     local cmd=("$@")
 
-    python3 "$(dirname "$0")/run_with_timeout.py" --timeout "${timeout_seconds}" -- "${cmd[@]}"
+    # Use python -m to run toolforge instead of relying on PATH
+    if [[ "${cmd[0]}" == "toolforge" ]]; then
+        cmd=("python3" "-m" "apps.cli.toolforge_cli.main" "${cmd[@]:1}")
+    fi
+
+    python3 "$REPO_ROOT/scripts/run_with_timeout.py" --timeout "${timeout_seconds}" "${cmd[@]}"
 }
 
 DEMO_DIR="$(mktemp -d /tmp/toolforge_demo_XXXX)"
