@@ -6,6 +6,8 @@ avoiding the overhead and potential hangs of spawning CLI subprocesses.
 """
 from __future__ import annotations
 
+import json
+import zipfile
 from pathlib import Path
 
 from packages.core.eval_generator import generate_eval as _generate_eval
@@ -29,6 +31,17 @@ def create_workspace(tmp_root: Path) -> Path:
     registry_file = workspace / "toolforge_registry.json"
     registry_file.write_text("{}", encoding="utf-8")
     return workspace
+
+
+def init_workspace(workspace: Path) -> None:
+    """Initialize an existing workspace directory."""
+    marker = workspace / ".toolforge"
+    marker.mkdir(exist_ok=True)
+    for subdir in ("tools/generated", "skills/generated", "evals/generated", "dist"):
+        (workspace / subdir).mkdir(parents=True, exist_ok=True)
+    registry_file = workspace / "toolforge_registry.json"
+    if not registry_file.exists():
+        registry_file.write_text("{}", encoding="utf-8")
 
 
 def generate_tool_from_prompt(
@@ -150,13 +163,57 @@ def assert_registry_packaged(workspace: Path, slug: str) -> None:
     """Assert that a tool is registered with package path."""
     registry = ToolRegistry(workspace / "toolforge_registry.json")
     metadata = registry.get_metadata(slug)
-    
+
     if metadata is None:
         raise AssertionError(f"Tool {slug} not found in registry")
-    
+
     if not metadata.get("package_path"):
         raise AssertionError(f"Tool {slug} has no package path in registry")
-    
+
     package_path = Path(metadata["package_path"])
     if not package_path.exists():
         raise AssertionError(f"Package path does not exist: {package_path}")
+
+
+def read_registry(workspace: Path) -> dict:
+    """Read the toolforge registry as a dict."""
+    registry_file = workspace / "toolforge_registry.json"
+    if not registry_file.exists():
+        return {}
+    return json.loads(registry_file.read_text(encoding="utf-8"))
+
+
+def run_eval_internal(workspace: Path, slug: str) -> None:
+    """Run eval harness internally for a tool."""
+    from packages.runners.eval_runner import run_eval as _run_eval
+
+    tool_dir = workspace / "tools" / "generated" / slug
+    eval_dir = tool_dir / "evals"
+    spec = ToolSpec.from_yaml(tool_dir / "toolforge.yaml")
+
+    # Run eval harness
+    _run_eval(spec, eval_dir)
+
+
+def assert_package_contains(zip_path: Path, required: list[str]) -> None:
+    """Assert that zip file contains required files."""
+    with zipfile.ZipFile(zip_path) as zf:
+        names = set(zf.namelist())
+        for expected in required:
+            if expected not in names:
+                raise AssertionError(
+                    f"Zip {zip_path} missing expected file: {expected}"
+                )
+
+
+def assert_package_excludes(zip_path: Path, forbidden: list[str]) -> None:
+    """Assert that zip file excludes files matching patterns."""
+    with zipfile.ZipFile(zip_path) as zf:
+        names = zf.namelist()
+        for pattern in forbidden:
+            for name in names:
+                if pattern in name:
+                    raise AssertionError(
+                        f"Zip {zip_path} should exclude pattern "
+                        f"'{pattern}' but found: {name}"
+                    )

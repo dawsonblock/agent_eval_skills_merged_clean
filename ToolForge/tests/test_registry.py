@@ -3,15 +3,13 @@
 Covers initialization, registration, metadata updates, querying, persistence,
 edge cases, and error handling.
 """
-import json
 import logging
 import tempfile
 from pathlib import Path
-from typing import Any
 
 import pytest
 
-from packages.core.registry import ToolRegistry, ToolStatus
+from packages.core.registry import ToolRegistry
 from packages.core.tool_spec import ToolSpec
 
 

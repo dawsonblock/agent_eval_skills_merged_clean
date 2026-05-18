@@ -178,11 +178,13 @@ def assert_no_leaked_processes() -> None:
         for line in result.stdout.splitlines():
             line_lower = line.lower()
             # Only flag actual ToolForge subprocess processes
-            # Exclude: mypy, pytest, shell commands, ps itself
+            # Exclude: mypy, pytest, shell commands, ps itself, grep
             if "apps.cli.toolforge_cli.main" in line_lower:
-                # Skip if it's mypy or pytest checking the code
+                # Skip if it's mypy, pytest, or the parent shell
                 if "mypy" not in line_lower and "pytest" not in line_lower:
-                    leaked.append(line)
+                    # Also skip if it's a grep command checking for processes
+                    if "grep" not in line_lower:
+                        leaked.append(line)
 
         if leaked:
             raise AssertionError(

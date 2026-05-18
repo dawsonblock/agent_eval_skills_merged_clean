@@ -82,7 +82,13 @@ def run_process_tree(
 
 
 def kill_process_tree(pid: int) -> None:
-    """Kill entire process group for given PID."""
+    """Kill entire process group for given PID with SIGTERM/SIGKILL escalation."""
+    try:
+        os.killpg(pid, signal.SIGTERM)
+        time.sleep(0.5)
+    except ProcessLookupError:
+        return
+
     try:
         os.killpg(pid, signal.SIGKILL)
     except ProcessLookupError:
