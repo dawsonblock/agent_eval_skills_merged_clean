@@ -44,10 +44,17 @@ def run_process_tree(
     try:
         stdout, stderr = proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired as exc:
+        # Kill entire process group
         try:
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
+        # Wait for process to actually terminate
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        # Get any remaining output
         stdout, stderr = proc.communicate()
         raise AssertionError(
             "E2E subprocess timed out and was killed\n"
@@ -57,6 +64,17 @@ def run_process_tree(
             f"stdout:\n{stdout}\n"
             f"stderr:\n{stderr}\n"
         ) from exc
+    finally:
+        # Ensure process group is cleaned up even on success
+        if proc.poll() is None:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                pass
 
     return subprocess.CompletedProcess(
         args=cmd,

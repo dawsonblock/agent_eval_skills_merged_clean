@@ -503,6 +503,8 @@ def registry_list() -> None:
 
     if not tools:
         console.print("[yellow]No tools registered.[/]")
+        sys.stdout.flush()
+        sys.stderr.flush()
         return
 
     table = Table(title="Registered Tools", show_header=True)
@@ -514,6 +516,8 @@ def registry_list() -> None:
     for s in tools:
         table.add_row(s.slug, s.name, s.version, ", ".join(s.tags))
     console.print(table)
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 
 @registry.command("search")
@@ -528,10 +532,14 @@ def registry_search(tag: str) -> None:
 
     if not tools:
         console.print(f"[yellow]No tools tagged '{tag}'.[/]")
+        sys.stdout.flush()
+        sys.stderr.flush()
         return
 
     for s in tools:
         console.print(f"  [cyan]{s.slug}[/]  {s.description}")
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 
 @registry.command("info")
@@ -546,6 +554,8 @@ def registry_info(slug: str) -> None:
 
     if spec is None:
         console.print(f"[red]Tool '{slug}' not found in registry.[/]")
+        sys.stdout.flush()
+        sys.stderr.flush()
         sys.exit(1)
 
     console.print(f"[bold]{spec.name}[/] ({spec.slug}) v{spec.version}")
@@ -564,6 +574,8 @@ def registry_info(slug: str) -> None:
     console.print(f"  Skill path: {meta.get('skill_path') or '—'}")
     console.print(f"  Eval path: {meta.get('eval_path') or '—'}")
     console.print(f"  Package path: {meta.get('package_path') or '—'}")
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 
 # ---------------------------------------------------------------------------

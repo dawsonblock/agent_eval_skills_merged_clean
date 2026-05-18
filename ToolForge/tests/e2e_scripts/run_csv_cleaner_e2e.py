@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from tests.e2e_scripts._runner import (  # noqa: E402
     assert_contains,
     assert_file_exists,
+    assert_no_leaked_processes,
     assert_zip_contains,
     assert_zip_excludes,
     run_toolforge,
@@ -147,6 +148,12 @@ def main() -> int:
         assert metadata["last_run"]
         assert metadata["last_run_success"] is False
         assert metadata["last_run_type"] == "safety_test"
+
+        print("\n✓ All E2E steps passed.")
+
+        # Check for leaked processes
+        assert_no_leaked_processes()
+
         assert metadata["operational_last_run_success"] is True
         assert metadata["last_successful_run"]
         assert metadata["last_failed_run"]

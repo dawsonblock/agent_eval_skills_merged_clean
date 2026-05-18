@@ -87,6 +87,11 @@ def run_toolforge(
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
+        # Wait for process to actually terminate
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
         stdout, stderr = proc.communicate()
         if check:
             raise AssertionError(
@@ -98,6 +103,17 @@ def run_toolforge(
         return subprocess.CompletedProcess(
             args=cmd, returncode=-1, stdout=stdout, stderr=stderr
         )
+    finally:
+        # Ensure process group is cleaned up even on success
+        if proc.poll() is None:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                pass
 
     if check and proc.returncode != 0:
         raise AssertionError(
@@ -146,3 +162,37 @@ def assert_zip_excludes(zip_path: Path, excluded_patterns: list[str]) -> None:
                         f"Zip {zip_path} should exclude pattern "
                         f"'{pattern}' but found: {name}"
                     )
+
+
+def assert_no_leaked_processes() -> None:
+    """Assert no ToolForge-related processes are still running."""
+    try:
+        # Use ps to check for leaked processes
+        result = subprocess.run(
+            ["ps", "aux"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        leaked = []
+        for line in result.stdout.splitlines():
+            line_lower = line.lower()
+            if any(
+                pattern in line_lower
+                for pattern in [
+                    "apps.cli.toolforge_cli.main",
+                    "toolforge",
+                    "tools/generated/",
+                ]
+            ):
+                # Skip the ps command itself and the current script
+                if "ps aux" not in line_lower and "run_" not in line_lower:
+                    leaked.append(line)
+
+        if leaked:
+            raise AssertionError(
+                "Found leaked ToolForge processes:\n" + "\n".join(leaked)
+            )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        # ps command not available or timed out - skip check
+        pass
