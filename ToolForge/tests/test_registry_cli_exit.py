@@ -93,4 +93,5 @@ def test_registry_info_exits_cleanly() -> None:
         )
         assert result.returncode == 0
         assert "csv-cleaner" in result.stdout.lower()
-        assert "version" in result.stdout.lower()
+        # Check that version info is present (e.g., "v0.1.0")
+        assert "v0.1.0" in result.stdout.lower()
