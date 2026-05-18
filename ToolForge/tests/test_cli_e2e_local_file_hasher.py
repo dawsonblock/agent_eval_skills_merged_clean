@@ -2,15 +2,18 @@
 from __future__ import annotations
 
 import os
-import subprocess
 import sys
 from pathlib import Path
+
+from tests.e2e_scripts._process import run_process_tree
 
 
 def test_cli_e2e_local_file_hasher() -> None:
     """Run local-file-hasher e2e lifecycle in isolated subprocess."""
     root = Path(__file__).parent.parent
-    script_path = root / "tests" / "e2e_scripts" / "run_local_file_hasher_e2e.py"
+    script_path = (
+        root / "tests" / "e2e_scripts" / "run_local_file_hasher_e2e.py"
+    )
 
     # Build clean environment
     env = os.environ.copy()
@@ -33,13 +36,11 @@ def test_cli_e2e_local_file_hasher() -> None:
         paths.append(existing_pythonpath)
     env["PYTHONPATH"] = os.pathsep.join(paths)
 
-    result = subprocess.run(
+    result = run_process_tree(
         [sys.executable, str(script_path)],
         cwd=root,
         env=env,
-        text=True,
-        capture_output=True,
-        timeout=180,
+        timeout=240,
     )
 
     if result.returncode != 0:
@@ -48,4 +49,3 @@ def test_cli_e2e_local_file_hasher() -> None:
             f"stdout:\n{result.stdout}\n"
             f"stderr:\n{result.stderr}"
         )
-

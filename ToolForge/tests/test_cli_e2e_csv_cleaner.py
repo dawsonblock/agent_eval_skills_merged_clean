@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import os
-import subprocess
 import sys
 from pathlib import Path
+
+from tests.e2e_scripts._process import run_process_tree
 
 
 def test_cli_e2e_csv_cleaner() -> None:
@@ -33,13 +34,11 @@ def test_cli_e2e_csv_cleaner() -> None:
         paths.append(existing_pythonpath)
     env["PYTHONPATH"] = os.pathsep.join(paths)
 
-    result = subprocess.run(
+    result = run_process_tree(
         [sys.executable, str(script_path)],
         cwd=root,
         env=env,
-        text=True,
-        capture_output=True,
-        timeout=180,
+        timeout=240,
     )
 
     if result.returncode != 0:

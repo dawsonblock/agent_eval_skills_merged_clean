@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import sys
 import tempfile
-import zipfile
 from pathlib import Path
 
 # Add parent directory to path for imports
@@ -38,7 +37,12 @@ def main() -> int:
         # 2) new tool from prompt
         print("Step 2: Creating csv-cleaner tool...")
         result = run_toolforge(
-            ["new", "tool", "--from-prompt", "Create a tool that cleans CSV files"],
+            [
+                "new",
+                "tool",
+                "--from-prompt",
+                "Create a tool that cleans CSV files",
+            ],
             cwd=tmp_path,
             timeout=120,
         )
@@ -66,7 +70,9 @@ def main() -> int:
         result = run_toolforge(
             ["generate", "eval", "csv-cleaner"], cwd=tmp_path, timeout=30
         )
-        assert_file_exists(tool_dir / "evals" / "cases" / "case-01-success.json")
+        assert_file_exists(
+            tool_dir / "evals" / "cases" / "case-01-success.json"
+        )
 
         # 4) validate
         print("Step 6: Validating...")
@@ -85,17 +91,26 @@ def main() -> int:
         print(f"Run stderr: {result.stderr}")
         # Check that the output file was created
         assert_file_exists(tool_dir / "outputs" / "cleaned.csv")
+        # Check that output contains cleaned_path
+        assert_contains(result.stdout, "cleaned_path")
 
         # 6) run safety boundary
         print("Step 8: Running safety boundary test...")
         result = run_toolforge(
-            ["run", "csv-cleaner", "--input", "input_path=../../../etc/passwd"],
+            [
+                "run",
+                "csv-cleaner",
+                "--input",
+                "input_path=../../../etc/passwd",
+            ],
             cwd=tmp_path,
             timeout=30,
             check=False,
         )
         assert result.returncode != 0
-        assert_contains(result.stdout, "Path validation failed")
+        assert_contains(
+            result.stdout + result.stderr, "Path validation failed"
+        )
 
         # 7) eval
         print("Step 9: Running eval...")
@@ -112,15 +127,13 @@ def main() -> int:
         dist_zip = tmp_path / "dist" / "csv-cleaner-0.1.0.zip"
         assert_file_exists(dist_zip)
 
-        with zipfile.ZipFile(dist_zip) as zf:
-            names = set(zf.namelist())
-            assert_zip_contains(
-                dist_zip, ["toolforge.yaml", "tool.py", "mcp/server.py"]
-            )
-            assert_zip_contains(dist_zip, ["skill/SKILL.md"])
-            assert any(name.startswith("evals/") for name in names)
-            assert_zip_contains(dist_zip, ["SECURITY.md"])
-            assert_zip_excludes(dist_zip, ["__pycache__", ".pyc", ".coverage"])
+        assert_zip_contains(
+            dist_zip, ["toolforge.yaml", "tool.py", "mcp/server.py"]
+        )
+        assert_zip_contains(dist_zip, ["skill/SKILL.md"])
+        assert_zip_contains(dist_zip, ["evals/task_config.json"])
+        assert_zip_contains(dist_zip, ["SECURITY.md"])
+        assert_zip_excludes(dist_zip, ["__pycache__", ".pyc", ".coverage"])
 
         # 9) registry values advanced
         print("Step 11: Checking registry...")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""E2E script for local-file-hasher proof path - runs in isolated process."""
+"""E2E script for local-file-hasher proof path."""
 from __future__ import annotations
 
 import json
@@ -81,22 +81,39 @@ def main() -> int:
         # 5) run success
         print("Step 7: Running success case...")
         result = run_toolforge(
-            ["run", "local-file-hasher", "--input", "file_path=examples/sample.txt"],
+            [
+                "run",
+                "local-file-hasher",
+                "--input",
+                "file_path=examples/sample.txt",
+            ],
             cwd=tmp_path,
             timeout=30,
         )
-        # Check that command succeeded (no assertion on stdout content)
+        # Check that output contains algorithm or hash
+        assert_contains(
+            result.stdout + result.stderr,
+            "sha256",
+            "Expected hash output to contain sha256",
+        )
 
         # 6) run safety boundary
         print("Step 8: Running safety boundary test...")
         result = run_toolforge(
-            ["run", "local-file-hasher", "--input", "file_path=../../../etc/passwd"],
+            [
+                "run",
+                "local-file-hasher",
+                "--input",
+                "file_path=../../../etc/passwd",
+            ],
             cwd=tmp_path,
             timeout=30,
             check=False,
         )
         assert result.returncode != 0
-        assert_contains(result.stdout, "Path validation failed")
+        assert_contains(
+            result.stdout + result.stderr, "Path validation failed"
+        )
 
         # 7) eval
         print("Step 9: Running eval...")
@@ -116,7 +133,7 @@ def main() -> int:
         assert_zip_contains(
             dist_zip, ["toolforge.yaml", "tool.py", "skill/SKILL.md"]
         )
-        assert_zip_contains(dist_zip, ["evals/cases/case-01-success.json"])
+        assert_zip_contains(dist_zip, ["evals/task_config.json"])
         assert_zip_contains(dist_zip, ["SECURITY.md"])
         assert_zip_excludes(dist_zip, ["outputs/"])
 

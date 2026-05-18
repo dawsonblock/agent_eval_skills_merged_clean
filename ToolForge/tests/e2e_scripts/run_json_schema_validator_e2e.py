@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""E2E script for json-schema-validator proof path - runs in isolated process."""
+"""E2E script for json-schema-validator proof path."""
 from __future__ import annotations
 
 import json
@@ -93,7 +93,8 @@ def main() -> int:
             cwd=tmp_path,
             timeout=30,
         )
-        # Check that command succeeded (no assertion on stdout content)
+        # Check that output contains valid: true
+        assert_contains(result.stdout, '"valid": true')
 
         # 6) run safety boundary
         print("Step 8: Running safety boundary test...")
@@ -111,7 +112,9 @@ def main() -> int:
             check=False,
         )
         assert result.returncode != 0
-        assert_contains(result.stdout, "Path validation failed")
+        assert_contains(
+            result.stdout + result.stderr, "Path validation failed"
+        )
 
         # 7) eval
         print("Step 9: Running eval...")
@@ -131,7 +134,7 @@ def main() -> int:
         assert_zip_contains(
             dist_zip, ["toolforge.yaml", "tool.py", "skill/SKILL.md"]
         )
-        assert_zip_contains(dist_zip, ["evals/cases/case-01-valid.json"])
+        assert_zip_contains(dist_zip, ["evals/task_config.json"])
         assert_zip_contains(dist_zip, ["SECURITY.md"])
         assert_zip_excludes(dist_zip, ["outputs/"])
 

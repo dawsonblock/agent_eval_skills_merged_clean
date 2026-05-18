@@ -1,5 +1,4 @@
 """Tests for ToolForge custom exceptions."""
-import pytest
 
 from packages.core.errors import (
     ToolForgeError,

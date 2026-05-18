@@ -82,8 +82,11 @@ def run_toolforge(
 
     try:
         stdout, stderr = proc.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        os.killpg(proc.pid, signal.SIGKILL)
+    except subprocess.TimeoutExpired as exc:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
         stdout, stderr = proc.communicate()
         if check:
             raise AssertionError(
@@ -91,8 +94,10 @@ def run_toolforge(
                 f"cwd={cwd}\n"
                 f"stdout:\n{stdout}\n"
                 f"stderr:\n{stderr}"
-            )
-        return subprocess.CompletedProcess(cmd, -1, stdout, stderr)
+            ) from exc
+        return subprocess.CompletedProcess(
+            args=cmd, returncode=-1, stdout=stdout, stderr=stderr
+        )
 
     if check and proc.returncode != 0:
         raise AssertionError(
@@ -102,7 +107,9 @@ def run_toolforge(
             f"stderr:\n{stderr}"
         )
 
-    return subprocess.CompletedProcess(proc.returncode, stdout, stderr)
+    return subprocess.CompletedProcess(
+        args=cmd, returncode=proc.returncode, stdout=stdout, stderr=stderr
+    )
 
 
 def assert_contains(text: str, substring: str, message: str = "") -> None:
