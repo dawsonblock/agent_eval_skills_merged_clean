@@ -82,9 +82,9 @@ def scan_conflict_markers(root: Path) -> list[HygieneIssue]:
         for line_number, line in enumerate(text.splitlines(), start=1):
             stripped = line.strip()
             if (
-                stripped.startswith(f"{_MARKER_LEFT} ")
+                stripped.startswith(_MARKER_LEFT)
                 or stripped == _MARKER_MID
-                or stripped.startswith(f"{_MARKER_RIGHT} ")
+                or stripped.startswith(_MARKER_RIGHT)
             ):
                 issues.append(
                     HygieneIssue(

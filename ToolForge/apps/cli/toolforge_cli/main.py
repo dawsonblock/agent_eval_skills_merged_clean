@@ -114,7 +114,7 @@ def ai() -> None:
     type=click.Choice(["rule_based", "mock", "openai", "anthropic", "ollama", "azure_openai", "deepseek"]),
     help="AI provider to use for spec generation.",
 )
-@click.option("--backend", default="openai", type=click.Choice(["openai", "anthropic"]), help="LLLM backend for llm provider.")
+@click.option("--backend", default="openai", type=click.Choice(["openai", "anthropic"]), help="LLM backend for llm provider.")
 @click.option("--model", default=None, help="Override default model for the provider.")
 @click.option("--azure-deployment", default=None, help="Azure OpenAI deployment name (required for azure_openai provider).")
 @click.option("--azure-endpoint", default=None, help="Azure OpenAI endpoint URL (required for azure_openai provider).")
@@ -575,7 +575,9 @@ def run(slug: str, inputs: tuple[str, ...], timeout: float) -> None:
         console.print(result.output)
     else:
         err_console.print(f"[red]Error (exit {result.exit_code}):[/] {result.error}")
-        sys.exit(result.exit_code)
+        # Clamp to a positive exit code — sandbox_runner uses -1 for timeout/
+        # docker failures, which maps to 255 on Unix and confuses callers.
+        sys.exit(result.exit_code if result.exit_code > 0 else 1)
 
 
 # ---------------------------------------------------------------------------
