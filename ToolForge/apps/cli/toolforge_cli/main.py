@@ -741,6 +741,9 @@ def registry_info(slug: str) -> None:
     console.print(f"  Package path: {meta.get('package_path') or '—'}")
     sys.stdout.flush()
     sys.stderr.flush()
+    # Explicit exit ensures the subprocess terminates cleanly regardless of
+    # any Python atexit / Rich console cleanup that might stall on a pipe.
+    sys.exit(0)
 
 
 # ---------------------------------------------------------------------------

@@ -10,6 +10,7 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent / "ToolForge"
 sys.path.insert(0, str(repo_root))
 
+from packages.core.process_timeout import ProcessTimeoutError  # noqa: E402
 from tests.e2e_scripts._timeout import (  # noqa: E402
     run_with_process_tree_timeout,
 )
@@ -45,9 +46,9 @@ def main() -> int:
         sys.stdout.write(result.stdout)
         sys.stderr.write(result.stderr)
         return result.returncode
-    except AssertionError as exc:
+    except (AssertionError, ProcessTimeoutError) as exc:
         # Timeout occurred - consolidated helper already killed process
-        sys.stdout.write(str(exc))
+        sys.stdout.write(str(exc) + "\n")
         return 124  # timeout exit code
 
 

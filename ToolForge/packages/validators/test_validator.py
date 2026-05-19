@@ -53,12 +53,15 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
         "pytest_jsonreport.plugin",
         "-p",
         "pytest_cov.plugin",
+        "-p",
+        "pytest_timeout",
         str(tests_dir),
         "-o",
         "addopts=",
         "--no-cov",
         "--tb=short",
         "-q",
+        "--timeout=30",
         "--json-report",
         f"--json-report-file={json_output}",
     ]
@@ -69,12 +72,15 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
         "pytest",
         "-p",
         "pytest_cov.plugin",
+        "-p",
+        "pytest_timeout",
         str(tests_dir),
         "-o",
         "addopts=",
         "--no-cov",
         "--tb=short",
         "-q",
+        "--timeout=30",
     ]
 
     nested_env = os.environ.copy()

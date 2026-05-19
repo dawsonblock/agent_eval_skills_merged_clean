@@ -17,6 +17,7 @@ from __future__ import annotations
 import fnmatch
 import hashlib
 import json
+import os
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -191,11 +192,22 @@ def build_package(
         # Write manifest first (will update with file hashes before final write)
         temp_files: list[tuple[Path, str]] = []
 
-        # Walk the tool directory and collect files
-        for file_path in sorted(tool_dir.rglob("*")):
-            if file_path.is_file():
-                # Skip excluded files
-                if _should_exclude(file_path):
+        # Walk the tool directory and collect files.
+        # os.walk with followlinks=False prevents symlink cycles and avoids
+        # following links that might point outside the tool directory.
+        # Excluded directories are pruned in-place so we never descend into
+        # __pycache__, dist, node_modules, etc.
+        for dirpath_str, dirnames, filenames in os.walk(tool_dir, followlinks=False):
+            dirpath = Path(dirpath_str)
+            # Prune excluded directories before descending (sorted for
+            # deterministic archive ordering).
+            dirnames[:] = sorted(
+                d for d in dirnames if not _should_exclude(dirpath / d)
+            )
+            for filename in sorted(filenames):
+                file_path = dirpath / filename
+                # Skip symlinks and excluded files
+                if file_path.is_symlink() or _should_exclude(file_path):
                     continue
 
                 arc_name = str(file_path.relative_to(tool_dir))
