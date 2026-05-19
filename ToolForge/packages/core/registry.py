@@ -192,7 +192,7 @@ class ToolRegistry:
         data = self._entries.get(slug)
         if data is None:
             return None
-        spec_data = data["spec"] if "spec" in data else data  # Fallback for old format
+        spec_data = data.get("spec", data)  # Fallback for old format
         try:
             return ToolSpec.model_validate(spec_data)
         except ValidationError as exc:
