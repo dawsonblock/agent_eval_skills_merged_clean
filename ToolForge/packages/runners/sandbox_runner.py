@@ -127,35 +127,32 @@ def run_in_sandbox(
                 wall_time_ms=wall_ms,
             )
     else:
-        # Level 0-1: simple subprocess.run, still apply the caller's timeout_s
-        # so a runaway tool can't hang indefinitely even without process-group
-        # isolation.
+        # Level 0-1: no sandboxing guarantees, but still use process-tree timeout
+        # handling so timeouts cannot hang on inherited child-process pipes.
         try:
-            proc = subprocess.run(
+            result = run_with_process_tree_timeout(
                 cmd,
-                capture_output=True,
-                text=True,
+                Path(cwd) if cwd else Path.cwd(),
+                run_env or dict(os.environ),
                 timeout=timeout_s,
-                env=run_env,
-                cwd=cwd,
             )
-        except subprocess.TimeoutExpired as exc:
             wall_ms = (time.monotonic() - start) * 1000
             return SandboxResult(
-                stdout=_to_text(exc.stdout),
-                stderr=_to_text(exc.stderr),
+                stdout=result.stdout,
+                stderr=result.stderr,
+                exit_code=result.returncode,
+                timed_out=False,
+                wall_time_ms=wall_ms,
+            )
+        except ProcessTimeoutError as exc:
+            wall_ms = (time.monotonic() - start) * 1000
+            return SandboxResult(
+                stdout="",
+                stderr=str(exc),
                 exit_code=-1,
                 timed_out=True,
                 wall_time_ms=wall_ms,
             )
-        wall_ms = (time.monotonic() - start) * 1000
-        return SandboxResult(
-            stdout=proc.stdout,
-            stderr=proc.stderr,
-            exit_code=proc.returncode,
-            timed_out=False,
-            wall_time_ms=wall_ms,
-        )
 
 
 def _run_docker(

@@ -129,6 +129,11 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     had_json_report = json_output.exists()
     parsed_json = False
     parse_error = ""
+    preserve_json_report = os.getenv("TOOLFORGE_PRESERVE_PYTEST_REPORT", "").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
 
     # Parse JSON report if available
     if had_json_report:
@@ -149,10 +154,9 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
                     })
         except (json.JSONDecodeError, KeyError) as exc:
             parse_error = str(exc)
-        else:
-            # Only clean up the report file when it was successfully parsed.
-            # On parse failure, preserve it so the error can be diagnosed.
-            json_output.unlink(missing_ok=True)
+        finally:
+            if not preserve_json_report:
+                json_output.unlink(missing_ok=True)
     else:
         # Fallback: parse stdout line "N passed, M failed"
         for line in (result.stdout + "\n" + result.stderr).splitlines():
