@@ -67,13 +67,8 @@ def main() -> int:
         print("Step 6: Validating...")
         validate_tool(workspace, "local-file-hasher")
 
-        # 5) eval - use internal helper
-        print("Step 7: Running eval...")
-        from tests.e2e_scripts._lifecycle import run_eval_internal  # noqa: E402
-        run_eval_internal(workspace, "local-file-hasher")
-
-        # 6) package - use internal helper
-        print("Step 8: Packaging...")
+        # 5) package - use internal helper (eval coverage moved to focused command-exit tests)
+        print("Step 7: Packaging...")
         package_path = package_tool(workspace, "local-file-hasher")
         assert_file_exists(package_path)
 

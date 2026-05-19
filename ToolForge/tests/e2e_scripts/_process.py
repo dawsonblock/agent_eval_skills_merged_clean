@@ -11,7 +11,7 @@ def run_process_tree(
     cmd: list[str],
     cwd: Path,
     env: dict[str, str],
-    timeout: int = 180,
+    timeout: float = 180,
 ) -> subprocess.CompletedProcess[str]:
     """
     Run a command in a new process group with timeout and process-tree killing.
@@ -29,7 +29,7 @@ def run_process_tree(
         CompletedProcess with stdout, stderr, and returncode
 
     Raises:
-        AssertionError: If the command times out or returns non-zero exit code
+        ProcessTimeoutError: If the command times out
     """
     return run_with_process_tree_timeout(cmd, cwd, env, timeout)
 

@@ -10,7 +10,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from packages.core.process_timeout import run_with_process_tree_timeout
+from packages.core.process_timeout import ProcessTimeoutError, run_with_process_tree_timeout
 from packages.core.safety_analyzer import analyze_safety
 from packages.core.tool_spec import ToolSpec
 
@@ -33,7 +33,7 @@ class TestReport:
         return self.failed == 0 and self.errors == 0
 
 
-def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
+def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     """
     Run pytest in *tool_dir/tests/* and return a TestReport.
     Uses the current Python interpreter so the same venv is used.
@@ -89,7 +89,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
         result = run_with_process_tree_timeout(
             cmd, tool_dir, nested_env, timeout, grace_period=0.5
         )
-    except AssertionError as exc:
+    except ProcessTimeoutError as exc:
         # Timeout occurred - consolidated helper already killed process
         report.errors = 1
         report.failures.append({"message": str(exc)})
@@ -111,7 +111,7 @@ def run_tests(tool_dir: Path, timeout: int = 60) -> TestReport:
             result = run_with_process_tree_timeout(
                 fallback_cmd, tool_dir, nested_env, timeout, grace_period=0.5
             )
-        except AssertionError as exc:
+        except ProcessTimeoutError as exc:
             # Timeout occurred - consolidated helper already killed process
             report.errors = 1
             report.failures.append({"message": str(exc)})

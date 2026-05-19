@@ -6,6 +6,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from tests.e2e_scripts._process import run_process_tree
 
 
@@ -228,8 +230,8 @@ def test_run_cli_exit() -> None:
         assert result.returncode is not None
 
 
-def test_csv_cleaner_commands_exit() -> None:
-    """Test csv-cleaner specific commands exit cleanly without hangs."""
+def test_csv_cleaner_command_exit() -> None:
+    """Test csv-cleaner specific command exits cleanly without hangs."""
     root = Path(__file__).parent.parent
     env = build_clean_env(root)
 
@@ -282,8 +284,8 @@ def test_csv_cleaner_commands_exit() -> None:
         assert result.returncode is not None
 
 
-def test_json_schema_validator_commands_exit() -> None:
-    """Test json-schema-validator specific commands exit cleanly without hangs."""
+def test_json_schema_validator_command_exit() -> None:
+    """Test json-schema-validator specific command exits cleanly without hangs."""
     root = Path(__file__).parent.parent
     env = build_clean_env(root)
 
@@ -322,5 +324,57 @@ def test_json_schema_validator_commands_exit() -> None:
             timeout=60,
         )
         # May fail if tool generation didn't produce a complete tool,
+        # but should not hang and should return a valid exit code
+        assert result.returncode is not None
+
+
+@pytest.mark.parametrize(
+    "tool_slug,tool_prompt",
+    [
+        ("csv-cleaner", "Create a tool that cleans CSV files"),
+        ("json-schema-validator", "Create a tool that validates JSON files against a schema"),
+        ("local-file-hasher", "Create a tool that computes SHA256 hashes for local files"),
+    ],
+)
+def test_eval_command_exit(tool_slug: str, tool_prompt: str) -> None:
+    """Test eval command exits cleanly without hangs for various tools."""
+    root = Path(__file__).parent.parent
+    env = build_clean_env(root)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
+            cwd=root,
+            env=env,
+            timeout=30,
+        )
+        assert result.returncode == 0
+
+        # Generate tool
+        result = run_process_tree(
+            [
+                sys.executable,
+                "-m",
+                "apps.cli.toolforge_cli.main",
+                "new",
+                "tool",
+                "--from-prompt",
+                tool_prompt,
+            ],
+            cwd=tmp_path,
+            env=env,
+            timeout=120,
+        )
+        assert result.returncode == 0
+
+        # Test eval command with process-tree timeout
+        result = run_process_tree(
+            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "eval", tool_slug],
+            cwd=tmp_path,
+            env=env,
+            timeout=60,
+        )
+        # May fail if eval cases fail or tool generation incomplete,
         # but should not hang and should return a valid exit code
         assert result.returncode is not None

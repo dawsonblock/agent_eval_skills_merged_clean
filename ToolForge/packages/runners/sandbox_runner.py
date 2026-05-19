@@ -14,6 +14,9 @@ import os
 import subprocess
 import time
 from dataclasses import dataclass
+from pathlib import Path
+
+from packages.core.process_timeout import ProcessTimeoutError, run_with_process_tree_timeout
 
 
 _SAFE_ENV_KEYS = frozenset({
@@ -96,12 +99,40 @@ def run_in_sandbox(
     else:
         run_env = _minimal_env(env)
 
-    try:
+    # Use process-tree timeout for sandbox level 2+ to prevent hanging child processes
+    if sandbox_level >= 2:
+        try:
+            result = run_with_process_tree_timeout(
+                cmd,
+                Path(cwd) if cwd else Path.cwd(),
+                run_env,
+                timeout=timeout_s,
+            )
+            wall_ms = (time.monotonic() - start) * 1000
+            return SandboxResult(
+                stdout=result.stdout,
+                stderr=result.stderr,
+                exit_code=result.returncode,
+                timed_out=False,
+                wall_time_ms=wall_ms,
+            )
+        except ProcessTimeoutError as exc:
+            # Timeout occurred - process-tree timeout already killed the process group
+            wall_ms = (time.monotonic() - start) * 1000
+            return SandboxResult(
+                stdout="",
+                stderr=str(exc),
+                exit_code=-1,
+                timed_out=True,
+                wall_time_ms=wall_ms,
+            )
+    else:
+        # Level 0-1: use simple subprocess.run without timeout
         proc = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=timeout_s if sandbox_level >= 2 else None,
+            timeout=None,
             env=run_env,
             cwd=cwd,
         )
@@ -111,15 +142,6 @@ def run_in_sandbox(
             stderr=proc.stderr,
             exit_code=proc.returncode,
             timed_out=False,
-            wall_time_ms=wall_ms,
-        )
-    except subprocess.TimeoutExpired as exc:
-        wall_ms = (time.monotonic() - start) * 1000
-        return SandboxResult(
-            stdout=_to_text(exc.stdout),
-            stderr=_to_text(exc.stderr),
-            exit_code=-1,
-            timed_out=True,
             wall_time_ms=wall_ms,
         )
 

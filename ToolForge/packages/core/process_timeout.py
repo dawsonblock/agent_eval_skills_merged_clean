@@ -9,11 +9,16 @@ import warnings
 from pathlib import Path
 
 
+class ProcessTimeoutError(Exception):
+    """Raised when a subprocess times out and is killed."""
+    pass
+
+
 def run_with_process_tree_timeout(
     cmd: list[str],
     cwd: Path,
     env: dict[str, str],
-    timeout: int,
+    timeout: float,
     grace_period: float = 0.5,
 ) -> subprocess.CompletedProcess[str]:
     """
@@ -34,7 +39,7 @@ def run_with_process_tree_timeout(
         CompletedProcess with stdout, stderr, and returncode
 
     Raises:
-        AssertionError: If the command times out or returns non-zero exit code
+        ProcessTimeoutError: If the command times out
     """
     proc = subprocess.Popen(
         cmd,
@@ -60,7 +65,7 @@ def run_with_process_tree_timeout(
             )
         # Get any remaining output
         stdout, stderr = proc.communicate()
-        raise AssertionError(
+        raise ProcessTimeoutError(
             "Subprocess timed out and was killed\n"
             f"cmd: {cmd}\n"
             f"cwd: {cwd}\n"
@@ -68,16 +73,6 @@ def run_with_process_tree_timeout(
             f"stdout:\n{stdout}\n"
             f"stderr:\n{stderr}\n"
         ) from exc
-    finally:
-        # Ensure process group is cleaned up even on success
-        # Always attempt cleanup; ProcessLookupError indicates process already gone
-        try:
-            if proc.poll() is None:
-                _kill_process_tree(proc.pid, grace_period)
-                proc.wait(timeout=5)
-        except (ProcessLookupError, subprocess.TimeoutExpired):
-            # Process already terminated or stuck; either way, we're done
-            pass
 
     return subprocess.CompletedProcess(
         args=cmd,
