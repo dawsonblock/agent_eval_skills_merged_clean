@@ -29,7 +29,7 @@ fi
 MODEL="${MODEL:-gemini-3-flash-preview}"
 PROVIDER="${PROVIDER:-gemini}"
 MAX_STEPS="${MAX_STEPS:-100}"
-IMAGE="${IMAGE:-toolathlon_pack-toolathlon:latest}"
+IMAGE="${IMAGE:-toolathlon-pack:latest}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_DIR="benchmark_logs/fully_parallel_${TIMESTAMP}"
 DOCKER=$(which docker 2>/dev/null || echo "/usr/local/bin/docker")

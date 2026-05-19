@@ -1,7 +1,7 @@
 [project]
-name = "mcpbench-dev"
+name = "toolathlon-gym"
 version = "0.1.0"
-description = "Add your description here"
+description = "Self-contained MCP task gym for training and evaluating tool-using agents"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

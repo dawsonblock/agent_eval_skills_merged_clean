@@ -60,7 +60,9 @@ RUN for dir in \
         /opt/local_servers/HowToCook-mcp \
         /opt/local_servers/servers; do \
     [ -f "$dir/package.json" ] && \
-        echo "=== $dir ===" && cd "$dir" && npm install && (npm run build 2>/dev/null || true) && cd /workspace || true; \
+        echo "=== $dir ===" && cd "$dir" && npm install && \
+        if npm pkg get scripts.build | grep -qv null; then npm run build; fi && \
+        cd /workspace || true; \
 done
 
 RUN for dir in \
