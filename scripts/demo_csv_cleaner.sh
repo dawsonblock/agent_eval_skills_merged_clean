@@ -3,12 +3,14 @@
 # Usage: bash scripts/demo_csv_cleaner.sh  (or: make demo)
 set -euo pipefail
 
-# Set module-mode CLI for consistent behavior
-export TOOLFORGE_TEST_USE_MODULE_CLI=1
-export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(cd "$(dirname "$0")/.." && pwd)"
-
-# Get repo root before changing directories
+# Compute repo root once — all paths derive from here
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Set module-mode CLI and point PYTHONPATH at the ToolForge source tree so
+# that `python -m apps.cli.toolforge_cli.main` resolves correctly even when
+# invoked from an arbitrary working directory.
+export TOOLFORGE_TEST_USE_MODULE_CLI=1
+export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${REPO_ROOT}/ToolForge"
 
 # Cross-platform timeout function using Python wrapper
 run_with_timeout() {
