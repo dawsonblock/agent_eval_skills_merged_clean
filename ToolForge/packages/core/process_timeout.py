@@ -63,8 +63,19 @@ def run_with_process_tree_timeout(
             warnings.warn(
                 f"Process {proc.pid} did not terminate after SIGKILL - possible zombie process"
             )
-        # Get any remaining output
-        stdout, stderr = proc.communicate()
+        # Drain remaining output with a hard ceiling so we never block
+        # indefinitely here (e.g. zombie process or grandchild that escaped
+        # the process-group kill still holding a pipe open).
+        try:
+            stdout, stderr = proc.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            # Truly stuck — close the pipes ourselves so reads unblock, then
+            # fall back to empty strings for the diagnostic message.
+            if proc.stdout:
+                proc.stdout.close()
+            if proc.stderr:
+                proc.stderr.close()
+            stdout, stderr = "", ""
         raise ProcessTimeoutError(
             "Subprocess timed out and was killed\n"
             f"cmd: {cmd}\n"
