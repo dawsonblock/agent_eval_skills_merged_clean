@@ -93,12 +93,12 @@ def run_toolforge(
             env=cleaned_env,
             timeout=timeout,
         )
-    except ProcessTimeoutError:
+    except ProcessTimeoutError as exc:
         return subprocess.CompletedProcess(
             args=cmd,
             returncode=124,
             stdout="",
-            stderr="[toolforge test helper] command timed out",
+            stderr=str(exc),
         )
 
 
