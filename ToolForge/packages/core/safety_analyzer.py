@@ -58,7 +58,7 @@ _SECRET_PATTERNS = [
 
 # Imports denied unless requires_shell=True
 _DENIED_IMPORTS_SHELL = [
-    "subprocess", "os.system", "popen", "pty", "ctypes", "cffi",
+    "subprocess", "os.system", "system", "run", "call", "check_output", "Popen", "popen", "pty", "ctypes", "cffi",
 ]
 
 # Imports denied unless requires_network=True (or requires_shell=True)
