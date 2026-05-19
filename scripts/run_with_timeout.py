@@ -41,11 +41,14 @@ def main() -> int:
             timeout=timeout,
         )
         sys.stdout.write(result.stdout)
+        sys.stdout.flush()
         sys.stderr.write(result.stderr)
+        sys.stderr.flush()
         return result.returncode
     except (AssertionError, ProcessTimeoutError) as exc:
         # Timeout occurred - consolidated helper already killed process
         sys.stdout.write(str(exc) + "\n")
+        sys.stdout.flush()
         return 124  # timeout exit code
 
 
