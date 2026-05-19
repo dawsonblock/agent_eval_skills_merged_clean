@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator, Literal
@@ -190,7 +192,7 @@ class ToolRegistry:
         data = self._entries.get(slug)
         if data is None:
             return None
-        spec_data = data.get("spec") or data  # Fallback for old format
+        spec_data = data.get("spec", data)  # Fallback for old format
         try:
             return ToolSpec.model_validate(spec_data)
         except ValidationError as exc:
@@ -208,7 +210,7 @@ class ToolRegistry:
         """Return all registered tool specs."""
         specs = []
         for v in self._entries.values():
-            spec_data = v.get("spec") or v  # Fallback for old format
+            spec_data = v["spec"] if "spec" in v else v  # Fallback for old format
             try:
                 specs.append(ToolSpec.model_validate(spec_data))
             except ValidationError as exc:
@@ -220,7 +222,7 @@ class ToolRegistry:
         specs = []
         for entry in self._entries.values():
             if entry.get("metadata", {}).get("status") == status:
-                spec_data = entry.get("spec") or entry
+                spec_data = entry["spec"] if "spec" in entry else entry
                 try:
                     specs.append(ToolSpec.model_validate(spec_data))
                 except ValidationError as exc:
@@ -232,7 +234,7 @@ class ToolRegistry:
         tag_lower = tag.lower()
         specs = []
         for v in self._entries.values():
-            spec_data = v.get("spec") or v
+            spec_data = v["spec"] if "spec" in v else v
             if any(t.lower() == tag_lower for t in spec_data.get("tags", [])):
                 try:
                     specs.append(ToolSpec.model_validate(spec_data))
@@ -252,7 +254,25 @@ class ToolRegistry:
 
     def _save(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._path.write_text(
-            json.dumps(self._entries, indent=2, default=str),
-            encoding="utf-8",
+        # Write to a sibling temp file then atomically rename so that a
+        # mid-write crash or SIGKILL never leaves a truncated registry.
+        fd, tmp_path = tempfile.mkstemp(
+            dir=self._path.parent, prefix=".registry_tmp_", suffix=".json"
         )
+        fd_open = True
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fd_open = False
+                fh.write(json.dumps(self._entries, indent=2, default=str))
+            os.replace(tmp_path, self._path)
+        except Exception:
+            if fd_open:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise

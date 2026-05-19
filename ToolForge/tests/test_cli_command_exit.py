@@ -211,9 +211,12 @@ def test_validate_csv_tool_command_exits() -> None:
         generate_skill(workspace, "csv-cleaner")
         generate_eval(workspace, "csv-cleaner")
         r = _cli(["validate", "csv-cleaner"], workspace, env, 120)
-        # Exit code may be 0 (all pass) or non-zero (some check failed).
-        # The important invariant is that the command returns rather than hangs.
-        assert r.returncode is not None
+        # Exit code 0 (all pass) or 1 (some check failed) are both acceptable.
+        # Exit code 2 indicates a Click usage error — that always means a bug.
+        assert r.returncode in (0, 1), (
+            f"Unexpected exit code from 'validate': {r.returncode}\n"
+            f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}"
+        )
 
 
 def test_run_csv_tool_command_exits() -> None:
@@ -226,7 +229,9 @@ def test_run_csv_tool_command_exits() -> None:
             ["run", "csv-cleaner", "--input", "input_path=examples/input.csv"],
             workspace, env, 60,
         )
-        assert r.returncode is not None
+        assert r.returncode != 2, (
+            f"CLI usage error from 'run':\nstdout: {r.stdout}\nstderr: {r.stderr}"
+        )
 
 
 def test_package_csv_tool_command_exits() -> None:
@@ -239,7 +244,9 @@ def test_package_csv_tool_command_exits() -> None:
         generate_skill(workspace, "csv-cleaner")
         generate_eval(workspace, "csv-cleaner")
         r = _cli(["package", "csv-cleaner"], workspace, env, 60)
-        assert r.returncode is not None
+        assert r.returncode != 2, (
+            f"CLI usage error from 'package':\nstdout: {r.stdout}\nstderr: {r.stderr}"
+        )
 
 
 def test_eval_csv_command_exits() -> None:
@@ -253,7 +260,11 @@ def test_eval_csv_command_exits() -> None:
         workspace = create_workspace(Path(tmp_dir))
         generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
         r = _cli(["eval", "csv-cleaner"], workspace, env, 60)
-        assert r.returncode is not None
+        # No eval artifacts were generated, so the command must fail (not hang).
+        assert r.returncode != 0, (
+            f"Expected non-zero exit when eval artifacts are missing; "
+            f"got 0.\nstdout: {r.stdout}\nstderr: {r.stderr}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -277,4 +288,7 @@ def test_json_package_command_exits() -> None:
         generate_skill(workspace, "json-schema-validator")
         generate_eval(workspace, "json-schema-validator")
         r = _cli(["package", "json-schema-validator"], workspace, env, 90)
-        assert r.returncode is not None
+        assert r.returncode != 2, (
+            f"CLI usage error from 'package json-schema-validator':\n"
+            f"stdout: {r.stdout}\nstderr: {r.stderr}"
+        )

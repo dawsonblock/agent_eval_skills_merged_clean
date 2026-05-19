@@ -127,23 +127,32 @@ def run_in_sandbox(
                 wall_time_ms=wall_ms,
             )
     else:
-        # Level 0-1: use simple subprocess.run without timeout
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=None,
-            env=run_env,
-            cwd=cwd,
-        )
-        wall_ms = (time.monotonic() - start) * 1000
-        return SandboxResult(
-            stdout=proc.stdout,
-            stderr=proc.stderr,
-            exit_code=proc.returncode,
-            timed_out=False,
-            wall_time_ms=wall_ms,
-        )
+        # Level 0-1: no sandboxing guarantees, but still use process-tree timeout
+        # handling so timeouts cannot hang on inherited child-process pipes.
+        try:
+            result = run_with_process_tree_timeout(
+                cmd,
+                Path(cwd) if cwd else Path.cwd(),
+                run_env or dict(os.environ),
+                timeout=timeout_s,
+            )
+            wall_ms = (time.monotonic() - start) * 1000
+            return SandboxResult(
+                stdout=result.stdout,
+                stderr=result.stderr,
+                exit_code=result.returncode,
+                timed_out=False,
+                wall_time_ms=wall_ms,
+            )
+        except ProcessTimeoutError as exc:
+            wall_ms = (time.monotonic() - start) * 1000
+            return SandboxResult(
+                stdout="",
+                stderr=str(exc),
+                exit_code=-1,
+                timed_out=True,
+                wall_time_ms=wall_ms,
+            )
 
 
 def _run_docker(
@@ -160,21 +169,25 @@ def _run_docker(
     Maps host paths to container mount points and replaces absolute interpreters.
     """
     # Normalize cmd paths: replace host Python paths and tool paths
+    # Ensure cwd comparison uses a separator boundary so that a cwd of
+    # '/tmp/tools/csv-cleaner' does not incorrectly match
+    # '/tmp/tools/csv-cleaner-v2/tool.py'.
+    cwd_prefix = (cwd.rstrip("/") + "/") if cwd else ""
     norm_cmd: list[str] = []
     for arg in cmd:
         if arg.startswith("/") and arg.endswith(".py"):
             # Tool script: if in cwd, map to /workspace
-            if cwd and arg.startswith(cwd):
-                rel_path = arg[len(cwd):].lstrip("/")
+            if cwd_prefix and arg.startswith(cwd_prefix):
+                rel_path = arg[len(cwd_prefix):]
                 norm_cmd.append(f"/workspace/{rel_path}")
             else:
                 norm_cmd.append(arg)
         elif arg.startswith("/usr/local/bin/python") or arg.startswith("/usr/bin/python"):
             # Python interpreter: normalize to /usr/bin/python3 in container
             norm_cmd.append("/usr/bin/python3")
-        elif arg.startswith("/") and cwd and arg.startswith(cwd):
+        elif arg.startswith("/") and cwd_prefix and arg.startswith(cwd_prefix):
             # Any path within cwd: map to /workspace
-            rel_path = arg[len(cwd):].lstrip("/")
+            rel_path = arg[len(cwd_prefix):]
             norm_cmd.append(f"/workspace/{rel_path}")
         else:
             norm_cmd.append(arg)

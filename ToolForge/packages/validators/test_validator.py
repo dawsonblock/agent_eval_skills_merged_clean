@@ -7,6 +7,7 @@ import json
 import os
 import re
 import sys
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -43,7 +44,9 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
         return TestReport()
 
     report = TestReport()
-    json_output = tool_dir / ".pytest_report.json"
+    # Use a unique filename to avoid collisions when concurrent validate calls
+    # target the same tool directory (e.g. parallel CI jobs or nested pytest).
+    json_output = tool_dir / f".pytest_report_{uuid.uuid4().hex[:12]}.json"
 
     cmd = [
         sys.executable,
@@ -126,6 +129,11 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     had_json_report = json_output.exists()
     parsed_json = False
     parse_error = ""
+    preserve_json_report = os.getenv("TOOLFORGE_PRESERVE_PYTEST_REPORT", "").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
 
     # Parse JSON report if available
     if had_json_report:
@@ -147,7 +155,8 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
         except (json.JSONDecodeError, KeyError) as exc:
             parse_error = str(exc)
         finally:
-            json_output.unlink(missing_ok=True)
+            if not preserve_json_report:
+                json_output.unlink(missing_ok=True)
     else:
         # Fallback: parse stdout line "N passed, M failed"
         for line in (result.stdout + "\n" + result.stderr).splitlines():
