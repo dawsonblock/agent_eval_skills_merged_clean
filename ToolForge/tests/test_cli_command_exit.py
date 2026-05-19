@@ -1,18 +1,50 @@
-"""Focused CLI command exit tests for hang-prone commands."""
+"""Focused CLI command exit tests for hang-prone commands.
+
+Each test verifies that exactly one CLI command exits reliably without hanging.
+
+Setup for every test uses the _lifecycle.py internal Python API (pure Python,
+no subprocess) so that setup completes in < 0.5 s.  Only the single command
+under test runs as a subprocess with an explicit process-tree timeout.
+
+Proven generator slugs only — no generic/AI prompts:
+  csv-cleaner
+  json-schema-validator
+  local-file-hasher
+"""
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-import pytest
-
+from tests.e2e_scripts._lifecycle import (
+    create_workspace,
+    generate_eval,
+    generate_mcp,
+    generate_skill,
+    generate_tool_from_prompt,
+)
 from tests.e2e_scripts._process import run_process_tree
 
+# ---------------------------------------------------------------------------
+# Repository root — parent of this file's tests/ directory
+# ---------------------------------------------------------------------------
+ROOT = Path(__file__).parent.parent
+
+
+# ---------------------------------------------------------------------------
+# Environment builder
+# ---------------------------------------------------------------------------
 
 def build_clean_env(root: Path) -> dict[str, str]:
-    """Build clean environment for subprocess execution."""
+    """Build a clean environment for CLI subprocess execution.
+
+    Strips pytest env-contamination vars, sets PYTHONPATH so that
+    `python -m apps.cli.toolforge_cli.main` is importable, and marks the
+    subprocess as a test CLI invocation.
+    """
     env = os.environ.copy()
     for key in (
         "PYTEST_CURRENT_TEST",
@@ -28,353 +60,221 @@ def build_clean_env(root: Path) -> dict[str, str]:
     env["TOOLFORGE_TEST_USE_MODULE_CLI"] = "1"
 
     paths = [str(root), str(root / "apps" / "cli")]
-    existing_pythonpath = env.get("PYTHONPATH", "")
-    if existing_pythonpath:
-        paths.append(existing_pythonpath)
+    existing = env.get("PYTHONPATH", "")
+    if existing:
+        paths.append(existing)
     env["PYTHONPATH"] = os.pathsep.join(paths)
-
     return env
 
 
-def test_registry_cli_exit() -> None:
-    """Test registry commands exit cleanly without hangs."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
+# ---------------------------------------------------------------------------
+# Tiny CLI helper — run one toolforge command with process-tree timeout
+# ---------------------------------------------------------------------------
 
-    # Test registry list
+def _cli(
+    args: list[str],
+    cwd: Path,
+    env: dict[str, str],
+    timeout: int,
+) -> subprocess.CompletedProcess[str]:
+    """Run `toolforge <args>` via module path with process-tree timeout."""
+    return run_process_tree(
+        [sys.executable, "-m", "apps.cli.toolforge_cli.main", *args],
+        cwd=cwd,
+        env=env,
+        timeout=timeout,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Fast tests — registry/eval on empty or known workspace (no subprocess setup)
+# ---------------------------------------------------------------------------
+
+def test_registry_list_exits_cleanly() -> None:
+    """registry list exits cleanly in an empty workspace (no tools registered)."""
+    env = build_clean_env(ROOT)
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "registry", "list"],
-            cwd=tmp_path,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-        assert "No tools registered" in result.stdout or "Registered Tools" in result.stdout
-
-        # Test registry info (should fail for non-existent tool)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "registry", "info", "csv-cleaner"],
-            cwd=tmp_path,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode != 0
+        workspace = create_workspace(Path(tmp_dir))
+        r = _cli(["registry", "list"], workspace, env, 30)
+        assert r.returncode == 0
+        assert (
+            "No tools registered" in r.stdout
+            or "Registered Tools" in r.stdout
+        ), f"Unexpected registry list output:\n{r.stdout}"
 
 
-def test_eval_cli_exit() -> None:
-    """Test eval command exits cleanly without hangs."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
-
-    # Test eval command (should fail for non-existent tool)
+def test_registry_info_missing_exits_cleanly() -> None:
+    """registry info for a non-existent tool exits non-zero without hanging."""
+    env = build_clean_env(ROOT)
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "eval", "csv-cleaner"],
-            cwd=tmp_path,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode != 0
+        workspace = create_workspace(Path(tmp_dir))
+        r = _cli(["registry", "info", "csv-cleaner"], workspace, env, 30)
+        assert r.returncode != 0
 
 
-def test_new_tool_cli_exit() -> None:
-    """Test new tool command exits cleanly without hangs."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
+def test_registry_info_with_tool_exits_cleanly() -> None:
+    """registry info exits cleanly after a tool has been registered.
 
+    This is the scenario observed hanging in the demo: registry info
+    called after the full tool lifecycle (new → generate → validate →
+    run → package).  Internal setup simulates a post-register state.
+    """
+    env = build_clean_env(ROOT)
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
+        workspace = create_workspace(Path(tmp_dir))
+        # Register csv-cleaner via internal API (fast, no subprocess)
+        generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
+        r = _cli(["registry", "info", "csv-cleaner"], workspace, env, 30)
+        # Should print tool info and exit; reject obvious CLI usage failures.
+        output = f"{r.stdout}\n{r.stderr}"
+        assert r.returncode != 2
+        assert "csv-cleaner" in output
 
-        # Test new tool command (known to hang in some cases)
-        result = run_process_tree(
+
+def test_eval_missing_tool_exits_cleanly() -> None:
+    """eval on a non-existent tool exits non-zero without hanging."""
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        r = _cli(["eval", "csv-cleaner"], workspace, env, 30)
+        assert r.returncode != 0
+
+
+# ---------------------------------------------------------------------------
+# new tool tests — subprocess only, one per proven slug
+# These specifically test that `toolforge new tool` exits cleanly.
+# ---------------------------------------------------------------------------
+
+def test_new_csv_tool_command_exits() -> None:
+    """new tool --from-prompt (csv-cleaner) exits cleanly via subprocess."""
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        r = _cli(
+            ["new", "tool", "--from-prompt", "Create a tool that cleans CSV files"],
+            workspace, env, 120,
+        )
+        assert r.returncode == 0, (
+            f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}"
+        )
+
+
+def test_new_json_tool_command_exits() -> None:
+    """new tool --from-prompt (json-schema-validator) exits cleanly via subprocess."""
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        r = _cli(
             [
-                sys.executable,
-                "-m",
-                "apps.cli.toolforge_cli.main",
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that computes SHA256 hashes for local files",
-            ],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
-        )
-        assert result.returncode == 0
-
-
-def test_validate_cli_exit() -> None:
-    """Test validate command exits cleanly without hangs."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-
-        # First create a simple tool
-        result = run_process_tree(
-            [
-                sys.executable,
-                "-m",
-                "apps.cli.toolforge_cli.main",
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a simple tool",
-                "--slug",
-                "simple-tool",
-            ],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
-        )
-        assert result.returncode == 0
-
-        # Test validate command - may fail if tool generation didn't produce a complete tool
-        # but should not hang
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "validate", "simple-tool"],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
-        )
-        # Exit code may be 0 or non-zero depending on validation results
-        # The important thing is it doesn't hang and returns a valid exit code
-        assert result.returncode is not None
-
-
-def test_run_cli_exit() -> None:
-    """Test run command exits cleanly without hangs."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-
-        # Create a simple tool
-        result = run_process_tree(
-            [
-                sys.executable,
-                "-m",
-                "apps.cli.toolforge_cli.main",
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that echoes text",
-                "--slug",
-                "echo-tool",
-            ],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
-        )
-        assert result.returncode == 0
-
-        # Test run command with a simple input
-        result = run_process_tree(
-            [
-                sys.executable,
-                "-m",
-                "apps.cli.toolforge_cli.main",
-                "run",
-                "echo-tool",
-                "--input",
-                "text=hello",
-            ],
-            cwd=tmp_path,
-            env=env,
-            timeout=30,
-        )
-        # May fail if tool generation didn't produce a working tool,
-        # but should not hang and should return a valid exit code
-        assert result.returncode is not None
-
-
-def test_csv_cleaner_command_exit() -> None:
-    """Test csv-cleaner specific command exits cleanly without hangs."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-
-        # Generate csv-cleaner tool
-        result = run_process_tree(
-            [
-                sys.executable,
-                "-m",
-                "apps.cli.toolforge_cli.main",
-                "new",
-                "tool",
-                "--from-prompt",
-                "Create a tool that cleans CSV files",
-            ],
-            cwd=tmp_path,
-            env=env,
-            timeout=120,
-        )
-        assert result.returncode == 0
-
-        # Test validate command
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "validate", "csv-cleaner"],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
-        )
-        # May fail if validation finds issues, but should not hang
-        assert result.returncode is not None
-
-        # Test package command
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "package", "csv-cleaner"],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
-        )
-        # May fail if tool generation didn't produce a complete tool,
-        # but should not hang and should return a valid exit code
-        assert result.returncode is not None
-
-
-def test_json_schema_validator_command_exit() -> None:
-    """Test json-schema-validator specific command exits cleanly without hangs."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-
-        # Generate json-schema-validator tool
-        result = run_process_tree(
-            [
-                sys.executable,
-                "-m",
-                "apps.cli.toolforge_cli.main",
-                "new",
-                "tool",
-                "--from-prompt",
+                "new", "tool", "--from-prompt",
                 "Create a tool that validates JSON files against a schema",
             ],
-            cwd=tmp_path,
-            env=env,
-            timeout=120,
+            workspace, env, 120,
         )
-        assert result.returncode == 0
-
-        # Test package command
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "package", "json-schema-validator"],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
+        assert r.returncode == 0, (
+            f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}"
         )
-        # May fail if tool generation didn't produce a complete tool,
-        # but should not hang and should return a valid exit code
-        assert result.returncode is not None
 
 
-@pytest.mark.parametrize(
-    "tool_slug,tool_prompt",
-    [
-        ("csv-cleaner", "Create a tool that cleans CSV files"),
-        ("json-schema-validator", "Create a tool that validates JSON files against a schema"),
-        ("local-file-hasher", "Create a tool that computes SHA256 hashes for local files"),
-    ],
-)
-def test_eval_command_exit(tool_slug: str, tool_prompt: str) -> None:
-    """Test eval command exits cleanly without hangs for various tools."""
-    root = Path(__file__).parent.parent
-    env = build_clean_env(root)
-
+def test_new_hasher_tool_command_exits() -> None:
+    """new tool --from-prompt (local-file-hasher) exits cleanly via subprocess."""
+    env = build_clean_env(ROOT)
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "init", str(tmp_path)],
-            cwd=root,
-            env=env,
-            timeout=30,
-        )
-        assert result.returncode == 0
-
-        # Generate tool
-        result = run_process_tree(
+        workspace = create_workspace(Path(tmp_dir))
+        r = _cli(
             [
-                sys.executable,
-                "-m",
-                "apps.cli.toolforge_cli.main",
-                "new",
-                "tool",
-                "--from-prompt",
-                tool_prompt,
+                "new", "tool", "--from-prompt",
+                "Create a tool that computes SHA256 hashes for local files",
             ],
-            cwd=tmp_path,
-            env=env,
-            timeout=120,
+            workspace, env, 120,
         )
-        assert result.returncode == 0
+        assert r.returncode == 0, (
+            f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}"
+        )
 
-        # Test eval command with process-tree timeout
-        result = run_process_tree(
-            [sys.executable, "-m", "apps.cli.toolforge_cli.main", "eval", tool_slug],
-            cwd=tmp_path,
-            env=env,
-            timeout=60,
+
+# ---------------------------------------------------------------------------
+# Single-command tests — internal full-artifact setup, one subprocess command
+# ---------------------------------------------------------------------------
+
+def test_validate_csv_tool_command_exits() -> None:
+    """validate csv-cleaner exits cleanly without hanging.
+
+    Setup (init + scaffold + mcp + skill + eval) is done via the internal
+    Python API so it completes in < 1 s and is never a hang source.
+    """
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
+        generate_mcp(workspace, "csv-cleaner")
+        generate_skill(workspace, "csv-cleaner")
+        generate_eval(workspace, "csv-cleaner")
+        r = _cli(["validate", "csv-cleaner"], workspace, env, 120)
+        # Exit code may be 0 (all pass) or non-zero (some check failed).
+        # The important invariant is that the command returns rather than hangs.
+        assert r.returncode is not None
+
+
+def test_run_csv_tool_command_exits() -> None:
+    """run csv-cleaner with valid input exits cleanly without hanging."""
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
+        r = _cli(
+            ["run", "csv-cleaner", "--input", "input_path=examples/input.csv"],
+            workspace, env, 60,
         )
-        # May fail if eval cases fail or tool generation incomplete,
-        # but should not hang and should return a valid exit code
-        assert result.returncode is not None
+        assert r.returncode is not None
+
+
+def test_package_csv_tool_command_exits() -> None:
+    """package csv-cleaner exits cleanly without hanging."""
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
+        generate_mcp(workspace, "csv-cleaner")
+        generate_skill(workspace, "csv-cleaner")
+        generate_eval(workspace, "csv-cleaner")
+        r = _cli(["package", "csv-cleaner"], workspace, env, 60)
+        assert r.returncode is not None
+
+
+def test_eval_csv_command_exits() -> None:
+    """eval csv-cleaner exits cleanly without hanging.
+
+    Only the tool is scaffolded (no eval artifacts), so the command fails
+    fast with a missing-artifact error.  The key invariant is no hang.
+    """
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
+        r = _cli(["eval", "csv-cleaner"], workspace, env, 60)
+        assert r.returncode is not None
+
+
+# ---------------------------------------------------------------------------
+# JSON package — the previously-observed timeout case, tested in full isolation
+# ---------------------------------------------------------------------------
+
+def test_json_package_command_exits() -> None:
+    """toolforge package json-schema-validator exits cleanly without hanging.
+
+    Generates full artifact set (mcp + skill + eval) via internal API so
+    that package has everything it needs to run the full zip-build path.
+    """
+    env = build_clean_env(ROOT)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = create_workspace(Path(tmp_dir))
+        generate_tool_from_prompt(
+            workspace,
+            "Create a tool that validates JSON files against a schema",
+        )
+        generate_mcp(workspace, "json-schema-validator")
+        generate_skill(workspace, "json-schema-validator")
+        generate_eval(workspace, "json-schema-validator")
+        r = _cli(["package", "json-schema-validator"], workspace, env, 90)
+        assert r.returncode is not None

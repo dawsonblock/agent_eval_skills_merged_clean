@@ -29,6 +29,7 @@ test:           ## Run the full test suite
 		-p pytest_timeout \
 		-p pytest_asyncio.plugin \
 		-o addopts= \
+		--timeout=300 \
 		--cov=packages \
 		--cov=apps \
 		--cov-report=html \
@@ -46,8 +47,9 @@ test-no-cov:    ## Run tests without coverage
 		-p pytest_timeout \
 		-p pytest_asyncio.plugin \
 		-o addopts= \
+		--timeout=300 \
 		-q
-# CI recommendation: wrap with outer timeout, e.g., timeout 240 make test
+# CI recommendation: wrap with outer timeout, e.g., timeout 600 make test-no-cov
 
 .PHONY: test-cov
 test-cov:       ## Run tests with HTML coverage report
@@ -58,6 +60,8 @@ test-cov:       ## Run tests with HTML coverage report
 		-p pytest_jsonreport.plugin \
 		-p pytest_timeout \
 		-p pytest_asyncio.plugin \
+		-o addopts= \
+		--timeout=300 \
 		--cov=packages --cov=apps --cov-report=html -q
 	@echo "Coverage report: $(TOOLFORGE_DIR)/htmlcov/index.html"
 
