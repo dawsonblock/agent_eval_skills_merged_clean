@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from apps.cli.toolforge_cli.test_helpers import combined_output, run_toolforge
+from tests.e2e_scripts._process import assert_no_toolforge_children
 
 
 def test_new_tool_duplicate_slug_fails_gracefully(tmp_path: Path) -> None:
@@ -34,6 +35,7 @@ def test_new_tool_duplicate_slug_fails_gracefully(tmp_path: Path) -> None:
     output = combined_output(second)
     assert "Tool scaffold already exists" in output
     assert "--overwrite" in output
+    assert_no_toolforge_children()
 
 
 def test_validate_fails_when_tests_directory_missing(tmp_path: Path) -> None:
@@ -66,3 +68,4 @@ def test_validate_fails_when_tests_directory_missing(tmp_path: Path) -> None:
     validate = run_toolforge(["validate", "csv-cleaner"], cwd=tmp_path)
     assert validate.returncode == 1
     assert "Missing tests/ directory" in combined_output(validate)
+    assert_no_toolforge_children()
