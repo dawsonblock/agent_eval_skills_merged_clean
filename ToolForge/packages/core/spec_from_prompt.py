@@ -47,7 +47,8 @@ _SLUG_RE = re.compile(r"[^a-z0-9]+")
 
 
 def _to_slug(text: str) -> str:
-    return _SLUG_RE.sub("-", text.lower()).strip("-")
+    slug = _SLUG_RE.sub("-", text.lower()).strip("-")
+    return slug or "generated-tool"
 
 
 _PYTHON_KEYWORDS = {"python", "py", ".py", "script", "pandas", "numpy", "csv"}
