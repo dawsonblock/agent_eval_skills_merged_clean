@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 from tests.e2e_scripts._lifecycle import create_workspace, generate_tool_from_prompt
-from tests.e2e_scripts._process import run_process_tree
+from tests.e2e_scripts._process import assert_no_toolforge_children, run_process_tree
 
 ROOT = Path(__file__).parent.parent
 
@@ -70,6 +70,7 @@ def test_registry_list_exits_cleanly() -> None:
         r = _cli(["registry", "list"], workspace, 30)
         assert r.returncode == 0
         assert "csv-cleaner" in r.stdout.lower()
+        assert_no_toolforge_children()
 
 
 def test_registry_info_exits_cleanly() -> None:
@@ -86,3 +87,4 @@ def test_registry_info_exits_cleanly() -> None:
         assert r.returncode == 0
         assert "csv-cleaner" in r.stdout.lower()
         assert "0.1.0" in r.stdout.lower()
+        assert_no_toolforge_children()

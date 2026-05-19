@@ -27,7 +27,11 @@ run_with_timeout() {
 }
 
 DEMO_DIR="$(mktemp -d /tmp/toolforge_demo_XXXX)"
-trap 'rm -rf "$DEMO_DIR"' EXIT
+cleanup() {
+  cd "$REPO_ROOT" 2>/dev/null || cd /tmp
+  rm -rf "$DEMO_DIR"
+}
+trap cleanup EXIT
 
 echo ""
 echo "══════════════════════════════════════════════════════"
