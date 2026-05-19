@@ -125,8 +125,10 @@ def test_registry_info_with_tool_exits_cleanly() -> None:
         # Register csv-cleaner via internal API (fast, no subprocess)
         generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
         r = _cli(["registry", "info", "csv-cleaner"], workspace, env, 30)
-        # Should print info and exit; any returncode is acceptable, must not hang
-        assert r.returncode is not None
+        # Should print tool info and exit; reject obvious CLI usage failures.
+        output = f"{r.stdout}\n{r.stderr}"
+        assert r.returncode != 2
+        assert "csv-cleaner" in output
 
 
 def test_eval_missing_tool_exits_cleanly() -> None:
