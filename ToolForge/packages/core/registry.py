@@ -259,11 +259,18 @@ class ToolRegistry:
         fd, tmp_path = tempfile.mkstemp(
             dir=self._path.parent, prefix=".registry_tmp_", suffix=".json"
         )
+        fd_open = True
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fd_open = False
                 fh.write(json.dumps(self._entries, indent=2, default=str))
             os.replace(tmp_path, self._path)
         except Exception:
+            if fd_open:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
             try:
                 os.unlink(tmp_path)
             except OSError:
