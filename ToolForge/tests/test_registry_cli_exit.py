@@ -46,7 +46,7 @@ def _cli(
     args: list[str],
     cwd: Path,
     timeout: int,
-) -> "subprocess.CompletedProcess[str]":
+) -> subprocess.CompletedProcess[str]:
     """Run `toolforge <args>` via module path with process-tree timeout."""
     return run_process_tree(
         [sys.executable, "-m", "apps.cli.toolforge_cli.main", *args],
