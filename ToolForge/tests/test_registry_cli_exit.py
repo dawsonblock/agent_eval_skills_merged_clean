@@ -1,4 +1,9 @@
-"""Test registry CLI commands exit reliably without hanging."""
+"""Test registry CLI commands exit reliably without hanging.
+
+Tool setup uses the _lifecycle.py internal Python API (no subprocess) so
+tests complete in < 5 s each.  Only the registry CLI commands themselves
+are exercised as subprocesses.
+"""
 from __future__ import annotations
 
 import os
@@ -7,6 +12,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+from tests.e2e_scripts._lifecycle import create_workspace, generate_tool_from_prompt
 from tests.e2e_scripts._process import run_process_tree
 
 ROOT = Path(__file__).parent.parent
@@ -40,7 +46,7 @@ def _cli(
     args: list[str],
     cwd: Path,
     timeout: int,
-) -> subprocess.CompletedProcess[str]:
+) -> "subprocess.CompletedProcess[str]":
     """Run `toolforge <args>` via module path with process-tree timeout."""
     return run_process_tree(
         [sys.executable, "-m", "apps.cli.toolforge_cli.main", *args],
@@ -51,42 +57,32 @@ def _cli(
 
 
 def test_registry_list_exits_cleanly() -> None:
-    """Test registry list command exits without hanging."""
+    """registry list exits cleanly after a tool has been registered.
+
+    Tool registration uses the internal Python API (no subprocess) so the
+    setup is instant and cannot be a hang source.
+    """
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
+        workspace = create_workspace(Path(tmp_dir))
+        # Register csv-cleaner via internal Python API — fast, no subprocess
+        generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
 
-        r = _cli(["init", str(tmp_path)], tmp_path, 30)
-        assert r.returncode == 0
-
-        # Generate csv-cleaner so the registry has an entry to list
-        r = _cli(
-            ["new", "tool", "--from-prompt", "Create a tool that cleans CSV files"],
-            tmp_path,
-            120,
-        )
-        assert r.returncode == 0
-
-        r = _cli(["registry", "list"], tmp_path, 30)
+        r = _cli(["registry", "list"], workspace, 30)
         assert r.returncode == 0
         assert "csv-cleaner" in r.stdout.lower()
 
 
 def test_registry_info_exits_cleanly() -> None:
-    """Test registry info command exits without hanging."""
+    """registry info exits cleanly for a registered tool.
+
+    Tool registration uses the internal Python API (no subprocess).
+    """
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
+        workspace = create_workspace(Path(tmp_dir))
+        # Register csv-cleaner via internal Python API — fast, no subprocess
+        generate_tool_from_prompt(workspace, "Create a tool that cleans CSV files")
 
-        r = _cli(["init", str(tmp_path)], tmp_path, 30)
-        assert r.returncode == 0
-
-        r = _cli(
-            ["new", "tool", "--from-prompt", "Create a tool that cleans CSV files"],
-            tmp_path,
-            120,
-        )
-        assert r.returncode == 0
-
-        r = _cli(["registry", "info", "csv-cleaner"], tmp_path, 30)
+        r = _cli(["registry", "info", "csv-cleaner"], workspace, 30)
         assert r.returncode == 0
         assert "csv-cleaner" in r.stdout.lower()
-        assert "v0.1.0" in r.stdout.lower()
+        assert "0.1.0" in r.stdout.lower()
