@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+from packages.core.process_timeout import ProcessTimeoutError, run_with_process_tree_timeout
+
 
 _ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
@@ -80,19 +82,24 @@ def run_toolforge(
     effective_env = os.environ.copy()
     if env:
         effective_env.update(env)
-    
+
     cmd_prefix, _, cleaned_env = build_toolforge_command(effective_env)
-    
-    result = subprocess.run(
-        [*cmd_prefix, *args],
-        cwd=str(cwd),
-        text=True,
-        capture_output=True,
-        timeout=timeout,
-        env=cleaned_env,
-        check=False,
-    )
-    return result
+    cmd = [*cmd_prefix, *args]
+
+    try:
+        return run_with_process_tree_timeout(
+            cmd,
+            cwd=Path(cwd),
+            env=cleaned_env,
+            timeout=timeout,
+        )
+    except ProcessTimeoutError:
+        return subprocess.CompletedProcess(
+            args=cmd,
+            returncode=124,
+            stdout="",
+            stderr="[toolforge test helper] command timed out",
+        )
 
 
 def combined_output(result: subprocess.CompletedProcess[str]) -> str:

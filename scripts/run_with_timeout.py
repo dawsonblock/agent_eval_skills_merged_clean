@@ -10,10 +10,7 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent / "ToolForge"
 sys.path.insert(0, str(repo_root))
 
-from packages.core.process_timeout import ProcessTimeoutError  # noqa: E402
-from tests.e2e_scripts._timeout import (  # noqa: E402
-    run_with_process_tree_timeout,
-)
+from packages.core.process_timeout import ProcessTimeoutError, run_with_process_tree_timeout  # noqa: E402
 
 
 def main() -> int:

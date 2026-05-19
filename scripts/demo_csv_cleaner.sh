@@ -53,7 +53,7 @@ run_with_timeout 60 toolforge generate eval csv-cleaner || { echo "Generate eval
 
 echo ""
 echo "▶ Step 4 — validate (schema + security + tests + safety)"
-run_with_timeout 60 toolforge validate csv-cleaner || { echo "Validate failed"; exit 1; }
+run_with_timeout 120 toolforge validate csv-cleaner || { echo "Validate failed"; exit 1; }
 
 echo ""
 echo "▶ Step 5 — run with a real CSV"
