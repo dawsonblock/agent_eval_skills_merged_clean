@@ -58,12 +58,20 @@ def validate_security(spec: ToolSpec, policy_path: Path | None = None) -> list[s
                 f"Privacy level '{spec.security.privacy_level}' requires 'approved_by' to be set"
             )
 
-    # Secrets in allowed_paths
+    # Secrets in allowed_paths — use proper path-prefix comparison so that
+    # a blocked path of '/etc' does not incorrectly match '/etc_data/'.
     fs_policy = policy.get("filesystem", {})
     blocked_paths: list[str] = fs_policy.get("deny_system_paths", [])
     for allowed in (spec.security.allowed_read_paths or []) + (spec.security.allowed_write_paths or []):
+        allowed_path = Path(allowed)
         for blocked in blocked_paths:
-            if allowed.startswith(blocked):
+            blocked_path = Path(blocked.rstrip("/**").rstrip("/*"))
+            try:
+                allowed_path.relative_to(blocked_path)
+                overlaps = True
+            except ValueError:
+                overlaps = False
+            if overlaps:
                 violations.append(
                     f"allowed_path '{allowed}' overlaps blocked system path '{blocked}'"
                 )

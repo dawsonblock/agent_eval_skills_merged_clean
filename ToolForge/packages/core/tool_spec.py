@@ -376,14 +376,17 @@ class ToolSpec(BaseModel):
     @field_validator("slug")
     @classmethod
     def _slug_format(cls, v: str) -> str:
-        if not re.match(r"^[a-z][a-z0-9-]*$", v):
+        # Require kebab-case: starts with lowercase letter, no consecutive or
+        # trailing hyphens (e.g. 'csv-cleaner' ✓, 'csv-' ✗, 'a--b' ✗).
+        if not re.match(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$", v):
             raise ValueError(f"slug must be kebab-case (e.g. 'csv-cleaner'), got: {v!r}")
         return v
 
     @field_validator("version")
     @classmethod
     def _semver(cls, v: str) -> str:
-        if not re.match(r"^\d+\.\d+\.\d+", v):
+        # Full-string match so '0.1.0-alpha' or '0.1.0extra' are rejected.
+        if not re.match(r"^\d+\.\d+\.\d+$", v):
             raise ValueError(f"version must be semver (e.g. 0.1.0), got: {v!r}")
         return v
 

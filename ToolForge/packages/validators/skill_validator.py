@@ -40,7 +40,9 @@ def validate_skill_file(skill_path: Path) -> list[str]:
     content = skill_path.read_text(encoding="utf-8")
 
     # --- Frontmatter check ---
-    fm_match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
+    # Allow optional trailing whitespace on the fence lines; require that the
+    # closing --- appears on its own line (not just as a prefix).
+    fm_match = re.match(r"^---\s*\n(.*?)\n---\s*(?:\n|$)", content, re.DOTALL)
     if not fm_match:
         errors.append("Missing YAML frontmatter (expected opening and closing ---)")
     else:
@@ -50,8 +52,10 @@ def validate_skill_file(skill_path: Path) -> list[str]:
                 errors.append(f"Frontmatter missing required key: '{key}'")
 
     # --- Section check ---
+    # Anchor the pattern to end-of-line so '## Purposeful' does not satisfy
+    # the '## Purpose' requirement.
     for section in REQUIRED_SECTIONS:
-        if not re.search(rf'^#+\s+{re.escape(section)}', content, re.MULTILINE | re.IGNORECASE):
+        if not re.search(rf'^#+\s+{re.escape(section)}\s*$', content, re.MULTILINE | re.IGNORECASE):
             errors.append(f"Missing required section: '## {section}'")
 
     # --- Minimum length ---

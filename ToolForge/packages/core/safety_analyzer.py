@@ -56,8 +56,13 @@ _SECRET_PATTERNS = [
     (re.compile(r'(?i)aws_secret_access_key\s*=\s*["\'][^"\']+["\']'), "AWS_SECRET_LITERAL"),
 ]
 
-_DENIED_IMPORTS = [
+# Imports denied unless requires_shell=True
+_DENIED_IMPORTS_SHELL = [
     "subprocess", "os.system", "popen", "pty", "ctypes", "cffi",
+]
+
+# Imports denied unless requires_network=True (or requires_shell=True)
+_DENIED_IMPORTS_NETWORK = [
     "socket", "asyncio.create_subprocess",
 ]
 
@@ -130,8 +135,8 @@ def analyze_safety(spec: ToolSpec, tool_dir: Path) -> SafetyReport:
                     file=rel, line=lineno,
                 ))
 
-            # Denied imports
-            for denied in _DENIED_IMPORTS:
+            # Denied imports — shell-specific
+            for denied in _DENIED_IMPORTS_SHELL:
                 if re.search(rf'\b{re.escape(denied)}\b', line) and not spec.security.requires_shell:
                     report.issues.append(SafetyIssue(
                         severity="error", code="DENIED_IMPORT",
@@ -139,5 +144,19 @@ def analyze_safety(spec: ToolSpec, tool_dir: Path) -> SafetyReport:
                         file=rel, line=lineno,
                     ))
                     break  # one warning per line
+            else:
+                # Denied imports — network-specific (allowed when requires_network=True)
+                for denied in _DENIED_IMPORTS_NETWORK:
+                    if (
+                        re.search(rf'\b{re.escape(denied)}\b', line)
+                        and not spec.security.requires_network
+                        and not spec.security.requires_shell
+                    ):
+                        report.issues.append(SafetyIssue(
+                            severity="error", code="DENIED_IMPORT",
+                            message=f"Suspicious import/usage of {denied!r} in {rel}:{lineno}",
+                            file=rel, line=lineno,
+                        ))
+                        break  # one warning per line
 
     return report

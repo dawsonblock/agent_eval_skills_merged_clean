@@ -66,7 +66,9 @@ def _score_result(
         weight = criterion.weight
 
         if criterion.type == EvalCriterionType.NO_ERROR:
-            ok = result.exit_code == 0 and not result.error.strip()
+            # Pass when the tool exits cleanly; stderr warnings do not count
+            # as errors since many well-behaved Python tools write to stderr.
+            ok = result.exit_code == 0
             scores.append(weight if ok else 0.0)
             detail_parts.append(f"{criterion.name}: no_error {'✓' if ok else '✗'}")
 
@@ -140,7 +142,7 @@ def _score_result(
             scores.append(weight * 0.5)
             detail_parts.append(f"{criterion.name}: {criterion.type.value} (skipped)")
 
-    total_weight = sum(c.weight for c in case_criteria) or 1.0
+    total_weight = sum(c.weight for c in case_criteria)
     final_score = sum(scores) / total_weight if total_weight > 0 else 0.0
     passed = final_score >= 0.5
     return passed, round(final_score, 4), "; ".join(detail_parts)

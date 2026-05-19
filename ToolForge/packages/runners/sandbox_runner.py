@@ -127,15 +127,27 @@ def run_in_sandbox(
                 wall_time_ms=wall_ms,
             )
     else:
-        # Level 0-1: use simple subprocess.run without timeout
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=None,
-            env=run_env,
-            cwd=cwd,
-        )
+        # Level 0-1: simple subprocess.run, still apply the caller's timeout_s
+        # so a runaway tool can't hang indefinitely even without process-group
+        # isolation.
+        try:
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+                env=run_env,
+                cwd=cwd,
+            )
+        except subprocess.TimeoutExpired as exc:
+            wall_ms = (time.monotonic() - start) * 1000
+            return SandboxResult(
+                stdout=_to_text(exc.stdout),
+                stderr=_to_text(exc.stderr),
+                exit_code=-1,
+                timed_out=True,
+                wall_time_ms=wall_ms,
+            )
         wall_ms = (time.monotonic() - start) * 1000
         return SandboxResult(
             stdout=proc.stdout,
@@ -160,21 +172,25 @@ def _run_docker(
     Maps host paths to container mount points and replaces absolute interpreters.
     """
     # Normalize cmd paths: replace host Python paths and tool paths
+    # Ensure cwd comparison uses a separator boundary so that a cwd of
+    # '/tmp/tools/csv-cleaner' does not incorrectly match
+    # '/tmp/tools/csv-cleaner-v2/tool.py'.
+    cwd_prefix = (cwd.rstrip("/") + "/") if cwd else ""
     norm_cmd: list[str] = []
     for arg in cmd:
         if arg.startswith("/") and arg.endswith(".py"):
             # Tool script: if in cwd, map to /workspace
-            if cwd and arg.startswith(cwd):
-                rel_path = arg[len(cwd):].lstrip("/")
+            if cwd_prefix and arg.startswith(cwd_prefix):
+                rel_path = arg[len(cwd_prefix):]
                 norm_cmd.append(f"/workspace/{rel_path}")
             else:
                 norm_cmd.append(arg)
         elif arg.startswith("/usr/local/bin/python") or arg.startswith("/usr/bin/python"):
             # Python interpreter: normalize to /usr/bin/python3 in container
             norm_cmd.append("/usr/bin/python3")
-        elif arg.startswith("/") and cwd and arg.startswith(cwd):
+        elif arg.startswith("/") and cwd_prefix and arg.startswith(cwd_prefix):
             # Any path within cwd: map to /workspace
-            rel_path = arg[len(cwd):].lstrip("/")
+            rel_path = arg[len(cwd_prefix):]
             norm_cmd.append(f"/workspace/{rel_path}")
         else:
             norm_cmd.append(arg)
