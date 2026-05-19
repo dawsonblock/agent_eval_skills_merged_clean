@@ -213,8 +213,9 @@ def test_validate_csv_tool_command_exits() -> None:
         r = _cli(["validate", "csv-cleaner"], workspace, env, 120)
         # Exit code 0 (all pass) or 1 (some check failed) are both acceptable.
         # Exit code 2 indicates a Click usage error — that always means a bug.
-        assert r.returncode != 2, (
-            f"CLI usage error from 'validate':\nstdout: {r.stdout}\nstderr: {r.stderr}"
+        assert r.returncode in (0, 1), (
+            f"Unexpected exit code from 'validate': {r.returncode}\n"
+            f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}"
         )
 
 
