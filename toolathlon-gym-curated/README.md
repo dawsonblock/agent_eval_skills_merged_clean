@@ -10,7 +10,6 @@ Every task is fully automated: a `preprocess/main.py` script sets up the initial
 
 The dataset is designed to stress-test agent capabilities that matter in practice: multi-step planning across heterogeneous tools, reading and writing structured file formats, cross-system data synchronization, and long-horizon task completion under a fixed step budget. We also provide an example agent built with the [CAMEL-AI](https://github.com/camel-ai/camel) framework for running in the Toolathlon-GYM environments.
 
-
 ## Quick Start
 
 ### Prerequisites
@@ -26,7 +25,7 @@ so removing `dist/` breaks direct local execution unless a fresh TypeScript buil
 ### 1. Build and Start
 
 ```bash
-cd Toolathlon_Pack
+cd toolathlon-gym-curated
 
 # Build the agent image
 docker build -t toolathlon-pack:latest .
@@ -87,11 +86,11 @@ bash run_parallel.sh 5 howtocook-meal-plan-gcal wc-sales-tax-summary yf-stock-vo
 Concurrency is controlled by a FIFO-based semaphore — the first argument sets the maximum number of tasks running at the same time. Results are collected into a summary CSV at `benchmark_logs/fully_parallel_<timestamp>/summary.csv`, with per-task logs in the same directory.
 
 | Environment variable | Default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `MODEL` | `gemini-3-flash-preview` | Model name |
 | `PROVIDER` | `gemini` | Provider key (`gemini`, `openai`, `anthropic`, etc.) |
 | `MAX_STEPS` | `100` | Max agent steps per task |
-| `IMAGE` | `toolathlon_pack-toolathlon:latest` | Docker image to use |
+| `IMAGE` | `toolathlon-pack:latest` | Docker image to use |
 | `GEMINI_API_KEY` | — | API key for Gemini provider |
 | `MODEL_API_KEY` | — | API key for other providers |
 | `MODEL_PLATFORM` | — | Platform override (e.g. `openai_compatible`) |
@@ -104,7 +103,7 @@ Concurrency is controlled by a FIFO-based semaphore — the first argument sets 
 Set `MODEL_PLATFORM` to one of the following:
 
 | `MODEL_PLATFORM` | Description | Required env vars |
-|---|---|---|
+| --- | --- | --- |
 | `openai_compatible` | Any OpenAI-compatible endpoint (aihubmix, OpenRouter, local, …) | `MODEL_API_KEY`, `MODEL_API_URL` |
 | `openai` | Official OpenAI API | `MODEL_API_KEY` |
 | `anthropic` | Official Anthropic API | `MODEL_API_KEY` |
@@ -135,7 +134,7 @@ bash scripts/run_containerized.sh sf-hr-attrition-gcal
 
 All 503 tasks live in `tasks/finalpool/`. Each task directory follows a consistent layout:
 
-```
+```text
 <task-name>/
 ├── task_config.json         # Which MCP servers the agent can use
 ├── docs/
@@ -160,7 +159,7 @@ Data is derived from or simulated after real-world sources: **Kaggle OULAD** (Op
 ### Data-rich schemas
 
 | MCP Database | Description | Scale |
-|----------|-------------|-------|
+| --- | --- | --- |
 | **canvas** | Learning Management System — courses, users, enrollments, assignments, submissions, quizzes, rubrics, announcements | 22 courses, 28,865 users, 32,663 enrollments, 206 assignments, 173,912 submissions, 77 quizzes |
 | **snowflake** | Enterprise data warehouse — HR analytics, sales, and support center domains | 50,000 employees, 20,000 sales orders, 31,588 support tickets |
 | **woocommerce** | E-commerce — products, orders, customers, coupons, reviews, shipping zones, tax rates | 82 products, 150 orders, 50 customers, 396 reviews |
@@ -170,14 +169,13 @@ Data is derived from or simulated after real-world sources: **Kaggle OULAD** (Op
 
 ## Dataset statistics
 
-**Total: 503 tasks**
+### Total: 503 tasks
 
 ### MCP count distribution
 
 Tasks range from 4 to 8 MCP servers, with the majority requiring 4–7 tools. A higher MCP count indicates greater cross-system coordination is required: agents must orchestrate more heterogeneous tools within a single task, plan longer action sequences, and handle more complex data flows across services:
 
-<img width="1105" height="622" alt="image" src="https://github.com/user-attachments/assets/045d630c-9678-48a9-94e8-c5e98eb0953d" />
-|
+![MCP count distribution chart](https://github.com/user-attachments/assets/045d630c-9678-48a9-94e8-c5e98eb0953d)
 
 Below are representative examples from each tier, illustrating how task complexity and coordination demands scale with MCP count. (Because the original text is too long, only an abstract of the task is shown here.)
 
@@ -205,7 +203,7 @@ Below are representative examples from each tier, illustrating how task complexi
 
 25 MCP servers are available across the dataset, spanning file input/output, data warehouses, productivity tools, web interaction, and domain-specific APIs. The table below shows how many tasks include each server, giving a sense of which tool categories are most heavily represented in the environment:
 
-<img width="1587" height="1262" alt="image" src="https://github.com/user-attachments/assets/92bfb8a2-da78-40c9-ad4e-3e1454b39b5a" />
+![MCP server coverage chart](https://github.com/user-attachments/assets/92bfb8a2-da78-40c9-ad4e-3e1454b39b5a)
 
 The most frequently used servers reflect the output-heavy nature of the tasks. `filesystem` appears in nearly every task as the agent's workspace for reading input files and writing results. `excel` and `emails` are the two most common output channels — most tasks produce at least one structured spreadsheet and send a summary message. `terminal` requires the agent to write and execute code scripts for data transformation or statistical analysis that cannot be handled by other tools alone.
 
@@ -219,7 +217,7 @@ The most frequently used servers reflect the output-heavy nature of the tasks. `
 
 Initial workspace files provided to the agent at task start span 11 distinct formats, covering the full range of documents an agent would encounter in real enterprise workflows. The distribution reflects realistic task composition: Markdown briefs and PDF reference documents are most common, followed by structured data formats like JSON and Excel that agents must read, transform, and write back:
 
-<img width="1425" height="704" alt="image" src="https://github.com/user-attachments/assets/3c0bf6ed-a909-4698-b368-d69f330c153f" />
+![Initial workspace file type distribution chart](https://github.com/user-attachments/assets/3c0bf6ed-a909-4698-b368-d69f330c153f)
 
 Here is a breakdown of the most representative file types found in the initial workspace:
 
@@ -251,7 +249,7 @@ Toolathlon-GYM is built on the infrastructure and original data pipelines from:
 
 > **Toolathlon: Benchmarking LLM Agents on Real-World Tool-Use Tasks**
 > HKUST-NLP
-> https://github.com/hkust-nlp/Toolathlon
+> [https://github.com/hkust-nlp/Toolathlon](https://github.com/hkust-nlp/Toolathlon)
 
 The mock database schema design, MCP server interfaces, and task evaluation framework originate from the Toolathlon project. This dataset extends the original with additional tasks and larger-scale mock data.
 
@@ -270,4 +268,4 @@ If you use Toolathlon-GYM in your research, please cite:
 
 ## Contact
 
-If you would like to get in touch, please contact info@eigent.ai
+If you would like to get in touch, please contact [info@eigent.ai](mailto:info@eigent.ai).
