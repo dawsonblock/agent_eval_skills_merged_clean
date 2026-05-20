@@ -163,8 +163,16 @@ spec_from_prompt  →  ToolSpec  →  scaffold_tool  →  tools/generated/{slug}
 
 ## Security Design
 
+**ToolForge provides process isolation and resource controls for local development, not cryptographic or hostile-code-safe sandboxing.**
+
 - **No shell injection**: inputs passed via env var, not CLI args
 - **Secret stripping**: env vars matching `*_KEY`, `*_SECRET`, `*_TOKEN`, `*_PASSWORD`, etc. are stripped before subprocess
 - **Safety analyzer**: scans tool source for hardcoded secrets, path traversal, `os.system`/`subprocess` calls, and denied imports
-- **Sandbox levels**: progressively tighter Docker isolation for untrusted tools
-- Security checks are implemented for selected local execution risks, but this project has not undergone a formal OWASP audit
+- **Sandbox levels**: progressively tighter Docker isolation for local execution risks:
+  - Level 0: Direct subprocess (no isolation; for trusted code only)
+  - Level 1: Env stripping + secret filtering
+  - Level 2: Process timeout + env isolation (default; safe for development)
+  - Level 3: Docker with network disabled, CPU/memory limits
+  - Level 4: Docker with read-only filesystem and seccomp
+- **Limitations**: Sandbox isolation is NOT designed to contain hostile code, execute untrusted user input, or provide data isolation between runs. For production untrusted-code execution, use VM-level or container-level isolation (Firecracker, gVisor, Kata Containers).
+- Rigorous security testing has not been performed; this is suitable for trusted developer environments only.
