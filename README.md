@@ -28,7 +28,7 @@ This repository is a controlled-merge of three interconnected systems designed f
 
 > **CLI-first platform for creating, validating, running, and packaging AI tools.**
 
-ToolForge is a local-first prototype workflow, not a production deployment framework. Generated tools require human review and additional hardening before any sensitive or production use.
+ToolForge is a local-first prototype workflow, not a production deployment framework. Generated tools run in a **controlled local sandbox** for development and testing only. Sandbox isolation is not cryptographic or hostile-code-safe; it provides basic process isolation and resource limits suitable for trusted developer environments. Do not run untrusted code in ToolForge. Generated tools require human review and additional hardening before any sensitive or production use.
 
 ToolForge turns a natural-language description into a structured prototype tool with an MCP server, skill file, evaluation harness, and packaged `.zip` artifact for local development workflows.
 

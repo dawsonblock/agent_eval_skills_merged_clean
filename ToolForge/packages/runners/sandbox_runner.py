@@ -198,10 +198,18 @@ def _run_docker(
         "--network=none",
         f"--cpus={_DOCKER_CPU_LIMIT}",
         f"--memory={_DOCKER_MEM_LIMIT}",
+        "--cap-drop=ALL",
+        "--cap-add=CHOWN",
+        "--cap-add=DAC_OVERRIDE",
+        "--security-opt=no-new-privileges:true",
+        "--pids-limit=512",
     ]
 
     if sandbox_level >= 4:
-        docker_cmd.append("--read-only")
+        docker_cmd.extend([
+            "--read-only",
+            "--tmpfs=/tmp:noexec,nosuid,nodev",
+        ])
 
     if cwd:
         docker_cmd += ["-v", f"{cwd}:/workspace", "-w", "/workspace"]

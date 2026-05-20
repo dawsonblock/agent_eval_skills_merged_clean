@@ -98,6 +98,56 @@ Concurrency is controlled by a FIFO-based semaphore — the first argument sets 
 
 ---
 
+## Execution Modes
+
+Toolathlon-GYM supports two execution patterns, each suited to different evaluation scenarios. Understanding these modes helps you choose the right setup for your use case.
+
+### Mode 1: Sequential Shared Database (Default)
+
+In this mode, all tasks share a single persistent PostgreSQL database. Tasks are run sequentially (or with controlled concurrency via semaphore in `run_parallel.sh`), and the database state persists across runs.
+
+**Characteristics:**
+- **Database**: Single PostgreSQL instance (`toolathlon_gym`) initialized once from `db/init.sql.gz`
+- **Isolation**: Tasks share state; later tasks may see side effects from earlier tasks (e.g., new database records, modified spreadsheets)
+- **Concurrency**: Controlled via FIFO semaphore in `run_parallel.sh`; default is up to 10 concurrent tasks
+- **Use case**: Benchmark evaluation where reproducibility is less critical; quick iteration; testing agent robustness to unexpected database state
+
+**Example:**
+```bash
+# Mode 1: sequential with up to 10 concurrent runs, shared DB state
+bash run_parallel.sh 10 <task1> <task2> <task3>
+```
+
+### Mode 2: Isolated Per-Run Database
+
+In this mode, each task gets its own completely isolated PostgreSQL instance. A fresh database is initialized from the dump for every task and destroyed on exit, guaranteeing zero cross-task state leakage.
+
+**Characteristics:**
+- **Database**: One PostgreSQL container spawned per task; database is fresh from `db/init.sql.gz` for each run
+- **Isolation**: Complete isolation; no task can affect another task's database state
+- **Concurrency**: True parallelism; tasks run in completely separate Docker containers and networks
+- **Use case**: Rigorous benchmarking; publishable results; evaluating agents where determinism and isolation are critical
+
+**Example:**
+```bash
+# Mode 2: loop over tasks, each with isolated DB (requires Docker resource allocation)
+for TASK in howtocook-meal-plan-gcal wc-sales-tax-summary yf-stock-volatility-terminal; do
+  (docker compose up -d postgres-$TASK && \
+   bash scripts/run_containerized.sh $TASK && \
+   docker compose down postgres-$TASK) &
+done
+wait
+```
+
+### Guidance for Use
+
+- **For quick validation or debugging**: Use Mode 1 (shared DB). Faster setup, lower resource overhead.
+- **For benchmark submission or research publication**: Use Mode 2 (isolated DB). Guarantees reproducibility and eliminates cross-task contamination.
+- **For stress testing agents**: Use Mode 1 with high concurrency (`bash run_parallel.sh 20+`). Tests agent robustness to race conditions and concurrent I/O.
+- **For scalable evaluation**: Use Mode 2 with orchestration (Kubernetes, job scheduler) to handle resource allocation automatically.
+
+---
+
 ## Model Provider Reference
 
 Set `MODEL_PLATFORM` to one of the following:
@@ -192,6 +242,8 @@ Below are representative examples from each tier, illustrating how task complexi
 > Prepare for the RLHF Summit 2026 conference. Search for at least 5 papers about reinforcement learning from human feedback, then read their full LaTeX source to extract methodology details. Create a PowerPoint presentation with a title slide, an overview of the RLHF field, one slide per paper, and a synthesis slide. Add a calendar event for the conference on April 10, 2026 and email preparation materials to collaborators.
 
 **7 MCPs — `arxiv-research-pipeline-notion-excel`** (`scholarly`, `arxiv_local`, `terminal`, `excel`, `notion`, `filesystem`)
+
+> **Note on terminal MCP**: The `terminal` MCP server is subprocess-only execution in the current setup. Commands execute in the task's process environment without container or VM isolation. For production use, wrap terminal execution in a more restrictive sandbox (Docker, VM, or specialized code runner like Deno).
 
 > Build a research knowledge base on large language models. Search for papers on LLMs, prompt engineering, and in-context learning. Use the terminal to run a synthesis script that reads paper metadata and contents, calculates relevance scores, and outputs a structured JSON summary. Create an Excel file with three sheets (Paper_Catalog, Method_Comparison, Research_Gaps) and a Notion page titled "LLM Research Hub" containing a research dashboard with landscape overview, methodology comparison, and identified gaps.
 
