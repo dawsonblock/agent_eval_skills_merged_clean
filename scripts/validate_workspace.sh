@@ -15,7 +15,14 @@ YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 failed=0
-INITIAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
+HAVE_GIT=0
+INITIAL_GIT_STATUS=""
+if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  HAVE_GIT=1
+  INITIAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
+else
+  echo "⚠ Not a Git checkout; skipping dirty-tree check"
+fi
 LOG_DIR="$(mktemp -d /tmp/validate_workspace.XXXXXX)"
 TOOLFORGE_INSTALL_LOG="$LOG_DIR/toolforge_install.log"
 TOOLFORGE_DOCTOR_LOG="$LOG_DIR/toolforge_doctor.log"
@@ -118,10 +125,12 @@ cd "$REPO_ROOT"
 echo
 
 FINAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
-if [ "$INITIAL_GIT_STATUS" != "$FINAL_GIT_STATUS" ]; then
-  echo "${RED}✗ Validation left repository with uncommitted changes${NC}"
-  echo "Run: git -C '$REPO_ROOT' status --short"
-  failed=$((failed + 1))
+if [ "$HAVE_GIT" -eq 1 ]; then
+  if [ "$INITIAL_GIT_STATUS" != "$FINAL_GIT_STATUS" ]; then
+    echo "${RED}✗ Validation left repository with uncommitted changes${NC}"
+    echo "Run: git -C '$REPO_ROOT' status --short"
+    failed=$((failed + 1))
+  fi
 fi
 
 # Summary

@@ -46,7 +46,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/opt/venv"
 
 # Install Playwright browser
-RUN playwright install chromium || true
+RUN playwright install chromium
 
 # Build Node-based and Python MCP servers from /opt/local_servers
 # (keeps compiled artifacts outside the volume-mounted /workspace)
@@ -67,12 +67,12 @@ RUN for dir in \
     [ -f "$dir/package.json" ] && \
         echo "=== Building $dir ===" && cd "$dir" && npm install && \
         if npm pkg get scripts.build | grep -qv null; then npm run build; fi && \
-        cd /workspace || true; \
+        cd /workspace; \
 done
 
 # Special handling for memory server (nested in servers/src/)
 RUN if [ -f /opt/local_servers/servers/src/memory/package.json ]; then \
-        cd /opt/local_servers/servers/src/memory && npm install && npm run build || true; \
+        cd /opt/local_servers/servers/src/memory && npm install && npm run build; \
     fi
 
 RUN for dir in \
@@ -89,7 +89,7 @@ RUN for dir in \
         /opt/local_servers/mcp-youtube-transcript \
         /opt/local_servers/cli-mcp-server; do \
     [ -f "$dir/pyproject.toml" ] && \
-        echo "=== $dir ===" && cd "$dir" && uv sync || true && cd /workspace || true; \
+        echo "=== $dir ===" && cd "$dir" && uv sync && cd /workspace; \
 done
 
 # Copy project code

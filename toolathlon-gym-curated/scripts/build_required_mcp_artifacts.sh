@@ -4,7 +4,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
-LOCAL_SERVERS_DIR="$ROOT_DIR/local_servers"
+LOCAL_SERVERS_DIR="${LOCAL_SERVERS_PATH:-$ROOT_DIR/local_servers}"
 
 build_node_package() {
   local pkg_dir="$1"
@@ -19,12 +19,9 @@ build_node_package() {
   (
     cd "$pkg_dir"
     if [ -f package-lock.json ]; then
-      if ! npm ci; then
-        echo "  - npm ci failed for $name; falling back to npm install --no-package-lock"
-        npm install --no-package-lock
-      fi
+      npm ci --ignore-scripts
     else
-      npm install --no-package-lock
+      npm install --no-package-lock --ignore-scripts
     fi
     if npm pkg get scripts.build | grep -qv null; then
       npm run build
