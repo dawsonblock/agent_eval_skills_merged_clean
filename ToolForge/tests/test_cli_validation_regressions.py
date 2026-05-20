@@ -4,11 +4,11 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from tests.e2e_scripts._process import (
+from .e2e_scripts._process import (
     assert_no_toolforge_children,
     run_process_tree,
 )
-from tests.e2e_scripts._runner import build_clean_env, run_toolforge
+from .e2e_scripts._runner import build_clean_env, run_toolforge
 
 
 ROOT = Path(__file__).parent.parent

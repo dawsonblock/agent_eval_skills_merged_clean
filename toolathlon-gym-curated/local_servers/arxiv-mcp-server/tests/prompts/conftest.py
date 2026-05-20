@@ -1,7 +1,8 @@
 """Test fixtures for prompt tests."""
 
+from typing import Any, Dict
+
 import pytest
-from typing import Dict, Any
 
 
 @pytest.fixture
@@ -49,14 +50,3 @@ def paper_analysis_args() -> Dict[str, Any]:
 def literature_synthesis_args() -> Dict[str, Any]:
     """Sample arguments for literature synthesis prompt."""
     return {"paper_ids": ["2401.12345", "2401.67890"], "synthesis_type": "themes"}
-
-
-@pytest.fixture(autouse=True)
-def clean_paper_manager():
-    """Reset the paper manager singleton between tests."""
-    # Reset before each test
-    global paper_manager
-    paper_manager = None
-    yield
-    # Reset after each test
-    paper_manager = None

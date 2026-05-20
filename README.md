@@ -1,5 +1,3 @@
-<div align="center">
-
 # Agent Eval & Skills Platform
 
 **A unified workspace for building and evaluating AI agent tools.**
@@ -10,9 +8,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
 [![License: Apache--2.0](https://img.shields.io/badge/License-Apache--2.0-22c55e)](LICENSE)
 
-[ToolForge](#-toolforge) · [Agent Skills](#-agent-skills) · [Toolathlon GYM](#-toolathlon-gym) · [Getting Started](#-getting-started) · [Architecture](#-architecture)
-
-</div>
+[ToolForge](#toolforge) · [Agent Skills](#agent-skills) · [Toolathlon GYM](#toolathlon-gym) · [Getting Started](#getting-started) · [Architecture](#architecture)
 
 ---
 
@@ -21,7 +17,7 @@
 This repository is a controlled-merge of three interconnected systems designed for end-to-end AI agent development: from authoring tools to evaluating agents against real-world task benchmarks.
 
 | Component | Purpose | Scale |
-|-----------|---------|-------|
+| --- | --- | --- |
 | [**ToolForge**](ToolForge/) | Create, validate, run, and package AI tool prototypes as MCP servers and Copilot Skills | CLI platform |
 | [**Agent Skills**](agent-skills-curated/) | Curated registry of reusable agent skills with built-in evaluation | 10+ curated skills |
 | [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers |

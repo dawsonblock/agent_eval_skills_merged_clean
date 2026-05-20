@@ -1,9 +1,11 @@
 """TaskRunner: entry point for running a single task."""
-from utils.roles.task_agent import TaskAgent, TaskStatus
-from utils.data_structures.task_config import TaskConfig
-from utils.api_model.model_provider import build_model
-from utils.general.helper import print_color
+
 from pprint import pprint
+
+from utils.api_model.model_provider import build_model
+from utils.data_structures.task_config import TaskConfig
+from utils.general.helper import print_color
+from utils.roles.task_agent import TaskAgent, TaskStatus
 
 
 class TaskRunner:
@@ -34,8 +36,9 @@ class TaskRunner:
         """Parse eval_config.json into (model_name, provider, max_steps, dump_path)."""
         agent_cfg = eval_config_dict.get("agent", {})
         model_name = agent_cfg.get("model_name", "gpt-4o-mini")
-        provider   = agent_cfg.get("provider", "openai")
-        max_steps  = eval_config_dict.get("global_task_config", {}).get(
-            "max_steps_under_single_turn_mode", 100)
-        dump_path  = eval_config_dict.get("dump_path", "./dumps/")
+        provider = agent_cfg.get("provider", "openai")
+        max_steps = eval_config_dict.get("global_task_config", {}).get(
+            "max_steps_under_single_turn_mode", 100
+        )
+        dump_path = eval_config_dict.get("dump_path", "./dumps/")
         return model_name, provider, max_steps, dump_path

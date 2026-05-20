@@ -1,13 +1,14 @@
 """Tests for paper search functionality."""
 
-import pytest
 import json
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from arxiv_mcp_server.tools import handle_search
 from arxiv_mcp_server.tools.search import (
-    _validate_categories,
-    _raw_arxiv_search,
     _parse_arxiv_atom_response,
+    _raw_arxiv_search,
+    _validate_categories,
 )
 
 
@@ -132,8 +133,6 @@ def test_parse_arxiv_atom_response():
 @pytest.mark.asyncio
 async def test_raw_arxiv_search_builds_correct_url():
     """Test that raw search builds correct URL with date filters."""
-    import httpx
-
     # Mock the httpx client
     mock_response = MagicMock()
     mock_response.text = """<?xml version="1.0" encoding="UTF-8"?>
