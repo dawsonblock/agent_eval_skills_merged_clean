@@ -19,3 +19,6 @@ htmlcov/
 
 # Demo temp dirs (created by scripts/demo_csv_cleaner.sh)
 /tmp/toolforge_demo_*
+
+# Workspace validation logs
+.validation_logs/

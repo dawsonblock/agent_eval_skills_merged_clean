@@ -235,11 +235,13 @@ Mode 2: Isolated Per-Run Database
 
 ---
 
-### 12. ✅ All Files Committed and Pushed
+### 12. ⚪ Git Checkout Provenance (Git-only)
 - [x] Commit ef4f14c contains all Phase 1, 5, 7, 8, 11, 12 changes
 - [x] Commit ef4f14c contains all Phase 9, 10, 13 changes
 - [x] Changes pushed to origin/main
 - [x] No uncommitted changes remain
+
+**Note**: This item applies only to Git checkouts. It is not a release-ZIP validation gate.
 
 **Evidence**:
 ```
@@ -324,6 +326,7 @@ bash scripts/validate_workspace.sh
 
 ### For Docker deployment:
 ```bash
+cd toolathlon-gym-curated
 docker build -t toolathlon:repair .
 docker run --rm -it toolathlon:repair python scripts/preflight_mcp_paths.py
 # Expected: all paths found (inside container)
@@ -355,6 +358,6 @@ bash scripts/validate_workspace.sh
 
 ---
 
-**Repair Plan Complete** ✅  
-**Ready for distribution** ✅  
-**Ready for production hardening** (pending external security audit)
+**Repair Plan In Progress** ⚠  
+**Not ready for distribution** ⚠  
+**Production hardening pending** (external security audit still recommended)
