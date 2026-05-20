@@ -10,6 +10,7 @@ Exit codes:
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -76,6 +77,19 @@ def to_path(value: str, base_dir: Path, local_servers_dir: Path) -> Path | None:
     if p.is_absolute():
         return p
     return (base_dir / p).resolve()
+
+
+def path_exists(path: Path) -> bool:
+    """Return True if the path exists, including python/python3 venv alias fallback."""
+    if path.exists():
+        return True
+    if str(path).endswith("/.venv/bin/python3"):
+        alt = Path(str(path)[:-1])
+        return alt.exists()
+    if str(path).endswith("/.venv/bin/python"):
+        alt = Path(f"{path}3")
+        return alt.exists()
+    return False
 
 
 def extract_command_paths(config_name: str, config: dict, local_servers_dir: Path) -> list[tuple[str, str]]:
@@ -163,9 +177,11 @@ def main() -> int:
     repo_root = script_dir.parent
     
     config_dir = repo_root / "configs" / "mcp_servers"
-    local_servers_dir = repo_root / "local_servers"
+    local_servers_dir = Path(
+        os.environ.get("LOCAL_SERVERS_PATH", str(repo_root / "local_servers"))
+    ).resolve()
     
-    print(f"Checking MCP server paths in: {config_dir}")
+    print(f"Checking MCP server paths in: {config_dir.resolve()}")
     print(f"Local servers directory: {local_servers_dir}")
     print()
     
@@ -182,7 +198,7 @@ def main() -> int:
         
         for server_name, path_str in paths:
             path = Path(path_str)
-            if path.exists():
+            if path_exists(path):
                 all_found.append((config_name, server_name, str(path)))
                 print(f"✓ {server_name:30} {path}")
             else:

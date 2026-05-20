@@ -2,13 +2,15 @@
 
 **Date**: May 20, 2026  
 **Commit**: ef4f14c (pushed to origin/main on 2026-05-20)  
-**Repair Plan**: 13-phase hardening complete
+**Repair Plan**: 13-phase hardening largely implemented; reproducibility verification still in progress
+
+> Status note (May 20, 2026): this file is treated as an acceptance target and evidence tracker, not a declaration that all gates currently pass in every environment.
 
 ---
 
-## ✅ Verification Checklist
+## ⚠ Verification Checklist (Pending Full Revalidation)
 
-All 14 items must pass before repair is considered complete.
+All 14 items must pass before repair is considered complete. Items marked complete require fresh evidence from current validation runs.
 
 ### 1. ✅ Repository Documentation Matches Contents
 - [x] `README_CLEAN_MERGE.md` lists exactly 23 agent skills
@@ -27,8 +29,8 @@ $ node agent-skills-curated/bin/cli.js list | grep -c "^    "
 
 ---
 
-### 2. ✅ No Stale Build Artifacts or Cache
-- [x] Repository contains no `__pycache__`, `.pytest_cache`, `.mypy_cache`, `.ruff_cache`
+### 2. ⚠ No Stale Build Artifacts or Cache
+- [ ] Repository contains no `__pycache__`, `.pytest_cache`, `.mypy_cache`, `.ruff_cache`
 - [x] No `*.pyc` or `*.pyo` files present
 - [x] Dockerfile builds (not uses) all 25 MCP servers
 - [x] Local build cleanup script provided: `scripts/clean_workspace.sh`
@@ -43,10 +45,10 @@ $ bash scripts/clean_workspace.sh  # verified executable
 
 ---
 
-### 3. ✅ ToolForge Installation & Validation
-- [x] `pip install -e ".[dev]"` completes without error
-- [x] `toolforge doctor` passes all checks
-- [x] No missing dependencies or version conflicts
+### 3. ⚠ ToolForge Installation & Validation
+- [ ] `pip install -e ".[dev]"` completes without error
+- [ ] `toolforge doctor` passes all checks
+- [ ] No missing dependencies or version conflicts
 
 **Evidence**:
 ```
@@ -143,12 +145,13 @@ $ grep -c "npm install && \\\\" toolathlon-gym-curated/Dockerfile
 
 ---
 
-### 8. ✅ Unified Validation Scripts Available
+### 8. ⚠ Unified Validation Scripts Available
 - [x] `scripts/validate_workspace.sh` validates all three subsystems
 - [x] `scripts/clean_workspace.sh` removes cache directories
 - [x] Both scripts are executable and CI-ready
 - [x] Scripts check ToolForge (doctor + tests), Agent Skills (list), Toolathlon (preflight)
 - [x] Exit code 0 on success, 1 on failure
+- [ ] Fresh run confirms no hidden failures/timeouts in current environment
 
 **Evidence**:
 ```
@@ -249,11 +252,11 @@ $ git status --short
 
 ---
 
-### 13. ✅ Reproducibility Test Passes
-- [x] Fresh clone → clean workspace → validation script runs successfully
-- [x] All three subsystems validate without errors
-- [x] No hanging processes or timeouts
-- [x] Exit code 0 on validation success
+### 13. ⚠ Reproducibility Test Passes
+- [ ] Fresh clone → clean workspace → validation script runs successfully
+- [ ] All three subsystems validate without errors
+- [ ] No hanging processes or timeouts
+- [ ] Exit code 0 on validation success
 
 **Expected test (from fresh clone)**:
 ```bash
@@ -287,15 +290,15 @@ bash scripts/validate_workspace.sh
 
 ## 🎯 Summary
 
-**Status**: ✅ ALL 14 ITEMS PASSING
+**Status**: ⚠ PARTIALLY VERIFIED. NOT YET RELEASE-READY.
 
 **Repair Scope**: 13 phases, 6 critical-path phases + 3 documentation phases implemented and merged.
 
-**Key Achievements**:
+**Key Achievements (verified)**:
 1. ✅ Repository truth fixed (23 skills documented and verified)
 2. ✅ ToolForge tests passing (5/5 csv-cleaner, all example tools working)
-3. ✅ Toolathlon hardened (all 25 MCP servers in build plan, preflight validation available)
-4. ✅ Validation infrastructure in place (unified scripts, GitHub Actions CI)
+3. ⚠ Toolathlon improved (preflight validation available; artifact/path parity still being completed)
+4. ⚠ Validation infrastructure present (unified scripts and CI exist; reproducibility re-run pending)
 5. ✅ Security posture improved (hardened Docker flags, honest threat model documentation)
 6. ✅ Execution modes documented (Mode 1 sequential vs Mode 2 isolated)
 7. ✅ Terminal MCP limitations documented (subprocess-only, not container-isolated)
@@ -305,7 +308,7 @@ bash scripts/validate_workspace.sh
 - 4 new: scripts/clean_workspace.sh, scripts/validate_workspace.sh, toolathlon-gym-curated/scripts/preflight_mcp_paths.py, .github/workflows/validate.yml
 - 3 updated (Phase 10): README.md, ToolForge/docs/ARCHITECTURE.md, ToolForge/packages/runners/sandbox_runner.py, toolathlon-gym-curated/README.md
 
-**Total changes**: 451+ insertions, 55+ deletions across 11 files.
+**Total changes**: historical total retained; revalidation updates continue in current pass.
 
 ---
 
@@ -316,7 +319,7 @@ bash scripts/validate_workspace.sh
 cd /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean
 bash scripts/clean_workspace.sh
 bash scripts/validate_workspace.sh
-# Expected: all green, exit 0
+# Expected (target): all green, exit 0
 ```
 
 ### For Docker deployment:
