@@ -1,33 +1,35 @@
-#  __init__.py - PostgreSQL-backed version (no real YouTube API calls)
+#  __init__.py
+#
+#  Copyright (c) 2025 Junpei Kawamoto
+#
+#  This software is released under the MIT License.
+#
+#  http://opensource.org/licenses/mit-license.php
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from functools import lru_cache, partial
+from functools import partial
 from itertools import islice
 from typing import AsyncIterator, Final, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import humanize
-import psycopg2
-import psycopg2.extras
+import requests
+import yt_dlp
 from mcp import ServerSession
 from mcp.server import FastMCP
 from mcp.server.fastmcp import Context
 from pydantic import AwareDatetime, BaseModel, Field
-
-
-def _get_pg_conn():
-    import os
-
-    return psycopg2.connect(
-        host=os.environ.get("PG_HOST", "localhost"),
-        port=int(os.environ.get("PG_PORT", "5432")),
-        dbname=os.environ.get("PG_DATABASE", "toolathlon"),
-        user=os.environ.get("PG_USER", "postgres"),
-        password=os.environ.get("PG_PASSWORD", "postgres"),
-    )
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api._transcripts import FetchedTranscriptSnippet
+from youtube_transcript_api.proxies import (
+    GenericProxyConfig,
+    ProxyConfig,
+    WebshareProxyConfig,
+)
+from yt_dlp.extractor.youtube import YoutubeIE
 
 
 def _parse_video_id(url: str) -> str:
@@ -37,7 +39,6 @@ def _parse_video_id(url: str) -> str:
     q = parse_qs(parsed_url.query).get("v")
     if q:
         return q[0]
-    # Assume it's already a video ID
     return url
 
 
@@ -46,14 +47,7 @@ def _parse_time_info(
     timestamp: int,
     duration: int,
 ) -> tuple[datetime, str]:
-    """Parse legacy date/time payloads into API-ready values.
-
-    The historical youtube fixtures encode date and time separately:
-    - ``upload_date`` as ``YYYYMMDD``
-    - ``timestamp`` as ``HHMMSSmmm...`` (time-of-day digits)
-
-    Keep this helper for backward compatibility with existing tests.
-    """
+    """Parse legacy date/time payloads into API-ready values."""
     date_part = datetime.strptime(str(upload_date), "%Y%m%d")
     time_digits = str(timestamp).zfill(10)
     hour = int(time_digits[0:2])
@@ -74,14 +68,48 @@ def _parse_time_info(
     return parsed_upload_date, parsed_duration
 
 
+def _build_proxy_config(
+    webshare_proxy_username: str | None,
+    webshare_proxy_password: str | None,
+    http_proxy: str | None,
+    https_proxy: str | None,
+) -> ProxyConfig | None:
+    """Return a youtube_transcript_api ProxyConfig, or None if no proxy."""
+    if webshare_proxy_username and webshare_proxy_password:
+        return WebshareProxyConfig(webshare_proxy_username, webshare_proxy_password)
+    if http_proxy or https_proxy:
+        return GenericProxyConfig(http_proxy, https_proxy)
+    return None
+
+
 @dataclass(frozen=True)
 class AppContext:
-    pass
+    http_client: requests.Session = field(default_factory=requests.Session)
+    ytt_api: YouTubeTranscriptApi = field(default_factory=YouTubeTranscriptApi)
+    dlp: yt_dlp.YoutubeDL = field(default_factory=lambda: yt_dlp.YoutubeDL({"quiet": True}))
 
 
 @asynccontextmanager
-async def _app_lifespan(_server: FastMCP, **kwargs) -> AsyncIterator[AppContext]:
-    yield AppContext()
+async def _app_lifespan(
+    _server: FastMCP,
+    proxy_config: ProxyConfig | None = None,
+    ydl_proxy: str | None = None,
+) -> AsyncIterator[AppContext]:
+    http_client = requests.Session()
+    if proxy_config is not None:
+        http_client.proxies.update(proxy_config.to_requests_dict())
+
+    ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config, http_client=http_client)
+
+    ydl_opts: dict = {"quiet": True}
+    if ydl_proxy:
+        ydl_opts["proxy"] = ydl_proxy
+    dlp = yt_dlp.YoutubeDL(ydl_opts)
+
+    yield AppContext(http_client=http_client, ytt_api=ytt_api, dlp=dlp)
+
+    dlp.close()
+    http_client.close()
 
 
 class Transcript(BaseModel):
@@ -101,9 +129,16 @@ class TranscriptSnippet(BaseModel):
     start: float = Field(
         description="The timestamp at which this transcript snippet appears on screen in seconds."
     )
-    duration: float = Field(
-        description="The duration of how long the snippet in seconds."
-    )
+    duration: float = Field(description="The duration of how long the snippet in seconds.")
+
+    @classmethod
+    def from_fetched_transcript_snippet(cls, snippet: FetchedTranscriptSnippet) -> "TranscriptSnippet":
+        """Create a TranscriptSnippet from a FetchedTranscriptSnippet."""
+        return cls(
+            text=snippet.text,
+            start=snippet.start,
+            duration=snippet.duration,
+        )
 
     def __len__(self) -> int:
         return len(self.model_dump_json())
@@ -113,9 +148,7 @@ class TimedTranscript(BaseModel):
     """Transcript of a YouTube video with timestamps."""
 
     title: str = Field(description="Title of the video")
-    snippets: list[TranscriptSnippet] = Field(
-        description="Transcript snippets of the video"
-    )
+    snippets: list[TranscriptSnippet] = Field(description="Transcript snippets of the video")
     next_cursor: str | None = Field(
         description="Cursor to retrieve the next page of the transcript", default=None
     )
@@ -131,46 +164,13 @@ class VideoInfo(BaseModel):
     duration: str = Field(description="Duration of the video")
 
 
-def _fetch_from_pg(video_id: str, lang: str = "en") -> Tuple[str, list[dict]]:
-    """Fetch transcript from PostgreSQL."""
-    conn = _get_pg_conn()
-    try:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute(
-            "SELECT title, content, snippets FROM youtube.transcripts WHERE video_id = %s AND language = %s",
-            (video_id, lang),
-        )
-        row = cur.fetchone()
-        if not row:
-            cur.execute(
-                "SELECT title, content, snippets FROM youtube.transcripts WHERE video_id = %s LIMIT 1",
-                (video_id,),
-            )
-            row = cur.fetchone()
-        if not row:
-            raise ValueError(f"Transcript not found for video: {video_id}")
-        title = row["title"] or "Transcript"
-        snippets = row["snippets"] if isinstance(row["snippets"], list) else []
-        return title, snippets
-    finally:
-        conn.close()
-
-
-def _fetch_video_info_from_pg(video_id: str) -> dict:
-    """Fetch video info from PostgreSQL."""
-    conn = _get_pg_conn()
-    try:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute(
-            "SELECT title, description, channel_title, published_at, duration FROM youtube.videos WHERE video_id = %s",
-            (video_id,),
-        )
-        row = cur.fetchone()
-        if not row:
-            raise ValueError(f"Video not found: {video_id}")
-        return dict(row)
-    finally:
-        conn.close()
+def _ydl_proxy_from_config(proxy_config: ProxyConfig | None) -> str | None:
+    """Extract the most useful single proxy URL for yt_dlp from a ProxyConfig."""
+    if proxy_config is None:
+        return None
+    d = proxy_config.to_requests_dict()
+    # Prefer https proxy, fall back to http
+    return d.get("https") or d.get("http")
 
 
 def server(
@@ -180,26 +180,44 @@ def server(
     http_proxy: str | None = None,
     https_proxy: str | None = None,
 ) -> FastMCP:
-    """Initializes the MCP server (PostgreSQL-backed)."""
+    """Initializes the MCP server."""
 
-    mcp = FastMCP("Youtube Transcript", lifespan=partial(_app_lifespan))
+    proxy_config = _build_proxy_config(
+        webshare_proxy_username, webshare_proxy_password, http_proxy, https_proxy
+    )
+    ydl_proxy = _ydl_proxy_from_config(proxy_config)
+
+    mcp = FastMCP(
+        "Youtube Transcript",
+        lifespan=partial(_app_lifespan, proxy_config=proxy_config, ydl_proxy=ydl_proxy),
+    )
 
     @mcp.tool()
     async def get_transcript(
         ctx: Context[ServerSession, AppContext],
         url: str = Field(description="The URL or video ID of the YouTube video"),
-        lang: str = Field(
-            description="The preferred language for the transcript", default="en"
-        ),
+        lang: str = Field(description="The preferred language for the transcript", default="en"),
         next_cursor: str | None = Field(
-            description="Cursor to retrieve the next page of the transcript",
-            default=None,
+            description="Cursor to retrieve the next page of the transcript", default=None
         ),
     ) -> Transcript:
         """Retrieves the transcript of a YouTube video."""
         video_id = _parse_video_id(url)
-        title, snippets = _fetch_from_pg(video_id, lang)
-        texts = (s["text"] for s in snippets)
+        app_ctx: AppContext = ctx.request_context.lifespan_context
+        try:
+            fetched = app_ctx.ytt_api.fetch(video_id, [lang])
+        except Exception:
+            fetched = app_ctx.ytt_api.fetch(video_id)
+        title = video_id
+        try:
+            app_ctx.dlp.add_info_extractor(YoutubeIE())
+            info = app_ctx.dlp.extract_info(
+                f"https://www.youtube.com/watch?v={video_id}", download=False
+            )
+            title = info.get("title", video_id)
+        except Exception:
+            pass
+        texts = (s.text for s in fetched)
 
         if response_limit is None or response_limit <= 0:
             return Transcript(title=title, transcript="\n".join(texts))
@@ -218,25 +236,28 @@ def server(
     async def get_timed_transcript(
         ctx: Context[ServerSession, AppContext],
         url: str = Field(description="The URL or video ID of the YouTube video"),
-        lang: str = Field(
-            description="The preferred language for the transcript", default="en"
-        ),
+        lang: str = Field(description="The preferred language for the transcript", default="en"),
         next_cursor: str | None = Field(
-            description="Cursor to retrieve the next page of the transcript",
-            default=None,
+            description="Cursor to retrieve the next page of the transcript", default=None
         ),
     ) -> TimedTranscript:
         """Retrieves the transcript of a YouTube video with timestamps."""
         video_id = _parse_video_id(url)
-        title, snippets = _fetch_from_pg(video_id, lang)
-        snippet_objs = [
-            TranscriptSnippet(
-                text=s["text"],
-                start=float(s.get("start", 0)),
-                duration=float(s.get("duration", 0)),
+        app_ctx: AppContext = ctx.request_context.lifespan_context
+        try:
+            fetched = app_ctx.ytt_api.fetch(video_id, [lang])
+        except Exception:
+            fetched = app_ctx.ytt_api.fetch(video_id)
+        title = video_id
+        try:
+            app_ctx.dlp.add_info_extractor(YoutubeIE())
+            info = app_ctx.dlp.extract_info(
+                f"https://www.youtube.com/watch?v={video_id}", download=False
             )
-            for s in snippets
-        ]
+            title = info.get("title", video_id)
+        except Exception:
+            pass
+        snippet_objs = [TranscriptSnippet.from_fetched_transcript_snippet(s) for s in fetched]
 
         if response_limit is None or response_limit <= 0:
             return TimedTranscript(title=title, snippets=snippet_objs)
@@ -260,23 +281,20 @@ def server(
     ) -> VideoInfo:
         """Retrieves the video information."""
         video_id = _parse_video_id(url)
-        info = _fetch_video_info_from_pg(video_id)
-        # Parse published_at
-        pub = info.get("published_at")
-        if isinstance(pub, datetime):
-            if pub.tzinfo is None:
-                pub = pub.replace(tzinfo=timezone.utc)
-            upload_date = pub
-        else:
-            upload_date = datetime.now(timezone.utc)
-        # Format duration (ISO 8601 → human readable)
-        dur_str = info.get("duration", "PT0S")
+        app_ctx: AppContext = ctx.request_context.lifespan_context
+        app_ctx.dlp.add_info_extractor(YoutubeIE())
+        info = app_ctx.dlp.extract_info(
+            f"https://www.youtube.com/watch?v={video_id}", download=False
+        )
+        upload_date, duration = _parse_time_info(
+            info["upload_date"], info["timestamp"], info["duration"]
+        )
         return VideoInfo(
-            title=info["title"] or "",
+            title=info["title"],
             description=info.get("description") or "",
-            uploader=info.get("channel_title") or "",
+            uploader=info.get("uploader") or "",
             upload_date=upload_date,
-            duration=dur_str,
+            duration=duration,
         )
 
     return mcp
@@ -284,6 +302,7 @@ def server(
 
 __all__: Final = [
     "server",
+    "AppContext",
     "Transcript",
     "TimedTranscript",
     "TranscriptSnippet",
