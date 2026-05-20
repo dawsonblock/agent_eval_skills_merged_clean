@@ -12,13 +12,10 @@ Usage:
     python test_mcp_servers.py --list-tools       # only list tools, no calls
 """
 import argparse
-import asyncio
 import json
 import os
-import re
 import subprocess
 import sys
-import tempfile
 import time
 from pathlib import Path
 
@@ -323,7 +320,7 @@ def main():
         print(f"  Testing {yaml_path.stem}...", flush=True)
         res = test_server(yaml_path, workspace, args.list_tools, SMOKE_CALLS)
         results[yaml_path.stem] = res
-        print(f"\033[1A\033[2K", end="")  # clear line
+        print("\033[1A\033[2K", end="")  # clear line
         print_result(yaml_path.stem, res)
         if args.verbose and res.get("tools"):
             for t in res["tools"]:

@@ -1,9 +1,10 @@
 """
 Task status management utility for tracking task execution status.
 """
+
 import json
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 class TaskStatusManager:
@@ -24,17 +25,19 @@ class TaskStatusManager:
         """Ensure the status file exists."""
         os.makedirs(self.task_dir, exist_ok=True)
         if not os.path.exists(self.status_file):
-            self._write_status({"preprocess": None, "running": None, "evaluation": None})
+            self._write_status(
+                {"preprocess": None, "running": None, "evaluation": None}
+            )
 
     def _write_status(self, status: Dict[str, Any]):
         """Write status to the status file."""
-        with open(self.status_file, 'w', encoding='utf-8') as f:
+        with open(self.status_file, "w", encoding="utf-8") as f:
             json.dump(status, f, indent=2, ensure_ascii=False)
 
     def _read_status(self) -> Dict[str, Any]:
         """Read and return the current status."""
         try:
-            with open(self.status_file, 'r', encoding='utf-8') as f:
+            with open(self.status_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
             return {"preprocess": None, "running": None, "evaluation": None}
@@ -47,7 +50,7 @@ class TaskStatusManager:
             status: Status value. Possible values: None/"running"/"done"/"fail"
         """
         current = self._read_status()
-        current['preprocess'] = status
+        current["preprocess"] = status
         self._write_status(current)
 
     def update_running(self, status: str):
@@ -58,7 +61,7 @@ class TaskStatusManager:
             status: Status value. Possible values: None/"running"/"done"/"timeout"/"max_turn_exceeded"/"fail"
         """
         current = self._read_status()
-        current['running'] = status
+        current["running"] = status
         self._write_status(current)
 
     def update_evaluation(self, status: str):
@@ -69,7 +72,7 @@ class TaskStatusManager:
             status: Status value. Possible values: None/"pass"/"fail"
         """
         current = self._read_status()
-        current['evaluation'] = status
+        current["evaluation"] = status
         self._write_status(current)
 
     def get_status(self) -> Dict[str, Any]:
@@ -84,6 +87,8 @@ class TaskStatusManager:
             True if preprocess succeeded, run succeeded, and there is an evaluation result.
         """
         status = self._read_status()
-        return (status.get('preprocess') == 'done' and
-                status.get('running') == 'done' and
-                status.get('evaluation') is not None)
+        return (
+            status.get("preprocess") == "done"
+            and status.get("running") == "done"
+            and status.get("evaluation") is not None
+        )

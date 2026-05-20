@@ -90,7 +90,7 @@ toolforge package local-file-hasher
 Three working example tools ship with ToolForge:
 
 | Tool | Description |
-|------|-------------|
+| --- | --- |
 | [`csv-cleaner`](tools/examples/csv-cleaner/) | Strips whitespace, removes blank rows, deduplicates CSV files |
 | [`json-schema-validator`](tools/examples/json-schema-validator/) | Validates JSON data against a JSON Schema (Draft 7) |
 | [`local-file-hasher`](tools/examples/local-file-hasher/) | Computes MD5/SHA-256/SHA-512 hashes of local files |
@@ -99,7 +99,7 @@ Three working example tools ship with ToolForge:
 
 ## Project Structure
 
-```
+```text
 ToolForge/
 ├── apps/cli/                  # Click CLI entry point
 ├── packages/
@@ -124,7 +124,7 @@ ToolForge/
 ## Documentation
 
 | Document | Description |
-|----------|-------------|
+| --- | --- |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, data flow, security model |
 | [CLI_REFERENCE.md](docs/CLI_REFERENCE.md) | Every `toolforge` command |
 | [TOOL_SPEC.md](docs/TOOL_SPEC.md) | `toolforge.yaml` field reference |

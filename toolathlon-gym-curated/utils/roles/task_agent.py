@@ -1,5 +1,9 @@
 """TaskAgent using CAMEL ChatAgent."""
-import asyncio, json, os, shutil, subprocess, traceback
+
+import json
+import os
+import subprocess
+import traceback
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -8,7 +12,6 @@ from typing import List, Optional
 from camel.agents import ChatAgent
 from camel.messages import BaseMessage
 from camel.toolkits import FunctionTool, MCPToolkit
-
 from utils.aux_tools.basic import make_claim_done, sleep
 from utils.aux_tools.overlong_tool_manager import make_overlong_tools
 from utils.aux_tools.python_interpretor import make_python_execute
@@ -45,7 +48,11 @@ def _fix_schema(schema: dict, strict_openai: bool = False):
         schema["type"] = non_null[0] if non_null else "string"
     # Flatten anyOf: [{type: X}, {type: null}] → {type: X} (Gemini rejects anyOf with null)
     if "anyOf" in schema and not any(k in schema for k in ("type", "$ref")):
-        non_null_variants = [s for s in schema["anyOf"] if s.get("type") != "null" and s != {"type": "null"}]
+        non_null_variants = [
+            s
+            for s in schema["anyOf"]
+            if s.get("type") != "null" and s != {"type": "null"}
+        ]
         if len(non_null_variants) == 1:
             winner = non_null_variants[0]
             schema.pop("anyOf")
@@ -59,8 +66,10 @@ def _fix_schema(schema: dict, strict_openai: bool = False):
     # Fix array items missing type
     if schema.get("type") == "array" and "items" in schema:
         items = schema["items"]
-        if isinstance(items, dict) and "type" not in items and not any(
-            k in items for k in ("anyOf", "oneOf", "allOf", "$ref")
+        if (
+            isinstance(items, dict)
+            and "type" not in items
+            and not any(k in items for k in ("anyOf", "oneOf", "allOf", "$ref"))
         ):
             items["type"] = "string"
         _fix_schema(items, strict_openai)
@@ -96,7 +105,9 @@ def _strip_strict_mode(schema: dict):
         _strip_strict_mode(schema["items"])
 
 
-def _sanitize_tool_schemas(tools, max_output_chars: int = 8000, strict_openai: bool = False):
+def _sanitize_tool_schemas(
+    tools, max_output_chars: int = 8000, strict_openai: bool = False
+):
     """Patch openai_tool_schema in-place for all FunctionTools.
     Also wraps each tool's function to truncate long outputs."""
     for tool in tools:
@@ -123,11 +134,16 @@ def _sanitize_tool_schemas(tools, max_output_chars: int = 8000, strict_openai: b
             original_func = tool.func
             original_async_call = getattr(original_func, "async_call", None)
 
-            def _truncating_wrapper(*args, _fn=original_func, _max=max_output_chars, **kwargs):
+            def _truncating_wrapper(
+                *args, _fn=original_func, _max=max_output_chars, **kwargs
+            ):
                 result = _fn(*args, **kwargs)
                 result_str = str(result)
                 if len(result_str) > _max:
-                    result_str = result_str[:_max] + f"\n...[truncated, total {len(result_str)} chars]"
+                    result_str = (
+                        result_str[:_max]
+                        + f"\n...[truncated, total {len(result_str)} chars]"
+                    )
                 return result_str
 
             _truncating_wrapper.__name__ = getattr(original_func, "__name__", "tool")
@@ -135,12 +151,19 @@ def _sanitize_tool_schemas(tools, max_output_chars: int = 8000, strict_openai: b
 
             # Preserve async_call so ChatAgent can use the native async path
             if original_async_call is not None:
-                async def _async_truncating_wrapper(*args, _afn=original_async_call, _max=max_output_chars, **kwargs):
+
+                async def _async_truncating_wrapper(
+                    *args, _afn=original_async_call, _max=max_output_chars, **kwargs
+                ):
                     result = await _afn(*args, **kwargs)
                     result_str = str(result)
                     if len(result_str) > _max:
-                        result_str = result_str[:_max] + f"\n...[truncated, total {len(result_str)} chars]"
+                        result_str = (
+                            result_str[:_max]
+                            + f"\n...[truncated, total {len(result_str)} chars]"
+                        )
                     return result_str
+
                 _truncating_wrapper.async_call = _async_truncating_wrapper  # type: ignore[attr-defined]
 
             tool.func = _truncating_wrapper
@@ -149,7 +172,9 @@ def _sanitize_tool_schemas(tools, max_output_chars: int = 8000, strict_openai: b
 
 
 class TaskAgent:
-    def __init__(self, task_config: TaskConfig, model, max_steps: int = 100, debug: bool = False):
+    def __init__(
+        self, task_config: TaskConfig, model, max_steps: int = 100, debug: bool = False
+    ):
         self.task_config = task_config
         self.model = model
         self.max_steps = max_steps
@@ -162,9 +187,11 @@ class TaskAgent:
         init = self.task_config.initialization
         if init and init.workspace and os.path.exists(str(init.workspace)):
             await copy_folder_contents(str(init.workspace), workspace)
-        for srv, d in [("arxiv_local", "arxiv_local_storage"),
-                       ("memory", "memory"),
-                       ("playwright_with_chunk", ".playwright_output")]:
+        for srv, d in [
+            ("arxiv_local", "arxiv_local_storage"),
+            ("memory", "memory"),
+            ("playwright_with_chunk", ".playwright_output"),
+        ]:
             if srv in self.task_config.needed_mcp_servers:
                 os.makedirs(os.path.join(workspace, d), exist_ok=True)
         return workspace
@@ -178,10 +205,12 @@ class TaskAgent:
             # Strip weekday name (e.g. "Sunday") from launch_time for preprocess compatibility
             lt = self.task_config.launch_time or ""
             lt_clean = " ".join(lt.split()[:2])  # keep only "YYYY-MM-DD HH:MM:SS"
-            cmd += f" --launch_time \"{lt_clean}\""
+            cmd += f' --launch_time "{lt_clean}"'
             if True:
                 print_color("[preprocess] running...", "yellow")
-                r = subprocess.run(cmd, shell=True, capture_output=not self.debug, text=True)
+                r = subprocess.run(
+                    cmd, shell=True, capture_output=not self.debug, text=True
+                )
                 if r.returncode != 0:
                     print_color(f"[preprocess] failed: {(r.stderr or '')[:300]}", "red")
                 else:
@@ -209,16 +238,24 @@ class TaskAgent:
         # Stub for manage_context / history (CAMEL handles memory internally)
         for name in ("manage_context", "history"):
             if name in needed:
+
                 async def _stub(action: str = "") -> str:
                     f"""Stub for {name} — managed internally."""
                     return "OK"
+
                 _stub.__name__ = name
                 _stub.__doc__ = f"Stub for {name}."
                 tools.append(FunctionTool(_stub))
 
         return tools
 
-    def _save_log(self, status: TaskStatus, start_time: datetime, response=None, agent_history=None):
+    def _save_log(
+        self,
+        status: TaskStatus,
+        start_time: datetime,
+        response=None,
+        agent_history=None,
+    ):
         log_path = self.task_config.log_file
         if not log_path:
             return
@@ -231,10 +268,12 @@ class TaskAgent:
             raw_calls = response.info.get("tool_calls", [])
             for tc in raw_calls:
                 try:
-                    tool_calls.append(tc.as_dict() if hasattr(tc, "as_dict") else str(tc))
+                    tool_calls.append(
+                        tc.as_dict() if hasattr(tc, "as_dict") else str(tc)
+                    )
                 except Exception:
                     tool_calls.append(str(tc))
-            for msg in (response.msgs or []):
+            for msg in response.msgs or []:
                 try:
                     chat_history.append({"role": msg.role_name, "content": msg.content})
                 except Exception:
@@ -245,7 +284,10 @@ class TaskAgent:
         if agent_history:
             for msg in agent_history:
                 try:
-                    entry = {"role": msg.get("role", ""), "content": msg.get("content", "")}
+                    entry = {
+                        "role": msg.get("role", ""),
+                        "content": msg.get("content", ""),
+                    }
                     if msg.get("tool_calls"):
                         entry["tool_calls"] = msg["tool_calls"]
                     if msg.get("tool_call_id"):
@@ -287,7 +329,9 @@ class TaskAgent:
             self._workspace = workspace
             self._run_preprocess()
 
-            task_src_dir = os.path.abspath(os.path.join("tasks/finalpool", self.task_config.task_dir))
+            task_src_dir = os.path.abspath(
+                os.path.join("tasks/finalpool", self.task_config.task_dir)
+            )
             # Support HTTP MCPs (e.g., Harbor sidecar containers) via env var
             # Format: MCP_HTTP_URLS=name1=http://host:port/mcp,name2=http://...
             http_mcp_urls = None
@@ -300,7 +344,8 @@ class TaskAgent:
                         k, v = item.split("=", 1)
                         http_mcp_urls[k.strip()] = v.strip()
             mcp_clients = build_mcp_clients(
-                self.task_config.needed_mcp_servers, workspace,
+                self.task_config.needed_mcp_servers,
+                workspace,
                 task_dir=task_src_dir,
                 http_mcp_urls=http_mcp_urls,
                 http_mcp_timeout=http_mcp_timeout,
@@ -314,17 +359,33 @@ class TaskAgent:
             local_tools = self._build_local_tools(workspace)
             all_tools = mcp_tools + local_tools
             # OpenAI API enforces a 128-tool limit; trim only for official OpenAI platform
-            if (os.environ.get("MODEL_PLATFORM", "").lower() == "openai"
-                    and len(all_tools) > 128):
-                print_color(f"[agent] OpenAI tool limit: {len(all_tools)} tools, trimming to 128.", "yellow")
-                all_tools = mcp_tools[:128 - len(local_tools)] + local_tools
+            if (
+                os.environ.get("MODEL_PLATFORM", "").lower() == "openai"
+                and len(all_tools) > 128
+            ):
+                print_color(
+                    f"[agent] OpenAI tool limit: {len(all_tools)} tools, trimming to 128.",
+                    "yellow",
+                )
+                all_tools = mcp_tools[: 128 - len(local_tools)] + local_tools
 
-
-            print_color(f"[agent] Total tools: {len(all_tools)} (MCP: {len(mcp_tools)}, local: {len(local_tools)})", "cyan")
-            print_color(f"[agent] Tool names: {[t.get_function_name() for t in all_tools]}", "cyan")
+            print_color(
+                f"[agent] Total tools: {len(all_tools)} (MCP: {len(mcp_tools)}, local: {len(local_tools)})",
+                "cyan",
+            )
+            print_color(
+                f"[agent] Tool names: {[t.get_function_name() for t in all_tools]}",
+                "cyan",
+            )
             if self.debug:
-                print_color(f"[agent] MCP tools ({len(mcp_tools)}): {[t.get_function_name() for t in mcp_tools]}", "cyan")
-                print_color(f"[agent] Local tools: {[t.get_function_name() for t in local_tools]}", "cyan")
+                print_color(
+                    f"[agent] MCP tools ({len(mcp_tools)}): {[t.get_function_name() for t in mcp_tools]}",
+                    "cyan",
+                )
+                print_color(
+                    f"[agent] Local tools: {[t.get_function_name() for t in local_tools]}",
+                    "cyan",
+                )
 
             default_sys_msg = (
                 f"You are a helpful AI assistant. Your workspace directory is: {workspace}\n"
@@ -333,7 +394,10 @@ class TaskAgent:
                 "Do not ask for confirmation — complete the task independently."
             )
             sys_msg = default_sys_msg
-            if self.task_config.system_prompts and self.task_config.system_prompts.agent:
+            if (
+                self.task_config.system_prompts
+                and self.task_config.system_prompts.agent
+            ):
                 sys_msg = self.task_config.system_prompts.agent
                 # Fix tool name mismatch: original Toolathlon uses "local-" prefix
                 sys_msg = sys_msg.replace("local-claim_done", "claim_done")
@@ -347,16 +411,23 @@ class TaskAgent:
                 tool_execution_timeout=120,
                 summarize_threshold=None,  # disable context summarization — stop on token limit
                 retry_attempts=999,  # effectively infinite retry on rate limit
-                retry_delay=5.0,     # start at 5s, exponential backoff up to 60s
+                retry_delay=5.0,  # start at 5s, exponential backoff up to 60s
             )
 
             task_str = self.task_config.task_str
             print_color(f"\n[task] {task_str[:300]}\n", "yellow")
-            response = await agent.astep(BaseMessage.make_user_message("User", task_str))
+            response = await agent.astep(
+                BaseMessage.make_user_message("User", task_str)
+            )
             if self.debug:
-                print_color(f"[agent] response.terminated={response.terminated}, done_flag={self._done_flag[0]}", "cyan")
+                print_color(
+                    f"[agent] response.terminated={response.terminated}, done_flag={self._done_flag[0]}",
+                    "cyan",
+                )
                 if response.msgs:
-                    print_color(f"[agent] last msg: {response.msgs[-1].content[:300]}", "cyan")
+                    print_color(
+                        f"[agent] last msg: {response.msgs[-1].content[:300]}", "cyan"
+                    )
 
             if self._done_flag[0]:
                 status = TaskStatus.SUCCESS
@@ -387,5 +458,7 @@ class TaskAgent:
                 agent_history = agent.chat_history
             except Exception:
                 pass
-        self._save_log(status, start_time, response=response, agent_history=agent_history)
+        self._save_log(
+            status, start_time, response=response, agent_history=agent_history
+        )
         return status

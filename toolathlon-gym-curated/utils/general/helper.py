@@ -1,32 +1,22 @@
-import json
-import os
-from pprint import pprint
-import datetime
-import re
-import random
-import ast
-import sys
-import subprocess
-from typing import List
-from termcolor import colored
-import pickle
-import os
-import shutil
 import asyncio
-
+import datetime
+import errno
+import fcntl
 import json
 import os
-import fcntl
+import pickle
+import re
+import shutil
+import subprocess  # nosec B404
+import sys
 import time
-import errno
-
-
 from pathlib import Path
 from typing import Union
 
-
+from termcolor import colored
 
 BASIC_TYPES = [int, float, str, bool, None, list, dict, set, tuple]
+
 
 def elegant_show(something, level=0, sid=0, full=False, max_list=None):
     # str,float,int
@@ -59,7 +49,11 @@ def elegant_show(something, level=0, sid=0, full=False, max_list=None):
                 prefix,
                 f"\033[1;33mLen: \033[0m{len(something)} \t\033[1;33m& Elements ...\033[0m",
             )
-            end = min(len(something) - 1,max_list) if max_list is not None else len(something) - 1
+            end = (
+                min(len(something) - 1, max_list)
+                if max_list is not None
+                else len(something) - 1
+            )
             for i in range(end):
                 elegant_show(something[i], level + 1, sid, full, max_list)
                 print(
@@ -75,28 +69,35 @@ def elegant_show(something, level=0, sid=0, full=False, max_list=None):
         print(prefix, f"\033[1;31mError @ Type: \033[0m{type(something)}")
         # raise NotImplementedError
 
+
 def show(messages):
     for item in messages:
-        if 'content' in item:
-            content = item['content']
-        elif 'text' in item:
-            content = item['text']
+        if "content" in item:
+            content = item["content"]
+        elif "text" in item:
+            content = item["text"]
         else:
             raise ValueError
-        if item['role']=='user':
+        if item["role"] == "user":
             color = "red"
-        elif item['role']=='system':
+        elif item["role"] == "system":
             color = "green"
-        elif item['role']=='assistant':
+        elif item["role"] == "assistant":
             color = "blue"
-        elif item['role']=='tool':
+        elif item["role"] == "tool":
             color = "yellow"
         else:
             raise ValueError
-        new_item = {k:v for k,v in item.items() if k  not in ['role','text','content','tokens','logprobs']}
-        if content == "": content = "[[[[[[[[[[[[[[[Empty content]]]]]]]]]]]]]]]"
-        print(f"|||{new_item}|||\n"+colored(content,color))
- 
+        new_item = {
+            k: v
+            for k, v in item.items()
+            if k not in ["role", "text", "content", "tokens", "logprobs"]
+        }
+        if content == "":
+            content = "[[[[[[[[[[[[[[[Empty content]]]]]]]]]]]]]]]"
+        print(f"|||{new_item}|||\n" + colored(content, color))
+
+
 def read_jsonl(jsonl_file_path):
     s = []
     with open(jsonl_file_path, "r") as f:
@@ -108,6 +109,7 @@ def read_jsonl(jsonl_file_path):
         s.append(json.loads(linex))
     return s
 
+
 def load_jsonl_yield(path):
     with open(path) as f:
         for row, line in enumerate(f):
@@ -117,19 +119,24 @@ def load_jsonl_yield(path):
             except:
                 pass
 
+
 def read_json(json_file_path):
     with open(json_file_path, "r") as f:
         return json.load(f)
 
+
 def read_parquet(parquet_file_path):
     import pandas as pd
+
     dt = pd.read_parquet(parquet_file_path)
     # convert it into a list of dict
     return dt.to_dict(orient="records")
 
+
 def read_pkl(pkl_file_path):
     with open(pkl_file_path, "rb") as f:
         return pickle.load(f)
+
 
 def read_all(file_path):
     if file_path.endswith(".jsonl"):
@@ -143,6 +150,7 @@ def read_all(file_path):
     else:
         with open(file_path, "r") as f:
             return f.read()
+
 
 def write_jsonl(data, jsonl_file_path, mode="w"):
     # data is a list, each of the item is json-serilizable
@@ -159,7 +167,7 @@ def write_jsonl(data, jsonl_file_path, mode="w"):
 def write_json(data, json_file_path, mode="w", timeout=10):
     """
     Thread/process safe JSON write function
-    
+
     Args:
         data: dict or list, must be JSON serializable
         json_file_path: JSON file path
@@ -167,14 +175,14 @@ def write_json(data, json_file_path, mode="w", timeout=10):
         timeout: Timeout for acquiring the lock (seconds)
     """
     assert isinstance(data, dict) or isinstance(data, list)
-    
+
     # Ensure the directory exists
     dir_path = os.path.dirname(json_file_path)
     if dir_path and not os.path.exists(dir_path):
         os.makedirs(dir_path, exist_ok=True)
-    
+
     start_time = time.time()
-    
+
     while True:
         try:
             with open(json_file_path, mode) as f:
@@ -189,15 +197,18 @@ def write_json(data, json_file_path, mode="w", timeout=10):
                     # Release lock
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 break
-                
+
         except IOError as e:
             if e.errno != errno.EAGAIN and e.errno != errno.EACCES:
                 raise
             # Check timeout
             if time.time() - start_time > timeout:
-                raise TimeoutError(f"Failed to acquire file lock within {timeout} seconds: {json_file_path}")
+                raise TimeoutError(
+                    f"Failed to acquire file lock within {timeout} seconds: {json_file_path}"
+                )
             # Sleep for a short time and retry
             time.sleep(0.01)
+
 
 def write_all(data, file_path, mode="w"):
     if file_path.endswith(".jsonl"):
@@ -208,10 +219,11 @@ def write_all(data, file_path, mode="w"):
         with open(file_path, mode) as f:
             f.write(data)
 
-def print_color(text, color="yellow", end='\n'):
+
+def print_color(text, color="yellow", end="\n"):
     """
     Print the given text in the specified color.
-    
+
     Args:
     text (str): The text to be printed.
     color (str): The color to use. Supported colors are:
@@ -219,29 +231,31 @@ def print_color(text, color="yellow", end='\n'):
     end (str): String appended after the last value, default a newline.
     """
     color_codes = {
-        'red': '\033[91m',
-        'green': '\033[92m',
-        'yellow': '\033[93m',
-        'blue': '\033[94m',
-        'magenta': '\033[95m',
-        'cyan': '\033[96m',
-        'white': '\033[97m',
+        "red": "\033[91m",
+        "green": "\033[92m",
+        "yellow": "\033[93m",
+        "blue": "\033[94m",
+        "magenta": "\033[95m",
+        "cyan": "\033[96m",
+        "white": "\033[97m",
     }
-    
-    reset_code = '\033[0m'
-    
+
+    reset_code = "\033[0m"
+
     if color.lower() not in color_codes:
-        print(f"Unsupported color: {color}. Using default.", end='')
+        print(f"Unsupported color: {color}. Using default.", end="")
         print(text, end=end)
     else:
         color_code = color_codes[color.lower()]
         print(f"{color_code}{text}{reset_code}", end=end)
+
 
 def timer(func):
     def format_time(time_delta):
         hours, remainder = divmod(time_delta.total_seconds(), 3600)
         minutes, seconds = divmod(remainder, 60)
         return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
+
     def wrapper(*args, **kwargs):
         start_time = datetime.datetime.now()
         print("Start time: ", start_time.strftime("%Y-%m-%d %H:%M:%S"))
@@ -251,49 +265,55 @@ def timer(func):
         elapsed_time = end_time - start_time
         print("Execution time: ", format_time(elapsed_time))
         return result
+
     return wrapper
+
 
 def reorganize_jsonl(jsonl_file, w_blank=True):
     # We assume all lines in this file has an index field
     dt = read_all(jsonl_file)
     # Sort the lines in dt based on the index field
-    dt = sorted(dt, key=lambda x: int(x['index']))
-    
+    dt = sorted(dt, key=lambda x: int(x["index"]))
+
     # If w_blank is True, we insert a blank {} into positions where the index is missed
     if w_blank:
-        last_idx = int(dt[-1]['index'])
+        last_idx = int(dt[-1]["index"])
         new_dt = []
         current_index = 0
-        
+
         for item in dt:
-            item_index = int(item['index'])
+            item_index = int(item["index"])
             while current_index < item_index:
                 new_dt.append({})
                 current_index += 1
             new_dt.append(item)
             current_index += 1
-        
+
         dt = new_dt
 
     return dt
+
 
 def extract_param(command, param_name):
     # Use regex to match the value after the parameter --param_name
     pattern = f"--{param_name} (\\S+)"
     match = re.search(pattern, command)
-    
+
     if match:
         return match.group(1)  # Return the matched parameter value
     else:
         return None  # Return None if not found
-    
-def check_obj_size(obj,size):
+
+
+def check_obj_size(obj, size):
     # check if the size of `obj` <= size, unit is Byte
     return sys.getsizeof(obj) <= size
+
 
 def normalize_value(v):
     import numpy as np
     import sympy as sp
+
     max_float_precision = 2
     "Recursively convert values to strings if not a built-in type"
     if type(v) in BASIC_TYPES:
@@ -312,8 +332,7 @@ def normalize_value(v):
     elif isinstance(v, complex):
         # keep the max_float_precision for complex number
         return str(
-            round(v.real, max_float_precision)
-            + round(v.imag, max_float_precision) * 1j
+            round(v.real, max_float_precision) + round(v.imag, max_float_precision) * 1j
         )
     elif isinstance(v, np.ndarray):
         return repr(v)
@@ -332,24 +351,29 @@ def normalize_value(v):
     else:
         return str(v)
 
-def build_messages(prompt, response = None, system_message = None):
+
+def build_messages(prompt, response=None, system_message=None):
     messages = []
     if system_message is not None:
-        messages.append({"role":"system","content":system_message})
-    messages.append({"role":"user","content":prompt})
+        messages.append({"role": "system", "content": system_message})
+    messages.append({"role": "user", "content": prompt})
     if response is not None:
-        messages.append({"role":"assistant","content":response})
+        messages.append({"role": "assistant", "content": response})
     return messages
 
+
 def get_total_items_with_wc(filename):
-    result = subprocess.run(['wc', '-l', filename], stdout=subprocess.PIPE, text=True)
-    total_lines = int(result.stdout.split()[0])  # The output of wc is: number of lines filename, so only take the first part
+    result = subprocess.run(["wc", "-l", filename], stdout=subprocess.PIPE, text=True)
+    total_lines = int(
+        result.stdout.split()[0]
+    )  # The output of wc is: number of lines filename, so only take the first part
     return total_lines
+
 
 async def copy_folder_contents(source_folder, target_folder, debug=False):
     """
     Copy all contents of source folder A to target folder B
-    
+
     Args:
         source_folder: Source folder path (A)
         target_folder: Target folder path (B)
@@ -368,17 +392,19 @@ async def copy_folder_contents(source_folder, target_folder, debug=False):
 
     # Check if source folder exists
     if not os.path.exists(source_folder):
-        raise FileNotFoundError(f"Error: Source directory `{source_folder}` does not exist!")
-    
+        raise FileNotFoundError(
+            f"Error: Source directory `{source_folder}` does not exist!"
+        )
+
     # Check if source path is a directory
     if not os.path.isdir(source_folder):
         raise NotADirectoryError(f"Error: `{source_folder}` is not a directory!")
-    
+
     # Iterate through all contents of source folder
     for item in os.listdir(source_folder):
         source_path = os.path.join(source_folder, item)
         target_path = os.path.join(target_folder, item)
-        
+
         try:
             if os.path.isdir(source_path):
                 # If it is a folder, recursively copy
@@ -388,93 +414,96 @@ async def copy_folder_contents(source_folder, target_folder, debug=False):
                 shutil.copy2(source_path, target_path)
         except Exception as e:
             print(f"Error in copying `{item}` : {str(e)}")
-    
+
     if debug:
         print(f"Copy done! `{source_folder}` -> `{target_folder}`")
+
 
 async def run_command(command, debug=False, show_output=False):
     """
     Asynchronously execute command and return output
-    
+
     Args:
         command: The command string to execute
         debug: Whether to print debug information
         show_output: Whether to print the output of the command
-        
+
     Returns:
         tuple: (stdout, stderr, return_code)
     """
 
     # Get current working directory
     current_dir = os.path.abspath(os.getcwd())
-    print_color(f"Current working directory to run command: {current_dir}","cyan")
+    print_color(f"Current working directory to run command: {current_dir}", "cyan")
 
     # Create subprocess
     process = await asyncio.create_subprocess_shell(
-        command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
     if debug:
-        print_color(f"Executing command : {command}","cyan")
+        print_color(f"Executing command : {command}", "cyan")
 
     # Wait for command execution to complete
     stdout, stderr = await process.communicate()
-    
+
     # Decode output
     stdout_decoded = stdout.decode()
     stderr_decoded = stderr.decode()
-    
+
     # if process.returncode != 0:
     #     raise RuntimeError(f"Failed in executing the command: {stderr_decoded}")
-    
+
     if debug:
-        print_color("Successfully executed!","green")
-    
+        print_color("Successfully executed!", "green")
+
     # If output is needed to be shown
     if show_output and stdout_decoded:
         print(f"Command output:\n{stdout_decoded}")
-    
+
     # Return output and return code, so that the caller can further process
     return stdout_decoded, stderr_decoded, process.returncode
 
+
 async def specifical_inialize_for_mcp(task_config):
     if "arxiv_local" in task_config.needed_mcp_servers:
-        cache_dir = os.path.join(task_config.agent_workspace,"arxiv_local_storage")
+        cache_dir = os.path.join(task_config.agent_workspace, "arxiv_local_storage")
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         assert os.path.exists(cache_dir)
         print("[arxiv_local] arxiv local cache dir has been established")
     if "memory" in task_config.needed_mcp_servers:
-        cache_dir = os.path.join(task_config.agent_workspace,"memory")
+        cache_dir = os.path.join(task_config.agent_workspace, "memory")
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         assert os.path.exists(cache_dir)
         print("[memory] memory cache dir has been established")
     if "xmind" in task_config.needed_mcp_servers:
-        cache_dir = os.path.join(task_config.agent_workspace,"xmind")
+        cache_dir = os.path.join(task_config.agent_workspace, "xmind")
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         assert os.path.exists(cache_dir)
         print("[xmind] xmind cache dir has been established")
     if "playwright" in task_config.needed_mcp_servers:
-        cache_dir = os.path.join(task_config.agent_workspace,".playwright_output")
+        cache_dir = os.path.join(task_config.agent_workspace, ".playwright_output")
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         assert os.path.exists(cache_dir)
         print("[playwright] playwright file output dir has been established")
 
+
 def setup_proxy(use_proxy: bool = False) -> None:
     """Set proxy"""
     if use_proxy:
         import os
-        os.environ['http_proxy'] = global_configs.proxy
-        os.environ['https_proxy'] = global_configs.proxy
+
+        os.environ["http_proxy"] = global_configs.proxy
+        os.environ["https_proxy"] = global_configs.proxy
         print("Proxy enabled")
+
 
 def path_to_module(path: Union[str, Path]) -> str:
     """Convert file path to module format
-    
+
     Examples:
     - 'xx/yy/zz.py' -> 'xx.yy.zz'
     - 'xx\\yy\\zz.py' -> 'xx.yy.zz'
@@ -482,18 +511,19 @@ def path_to_module(path: Union[str, Path]) -> str:
     - '../xx/yy/zz.py' -> '..xx.yy.zz'
     """
     p = Path(path)
-    
+
     # Get path without suffix
-    if p.suffix == '.py':
-        p = p.with_suffix('')
-    
+    if p.suffix == ".py":
+        p = p.with_suffix("")
+
     # Join path parts with dots
     parts = p.parts
-    
+
     # Filter out current directory marker '.'
-    parts = [part for part in parts if part != '.']
-    
-    return '.'.join(parts)
+    parts = [part for part in parts if part != "."]
+
+    return ".".join(parts)
+
 
 def get_module_path(replace_last: str = None) -> str:
     """
@@ -501,6 +531,7 @@ def get_module_path(replace_last: str = None) -> str:
     - replace_last: If specified, replace the last level (usually the file name) with the value
     """
     import inspect
+
     # Get call stack, find the first py file that is not helper.py
     stack = inspect.stack()
     target_file = None
@@ -511,29 +542,31 @@ def get_module_path(replace_last: str = None) -> str:
             break
     if target_file is None:
         raise RuntimeError("Cannot automatically infer target file path")
-    
+
     # Use current working directory as root directory
     cwd = os.getcwd()
     # Calculate relative path
     relative_path = os.path.relpath(target_file, cwd)
     module_path = os.path.splitext(relative_path)[0].replace(os.sep, ".")
-    
+
     if replace_last is not None:
-        parts = module_path.split('.')
+        parts = module_path.split(".")
         parts[-1] = replace_last
-        module_path = '.'.join(parts)
-    
+        module_path = ".".join(parts)
+
     return module_path
+
 
 def normalize_str(xstring):
     # remove punctuation and whitespace and lowercase
-    return re.sub(r'[^\w]', '', xstring).lower().strip()
+    return re.sub(r"[^\w]", "", xstring).lower().strip()
 
-def compare_iso_time(agent_time, groundtruth_time,date_only=False):
+
+def compare_iso_time(agent_time, groundtruth_time, date_only=False):
     # given both date in iso format, compare if they are the same
     agent_time = datetime.datetime.fromisoformat(agent_time)
     groundtruth_time = datetime.datetime.fromisoformat(groundtruth_time)
-    if date_only: # we only compare the date part
+    if date_only:  # we only compare the date part
         agent_time = agent_time.date()
         groundtruth_time = groundtruth_time.date()
     return agent_time == groundtruth_time
@@ -548,16 +581,18 @@ async def fork_repo(source_repo, target_repo, fork_default_branch_only, readonly
     if readonly:
         command += " --read_only"
     await run_command(command, debug=True, show_output=True)
-    print_color(f"Forked repo {source_repo} to {target_repo} successfully","green")
+    print_color(f"Forked repo {source_repo} to {target_repo} successfully", "green")
 
-async def forked_repo_to_independent(repo_name,tmp_dir,private):
+
+async def forked_repo_to_independent(repo_name, tmp_dir, private):
     command = f"uv run -m utils.app_specific.github.github_fork_to_independent "
     command += f"--repo_name {repo_name} "
-    command += f"--tmp_dir \"{tmp_dir}\""
+    command += f'--tmp_dir "{tmp_dir}"'
     if private:
         command += " --private"
     await run_command(command, debug=True, show_output=True)
-    print_color(f"Forked repo {repo_name} to independent repo successfully","green")
+    print_color(f"Forked repo {repo_name} to independent repo successfully", "green")
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     pass

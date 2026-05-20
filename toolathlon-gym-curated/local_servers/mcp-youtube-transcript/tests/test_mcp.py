@@ -5,32 +5,43 @@
 #  This software is released under the MIT License.
 #
 #  http://opensource.org/licenses/mit-license.php
-from datetime import datetime, timedelta, timezone
 import os
+from datetime import datetime, timedelta, timezone
 from typing import AsyncGenerator
 
 import humanize
 import pytest
 import requests
-from bs4 import BeautifulSoup
-from mcp import StdioServerParameters, stdio_client, ClientSession
-from mcp.types import TextContent
-from youtube_transcript_api import YouTubeTranscriptApi
 import yt_dlp
+from bs4 import BeautifulSoup
+from mcp import ClientSession, StdioServerParameters, stdio_client
+from mcp.types import TextContent
+from mcp_youtube_transcript import (
+    TimedTranscript,
+    Transcript,
+    TranscriptSnippet,
+    VideoInfo,
+    _parse_time_info,
+)
+from youtube_transcript_api import YouTubeTranscriptApi
 from yt_dlp.extractor.youtube import YoutubeIE
-
-from mcp_youtube_transcript import Transcript, VideoInfo, _parse_time_info, TimedTranscript, TranscriptSnippet
 
 
 def fetch_title(url: str, lang: str) -> str:
-    res = requests.get(f"https://www.youtube.com/watch?v={url}", headers={"Accept-Language": lang})
+    res = requests.get(
+        f"https://www.youtube.com/watch?v={url}",
+        headers={"Accept-Language": lang},
+        timeout=30,
+    )
     soup = BeautifulSoup(res.text, "html.parser")
     return soup.title.string or "" if soup.title else ""
 
 
 @pytest.fixture(scope="module")
 async def mcp_client_session() -> AsyncGenerator[ClientSession, None]:
-    params = StdioServerParameters(command="uv", args=["run", "mcp-youtube-transcript", "--response-limit", "-1"])
+    params = StdioServerParameters(
+        command="uv", args=["run", "mcp-youtube-transcript", "--response-limit", "-1"]
+    )
     async with stdio_client(params) as streams:
         async with ClientSession(streams[0], streams[1]) as session:
             await session.initialize()
@@ -38,8 +49,12 @@ async def mcp_client_session() -> AsyncGenerator[ClientSession, None]:
 
 
 @pytest.fixture(scope="module")
-async def mcp_client_session_with_response_limit() -> AsyncGenerator[ClientSession, None]:
-    params = StdioServerParameters(command="uv", args=["run", "mcp-youtube-transcript", "--response-limit", "3000"])
+async def mcp_client_session_with_response_limit() -> (
+    AsyncGenerator[ClientSession, None]
+):
+    params = StdioServerParameters(
+        command="uv", args=["run", "mcp-youtube-transcript", "--response-limit", "3000"]
+    )
     async with stdio_client(params) as streams:
         async with ClientSession(streams[0], streams[1]) as session:
             await session.initialize()
@@ -63,7 +78,9 @@ async def test_get_transcript(mcp_client_session: ClientSession) -> None:
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(
+            (item.text for item in YouTubeTranscriptApi().fetch(video_id))
+        ),
     )
 
     res = await mcp_client_session.call_tool(
@@ -86,7 +103,9 @@ async def test_get_transcript_with_language(mcp_client_session: ClientSession) -
 
     expect = Transcript(
         title=fetch_title(video_id, "ja"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id, ["ja"]))),
+        transcript="\n".join(
+            (item.text for item in YouTubeTranscriptApi().fetch(video_id, ["ja"]))
+        ),
     )
 
     res = await mcp_client_session.call_tool(
@@ -111,7 +130,9 @@ async def test_get_transcript_fallback_language(
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(
+            (item.text for item in YouTubeTranscriptApi().fetch(video_id))
+        ),
     )
 
     res = await mcp_client_session.call_tool(
@@ -141,7 +162,9 @@ async def test_get_transcript_invalid_url(mcp_client_session: ClientSession) -> 
 @pytest.mark.vcr
 @pytest.mark.anyio
 async def test_get_transcript_not_found(mcp_client_session: ClientSession) -> None:
-    res = await mcp_client_session.call_tool("get_transcript", arguments={"url": "https://www.youtube.com/watch?v=a"})
+    res = await mcp_client_session.call_tool(
+        "get_transcript", arguments={"url": "https://www.youtube.com/watch?v=a"}
+    )
     assert res.isError
 
 
@@ -154,7 +177,9 @@ async def test_get_transcript_with_short_url(mcp_client_session: ClientSession) 
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(
+            (item.text for item in YouTubeTranscriptApi().fetch(video_id))
+        ),
     )
 
     res = await mcp_client_session.call_tool(
@@ -172,12 +197,16 @@ async def test_get_transcript_with_short_url(mcp_client_session: ClientSession) 
 @pytest.mark.default_cassette("LPZh9BOjkQs.yaml")
 @pytest.mark.vcr
 @pytest.mark.anyio
-async def test_get_transcript_with_response_limit(mcp_client_session_with_response_limit: ClientSession) -> None:
+async def test_get_transcript_with_response_limit(
+    mcp_client_session_with_response_limit: ClientSession,
+) -> None:
     video_id = "LPZh9BOjkQs"
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(
+            (item.text for item in YouTubeTranscriptApi().fetch(video_id))
+        ),
     )
 
     transcript = ""
@@ -185,7 +214,10 @@ async def test_get_transcript_with_response_limit(mcp_client_session_with_respon
     while True:
         res = await mcp_client_session_with_response_limit.call_tool(
             "get_transcript",
-            arguments={"url": f"https://www.youtube.com/watch?v={video_id}", "next_cursor": cursor},
+            arguments={
+                "url": f"https://www.youtube.com/watch?v={video_id}",
+                "next_cursor": cursor,
+            },
         )
         assert not res.isError
         assert isinstance(res.content[0], TextContent)
@@ -209,7 +241,10 @@ async def test_get_timed_transcript(mcp_client_session: ClientSession) -> None:
 
     expect = TimedTranscript(
         title=fetch_title(video_id, "en"),
-        snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
+        snippets=[
+            TranscriptSnippet.from_fetched_transcript_snippet(s)
+            for s in YouTubeTranscriptApi().fetch(video_id)
+        ],
     )
 
     res = await mcp_client_session.call_tool(
@@ -227,13 +262,16 @@ async def test_get_timed_transcript(mcp_client_session: ClientSession) -> None:
 @pytest.mark.default_cassette("WjAXZkQSE2U.yaml")
 @pytest.mark.vcr
 @pytest.mark.anyio
-async def test_get_timed_transcript_with_language(mcp_client_session: ClientSession) -> None:
+async def test_get_timed_transcript_with_language(
+    mcp_client_session: ClientSession,
+) -> None:
     video_id = "WjAXZkQSE2U"
 
     expect = TimedTranscript(
         title=fetch_title(video_id, "ja"),
         snippets=[
-            TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id, ["ja"])
+            TranscriptSnippet.from_fetched_transcript_snippet(s)
+            for s in YouTubeTranscriptApi().fetch(video_id, ["ja"])
         ],
     )
 
@@ -260,7 +298,10 @@ async def test_get_timed_transcript_fallback_language(
 
     expect = TimedTranscript(
         title=fetch_title(video_id, "en"),
-        snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
+        snippets=[
+            TranscriptSnippet.from_fetched_transcript_snippet(s)
+            for s in YouTubeTranscriptApi().fetch(video_id)
+        ],
     )
 
     res = await mcp_client_session.call_tool(
@@ -278,9 +319,12 @@ async def test_get_timed_transcript_fallback_language(
 
 
 @pytest.mark.anyio
-async def test_get_timed_transcript_invalid_url(mcp_client_session: ClientSession) -> None:
+async def test_get_timed_transcript_invalid_url(
+    mcp_client_session: ClientSession,
+) -> None:
     res = await mcp_client_session.call_tool(
-        "get_timed_transcript", arguments={"url": "https://www.youtube.com/watch?vv=abcdefg"}
+        "get_timed_transcript",
+        arguments={"url": "https://www.youtube.com/watch?vv=abcdefg"},
     )
     assert res.isError
 
@@ -289,7 +333,9 @@ async def test_get_timed_transcript_invalid_url(mcp_client_session: ClientSessio
 @pytest.mark.default_cassette("error.yaml")
 @pytest.mark.vcr
 @pytest.mark.anyio
-async def test_get_timed_transcript_not_found(mcp_client_session: ClientSession) -> None:
+async def test_get_timed_transcript_not_found(
+    mcp_client_session: ClientSession,
+) -> None:
     res = await mcp_client_session.call_tool(
         "get_timed_transcript", arguments={"url": "https://www.youtube.com/watch?v=a"}
     )
@@ -300,12 +346,17 @@ async def test_get_timed_transcript_not_found(mcp_client_session: ClientSession)
 @pytest.mark.default_cassette("LPZh9BOjkQs.yaml")
 @pytest.mark.vcr
 @pytest.mark.anyio
-async def test_get_timed_transcript_with_short_url(mcp_client_session: ClientSession) -> None:
+async def test_get_timed_transcript_with_short_url(
+    mcp_client_session: ClientSession,
+) -> None:
     video_id = "LPZh9BOjkQs"
 
     expect = TimedTranscript(
         title=fetch_title(video_id, "en"),
-        snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
+        snippets=[
+            TranscriptSnippet.from_fetched_transcript_snippet(s)
+            for s in YouTubeTranscriptApi().fetch(video_id)
+        ],
     )
 
     res = await mcp_client_session.call_tool(
@@ -323,12 +374,17 @@ async def test_get_timed_transcript_with_short_url(mcp_client_session: ClientSes
 @pytest.mark.default_cassette("LPZh9BOjkQs.yaml")
 @pytest.mark.vcr
 @pytest.mark.anyio
-async def test_get_timed_transcript_with_response_limit(mcp_client_session_with_response_limit: ClientSession) -> None:
+async def test_get_timed_transcript_with_response_limit(
+    mcp_client_session_with_response_limit: ClientSession,
+) -> None:
     video_id = "LPZh9BOjkQs"
 
     expect = TimedTranscript(
         title=fetch_title(video_id, "en"),
-        snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
+        snippets=[
+            TranscriptSnippet.from_fetched_transcript_snippet(s)
+            for s in YouTubeTranscriptApi().fetch(video_id)
+        ],
     )
 
     snippets = []
@@ -336,7 +392,10 @@ async def test_get_timed_transcript_with_response_limit(mcp_client_session_with_
     while True:
         res = await mcp_client_session_with_response_limit.call_tool(
             "get_timed_transcript",
-            arguments={"url": f"https://www.youtube.com/watch?v={video_id}", "next_cursor": cursor},
+            arguments={
+                "url": f"https://www.youtube.com/watch?v={video_id}",
+                "next_cursor": cursor,
+            },
         )
         assert not res.isError
         assert isinstance(res.content[0], TextContent)
@@ -358,8 +417,12 @@ async def test_get_video_info(mcp_client_session: ClientSession) -> None:
 
     dlp = yt_dlp.YoutubeDL(params={"quiet": True}, auto_init=False)
     dlp.add_info_extractor(YoutubeIE())
-    dlp_res = dlp.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-    upload_date, duration = _parse_time_info(dlp_res["upload_date"], dlp_res["timestamp"], dlp_res["duration"])
+    dlp_res = dlp.extract_info(
+        f"https://www.youtube.com/watch?v={video_id}", download=False
+    )
+    upload_date, duration = _parse_time_info(
+        dlp_res["upload_date"], dlp_res["timestamp"], dlp_res["duration"]
+    )
     expect = VideoInfo(
         title=dlp_res["title"],
         description=dlp_res["description"],

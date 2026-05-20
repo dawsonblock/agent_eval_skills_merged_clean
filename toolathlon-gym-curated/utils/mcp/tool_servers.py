@@ -1,21 +1,25 @@
 """
 Build CAMEL MCPClient objects from yaml configs or HTTP URLs.
 """
-import os
-import yaml
-from pathlib import Path
-from typing import List, Dict, Optional
 
+import os
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import yaml
 from camel.utils.mcp_client import MCPClient, ServerConfig
 
 
-def _resolve(value, local_servers_path: str, agent_workspace: str, task_dir: str = "") -> str:
+def _resolve(
+    value, local_servers_path: str, agent_workspace: str, task_dir: str = ""
+) -> str:
     if not isinstance(value, str):
         return value
-    return (value
-            .replace("${local_servers_paths}", local_servers_path)
-            .replace("${agent_workspace}", agent_workspace)
-            .replace("${task_dir}", task_dir))
+    return (
+        value.replace("${local_servers_paths}", local_servers_path)
+        .replace("${agent_workspace}", agent_workspace)
+        .replace("${task_dir}", task_dir)
+    )
 
 
 def build_mcp_clients(
@@ -31,7 +35,9 @@ def build_mcp_clients(
     If http_mcp_urls is provided (dict of name->url), those servers will be
     connected via HTTP (streamable-http) instead of stdio.
     """
-    local_servers_path = os.environ.get("LOCAL_SERVERS_PATH", os.path.abspath("./local_servers"))
+    local_servers_path = os.environ.get(
+        "LOCAL_SERVERS_PATH", os.path.abspath("./local_servers")
+    )
     agent_workspace = os.path.abspath(agent_workspace)
     task_dir = os.path.abspath(task_dir) if task_dir else ""
 
@@ -100,8 +106,12 @@ def build_mcp_clients(
         timeout = cfg.get("client_session_timeout_seconds", 60)
         clients.append(MCPClient(config=server_config, timeout=float(timeout)))
 
-    found = {cfg.get("name", f.stem) for f in config_path.glob("*.yaml")
-             for cfg in [yaml.safe_load(open(f))] if cfg}
+    found = {
+        cfg.get("name", f.stem)
+        for f in config_path.glob("*.yaml")
+        for cfg in [yaml.safe_load(open(f))]
+        if cfg
+    }
     missing = [s for s in remaining if s not in found]
     if missing:
         print(f"[tool_servers] Warning: no yaml config found for: {missing}")

@@ -11,6 +11,7 @@ Skills are organized by category under `skills/{category}/{skill-name}`:
 ### Tier 1 — High Priority
 
 #### AI & LLMs
+
 _TBD — Category placeholder for future skills._
 
 #### Coding Agents & IDEs
@@ -32,6 +33,7 @@ _TBD — Category placeholder for future skills._
 | [`excalidraw`](skills/web-and-frontend-development/excalidraw/SKILL.md) | Generate architecture and system diagrams as `.excalidraw` files from codebase analysis. Covers valid Excalidraw JSON, element IDs, labels, arrows, and styling rules so diagrams open correctly in Excalidraw. |
 
 #### DevOps & Cloud
+
 _TBD — Category placeholder for future skills._
 
 #### Browser & Automation
@@ -41,6 +43,7 @@ _TBD — Category placeholder for future skills._
 | [`webapp-testing`](skills/browser-and-automation/webapp-testing/SKILL.md) | Test local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing screenshots, and viewing browser logs with server lifecycle helpers. |
 
 #### Search & Research
+
 _TBD — Category placeholder for future skills._
 
 #### Marketing & Sales
@@ -50,6 +53,7 @@ _TBD — Category placeholder for future skills._
 | [`instagram-posting`](skills/marketing-and-sales/instagram-posting/SKILL.md) | Post images or video to an already logged-in Instagram session via browser automation. Includes a script to pick the correct crop aspect ratio before upload. |
 
 #### Data & Analytics
+
 _TBD — Category placeholder for future skills._
 
 #### Image & Video Generation
@@ -68,6 +72,7 @@ _TBD — Category placeholder for future skills._
 ### Tier 2 — Strong Supporting Pages
 
 #### Productivity & Tasks
+
 _TBD — Category placeholder for future skills._
 
 #### PDF & Documents
@@ -81,6 +86,7 @@ _TBD — Category placeholder for future skills._
 | [`doc-coauthoring`](skills/pdf-and-documents/doc-coauthoring/SKILL.md) | Guide users through structured co-authoring of documentation, proposals, technical specs, and decision docs via context gathering, iterative refinement, and reader testing. |
 
 #### Speech & Transcription
+
 _TBD — Category placeholder for future skills._
 
 #### Communication
@@ -90,28 +96,35 @@ _TBD — Category placeholder for future skills._
 | [`internal-comms`](skills/communication/internal-comms/SKILL.md) | Write internal communications including 3P updates, company newsletters, FAQ responses, status reports, and leadership updates using company-standard formats. |
 
 #### Security & Passwords
+
 _TBD — Category placeholder for future skills._
 
 ### Tier 3 — Niche but Valuable
 
 #### CLI Utilities
+
 _TBD — Category placeholder for future skills._
 
 #### Notes & Knowledge Management
+
 _TBD — Category placeholder for future skills._
 
 #### Apple & Mobile Development
+
 _TBD — Category placeholder for future skills._
 
 #### Shopping & E-commerce
+
 _TBD — Category placeholder for future skills._
 
 #### Finance
+
 _TBD — Category placeholder for future skills._
 
 ### Bonus / Future
 
 #### Agent-to-Agent Protocols
+
 _TBD — Category placeholder for future skills._
 
 ## Installation
