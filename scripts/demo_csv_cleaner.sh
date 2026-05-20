@@ -91,3 +91,9 @@ echo "════════════════════════�
 echo "  Demo complete — all steps passed ✓"
 echo "══════════════════════════════════════════════════════"
 echo ""
+
+# Explicit success-path cleanup to avoid relying solely on EXIT trap behavior.
+cd "$REPO_ROOT"
+rm -rf "$DEMO_DIR"
+trap - EXIT
+exit 0

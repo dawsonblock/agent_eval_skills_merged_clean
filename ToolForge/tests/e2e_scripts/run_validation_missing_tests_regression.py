@@ -4,6 +4,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from tests.e2e_scripts._lifecycle import (
+    generate_eval,
+    generate_mcp,
+    generate_skill,
+    generate_tool_from_prompt,
+    init_workspace,
+)
 from tests.e2e_scripts._runner import run_toolforge
 
 
@@ -22,19 +29,13 @@ def main() -> int:
     workspace = Path(sys.argv[1]).resolve()
     workspace.mkdir(parents=True, exist_ok=True)
 
-    steps = [
-        (["init", str(workspace)], 0),
-        (["new", "tool", "--from-prompt", PROMPT], 0),
-        (["generate", "mcp", "csv-cleaner"], 0),
-        (["generate", "skill", "csv-cleaner"], 0),
-        (["generate", "eval", "csv-cleaner"], 0),
-    ]
-
-    for cmd, expected_rc in steps:
-        result = run_toolforge(cmd, cwd=workspace, check=False)
-        if result.returncode != expected_rc:
-            print(_combined(result.stdout, result.stderr), file=sys.stderr)
-            return 1
+    # Build lifecycle artifacts via internal helpers to avoid repeated nested
+    # CLI subprocesses. We only subprocess the validate command under test.
+    init_workspace(workspace)
+    generate_tool_from_prompt(workspace, PROMPT)
+    generate_mcp(workspace, "csv-cleaner")
+    generate_skill(workspace, "csv-cleaner")
+    generate_eval(workspace, "csv-cleaner")
 
     tool_dir = workspace / "tools" / "generated" / "csv-cleaner"
     (tool_dir / "tests").rename(tool_dir / "tests_backup")
