@@ -22,17 +22,45 @@ Kept the benchmark runner, task definitions, preprocess/evaluation scripts, MCP 
 
 ### Agent Skills
 
-Kept the CLI, evaluator scripts, root docs, and these higher-value skills:
+Kept the CLI, evaluator scripts, root docs, and all 23 agent skills:
 
+**Coding & IDE Integration (3 skills)**
 - coding-agents-and-ides/mcp-builder
+- coding-agents-and-ides/mintlify-docs-updater
 - coding-agents-and-ides/skill-creator
+
+**Browser Automation (1 skill)**
 - browser-and-automation/webapp-testing
-- pdf-and-documents/pdf
+
+**Communication (1 skill)**
+- communication/internal-comms
+
+**Image & Video Generation (5 skills)**
+- image-and-video-generation/algorithmic-art
+- image-and-video-generation/canvas-design
+- image-and-video-generation/instagram-reel-editor
+- image-and-video-generation/remotion
+- image-and-video-generation/slack-gif-creator
+
+**Marketing & Sales (2 skills)**
+- marketing-and-sales/humanizer
+- marketing-and-sales/instagram-posting
+
+**PDF & Documents (5 skills)**
+- pdf-and-documents/doc-coauthoring
 - pdf-and-documents/docx
-- pdf-and-documents/xlsx
+- pdf-and-documents/pdf
 - pdf-and-documents/pptx
+- pdf-and-documents/xlsx
+
+**Productivity & Tasks (1 skill)**
+- productivity-and-tasks/pm-skills
+
+**Web & Frontend Development (5 skills)**
+- web-and-frontend-development/brand-guidelines
 - web-and-frontend-development/excalidraw
 - web-and-frontend-development/frontend-design
+- web-and-frontend-development/theme-factory
 - web-and-frontend-development/web-artifacts-builder
 
 ## What was removed
@@ -40,15 +68,11 @@ Kept the CLI, evaluator scripts, root docs, and these higher-value skills:
 Removed material that is unnecessary or undesirable for your current direction:
 
 - demo videos and GIFs
-- bundled generated skill package ZIPs
-- marketing/social/media-specific agent skills
-- image/video generation skills
-- bundled font files
-- GitHub workflow metadata
+- documentation screenshots and visual assets
 - Python/Node cache folders
 - common local run outputs such as dumps, benchmark logs, results, and outputs
 - root sample output spreadsheet
-- DXT/demo assets and visual documentation images where not needed for code execution
+- DXT/demo assets
 
 ## Safety notes
 

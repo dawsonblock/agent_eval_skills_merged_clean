@@ -58,12 +58,21 @@ RUN for dir in \
         /opt/local_servers/youtube-mcp-server \
         /opt/local_servers/filesystem \
         /opt/local_servers/HowToCook-mcp \
-        /opt/local_servers/servers; do \
+        /opt/local_servers/servers \
+        /opt/local_servers/notion-mcp-server \
+        /opt/local_servers/mcp-canvas-lms \
+        /opt/local_servers/mcp-npx-fetch \
+        /opt/local_servers/woocommerce-mcp; do \
     [ -f "$dir/package.json" ] && \
-        echo "=== $dir ===" && cd "$dir" && npm install && \
+        echo "=== Building $dir ===" && cd "$dir" && npm install && \
         if npm pkg get scripts.build | grep -qv null; then npm run build; fi && \
         cd /workspace || true; \
 done
+
+# Special handling for memory server (nested in servers/src/)
+RUN if [ -f /opt/local_servers/servers/src/memory/package.json ]; then \
+        cd /opt/local_servers/servers/src/memory && npm install && npm run build || true; \
+    fi
 
 RUN for dir in \
         /opt/local_servers/arxiv-mcp-server \

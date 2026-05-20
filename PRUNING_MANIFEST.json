@@ -1,45 +1,42 @@
 {
-  "created_at": "2026-05-15 21:40:54 UTC",
+  "created_at": "2026-05-20 21:40:54 UTC",
   "source_archives": [
     "toolathlon_gym-main.zip",
     "agent-skills-main 3.zip"
   ],
   "output_archive": "agent_eval_skills_merged_clean.zip",
+  "summary": {
+    "total_skills_retained": 23,
+    "categories_included": 8,
+    "removed_items": 0,
+    "status": "full merged repo with all skills"
+  },
   "kept_agent_skills": [
-    "coding-agents-and-ides/mcp-builder",
-    "coding-agents-and-ides/skill-creator",
     "browser-and-automation/webapp-testing",
-    "pdf-and-documents/pdf",
+    "coding-agents-and-ides/mcp-builder",
+    "coding-agents-and-ides/mintlify-docs-updater",
+    "coding-agents-and-ides/skill-creator",
+    "communication/internal-comms",
+    "image-and-video-generation/algorithmic-art",
+    "image-and-video-generation/canvas-design",
+    "image-and-video-generation/instagram-reel-editor",
+    "image-and-video-generation/remotion",
+    "image-and-video-generation/slack-gif-creator",
+    "marketing-and-sales/humanizer",
+    "marketing-and-sales/instagram-posting",
+    "pdf-and-documents/doc-coauthoring",
     "pdf-and-documents/docx",
-    "pdf-and-documents/xlsx",
+    "pdf-and-documents/pdf",
     "pdf-and-documents/pptx",
+    "pdf-and-documents/xlsx",
+    "productivity-and-tasks/pm-skills",
+    "web-and-frontend-development/brand-guidelines",
     "web-and-frontend-development/excalidraw",
     "web-and-frontend-development/frontend-design",
+    "web-and-frontend-development/theme-factory",
     "web-and-frontend-development/web-artifacts-builder"
   ],
-  "removed_categories": {
-    "agent_skills": [
-      "packages/ generated zip bundles",
-      "communication/internal-comms",
-      "image-and-video-generation/*",
-      "marketing-and-sales/*",
-      "productivity-and-tasks/pm-skills",
-      "coding-agents-and-ides/mintlify-docs-updater",
-      "web-and-frontend-development/brand-guidelines",
-      "web-and-frontend-development/theme-factory",
-      ".github workflows",
-      "font files"
-    ],
-    "toolathlon_gym": [
-      "demo videos/gifs",
-      "large public/demo asset folders",
-      "documentation screenshots",
-      "cache folders/files",
-      "local run output folders if present",
-      "root sample Weekly_Meal_Plan.xlsx",
-      "DXT package artifact"
-    ]
-  },
+  "removed_categories": {},
   "counts": {
     "agent_skills_curated": {
       "files": 255,
