@@ -18,7 +18,14 @@ build_node_package() {
   echo "→ Building $name"
   (
     cd "$pkg_dir"
-    npm install
+    if [ -f package-lock.json ]; then
+      if ! npm ci; then
+        echo "  - npm ci failed for $name; falling back to npm install --no-package-lock"
+        npm install --no-package-lock
+      fi
+    else
+      npm install --no-package-lock
+    fi
     if npm pkg get scripts.build | grep -qv null; then
       npm run build
     else

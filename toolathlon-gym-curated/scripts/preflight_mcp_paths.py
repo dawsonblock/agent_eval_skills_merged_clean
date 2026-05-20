@@ -13,29 +13,39 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 try:
     import yaml
 except ImportError:
-    print("ERROR: PyYAML required. Install with: pip install pyyaml", file=sys.stderr)
+    print(
+        "ERROR: PyYAML required. Install with: pip install pyyaml",
+        file=sys.stderr,
+    )
     sys.exit(1)
 
 
-def load_mcp_configs(config_dir: Path) -> dict:
+def load_mcp_configs(config_dir: Path) -> dict[str, Any]:
     """Load all YAML configs from configs/mcp_servers/."""
-    configs: dict = {}
+    configs: dict[str, Any] = {}
     if not config_dir.exists():
-        print(f"ERROR: Config directory not found: {config_dir}", file=sys.stderr)
+        print(
+            f"ERROR: Config directory not found: {config_dir}",
+            file=sys.stderr,
+        )
         return configs
-    
+
     for yaml_file in sorted(config_dir.glob("*.yaml")):
         try:
             with yaml_file.open() as f:
                 data = yaml.safe_load(f)
                 configs[yaml_file.name] = data
         except Exception as e:
-            print(f"ERROR: Failed to parse {yaml_file.name}: {e}", file=sys.stderr)
-    
+            print(
+                f"ERROR: Failed to parse {yaml_file.name}: {e}",
+                file=sys.stderr,
+            )
+
     return configs
 
 
@@ -43,8 +53,10 @@ def resolve_path(path_str: str, local_servers_dir: Path) -> str | None:
     """Resolve ${local_servers_paths} variable in path string."""
     if not isinstance(path_str, str):
         return None
-    
-    resolved = path_str.replace("${local_servers_paths}", str(local_servers_dir))
+
+    resolved = path_str.replace(
+        "${local_servers_paths}", str(local_servers_dir)
+    )
     return resolved
 
 
@@ -54,7 +66,7 @@ def is_runtime_placeholder(value: str) -> bool:
 
 
 def looks_like_executable_path(value: str) -> bool:
-    """Return True for strings that look like filesystem executable/script paths."""
+    """Return True for strings that look like executable/script paths."""
     if not value or " " in value:
         return False
     if value.startswith(("http://", "https://")):
@@ -68,7 +80,9 @@ def looks_like_executable_path(value: str) -> bool:
     return "/" in value
 
 
-def to_path(value: str, base_dir: Path, local_servers_dir: Path) -> Path | None:
+def to_path(
+    value: str, base_dir: Path, local_servers_dir: Path
+) -> Path | None:
     """Resolve a candidate path string to an absolute Path when possible."""
     resolved = resolve_path(value, local_servers_dir)
     if not resolved or not looks_like_executable_path(resolved):
@@ -80,7 +94,7 @@ def to_path(value: str, base_dir: Path, local_servers_dir: Path) -> Path | None:
 
 
 def path_exists(path: Path) -> bool:
-    """Return True if the path exists, including python/python3 venv alias fallback."""
+    """Return True if path exists, with python/python3 venv alias fallback."""
     if path.exists():
         return True
     if str(path).endswith("/.venv/bin/python3"):
@@ -92,16 +106,20 @@ def path_exists(path: Path) -> bool:
     return False
 
 
-def extract_command_paths(config_name: str, config: dict, local_servers_dir: Path) -> list[tuple[str, str]]:
+def extract_command_paths(
+    config_name: str,
+    config: dict[str, Any],
+    local_servers_dir: Path,
+) -> list[tuple[str, str]]:
     """Extract all command paths from MCP server config.
-    
-    Returns list of (server_name, command_path) tuples.
+
+    Return a list of (server_name, command_path) tuples.
     Handles both old and new config formats.
     """
     paths: list[tuple[str, str]] = []
     server_name = config.get("name", config_name.replace(".yaml", ""))
     config_base = local_servers_dir
-    
+
     # Check old format: mcpServers dict
     mcp_servers = config.get("mcpServers", {})
     if mcp_servers:
@@ -114,7 +132,10 @@ def extract_command_paths(config_name: str, config: dict, local_servers_dir: Pat
                 resolved_cwd = resolve_path(srv_cwd, local_servers_dir)
                 if resolved_cwd and not is_runtime_placeholder(resolved_cwd):
                     cwd_path = Path(resolved_cwd)
-                    base_dir = cwd_path if cwd_path.is_absolute() else (config_base / cwd_path).resolve()
+                    if cwd_path.is_absolute():
+                        base_dir = cwd_path
+                    else:
+                        base_dir = (config_base / cwd_path).resolve()
             command = srv_config.get("command")
             args = srv_config.get("args", [])
             if isinstance(command, str):
@@ -127,7 +148,7 @@ def extract_command_paths(config_name: str, config: dict, local_servers_dir: Pat
                         arg_path = to_path(arg, base_dir, local_servers_dir)
                         if arg_path is not None:
                             paths.append((srv_name, str(arg_path)))
-    
+
     # Check new format: params.command and params.args
     params = config.get("params", {})
     if isinstance(params, dict):
@@ -137,7 +158,10 @@ def extract_command_paths(config_name: str, config: dict, local_servers_dir: Pat
             resolved_cwd = resolve_path(params_cwd, local_servers_dir)
             if resolved_cwd and not is_runtime_placeholder(resolved_cwd):
                 cwd_path = Path(resolved_cwd)
-                base_dir = cwd_path if cwd_path.is_absolute() else (config_base / cwd_path).resolve()
+                if cwd_path.is_absolute():
+                    base_dir = cwd_path
+                else:
+                    base_dir = (config_base / cwd_path).resolve()
 
         command = params.get("command")
         args = params.get("args", [])
@@ -145,10 +169,15 @@ def extract_command_paths(config_name: str, config: dict, local_servers_dir: Pat
 
         if isinstance(args, list):
             for idx, arg in enumerate(args):
-                if arg in {"--directory", "--cwd", "-C"} and idx + 1 < len(args):
+                if (
+                    arg in {"--directory", "--cwd", "-C"}
+                    and idx + 1 < len(args)
+                ):
                     dir_arg = args[idx + 1]
                     if isinstance(dir_arg, str):
-                        dir_path = to_path(dir_arg, base_dir, local_servers_dir)
+                        dir_path = to_path(
+                            dir_arg, base_dir, local_servers_dir
+                        )
                         if dir_path is not None and dir_path.exists():
                             runtime_base = dir_path
 
@@ -161,12 +190,16 @@ def extract_command_paths(config_name: str, config: dict, local_servers_dir: Pat
             for idx, arg in enumerate(args):
                 if isinstance(arg, str):
                     base_for_arg = runtime_base
-                    if idx > 0 and args[idx - 1] in {"python", "python3", "node"}:
+                    if idx > 0 and args[idx - 1] in {
+                        "python",
+                        "python3",
+                        "node",
+                    }:
                         base_for_arg = runtime_base
                     arg_path = to_path(arg, base_for_arg, local_servers_dir)
                     if arg_path is not None:
                         paths.append((server_name, str(arg_path)))
-    
+
     return paths
 
 
@@ -175,27 +208,28 @@ def main() -> int:
     # Find the repo root (parent of this script's parent)
     script_dir = Path(__file__).resolve().parent
     repo_root = script_dir.parent
-    
+
     config_dir = repo_root / "configs" / "mcp_servers"
     local_servers_dir = Path(
         os.environ.get("LOCAL_SERVERS_PATH", str(repo_root / "local_servers"))
     ).resolve()
-    
+
     print(f"Checking MCP server paths in: {config_dir.resolve()}")
     print(f"Local servers directory: {local_servers_dir}")
     print()
-    
+
     configs = load_mcp_configs(config_dir)
     if not configs:
         print("WARNING: No MCP configs found", file=sys.stderr)
         return 0
-    
-    all_missing: list[tuple[str, str, str]] = []  # (config_name, server_name, path)
-    all_found: list[tuple[str, str, str]] = []  # (config_name, server_name, path)
-    
+
+    # (config_name, server_name, path)
+    all_missing: list[tuple[str, str, str]] = []
+    all_found: list[tuple[str, str, str]] = []
+
     for config_name, config in sorted(configs.items()):
         paths = extract_command_paths(config_name, config, local_servers_dir)
-        
+
         for server_name, path_str in paths:
             path = Path(path_str)
             if path_exists(path):
@@ -204,17 +238,17 @@ def main() -> int:
             else:
                 all_missing.append((config_name, server_name, str(path)))
                 print(f"✗ MISSING {server_name:24} {path}", file=sys.stderr)
-    
+
     print()
     print(f"Found: {len(all_found)} paths")
     print(f"Missing: {len(all_missing)} paths")
-    
+
     if all_missing:
         print("\nMISSING PATHS (required for Docker/production):")
-        for config, server, path in all_missing:
-            print(f"  {config}::{server} → {path}", file=sys.stderr)
+        for config, server, path_text in all_missing:
+            print(f"  {config}::{server} → {path_text}", file=sys.stderr)
         return 1
-    
+
     print("\n✓ All MCP server paths valid.")
     return 0
 

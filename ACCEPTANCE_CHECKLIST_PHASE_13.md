@@ -1,7 +1,7 @@
 # Phase 13 — Acceptance Checklist & Repair Completion
 
 **Date**: May 20, 2026  
-**Commit**: ef4f14c (pushed to origin/main on 2026-05-20)  
+**Commit**: ed1bb87 (pushed to origin/main on 2026-05-20)  
 **Repair Plan**: 13-phase hardening largely implemented; reproducibility verification still in progress
 
 > Status note (May 20, 2026): this file is treated as an acceptance target and evidence tracker, not a declaration that all gates currently pass in every environment.
@@ -46,9 +46,9 @@ $ bash scripts/clean_workspace.sh  # verified executable
 ---
 
 ### 3. ⚠ ToolForge Installation & Validation
-- [ ] `pip install -e ".[dev]"` completes without error
-- [ ] `toolforge doctor` passes all checks
-- [ ] No missing dependencies or version conflicts
+- [x] `pip install -e ".[dev]"` completes without error
+- [x] `toolforge doctor` passes all checks
+- [x] No missing dependencies or version conflicts
 
 **Evidence**:
 ```

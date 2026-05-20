@@ -15,9 +15,9 @@
 │                                                                 │
 │  Agent Skills ................. ✅ 23 skills, structural clean   │
 │  ToolForge .................... 🟡 Env-sensitive in sandbox       │
-│  Toolathlon MCP preflight ..... ❌ Missing artifacts remain       │
-│  Validation script observability 🟡 Improved, re-run required     │
-│  Documentation truthfulness .... 🟡 Checklist/dashboard updating   │
+│  Toolathlon MCP preflight ..... ✅ Passes after artifact build     │
+│  Validation script observability 🟡 Improved with timeout/logs      │
+│  Documentation truthfulness .... 🟡 Revalidation evidence pending   │
 │  Production Readiness ......... ❌ Not release-ready              │
 │                                                                 │
 │  Components Deployed:                                           │
@@ -25,7 +25,7 @@
 │  ✓ MCP preflight script added                                  │
 │  ✓ Workspace clean/validate scripts added                      │
 │  ✓ Security posture language improved                          │
-│  ⚠ Toolathlon artifact/build parity still in progress          │
+│  ✓ Toolathlon artifact/build parity improved                   │
 │  ⚠ Full fresh-clone reproducibility not yet confirmed          │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
