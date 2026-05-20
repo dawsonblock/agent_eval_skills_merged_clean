@@ -54,6 +54,11 @@ addopts = [
     "no:ddtrace.pytest_benchmark",
 ]
 
+markers = [
+    "integration: tests that spawn subprocesses or run nested pytest",
+    "slow: tests that may take longer than normal unit tests"
+]
+
 [tool.coverage.run]
 branch = true
 source = ["packages", "apps"]

@@ -10,34 +10,9 @@ from packages.validators import test_validator as test_validator_module
 from packages.validators.test_validator import run_tests
 
 
-def test_run_tests_reports_failures(tmp_path: Path) -> None:
-    tests_dir = tmp_path / "tests"
-    tests_dir.mkdir(parents=True)
-    (tests_dir / "test_fail.py").write_text(
-        "def test_fail():\n    assert False\n",
-        encoding="utf-8",
-    )
-
-    report = run_tests(tmp_path)
-
-    assert report is not None
-    assert not report.all_passed
-    assert report.failed > 0 or report.errors > 0
-
-
-def test_run_tests_reports_passes(tmp_path: Path) -> None:
-    tests_dir = tmp_path / "tests"
-    tests_dir.mkdir(parents=True)
-    (tests_dir / "test_ok.py").write_text(
-        "def test_ok():\n    assert True\n",
-        encoding="utf-8",
-    )
-
-    report = run_tests(tmp_path)
-
-    assert report is not None
-    assert report.all_passed
-    assert report.passed == 1
+# All real subprocess/nested pytest tests for test_validator are now in
+# tests/integration/test_test_validator_subprocess.py (marked pytest.mark.integration).
+# This file is reserved for unit tests that mock subprocess execution only.
 
 
 def test_run_tests_cleans_invalid_json_report_by_default(

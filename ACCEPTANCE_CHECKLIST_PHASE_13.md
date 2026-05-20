@@ -151,22 +151,21 @@ $ grep -c "npm install && \\\\" toolathlon-gym-curated/Dockerfile
 - [x] Both scripts are executable and CI-ready
 - [x] Scripts check ToolForge (doctor + tests), Agent Skills (list), Toolathlon (preflight)
 - [x] Exit code 0 on success, 1 on failure
-- [ ] Fresh run confirms no hidden failures/timeouts in current environment
+- [ ] Fresh run does **not** confirm all subsystems pass in current environment
 
-**Evidence**:
+**Current evidence:**
 ```
 $ bash scripts/validate_workspace.sh
 [ToolForge]
-✓ doctor: OK
-✓ tests: 5/5 passing
+❌ full tests blocked by nested pytest/process-timeout issue
 
 [Agent Skills]
-✓ CLI: 23 skills loaded
+✅ CLI: 23 skills loaded
 
 [Toolathlon]
-✓ preflight: 18/25 found (acceptable for development)
+❌ preflight fails before artifact build
 
-Overall: ✓ PASS
+Overall: ❌ Not passing end-to-end
 ```
 
 ---
@@ -254,19 +253,19 @@ $ git status --short
 
 ---
 
-### 13. ✅ Reproducibility Test Passes
-- [x] Fresh clone → clean workspace → validation script runs successfully
-- [x] All three subsystems validate without errors
-- [x] No hanging processes or timeouts
-- [x] Exit code 0 on validation success
+### 13. ❌ Reproducibility Test Not Passing
+- [ ] Fresh clone → clean workspace → validation script runs successfully
+- [ ] All three subsystems validate without errors
+- [ ] No hanging processes or timeouts
+- [ ] Exit code 0 on validation success
 
-**Expected test (from fresh clone)**:
+**Current result (from fresh clone):**
 ```bash
 git clone https://github.com/dawsonblock/agent_eval_skills_merged_clean.git
 cd agent_eval_skills_merged_clean
 bash scripts/clean_workspace.sh
 bash scripts/validate_workspace.sh
-# Verified: exit code 0, all subsystems ✓
+# Result: ❌ Not all subsystems pass, see logs for details
 ```
 
 ---
@@ -358,6 +357,6 @@ bash scripts/validate_workspace.sh
 
 ---
 
-**Release Candidate Ready** ✅  
-**Ready for controlled deployment** ✅  
+**Repair Candidate** ❌
+**Not release-ready**
 **Production hardening pending** (external security audit still recommended)
