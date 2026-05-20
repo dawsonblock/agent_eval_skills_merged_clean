@@ -15,14 +15,18 @@ YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 failed=0
-TOOLFORGE_INSTALL_LOG="/tmp/toolforge_install.log"
-TOOLFORGE_DOCTOR_LOG="/tmp/toolforge_doctor.log"
-TOOLFORGE_PYTEST_LOG="/tmp/toolforge_pytest.log"
-AGENT_SKILLS_LIST_LOG="/tmp/agent_skills_list.txt"
-AGENT_SKILLS_EVAL_LOG="/tmp/agent_skills_eval.json"
-AGENT_SKILLS_EVAL_ERR_LOG="/tmp/agent_skills_eval.err"
-TOOLATHLON_BUILD_LOG="/tmp/toolathlon_build_artifacts.log"
-TOOLATHLON_PREFLIGHT_LOG="/tmp/toolathlon_preflight.log"
+INITIAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
+LOG_DIR="$(mktemp -d /tmp/validate_workspace.XXXXXX)"
+TOOLFORGE_INSTALL_LOG="$LOG_DIR/toolforge_install.log"
+TOOLFORGE_DOCTOR_LOG="$LOG_DIR/toolforge_doctor.log"
+TOOLFORGE_PYTEST_LOG="$LOG_DIR/toolforge_pytest.log"
+AGENT_SKILLS_LIST_LOG="$LOG_DIR/agent_skills_list.txt"
+AGENT_SKILLS_EVAL_LOG="$LOG_DIR/agent_skills_eval.json"
+AGENT_SKILLS_EVAL_ERR_LOG="$LOG_DIR/agent_skills_eval.err"
+TOOLATHLON_BUILD_LOG="$LOG_DIR/toolathlon_build_artifacts.log"
+TOOLATHLON_PREFLIGHT_LOG="$LOG_DIR/toolathlon_preflight.log"
+
+echo "Log directory: $LOG_DIR"
 
 # Phase 1: ToolForge validation
 echo "${YELLOW}== ToolForge ==${NC}"
@@ -64,10 +68,11 @@ fi
 
 # Enforce structural quality: fail only on hard (error-severity) findings.
 if node bin/cli.js eval --json > "$AGENT_SKILLS_EVAL_LOG" 2>"$AGENT_SKILLS_EVAL_ERR_LOG"; then
-  hard_failures=$(python - <<'PY'
+  hard_failures=$(AGENT_SKILLS_EVAL_LOG="$AGENT_SKILLS_EVAL_LOG" python - <<'PY'
 import json
+import os
 from pathlib import Path
-arr = json.loads(Path('/tmp/agent_skills_eval.json').read_text(encoding='utf-8'))
+arr = json.loads(Path(os.environ['AGENT_SKILLS_EVAL_LOG']).read_text(encoding='utf-8'))
 hard = 0
 for item in arr:
     for check in item.get('structural', {}).get('checks', []):
@@ -111,6 +116,13 @@ fi
 
 cd "$REPO_ROOT"
 echo
+
+FINAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
+if [ "$INITIAL_GIT_STATUS" != "$FINAL_GIT_STATUS" ]; then
+  echo "${RED}✗ Validation left repository with uncommitted changes${NC}"
+  echo "Run: git -C '$REPO_ROOT' status --short"
+  failed=$((failed + 1))
+fi
 
 # Summary
 echo "${YELLOW}== Summary ==${NC}"
