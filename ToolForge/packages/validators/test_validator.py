@@ -3,6 +3,7 @@ Test validator — runs pytest against a tool's test directory and reports resul
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import re
@@ -34,6 +35,11 @@ class TestReport:
         return self.failed == 0 and self.errors == 0
 
 
+def has_pytest_timeout() -> bool:
+    """Return True when pytest-timeout is available in the current env."""
+    return importlib.util.find_spec("pytest_timeout") is not None
+
+
 def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     """
     Run pytest in *tool_dir/tests/* and return a TestReport.
@@ -48,6 +54,10 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     # target the same tool directory (e.g. parallel CI jobs or nested pytest).
     json_output = tool_dir / f".pytest_report_{uuid.uuid4().hex[:12]}.json"
 
+    timeout_args: list[str] = []
+    if has_pytest_timeout():
+        timeout_args = ["-p", "pytest_timeout", "--timeout=30"]
+
     cmd = [
         sys.executable,
         "-m",
@@ -56,18 +66,16 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
         "pytest_jsonreport.plugin",
         "-p",
         "pytest_cov.plugin",
-        "-p",
-        "pytest_timeout",
         str(tests_dir),
         "-o",
         "addopts=",
         "--no-cov",
         "--tb=short",
         "-q",
-        "--timeout=30",
         "--json-report",
         f"--json-report-file={json_output}",
     ]
+    cmd.extend(timeout_args)
 
     fallback_cmd = [
         sys.executable,
@@ -75,16 +83,14 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
         "pytest",
         "-p",
         "pytest_cov.plugin",
-        "-p",
-        "pytest_timeout",
         str(tests_dir),
         "-o",
         "addopts=",
         "--no-cov",
         "--tb=short",
         "-q",
-        "--timeout=30",
     ]
+    fallback_cmd.extend(timeout_args)
 
     nested_env = os.environ.copy()
     nested_env.pop("PYTEST_CURRENT_TEST", None)

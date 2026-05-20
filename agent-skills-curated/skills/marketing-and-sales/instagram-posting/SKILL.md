@@ -127,4 +127,4 @@ For scheduled posting without the API:
 
 ## Scripts
 
-`scripts/resize_images.py` — batch resize folder of images for Instagram formats
+No bundled scripts are required for this skill. Use the Pillow snippet above when image resizing is needed.

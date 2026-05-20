@@ -1,6 +1,6 @@
 ---
 name: internal-comms
-description: Write internal company communications — announcements, incident updates, all-hands messages, team newsletters, and leadership updates. Use when the user needs to write an internal announcement, communicate an incident, draft an all-hands message, send a team update, or write an internal newsletter. Trigger phrases include "internal announcement", "team update", "all-hands", "company announcement", "incident communication", "internal comms", "staff update", "leadership message", "org change", "company news".
+description: Write internal company communications such as announcements, incident updates, all-hands notes, team newsletters, and leadership messages. Use when the user asks for internal announcement copy, incident communication, staff updates, organization changes, or company-news messaging. Trigger phrases include "internal announcement", "team update", "all-hands", "incident communication", "internal comms", "staff update", and "leadership message".
 ---
 
 # Internal Comms

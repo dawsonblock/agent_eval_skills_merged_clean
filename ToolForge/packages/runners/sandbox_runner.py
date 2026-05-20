@@ -32,8 +32,8 @@ _SECRET_SUFFIXES = (
 )
 
 _DEFAULT_DOCKER_IMAGE = "python:3.12-slim"
-_DOCKER_CPU_LIMIT = "0.5"
-_DOCKER_MEM_LIMIT = "128m"
+_DOCKER_CPU_LIMIT = "1"
+_DOCKER_MEM_LIMIT = "512m"
 
 
 def _to_text(value: bytes | str | None) -> str:
@@ -199,20 +199,15 @@ def _run_docker(
         f"--cpus={_DOCKER_CPU_LIMIT}",
         f"--memory={_DOCKER_MEM_LIMIT}",
         "--cap-drop=ALL",
-        "--cap-add=CHOWN",
-        "--cap-add=DAC_OVERRIDE",
-        "--security-opt=no-new-privileges:true",
-        "--pids-limit=512",
+        "--security-opt=no-new-privileges",
+        "--pids-limit=128",
+        "--user=65534:65534",
+        "--read-only",
+        "--tmpfs=/tmp:rw,noexec,nosuid,size=64m",
     ]
 
-    if sandbox_level >= 4:
-        docker_cmd.extend([
-            "--read-only",
-            "--tmpfs=/tmp:noexec,nosuid,nodev",
-        ])
-
     if cwd:
-        docker_cmd += ["-v", f"{cwd}:/workspace", "-w", "/workspace"]
+        docker_cmd += ["-v", f"{cwd}:/workspace:ro", "-w", "/workspace"]
 
     # Pass env vars explicitly (secrets already stripped)
     safe_env = _minimal_env(env)

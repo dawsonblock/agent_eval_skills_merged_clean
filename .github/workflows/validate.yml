@@ -53,13 +53,18 @@ jobs:
             - name: Validate Agent Skills
               working-directory: ./agent-skills-curated
               run: |
-                  node bin/cli.js list
+                  node bin/cli.js eval --json
 
     toolathlon-preflight:
         name: Toolathlon MCP Preflight
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
 
             - name: Set up Python
               uses: actions/setup-python@v5
@@ -70,10 +75,15 @@ jobs:
               run: |
                   python -m pip install pyyaml
 
+            - name: Build required MCP artifacts
+              working-directory: ./toolathlon-gym-curated
+              run: |
+                  bash scripts/build_required_mcp_artifacts.sh
+
             - name: Run MCP preflight validation
               working-directory: ./toolathlon-gym-curated
               run: |
-                  python scripts/preflight_mcp_paths.py || echo "⚠ Some paths missing (expected in non-Docker environment)"
+                  python scripts/preflight_mcp_paths.py
 
     unified-validation:
         name: Unified Workspace Validation
@@ -95,4 +105,4 @@ jobs:
 
             - name: Run unified validation script
               run: |
-                  bash scripts/validate_workspace.sh || echo "⚠ Workspace validation complete with warnings"
+                  bash scripts/validate_workspace.sh

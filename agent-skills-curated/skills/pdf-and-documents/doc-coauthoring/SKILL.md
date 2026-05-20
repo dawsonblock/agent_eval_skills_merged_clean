@@ -1,6 +1,6 @@
 ---
 name: doc-coauthoring
-description: Collaborative document editing and coauthoring workflows — merging changes, resolving comments, managing document versions, and coordinating reviews. Use when the user wants to merge document edits, resolve review comments, track changes in a document, manage document versions, or coordinate multi-author editing. Trigger phrases include "coauthor", "document collaboration", "merge edits", "track changes", "document review", "resolve comments", "version document", "collaborative writing", "doc review workflow".
+description: Collaborative document editing workflows for merging changes, resolving comments, managing versions, and coordinating review cycles. Use when the user asks to coauthor, merge edits, handle tracked changes, resolve review comments, or run a multi-author doc review process. Trigger phrases include "coauthor", "document collaboration", "merge edits", "track changes", "document review", and "resolve comments".
 ---
 
 # Doc Coauthoring

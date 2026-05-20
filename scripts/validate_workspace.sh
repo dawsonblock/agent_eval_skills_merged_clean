@@ -45,19 +45,41 @@ echo
 # Phase 2: Agent Skills validation
 echo "${YELLOW}== Agent Skills ==${NC}"
 cd "$REPO_ROOT/agent-skills-curated"
-if node bin/cli.js list | head -1 > /dev/null 2>&1; then
-  skill_count=$(node bin/cli.js list 2>/dev/null | wc -l)
+if node bin/cli.js list > /tmp/agent_skills_list.txt 2>/dev/null; then
+  skill_count=$(find skills -mindepth 2 -maxdepth 2 -type d | wc -l | tr -d ' ')
   echo "✓ Found $skill_count skills"
 else
   echo "${RED}✗ Skills list failed${NC}"
   failed=$((failed + 1))
 fi
 
-# Eval can be noisy; just check if it runs without crashing
-if node evals/evaluate.js --help > /dev/null 2>&1 || [ -f evals/evaluate.js ]; then
-  echo "✓ Eval infrastructure present"
+# Enforce structural quality: fail only on hard (error-severity) findings.
+if node bin/cli.js eval --json > /tmp/agent_skills_eval.json 2>/dev/null; then
+  hard_failures=$(python - <<'PY'
+import json
+from pathlib import Path
+raw = Path('/tmp/agent_skills_eval.json').read_text(encoding='utf-8')
+start = raw.find('[')
+if start < 0:
+    print(1)
+    raise SystemExit
+arr = json.loads(raw[start:])
+hard = 0
+for item in arr:
+    for check in item.get('structural', {}).get('checks', []):
+        if (not check.get('passed', False)) and check.get('severity') == 'error':
+            hard += 1
+print(hard)
+PY
+)
+  if [ "$hard_failures" = "0" ]; then
+    echo "✓ Agent Skills eval passed (0 hard failures)"
+  else
+    echo "${RED}✗ Agent Skills eval has $hard_failures hard failure(s)${NC}"
+    failed=$((failed + 1))
+  fi
 else
-  echo "${RED}✗ Eval infrastructure missing${NC}"
+  echo "${RED}✗ Agent Skills eval command failed${NC}"
   failed=$((failed + 1))
 fi
 
@@ -67,18 +89,19 @@ echo
 # Phase 3: Toolathlon preflight
 echo "${YELLOW}== Toolathlon Preflight ==${NC}"
 cd "$REPO_ROOT/toolathlon-gym-curated"
-preflight_output=$(python scripts/preflight_mcp_paths.py 2>&1 || true)
-if echo "$preflight_output" | grep -q "✓"; then
-  # At least some paths found
-  if echo "$preflight_output" | grep -q "✗"; then
-    # Some missing but some found (expected in development)
-    echo "${YELLOW}⚠ Some MCP paths missing (expected in development environment)${NC}"
-  else
-    # All found
-    echo "✓ All MCP paths valid"
-  fi
+if bash scripts/build_required_mcp_artifacts.sh > /tmp/toolathlon_build_artifacts.txt 2>&1; then
+  echo "✓ Required MCP artifacts built"
 else
-  echo "${RED}✗ Preflight script failed${NC}"
+  echo "${RED}✗ MCP artifact build failed${NC}"
+  tail -n 10 /tmp/toolathlon_build_artifacts.txt || true
+  failed=$((failed + 1))
+fi
+
+if python scripts/preflight_mcp_paths.py > /tmp/toolathlon_preflight.txt 2>&1; then
+  echo "✓ MCP preflight passed"
+else
+  echo "${RED}✗ MCP preflight failed${NC}"
+  tail -n 10 /tmp/toolathlon_preflight.txt || true
   failed=$((failed + 1))
 fi
 
