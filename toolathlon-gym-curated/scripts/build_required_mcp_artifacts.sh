@@ -81,17 +81,58 @@ ensure_file() {
   fi
 }
 
-echo "Building required MCP artifacts in $LOCAL_SERVERS_DIR"
+export -f build_node_package
+export -f build_python_package
+export -f ensure_file
 
-build_node_package "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "google_calendar" "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js"
-build_node_package "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "canvas" "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js"
-build_node_package "$LOCAL_SERVERS_DIR/HowToCook-mcp" "howtocook" "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js"
-build_node_package "$LOCAL_SERVERS_DIR/servers/src/memory" "memory" "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js"
-build_node_package "$LOCAL_SERVERS_DIR/google-forms-mcp" "google_forms" "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js"
-build_node_package "$LOCAL_SERVERS_DIR/mcp-npx-fetch" "fetch" "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js"
-build_node_package "$LOCAL_SERVERS_DIR/notion-mcp-server" "notion" "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs"
-build_node_package "$LOCAL_SERVERS_DIR/woocommerce-mcp" "woocommerce" "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js"
-build_node_package "$LOCAL_SERVERS_DIR/youtube-mcp-server" "youtube" "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js"
-build_python_package "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "youtube_transcript" "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3"
+build_with_timeout() {
+  local name="$1"
+  local seconds="$2"
+  shift 2
+
+  local command_string
+  printf -v command_string '%q ' "$@"
+  command_string="${command_string% }"
+
+  echo "→ Building $name with ${seconds}s timeout"
+
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "${seconds}s" bash -lc "$command_string"
+    return
+  fi
+
+  python3 - "$seconds" "$command_string" <<'PY'
+import subprocess
+import sys
+
+timeout = int(sys.argv[1])
+command = sys.argv[2]
+
+completed = subprocess.run(["bash", "-lc", command], check=False, timeout=timeout)
+raise SystemExit(completed.returncode)
+PY
+}
+
+echo "Building required MCP artifacts in $LOCAL_SERVERS_DIR"
+build_with_timeout "google_calendar" 180 build_node_package "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "google_calendar" && \
+  ensure_file "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "google_calendar" || exit 1
+build_with_timeout "canvas" 900 build_node_package "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "canvas" && \
+  ensure_file "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "canvas" || exit 1
+build_with_timeout "howtocook" 300 build_node_package "$LOCAL_SERVERS_DIR/HowToCook-mcp" "howtocook" && \
+  ensure_file "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "howtocook" || exit 1
+build_with_timeout "memory" 300 build_node_package "$LOCAL_SERVERS_DIR/servers/src/memory" "memory" && \
+  ensure_file "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "memory" || exit 1
+build_with_timeout "google_forms" 300 build_node_package "$LOCAL_SERVERS_DIR/google-forms-mcp" "google_forms" && \
+  ensure_file "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "google_forms" || exit 1
+build_with_timeout "fetch" 300 build_node_package "$LOCAL_SERVERS_DIR/mcp-npx-fetch" "fetch" && \
+  ensure_file "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "fetch" || exit 1
+build_with_timeout "notion" 900 build_node_package "$LOCAL_SERVERS_DIR/notion-mcp-server" "notion" && \
+  ensure_file "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "notion" || exit 1
+build_with_timeout "woocommerce" 300 build_node_package "$LOCAL_SERVERS_DIR/woocommerce-mcp" "woocommerce" && \
+  ensure_file "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "woocommerce" || exit 1
+build_with_timeout "youtube" 600 build_node_package "$LOCAL_SERVERS_DIR/youtube-mcp-server" "youtube" && \
+  ensure_file "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "youtube" || exit 1
+build_with_timeout "youtube_transcript" 900 build_python_package "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "youtube_transcript" "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" && \
+  ensure_file "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "youtube_transcript" || exit 1
 
 echo "✓ Required MCP artifacts built successfully."
