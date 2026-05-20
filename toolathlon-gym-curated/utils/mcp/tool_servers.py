@@ -35,9 +35,10 @@ def build_mcp_clients(
     If http_mcp_urls is provided (dict of name->url), those servers will be
     connected via HTTP (streamable-http) instead of stdio.
     """
-    local_servers_path = os.environ.get(
-        "LOCAL_SERVERS_PATH", os.path.abspath("./local_servers")
-    )
+    local_servers_path = os.environ.get("LOCAL_SERVERS_PATH")
+    if not local_servers_path:
+        repo_root = Path(__file__).resolve().parents[2]
+        local_servers_path = str((repo_root / "local_servers").resolve())
     agent_workspace = os.path.abspath(agent_workspace)
     task_dir = os.path.abspath(task_dir) if task_dir else ""
 

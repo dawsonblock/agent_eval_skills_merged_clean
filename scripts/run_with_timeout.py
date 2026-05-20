@@ -30,7 +30,15 @@ def main() -> int:
         print(msg, file=sys.stderr)
         return 1
 
+    # Support optional '--' delimiter before command args.
+    if cmd_start < len(sys.argv) and sys.argv[cmd_start] == "--":
+        cmd_start += 1
+
     cmd = sys.argv[cmd_start:]
+    if not cmd:
+        msg = "Error: command is required after --timeout"
+        print(msg, file=sys.stderr)
+        return 1
 
     # Run command in new process group using consolidated helper
     try:

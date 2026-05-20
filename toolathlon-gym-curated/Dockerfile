@@ -51,6 +51,7 @@ RUN playwright install chromium || true
 # Build Node-based and Python MCP servers from /opt/local_servers
 # (keeps compiled artifacts outside the volume-mounted /workspace)
 COPY local_servers/ /opt/local_servers/
+ENV LOCAL_SERVERS_PATH="/opt/local_servers"
 RUN for dir in \
         /opt/local_servers/Calendar-Autoauth-MCP-Server \
         /opt/local_servers/google-forms-mcp \

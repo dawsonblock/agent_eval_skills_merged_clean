@@ -638,7 +638,9 @@ function runEval(skillsRoot, args) {
   }
 
   const results = [];
-  console.log(`  Evaluating ${targets.length} skill(s)...\n`);
+  if (!args.json) {
+    console.log(`  Evaluating ${targets.length} skill(s)...\n`);
+  }
 
   for (const skill of targets) {
     const result = scoreSkill(skill.path);
@@ -705,7 +707,9 @@ function main() {
     return;
   }
 
-  console.log(`\n  eigent-skills v${version}\n`);
+  if (!(args.command === "eval" && args.json)) {
+    console.log(`\n  eigent-skills v${version}\n`);
+  }
 
   const skillsRoot = getSkillsRoot();
 
