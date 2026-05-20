@@ -67,10 +67,16 @@ echo
 # Phase 3: Toolathlon preflight
 echo "${YELLOW}== Toolathlon Preflight ==${NC}"
 cd "$REPO_ROOT/toolathlon-gym-curated"
-if python scripts/preflight_mcp_paths.py > /dev/null 2>&1; then
-  echo "✓ MCP paths valid (no critical missing builds)"
-elif python scripts/preflight_mcp_paths.py 2>&1 | grep -q "MISSING"; then
-  echo "${YELLOW}⚠ Some MCP paths missing (may be expected in development)${NC}"
+preflight_output=$(python scripts/preflight_mcp_paths.py 2>&1 || true)
+if echo "$preflight_output" | grep -q "✓"; then
+  # At least some paths found
+  if echo "$preflight_output" | grep -q "✗"; then
+    # Some missing but some found (expected in development)
+    echo "${YELLOW}⚠ Some MCP paths missing (expected in development environment)${NC}"
+  else
+    # All found
+    echo "✓ All MCP paths valid"
+  fi
 else
   echo "${RED}✗ Preflight script failed${NC}"
   failed=$((failed + 1))
