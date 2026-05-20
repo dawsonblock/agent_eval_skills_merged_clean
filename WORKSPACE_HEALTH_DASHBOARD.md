@@ -15,7 +15,7 @@
 │                                                                 │
 │  Agent Skills ................. ✅ 23 skills, structural clean   │
 │  ToolForge .................... 🟡 Env-sensitive in sandbox       │
-│  Toolathlon MCP preflight ..... ✅ Passes after artifact build     │
+│  Toolathlon MCP preflight ..... 🟡 Passes after required artifact build │
 │  Validation script observability 🟡 Improved with timeout/logs      │
 │  Documentation truthfulness .... 🟡 Revalidation evidence pending   │
 │  Production Readiness ......... ❌ Not release-ready              │
