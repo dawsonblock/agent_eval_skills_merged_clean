@@ -47,6 +47,37 @@ def resolve_path(path_str: str, local_servers_dir: Path) -> str | None:
     return resolved
 
 
+def is_runtime_placeholder(value: str) -> bool:
+    """Return True for placeholders that are resolved only at task runtime."""
+    return "${agent_workspace}" in value or "${task_dir}" in value
+
+
+def looks_like_executable_path(value: str) -> bool:
+    """Return True for strings that look like filesystem executable/script paths."""
+    if not value or " " in value:
+        return False
+    if value.startswith(("http://", "https://")):
+        return False
+    if is_runtime_placeholder(value):
+        return False
+    if value in {"node", "python", "python3", "uv", "npm", "bash", "sh"}:
+        return False
+    if value.endswith((".js", ".mjs", ".py", ".sh")):
+        return True
+    return "/" in value
+
+
+def to_path(value: str, base_dir: Path, local_servers_dir: Path) -> Path | None:
+    """Resolve a candidate path string to an absolute Path when possible."""
+    resolved = resolve_path(value, local_servers_dir)
+    if not resolved or not looks_like_executable_path(resolved):
+        return None
+    p = Path(resolved)
+    if p.is_absolute():
+        return p
+    return (base_dir / p).resolve()
+
+
 def extract_command_paths(config_name: str, config: dict, local_servers_dir: Path) -> list[tuple[str, str]]:
     """Extract all command paths from MCP server config.
     
@@ -55,6 +86,7 @@ def extract_command_paths(config_name: str, config: dict, local_servers_dir: Pat
     """
     paths: list[tuple[str, str]] = []
     server_name = config.get("name", config_name.replace(".yaml", ""))
+    config_base = local_servers_dir
     
     # Check old format: mcpServers dict
     mcp_servers = config.get("mcpServers", {})
@@ -62,37 +94,64 @@ def extract_command_paths(config_name: str, config: dict, local_servers_dir: Pat
         for srv_name, srv_config in mcp_servers.items():
             if not isinstance(srv_config, dict):
                 continue
+            srv_cwd = srv_config.get("cwd")
+            base_dir = config_base
+            if isinstance(srv_cwd, str):
+                resolved_cwd = resolve_path(srv_cwd, local_servers_dir)
+                if resolved_cwd and not is_runtime_placeholder(resolved_cwd):
+                    cwd_path = Path(resolved_cwd)
+                    base_dir = cwd_path if cwd_path.is_absolute() else (config_base / cwd_path).resolve()
             command = srv_config.get("command")
             args = srv_config.get("args", [])
-            if command:
-                resolved = resolve_path(command, local_servers_dir)
-                if resolved:
-                    paths.append((srv_name, resolved))
+            if isinstance(command, str):
+                cmd_path = to_path(command, base_dir, local_servers_dir)
+                if cmd_path is not None:
+                    paths.append((srv_name, str(cmd_path)))
             if isinstance(args, list):
                 for arg in args:
                     if isinstance(arg, str):
-                        resolved = resolve_path(arg, local_servers_dir)
-                        if resolved and any(resolved.endswith(ext) for ext in [".js", ".mjs", ".py"]):
-                            paths.append((srv_name, resolved))
+                        arg_path = to_path(arg, base_dir, local_servers_dir)
+                        if arg_path is not None:
+                            paths.append((srv_name, str(arg_path)))
     
     # Check new format: params.command and params.args
     params = config.get("params", {})
     if isinstance(params, dict):
+        params_cwd = params.get("cwd")
+        base_dir = config_base
+        if isinstance(params_cwd, str):
+            resolved_cwd = resolve_path(params_cwd, local_servers_dir)
+            if resolved_cwd and not is_runtime_placeholder(resolved_cwd):
+                cwd_path = Path(resolved_cwd)
+                base_dir = cwd_path if cwd_path.is_absolute() else (config_base / cwd_path).resolve()
+
         command = params.get("command")
         args = params.get("args", [])
-        
-        # Process args for actual paths (not just the command like "node", "python", etc.)
+        runtime_base = base_dir
+
         if isinstance(args, list):
-            for arg in args:
+            for idx, arg in enumerate(args):
+                if arg in {"--directory", "--cwd", "-C"} and idx + 1 < len(args):
+                    dir_arg = args[idx + 1]
+                    if isinstance(dir_arg, str):
+                        dir_path = to_path(dir_arg, base_dir, local_servers_dir)
+                        if dir_path is not None and dir_path.exists():
+                            runtime_base = dir_path
+
+        if isinstance(command, str):
+            cmd_path = to_path(command, base_dir, local_servers_dir)
+            if cmd_path is not None:
+                paths.append((server_name, str(cmd_path)))
+
+        if isinstance(args, list):
+            for idx, arg in enumerate(args):
                 if isinstance(arg, str):
-                    resolved = resolve_path(arg, local_servers_dir)
-                    # Check if it looks like a path (starts with /, ${}, or has local_servers)
-                    if resolved and (
-                        resolved.endswith((".js", ".mjs", ".py")) or
-                        "local_servers" in resolved or
-                        "/" in resolved
-                    ):
-                        paths.append((server_name, resolved))
+                    base_for_arg = runtime_base
+                    if idx > 0 and args[idx - 1] in {"python", "python3", "node"}:
+                        base_for_arg = runtime_base
+                    arg_path = to_path(arg, base_for_arg, local_servers_dir)
+                    if arg_path is not None:
+                        paths.append((server_name, str(arg_path)))
     
     return paths
 

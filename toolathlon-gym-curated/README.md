@@ -146,6 +146,14 @@ wait
 - **For stress testing agents**: Use Mode 1 with high concurrency (`bash run_parallel.sh 20+`). Tests agent robustness to race conditions and concurrent I/O.
 - **For scalable evaluation**: Use Mode 2 with orchestration (Kubernetes, job scheduler) to handle resource allocation automatically.
 
+### Benchmark Safety Rules
+
+- Never run terminal MCP directly on the host for benchmark tasks.
+- Never mount personal or home directories into benchmark containers.
+- Always use disposable containers for each benchmark run.
+- Keep network disabled unless a task explicitly requires network access.
+- Treat terminal MCP as container-only in benchmark mode.
+
 ---
 
 ## Model Provider Reference
@@ -243,7 +251,7 @@ Below are representative examples from each tier, illustrating how task complexi
 
 **7 MCPs — `arxiv-research-pipeline-notion-excel`** (`scholarly`, `arxiv_local`, `terminal`, `excel`, `notion`, `filesystem`)
 
-> **Note on terminal MCP**: The `terminal` MCP server is subprocess-only execution in the current setup. Commands execute in the task's process environment without container or VM isolation. For production use, wrap terminal execution in a more restrictive sandbox (Docker, VM, or specialized code runner like Deno).
+> **Note on terminal MCP**: Run terminal MCP only inside disposable containers for benchmark workloads. Host subprocess execution is not a safe isolation boundary for benchmark or untrusted commands.
 
 > Build a research knowledge base on large language models. Search for papers on LLMs, prompt engineering, and in-context learning. Use the terminal to run a synthesis script that reads paper metadata and contents, calculates relevance scores, and outputs a structured JSON summary. Create an Excel file with three sheets (Paper_Catalog, Method_Comparison, Research_Gaps) and a Notion page titled "LLM Research Hub" containing a research dashboard with landscape overview, methodology comparison, and identified gaps.
 
