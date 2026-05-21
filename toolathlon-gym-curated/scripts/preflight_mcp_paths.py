@@ -10,8 +10,11 @@ Exit codes:
 """
 from __future__ import annotations
 
+import argparse
+import json
 import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -203,8 +206,49 @@ def extract_command_paths(
     return paths
 
 
+def write_json_output(
+    output_path: Path,
+    config_dir: Path,
+    local_servers_dir: Path,
+    all_found: list[tuple[str, str, str]],
+    all_missing: list[tuple[str, str, str]],
+) -> None:
+    """Write a machine-readable preflight summary file."""
+    payload = {
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "config_dir": str(config_dir.resolve()),
+        "local_servers_dir": str(local_servers_dir),
+        "found_count": len(all_found),
+        "missing_count": len(all_missing),
+        "found": [
+            {"config": config, "server": server, "path": path}
+            for config, server, path in all_found
+        ],
+        "missing": [
+            {"config": config, "server": server, "path": path}
+            for config, server, path in all_missing
+        ],
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
 def main() -> int:
     """Run preflight validation for all MCP servers."""
+    parser = argparse.ArgumentParser(
+        description="Validate MCP command paths before runtime"
+    )
+    parser.add_argument(
+        "--json-output",
+        type=Path,
+        default=None,
+        help="Optional path to write a machine-readable JSON summary",
+    )
+    args = parser.parse_args()
+
     # Find the repo root (parent of this script's parent)
     script_dir = Path(__file__).resolve().parent
     repo_root = script_dir.parent
@@ -242,6 +286,16 @@ def main() -> int:
     print()
     print(f"Found: {len(all_found)} paths")
     print(f"Missing: {len(all_missing)} paths")
+
+    if args.json_output is not None:
+        write_json_output(
+            args.json_output,
+            config_dir,
+            local_servers_dir,
+            all_found,
+            all_missing,
+        )
+        print(f"JSON summary: {args.json_output}")
 
     if all_missing:
         print("\nMISSING PATHS (required for Docker/production):")

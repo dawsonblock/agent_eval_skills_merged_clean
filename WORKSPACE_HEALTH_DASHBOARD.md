@@ -6,6 +6,12 @@
 
 This dashboard is an evidence tracker. It is not a release declaration.
 
+Primary evidence artifacts:
+
+- [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)
+- [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)
+- [.validation_logs/](.validation_logs/) phase logs
+
 ## Current Status Table
 
 ```text
@@ -24,7 +30,7 @@ Release readiness ............. ✅ Release candidate (controlled testing)
 
 ## Promotion Rule
 
-Release-candidate gate is satisfied in this environment after unified validation pass and separate Docker preflight proof. Production-grade claims remain out of scope pending separate hostile-code/runtime security audit.
+Release-candidate gate is satisfied only when the listed evidence artifacts show passing required phases for the target environment. Production-grade claims remain out of scope pending separate hostile-code/runtime security audit.
 
 ## Notes
 
@@ -32,3 +38,4 @@ Release-candidate gate is satisfied in this environment after unified validation
 - ToolForge validation now reports phase-level outcomes with stable logs in `.validation_logs/`.
 - ToolForge grouped validation, Agent Skills evaluation, and Toolathlon artifact build plus preflight were reproduced in the latest unified run.
 - Docker preflight was re-verified separately with `Missing: 0` using `toolathlon:repair`.
+- If evidence artifacts are missing or indicate required gate failures, classification must be downgraded to strong repair candidate.
