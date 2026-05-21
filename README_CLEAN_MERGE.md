@@ -14,6 +14,24 @@ Use this as controlled infrastructure for agent development:
 
 Validation status: repair candidate, not release-ready. Do not treat this merged snapshot as a completed release gate until the workspace validates from a fresh extraction.
 
+Current gate status:
+
+```text
+ZIP extraction ................ ✅ Verified
+ZIP cache cleanliness ......... ✅ Verified
+Python syntax ................. ✅ Verified
+Agent Skills .................. ✅ Verified
+ToolForge doctor .............. 🟡 Passes after dependency setup
+ToolForge full validation ..... 🟡 Pending supported Python and smaller test groups
+Toolathlon fresh preflight .... ❌ Fails before artifact build
+Toolathlon artifact builder ... ❌ Does not complete reliably under current timeout
+Docker validation ............. ❌ Build-context mismatch
+Unified validation ............ ❌ Not end-to-end passing
+Release readiness ............. ❌ Not ready
+```
+
+Promotion rule: this package can be called a release candidate only after a fresh extraction passes all validation gates.
+
 Do not drop this directly into production application code. Keep it under a `labs/`, `agents/`, or separate tooling repo.
 
 ## What was kept

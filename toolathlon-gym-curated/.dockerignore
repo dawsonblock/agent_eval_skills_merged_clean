@@ -9,7 +9,3 @@ local_servers/**/__pycache__
 local_servers/**/.pytest_cache
 local_servers/**/build
 local_servers/**/dist
-!local_servers/12306-mcp/build
-!local_servers/12306-mcp/build/**
-!local_servers/filesystem/dist
-!local_servers/filesystem/dist/**

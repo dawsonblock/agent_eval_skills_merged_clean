@@ -1,45 +1,80 @@
 #!/usr/bin/env bash
 # Unified workspace validation script
-# Validates ToolForge, Agent Skills, and Toolathlon components
+# Validates ToolForge, Agent Skills, and Toolathlon components.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
-echo "Workspace root: $REPO_ROOT"
-echo
+TOOLFORGE_DIR="$REPO_ROOT/ToolForge"
+AGENT_SKILLS_DIR="$REPO_ROOT/agent-skills-curated"
+TOOLATHLON_DIR="$REPO_ROOT/toolathlon-gym-curated"
+RUN_INTEGRATION="${RUN_INTEGRATION:-0}"
+RUN_DOCKER="${RUN_DOCKER:-0}"
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 failed=0
 HAVE_GIT=0
-INITIAL_GIT_STATUS=""
+INITIAL_GIT_STATUS_FILTERED=""
 TOOLFORGE_PYTHON_OK=1
-LOG_ROOT="$REPO_ROOT/.validation_logs"
-mkdir -p "$LOG_ROOT"
+
+TOOLFORGE_STATUS="not-run"
+AGENT_SKILLS_STATUS="not-run"
+TOOLATHLON_STATUS="not-run"
+DOCKER_STATUS="skipped"
+
+LOG_DIR="$REPO_ROOT/.validation_logs"
+mkdir -p "$LOG_DIR"
+
+TOOLFORGE_PYTHON_LOG="$LOG_DIR/toolforge_python_version.log"
+TOOLFORGE_INSTALL_LOG="$LOG_DIR/toolforge_install.log"
+TOOLFORGE_DOCTOR_LOG="$LOG_DIR/toolforge_doctor.log"
+TOOLFORGE_SCHEMA_PATH_SAFETY_LOG="$LOG_DIR/toolforge_schema_path_safety.log"
+TOOLFORGE_VALIDATOR_LOG="$LOG_DIR/toolforge_validator_tests.log"
+TOOLFORGE_REGISTRY_LOG="$LOG_DIR/toolforge_registry_tests.log"
+TOOLFORGE_CLI_LOG="$LOG_DIR/toolforge_cli_tests.log"
+TOOLFORGE_E2E_LOG="$LOG_DIR/toolforge_e2e_tests.log"
+TOOLFORGE_EVAL_LOG="$LOG_DIR/toolforge_eval_tests.log"
+TOOLFORGE_INTEGRATION_LOG="$LOG_DIR/toolforge_integration_tests.log"
+AGENT_SKILLS_LIST_LOG="$LOG_DIR/agent_skills_list.log"
+AGENT_SKILLS_EVAL_LOG="$LOG_DIR/agent_skills_eval.log"
+TOOLATHLON_BUILD_LOG="$LOG_DIR/toolathlon_artifact_build.log"
+TOOLATHLON_PREFLIGHT_LOG="$LOG_DIR/toolathlon_preflight.log"
+DOCKER_BUILD_LOG="$LOG_DIR/docker_build.log"
+DOCKER_PREFLIGHT_LOG="$LOG_DIR/docker_preflight.log"
+
+# Clear logs from prior runs.
+: > "$TOOLFORGE_PYTHON_LOG"
+: > "$TOOLFORGE_INSTALL_LOG"
+: > "$TOOLFORGE_DOCTOR_LOG"
+: > "$TOOLFORGE_SCHEMA_PATH_SAFETY_LOG"
+: > "$TOOLFORGE_VALIDATOR_LOG"
+: > "$TOOLFORGE_REGISTRY_LOG"
+: > "$TOOLFORGE_CLI_LOG"
+: > "$TOOLFORGE_E2E_LOG"
+: > "$TOOLFORGE_EVAL_LOG"
+: > "$TOOLFORGE_INTEGRATION_LOG"
+: > "$AGENT_SKILLS_LIST_LOG"
+: > "$AGENT_SKILLS_EVAL_LOG"
+: > "$TOOLATHLON_BUILD_LOG"
+: > "$TOOLATHLON_PREFLIGHT_LOG"
+: > "$DOCKER_BUILD_LOG"
+: > "$DOCKER_PREFLIGHT_LOG"
+
 if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   HAVE_GIT=1
   INITIAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
+  INITIAL_GIT_STATUS_FILTERED="$(printf '%s\n' "$INITIAL_GIT_STATUS" | grep -Ev '^[ MARCUD?!]{2} toolathlon-gym-curated/local_servers/.*/(build|dist|\.venv|node_modules)/' || true)"
 else
   echo "⚠ Not a Git checkout; skipping dirty-tree check"
 fi
-LOG_DIR="$(mktemp -d "$LOG_ROOT/run.XXXXXX")"
-TOOLFORGE_INSTALL_LOG="$LOG_DIR/toolforge_install.log"
-TOOLFORGE_DOCTOR_LOG="$LOG_DIR/toolforge_doctor.log"
-TOOLFORGE_CORE_TESTS_LOG="$LOG_DIR/toolforge_core_tests.log"
-TOOLFORGE_CLI_TESTS_LOG="$LOG_DIR/toolforge_cli_tests.log"
-TOOLFORGE_E2E_TESTS_LOG="$LOG_DIR/toolforge_e2e_tests.log"
-TOOLFORGE_EVAL_TESTS_LOG="$LOG_DIR/toolforge_eval_tests.log"
-AGENT_SKILLS_LIST_LOG="$LOG_DIR/agent_skills_list.txt"
-AGENT_SKILLS_EVAL_LOG="$LOG_DIR/agent_skills_eval.json"
-AGENT_SKILLS_EVAL_ERR_LOG="$LOG_DIR/agent_skills_eval.err"
-TOOLATHLON_BUILD_LOG="$LOG_DIR/toolathlon_build_artifacts.log"
-TOOLATHLON_PREFLIGHT_LOG="$LOG_DIR/toolathlon_preflight.log"
 
+echo "Workspace root: $REPO_ROOT"
 echo "Log directory: $LOG_DIR"
+echo
 
 run_step() {
   local label="$1"
@@ -47,88 +82,147 @@ run_step() {
   local cwd="$3"
   local log_file="$4"
   shift 4
-  local command="$*"
 
-  echo "${YELLOW}→ $label${NC}"
-  if (cd "$cwd" && python "$REPO_ROOT/scripts/run_with_timeout.py" --timeout "$timeout" -- bash -c "$command") 2>&1 | tee "$log_file"; then
+  echo -e "${YELLOW}→ $label${NC}"
+  if (cd "$cwd" && python "$REPO_ROOT/scripts/run_with_timeout.py" --timeout "$timeout" -- "$@") 2>&1 | tee "$log_file"; then
     echo "✓ $label"
     return 0
   fi
 
-  echo "${RED}✗ $label failed${NC} (log: $log_file)"
+  echo -e "${RED}✗ $label failed${NC} (log: $log_file)"
   return 1
 }
 
-
-# Python version precheck for ToolForge
 run_python_version_check() {
   python - <<'PY'
 import sys
+
+if sys.version_info < (3, 9):
+    raise SystemExit(
+        "ToolForge supports Python >=3.9,<3.13. "
+        "Use Python 3.9 through 3.12 for workspace validation."
+    )
 if sys.version_info >= (3, 13):
     raise SystemExit(
         "ToolForge supports Python >=3.9,<3.13. "
         "Use Python 3.12 or lower for workspace validation."
     )
+print(f"Python version OK for ToolForge: {sys.version.split()[0]}")
 PY
 }
 
+marker_args=("-m" "not integration and not slow")
+if [ "$RUN_INTEGRATION" = "1" ]; then
+  marker_args=()
+fi
 
-# Phase 1: ToolForge validation (split groups)
-echo "${YELLOW}== ToolForge: Install & Doctor ==${NC}"
-TOOLFORGE_DIR="$REPO_ROOT/ToolForge"
-if run_python_version_check; then
-  if ! run_step "ToolForge install" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_INSTALL_LOG" "python -m pip install -e '.[dev]'"; then
-    failed=$((failed + 1))
-  fi
-  if ! run_step "ToolForge doctor" 120 "$TOOLFORGE_DIR" "$TOOLFORGE_DOCTOR_LOG" "PYTHONPATH=. python -m apps.cli.toolforge_cli.main doctor"; then
-    failed=$((failed + 1))
-  fi
+# Phase 1: ToolForge validation
 
-  echo "${YELLOW}== ToolForge: Core Tests ==${NC}"
-  if ! run_step "ToolForge core tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_CORE_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_tool_spec.py tests/test_path_safety.py tests/test_safety_analyzer.py tests/test_package_builder.py tests/test_tool_schema.py tests/test_validators.py tests/test_repo_hygiene.py tests/test_errors.py tests/test_registry.py tests/test_registry_cli_exit.py tests/test_test_validator.py tests/test_skill_generator.py tests/test_tool_generator.py tests/test_mcp_generator.py tests/test_spec_from_prompt.py tests/test_doc_generator.py tests/test_example_specs.py tests/test_logger.py"; then
-    failed=$((failed + 1))
-  fi
+echo -e "${YELLOW}== ToolForge ==${NC}"
+if run_python_version_check >"$TOOLFORGE_PYTHON_LOG" 2>&1; then
+  cat "$TOOLFORGE_PYTHON_LOG"
 
-  echo "${YELLOW}== ToolForge: CLI Tests ==${NC}"
-  if ! run_step "ToolForge CLI tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_cli_command_exit.py tests/test_cli_main_inprocess_coverage.py tests/test_cli_validation_regressions.py"; then
-    failed=$((failed + 1))
+  toolforge_failed=0
+
+  if ! run_step "ToolForge install" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_INSTALL_LOG" \
+    python -m pip install -e ".[dev]"; then
+    toolforge_failed=1
   fi
 
-  echo "${YELLOW}== ToolForge: E2E Tests ==${NC}"
-  if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_cli_e2e_*.py"; then
-    failed=$((failed + 1))
+  if ! run_step "ToolForge doctor" 120 "$TOOLFORGE_DIR" "$TOOLFORGE_DOCTOR_LOG" \
+    env PYTHONPATH=. python -m apps.cli.toolforge_cli.main doctor; then
+    toolforge_failed=1
   fi
 
-  echo "${YELLOW}== ToolForge: Eval Tests ==${NC}"
-  if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_eval_*.py tests/test_ai_spec_generator.py tests/test_eval_runner_case_source.py tests/test_eval_runner_expected_failures.py"; then
+  if ! run_step "ToolForge schema/path/safety tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_SCHEMA_PATH_SAFETY_LOG" \
+    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+      tests/test_tool_spec.py \
+      tests/test_path_safety.py \
+      tests/test_safety_analyzer.py \
+      tests/test_package_builder.py; then
+    toolforge_failed=1
+  fi
+
+  if ! run_step "ToolForge validator tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_VALIDATOR_LOG" \
+    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+      tests/test_test_validator.py; then
+    toolforge_failed=1
+  fi
+
+  if ! run_step "ToolForge registry tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_REGISTRY_LOG" \
+    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+      tests/test_registry.py \
+      tests/test_registry_cli_exit.py; then
+    toolforge_failed=1
+  fi
+
+  if ! run_step "ToolForge CLI tests" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_LOG" \
+    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+      tests/test_cli_command_exit.py \
+      tests/test_cli_main_inprocess_coverage.py \
+      tests/test_cli_validation_regressions.py; then
+    toolforge_failed=1
+  fi
+
+  if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_LOG" \
+    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+      tests/test_cli_e2e_csv_cleaner.py \
+      tests/test_cli_e2e_json_schema_validator.py \
+      tests/test_cli_e2e_local_file_hasher.py; then
+    toolforge_failed=1
+  fi
+
+  if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_LOG" \
+    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+      tests/test_eval_generator.py \
+      tests/test_eval_runner_case_source.py \
+      tests/test_eval_runner_expected_failures.py \
+      tests/test_ai_spec_generator.py; then
+    toolforge_failed=1
+  fi
+
+  if [ "$RUN_INTEGRATION" = "1" ]; then
+    if ! run_step "ToolForge integration tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_INTEGRATION_LOG" \
+      env PYTHONPATH=. pytest -q -m integration; then
+      toolforge_failed=1
+    fi
+  else
+    echo "ToolForge integration tests skipped (set RUN_INTEGRATION=1 to enable)." > "$TOOLFORGE_INTEGRATION_LOG"
+  fi
+
+  if [ "$toolforge_failed" -eq 1 ]; then
+    TOOLFORGE_STATUS="failed"
     failed=$((failed + 1))
+  else
+    TOOLFORGE_STATUS="passed"
   fi
 else
   TOOLFORGE_PYTHON_OK=0
-  echo "${YELLOW}ToolForge skipped: unsupported Python version for this workspace.${NC}"
+  TOOLFORGE_STATUS="unsupported-python"
   failed=$((failed + 1))
+  cat "$TOOLFORGE_PYTHON_LOG"
 fi
 
-cd "$REPO_ROOT"
 echo
 
 # Phase 2: Agent Skills validation
-echo "${YELLOW}== Agent Skills ==${NC}"
-cd "$REPO_ROOT/agent-skills-curated"
-if node bin/cli.js list > "$AGENT_SKILLS_LIST_LOG" 2>&1; then
-  skill_count=$(find skills -mindepth 2 -maxdepth 2 -type d | wc -l | tr -d ' ')
+
+echo -e "${YELLOW}== Agent Skills ==${NC}"
+if node "$AGENT_SKILLS_DIR/bin/cli.js" list > "$AGENT_SKILLS_LIST_LOG" 2>&1; then
+  skill_count=$(find "$AGENT_SKILLS_DIR/skills" -mindepth 2 -maxdepth 2 -type d | wc -l | tr -d ' ')
   echo "✓ Found $skill_count skills"
 else
-  echo "${RED}✗ Skills list failed${NC} (log: $AGENT_SKILLS_LIST_LOG)"
+  echo -e "${RED}✗ Agent Skills list failed${NC} (log: $AGENT_SKILLS_LIST_LOG)"
+  AGENT_SKILLS_STATUS="failed"
   failed=$((failed + 1))
 fi
 
-# Enforce structural quality: fail only on hard (error-severity) findings.
-if node bin/cli.js eval --json > "$AGENT_SKILLS_EVAL_LOG" 2>"$AGENT_SKILLS_EVAL_ERR_LOG"; then
+if node "$AGENT_SKILLS_DIR/bin/cli.js" eval --json > "$AGENT_SKILLS_EVAL_LOG" 2>&1; then
   hard_failures=$(AGENT_SKILLS_EVAL_LOG="$AGENT_SKILLS_EVAL_LOG" python - <<'PY'
 import json
 import os
 from pathlib import Path
+
 arr = json.loads(Path(os.environ['AGENT_SKILLS_EVAL_LOG']).read_text(encoding='utf-8'))
 hard = 0
 for item in arr:
@@ -140,56 +234,113 @@ PY
 )
   if [ "$hard_failures" = "0" ]; then
     echo "✓ Agent Skills eval passed (0 hard failures)"
+    if [ "$AGENT_SKILLS_STATUS" != "failed" ]; then
+      AGENT_SKILLS_STATUS="passed"
+    fi
   else
-    echo "${RED}✗ Agent Skills eval has $hard_failures hard failure(s)${NC}"
+    echo -e "${RED}✗ Agent Skills eval has $hard_failures hard failure(s)${NC}"
+    AGENT_SKILLS_STATUS="failed"
     failed=$((failed + 1))
   fi
 else
-  echo "${RED}✗ Agent Skills eval command failed${NC} (json: $AGENT_SKILLS_EVAL_LOG, stderr: $AGENT_SKILLS_EVAL_ERR_LOG)"
+  echo -e "${RED}✗ Agent Skills eval command failed${NC} (log: $AGENT_SKILLS_EVAL_LOG)"
+  AGENT_SKILLS_STATUS="failed"
   failed=$((failed + 1))
 fi
 
-cd "$REPO_ROOT"
 echo
 
-# Phase 3: Toolathlon preflight
-echo "${YELLOW}== Toolathlon Preflight ==${NC}"
-cd "$REPO_ROOT/toolathlon-gym-curated"
-if python "$REPO_ROOT/scripts/run_with_timeout.py" --timeout 300 -- bash scripts/build_required_mcp_artifacts.sh 2>&1 | tee "$TOOLATHLON_BUILD_LOG"; then
+# Phase 3: Toolathlon build + preflight
+
+echo -e "${YELLOW}== Toolathlon ==${NC}"
+if python "$REPO_ROOT/scripts/run_with_timeout.py" --timeout 1800 -- \
+  bash "$TOOLATHLON_DIR/scripts/build_required_mcp_artifacts.sh" 2>&1 | tee "$TOOLATHLON_BUILD_LOG"; then
   echo "✓ Required MCP artifacts built"
 else
-  echo "${RED}✗ MCP artifact build failed or timed out${NC} (log: $TOOLATHLON_BUILD_LOG)"
-  tail -n 20 "$TOOLATHLON_BUILD_LOG" || true
+  echo -e "${RED}✗ MCP artifact build failed or timed out${NC} (log: $TOOLATHLON_BUILD_LOG)"
+  TOOLATHLON_STATUS="failed"
   failed=$((failed + 1))
 fi
 
-if python scripts/preflight_mcp_paths.py 2>&1 | tee "$TOOLATHLON_PREFLIGHT_LOG"; then
+if python "$TOOLATHLON_DIR/scripts/preflight_mcp_paths.py" 2>&1 | tee "$TOOLATHLON_PREFLIGHT_LOG"; then
   echo "✓ MCP preflight passed"
+  if [ "$TOOLATHLON_STATUS" != "failed" ]; then
+    TOOLATHLON_STATUS="passed"
+  fi
 else
-  echo "${RED}✗ MCP preflight failed${NC} (log: $TOOLATHLON_PREFLIGHT_LOG)"
-  tail -n 20 "$TOOLATHLON_PREFLIGHT_LOG" || true
+  echo -e "${RED}✗ MCP preflight failed${NC} (log: $TOOLATHLON_PREFLIGHT_LOG)"
+  TOOLATHLON_STATUS="failed"
   failed=$((failed + 1))
 fi
 
-cd "$REPO_ROOT"
 echo
+
+# Optional phase: Docker validation.
+if [ "$RUN_DOCKER" = "1" ]; then
+  echo -e "${YELLOW}== Docker ==${NC}"
+
+  if run_step "Docker build" 3600 "$TOOLATHLON_DIR" "$DOCKER_BUILD_LOG" \
+    docker build -t toolathlon:repair .; then
+    if run_step "Docker preflight" 1800 "$TOOLATHLON_DIR" "$DOCKER_PREFLIGHT_LOG" \
+      docker run --rm toolathlon:repair python scripts/preflight_mcp_paths.py; then
+      DOCKER_STATUS="passed"
+    else
+      DOCKER_STATUS="failed"
+      failed=$((failed + 1))
+    fi
+  else
+    DOCKER_STATUS="failed"
+    failed=$((failed + 1))
+  fi
+
+  echo
+else
+  echo "Docker validation skipped (set RUN_DOCKER=1 to enable)." | tee "$DOCKER_BUILD_LOG" "$DOCKER_PREFLIGHT_LOG" >/dev/null
+fi
 
 if [ "$HAVE_GIT" -eq 1 ]; then
   FINAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
-  if [ "$INITIAL_GIT_STATUS" != "$FINAL_GIT_STATUS" ]; then
-    echo "${RED}✗ Validation left repository with uncommitted changes${NC}"
+  FINAL_GIT_STATUS_FILTERED="$(printf '%s\n' "$FINAL_GIT_STATUS" | grep -Ev '^[ MARCUD?!]{2} toolathlon-gym-curated/local_servers/.*/(build|dist|\.venv|node_modules)/' || true)"
+  if [ "$INITIAL_GIT_STATUS_FILTERED" != "$FINAL_GIT_STATUS_FILTERED" ]; then
+    echo -e "${RED}✗ Validation left repository with uncommitted changes${NC}"
     echo "Run: git -C '$REPO_ROOT' status --short"
     failed=$((failed + 1))
   fi
 fi
 
-# Summary
-echo "${YELLOW}== Summary ==${NC}"
-if [ $failed -eq 0 ]; then
+echo "Validation summary:"
+if [ "$TOOLFORGE_STATUS" = "unsupported-python" ]; then
+  echo "❌ ToolForge - unsupported Python for ToolForge, see $TOOLFORGE_PYTHON_LOG"
+elif [ "$TOOLFORGE_STATUS" = "failed" ]; then
+  echo "❌ ToolForge - one or more test groups failed (see $TOOLFORGE_INSTALL_LOG, $TOOLFORGE_DOCTOR_LOG, $TOOLFORGE_SCHEMA_PATH_SAFETY_LOG, $TOOLFORGE_VALIDATOR_LOG, $TOOLFORGE_REGISTRY_LOG, $TOOLFORGE_CLI_LOG, $TOOLFORGE_E2E_LOG, $TOOLFORGE_EVAL_LOG, $TOOLFORGE_INTEGRATION_LOG)"
+else
+  echo "✅ ToolForge - passed"
+fi
+
+if [ "$AGENT_SKILLS_STATUS" = "passed" ]; then
+  echo "✅ Agent Skills - passed, see $AGENT_SKILLS_EVAL_LOG"
+else
+  echo "❌ Agent Skills - failed, see $AGENT_SKILLS_EVAL_LOG and $AGENT_SKILLS_LIST_LOG"
+fi
+
+if [ "$TOOLATHLON_STATUS" = "passed" ]; then
+  echo "✅ Toolathlon - passed, see $TOOLATHLON_PREFLIGHT_LOG"
+else
+  echo "❌ Toolathlon - failed, see $TOOLATHLON_BUILD_LOG and $TOOLATHLON_PREFLIGHT_LOG"
+fi
+
+if [ "$DOCKER_STATUS" = "passed" ]; then
+  echo "✅ Docker - passed, see $DOCKER_BUILD_LOG and $DOCKER_PREFLIGHT_LOG"
+elif [ "$DOCKER_STATUS" = "failed" ]; then
+  echo "❌ Docker - failed, see $DOCKER_BUILD_LOG and $DOCKER_PREFLIGHT_LOG"
+else
+  echo "⚪ Docker - skipped (set RUN_DOCKER=1), see $DOCKER_BUILD_LOG"
+fi
+
+if [ "$failed" -eq 0 ]; then
   echo -e "${GREEN}✓ Workspace validation passed.${NC}"
   exit 0
-else
-  echo -e "${RED}✗ $failed validation phase(s) failed.${NC}"
-  echo "Validation failed. See $LOG_DIR"
-  exit 1
 fi
+
+echo -e "${RED}✗ $failed validation phase(s) failed.${NC}"
+exit 1
