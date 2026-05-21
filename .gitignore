@@ -22,3 +22,6 @@ htmlcov/
 
 # Workspace validation logs
 .validation_logs/
+
+# Generated release bundles
+dist/*.zip
