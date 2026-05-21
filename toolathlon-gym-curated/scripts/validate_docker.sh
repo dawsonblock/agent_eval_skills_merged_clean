@@ -3,14 +3,16 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TOOLATHLON_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 IMAGE_NAME="${IMAGE_NAME:-toolathlon:repair}"
 DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
-OUT_DIR="${OUT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)/../.validation_logs}"
+OUT_DIR="${OUT_DIR:-$TOOLATHLON_DIR/../.validation_logs}"
 
 mkdir -p "$OUT_DIR"
 
 echo "Building Docker image: $IMAGE_NAME"
-if ! docker --context="$DOCKER_CONTEXT" buildx build --load -t "$IMAGE_NAME" .; then
+if ! docker --context="$DOCKER_CONTEXT" buildx build --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
   echo "✗ Docker build failed"
   exit 1
 fi
@@ -27,3 +29,4 @@ fi
 
 echo "✓ Docker validation passed"
 echo "Evidence: $OUT_DIR/docker_preflight_summary.json"
+echo "Docker context: $DOCKER_CONTEXT"
