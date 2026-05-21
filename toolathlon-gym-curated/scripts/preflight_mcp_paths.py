@@ -214,7 +214,9 @@ def write_json_output(
     all_missing: list[tuple[str, str, str]],
 ) -> None:
     """Write a machine-readable preflight summary file."""
+    status = "passed" if not all_missing else "failed"
     payload = {
+        "status": status,
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "config_dir": str(config_dir.resolve()),
         "local_servers_dir": str(local_servers_dir),
