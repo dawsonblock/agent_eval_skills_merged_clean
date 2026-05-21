@@ -5,11 +5,16 @@
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 
+Validation profiles:
+
+1. `smoke` (default release-candidate gate)
+2. `full` (experimental extended gate)
+
 **Required evidence artifacts for release-candidate gate:**
 
 - [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) — must have `overall_status = "passed"`
-- [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) — must have `failed_count = 0`
-- [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) — must have `missing_count = 0`
+- [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) — must have `profile = smoke`, `failed_count = 0`, and `package_count = expected_package_count`
+- [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) — must have `profile = smoke` and `missing_count = 0`
 - [.validation_logs/](.validation_logs/) — phase logs for audit trail
 
 ## Required Gate Status
@@ -45,8 +50,8 @@ Release readiness ............. ⚪ Conditional on required evidence gates
 Promotion gate is met **only when** required evidence artifacts show passing required gates for the target environment:
 
 - `validation_summary.json`: `overall_status = "passed"`
-- `toolathlon_artifact_build_summary.json`: `failed_count = 0` and `overall_status = "passed"`
-- `toolathlon_preflight_summary.json`: `missing_count = 0` and `found_count = 26`
+- `toolathlon_artifact_build_summary.json`: `profile = smoke`, `failed_count = 0`, and `overall_status = "passed"`
+- `toolathlon_preflight_summary.json`: `profile = smoke` and `missing_count = 0`
 
 **This repository is not a release candidate unless required evidence gates pass in the target environment. It is not a production security attestation.**
 

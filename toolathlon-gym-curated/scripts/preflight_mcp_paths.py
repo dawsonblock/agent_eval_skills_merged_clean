@@ -27,6 +27,12 @@ except ImportError:
     )
     sys.exit(1)
 
+from profile_utils import (
+    ProfileConfigError,
+    get_profile_name,
+    load_profile_servers,
+)
+
 
 def load_mcp_configs(config_dir: Path) -> dict[str, Any]:
     """Load all YAML configs from configs/mcp_servers/."""
@@ -208,6 +214,7 @@ def extract_command_paths(
 
 def write_json_output(
     output_path: Path,
+    profile: str,
     config_dir: Path,
     local_servers_dir: Path,
     all_found: list[tuple[str, str, str]],
@@ -217,6 +224,7 @@ def write_json_output(
     status = "passed" if not all_missing else "failed"
     payload = {
         "status": status,
+        "profile": profile,
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "config_dir": str(config_dir.resolve()),
         "local_servers_dir": str(local_servers_dir),
@@ -238,6 +246,11 @@ def write_json_output(
     )
 
 
+def canonical_server_id(value: str) -> str:
+    """Normalize server IDs so profile/config aliases map consistently."""
+    return value.strip().lower().replace("-", "_")
+
+
 def main() -> int:
     """Run preflight validation for all MCP servers."""
     parser = argparse.ArgumentParser(
@@ -250,10 +263,21 @@ def main() -> int:
         help="Optional path to write a machine-readable JSON summary",
     )
     args = parser.parse_args()
+    profile = get_profile_name()
 
     # Find the repo root (parent of this script's parent)
     script_dir = Path(__file__).resolve().parent
     repo_root = script_dir.parent
+
+    try:
+        selected_servers = set(load_profile_servers(repo_root, profile))
+    except ProfileConfigError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+
+    selected_servers_canonical = {
+        canonical_server_id(server_name) for server_name in selected_servers
+    }
 
     config_dir = repo_root / "configs" / "mcp_servers"
     local_servers_dir = Path(
@@ -262,6 +286,7 @@ def main() -> int:
 
     print(f"Checking MCP server paths in: {config_dir.resolve()}")
     print(f"Local servers directory: {local_servers_dir}")
+    print(f"Validation profile: {profile}")
     print()
 
     configs = load_mcp_configs(config_dir)
@@ -272,8 +297,21 @@ def main() -> int:
     # (config_name, server_name, path)
     all_missing: list[tuple[str, str, str]] = []
     all_found: list[tuple[str, str, str]] = []
+    matched_servers: set[str] = set()
 
     for config_name, config in sorted(configs.items()):
+        server_name = config.get("name", config_name.replace(".yaml", ""))
+        config_name_stem = config_name.replace(".yaml", "")
+        candidate_ids = {
+            canonical_server_id(server_name),
+            canonical_server_id(config_name_stem),
+        }
+
+        if candidate_ids.isdisjoint(selected_servers_canonical):
+            continue
+
+        matched_servers.update(candidate_ids.intersection(selected_servers_canonical))
+
         paths = extract_command_paths(config_name, config, local_servers_dir)
 
         for server_name, path_str in paths:
@@ -285,6 +323,22 @@ def main() -> int:
                 all_missing.append((config_name, server_name, str(path)))
                 print(f"✗ MISSING {server_name:24} {path}", file=sys.stderr)
 
+    unmatched_servers = sorted(selected_servers_canonical - matched_servers)
+    if unmatched_servers:
+        for missing_server in unmatched_servers:
+            all_missing.append(
+                (
+                    "profile-selection",
+                    missing_server,
+                    f"missing MCP config for selected profile server '{missing_server}'",
+                )
+            )
+            print(
+                f"✗ MISSING CONFIG {missing_server:17} "
+                f"no matching YAML config in {config_dir}",
+                file=sys.stderr,
+            )
+
     print()
     print(f"Found: {len(all_found)} paths")
     print(f"Missing: {len(all_missing)} paths")
@@ -292,6 +346,7 @@ def main() -> int:
     if args.json_output is not None:
         write_json_output(
             args.json_output,
+            profile,
             config_dir,
             local_servers_dir,
             all_found,

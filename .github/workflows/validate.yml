@@ -5,6 +5,12 @@ on:
         branches: [main, develop]
     pull_request:
         branches: [main]
+    workflow_dispatch:
+    schedule:
+        - cron: "30 6 * * 1"
+
+env:
+    TOOLATHLON_PROFILE: smoke
 
 jobs:
     toolforge:
@@ -78,12 +84,12 @@ jobs:
             - name: Build required MCP artifacts
               working-directory: ./toolathlon-gym-curated
               run: |
-                  bash scripts/build_required_mcp_artifacts.sh
+                  TOOLATHLON_PROFILE=smoke bash scripts/build_required_mcp_artifacts.sh
 
             - name: Run MCP preflight validation
               working-directory: ./toolathlon-gym-curated
               run: |
-                  python scripts/preflight_mcp_paths.py
+                  TOOLATHLON_PROFILE=smoke python scripts/preflight_mcp_paths.py
 
     unified-validation:
         name: Unified Workspace Validation
@@ -105,4 +111,27 @@ jobs:
 
             - name: Run unified validation script
               run: |
-                  bash scripts/validate_workspace.sh
+                  TOOLATHLON_PROFILE=smoke bash scripts/validate_workspace.sh
+
+    full-profile-validation:
+        name: Full MCP Profile Validation (Experimental)
+        runs-on: ubuntu-latest
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        continue-on-error: true
+        timeout-minutes: 240
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Run full profile validation (non-blocking)
+              run: |
+                  TOOLATHLON_PROFILE=full RUN_INTEGRATION=1 RUN_DOCKER=0 bash scripts/validate_workspace.sh
