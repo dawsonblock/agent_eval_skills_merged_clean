@@ -19,8 +19,7 @@ ENV PATH="/root/.local/bin:$PATH"
 # Node.js 22
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/* \
-    && npm install -g npm@latest
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
 
@@ -29,6 +28,7 @@ WORKDIR /workspace
 RUN uv venv /opt/venv && uv pip install --python /opt/venv/bin/python \
     "camel-ai" \
     "anthropic" \
+    "playwright==1.52.0" \
     "psycopg2-binary" \
     "openpyxl" \
     "python-docx" \
