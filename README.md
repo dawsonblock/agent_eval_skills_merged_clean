@@ -14,7 +14,7 @@
 
 ## Overview
 
-**Current status:** Repair candidate, not release-ready.
+**Current status:** Release candidate for controlled testing. Fresh-extraction validation and Docker preflight have passed; production-grade security claims remain out of scope.
 
 This repository should not be treated as a release candidate until fresh-extraction validation passes end-to-end for ToolForge (supported Python), Agent Skills, Toolathlon artifact build and preflight, and Docker preflight.
 
