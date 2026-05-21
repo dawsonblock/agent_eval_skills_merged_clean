@@ -75,7 +75,8 @@ ensure_file() {
 }
 
 export -f build_node_package
-export -f build_python_package
+export -f build_python_uv_package
+export -f ensure_python3_link
 export -f ensure_file
 
 build_with_timeout() {
