@@ -1,11 +1,15 @@
 ARG BASE_IMAGE=toolathlon:base
 FROM ${BASE_IMAGE}
 
+ARG TOOLATHLON_PROFILE=smoke
+ENV TOOLATHLON_PROFILE=${TOOLATHLON_PROFILE}
+
 WORKDIR /workspace
 
 # Copy only required runtime/build inputs to keep cache stable and context small.
 COPY scripts/ /workspace/scripts/
 COPY configs/ /workspace/configs/
+COPY profiles/ /workspace/profiles/
 COPY local_servers/ /opt/local_servers/
 ENV LOCAL_SERVERS_PATH="/opt/local_servers"
 WORKDIR /workspace

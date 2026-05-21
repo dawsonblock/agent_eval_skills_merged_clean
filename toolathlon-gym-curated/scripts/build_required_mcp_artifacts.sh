@@ -7,13 +7,105 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 LOCAL_SERVERS_DIR="${LOCAL_SERVERS_PATH:-$ROOT_DIR/local_servers}"
 SKIP_EXISTING_ARTIFACTS="${SKIP_EXISTING_ARTIFACTS:-0}"
 FORCE_REBUILD="${FORCE_REBUILD:-0}"
+TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
 BUILD_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_artifact_build_summary.json"
 SMOKE_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_mcp_smoke_summary.json"
-EXPECTED_PACKAGE_COUNT=12
+
+SUPPORTED_TARGETS=(
+  rail_12306
+  filesystem
+  google_calendar
+  canvas
+  howtocook
+  memory
+  google_forms
+  fetch
+  notion
+  woocommerce
+  youtube
+  youtube_transcript
+)
+
+SELECTED_TARGETS=()
+EXPECTED_PACKAGE_COUNT=0
+REQUIRED_ARTIFACTS=()
 
 echo "Using LOCAL_SERVERS_DIR=$LOCAL_SERVERS_DIR"
 echo "SKIP_EXISTING_ARTIFACTS=$SKIP_EXISTING_ARTIFACTS"
 echo "FORCE_REBUILD=$FORCE_REBUILD"
+echo "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE"
+
+load_selected_targets() {
+  local profile_file="$ROOT_DIR/profiles/$TOOLATHLON_PROFILE/mcp_servers.json"
+  if [ ! -f "$profile_file" ]; then
+    echo "✗ Missing profile file: $profile_file" >&2
+    return 1
+  fi
+
+  SELECTED_TARGETS=()
+  while IFS= read -r target; do
+    SELECTED_TARGETS+=("$target")
+  done < <(
+    python3 - "$profile_file" <<'PYEOF'
+import json
+import sys
+from pathlib import Path
+
+profile_path = Path(sys.argv[1])
+payload = json.loads(profile_path.read_text(encoding='utf-8'))
+servers = payload.get('servers')
+
+if not isinstance(servers, list) or not servers:
+    raise SystemExit("Profile must define a non-empty 'servers' list")
+
+for item in servers:
+    if not isinstance(item, str) or not item.strip():
+        raise SystemExit(f"Invalid server entry in profile: {item!r}")
+    print(item.strip())
+PYEOF
+  )
+
+  if [ "${#SELECTED_TARGETS[@]}" -eq 0 ]; then
+    echo "✗ Profile $TOOLATHLON_PROFILE selected zero servers" >&2
+    return 1
+  fi
+
+  local unsupported=()
+  local target
+  for target in "${SELECTED_TARGETS[@]}"; do
+    local supported=0
+    local candidate
+    for candidate in "${SUPPORTED_TARGETS[@]}"; do
+      if [ "$candidate" = "$target" ]; then
+        supported=1
+        break
+      fi
+    done
+
+    if [ "$supported" -ne 1 ]; then
+      unsupported+=("$target")
+    fi
+  done
+
+  if [ "${#unsupported[@]}" -gt 0 ]; then
+    echo "✗ Unsupported MCP build targets in profile $TOOLATHLON_PROFILE: ${unsupported[*]}" >&2
+    echo "  Supported targets: ${SUPPORTED_TARGETS[*]}" >&2
+    return 1
+  fi
+
+  EXPECTED_PACKAGE_COUNT="${#SELECTED_TARGETS[@]}"
+}
+
+target_selected() {
+  local target="$1"
+  local selected
+  for selected in "${SELECTED_TARGETS[@]}"; do
+    if [ "$selected" = "$target" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
 build_node_package() {
   local pkg_dir="$1"
@@ -97,6 +189,7 @@ init_build_summary() {
   mkdir -p "$(dirname "$BUILD_SUMMARY_FILE")"
   cat >"$BUILD_SUMMARY_FILE" <<EOF
 {
+  "profile": "${TOOLATHLON_PROFILE}",
   "overall_status": "in_progress",
   "expected_package_count": ${EXPECTED_PACKAGE_COUNT},
   "package_count": 0,
@@ -390,71 +483,109 @@ fail_package() {
 
 echo "Building required MCP artifacts in $LOCAL_SERVERS_DIR"
 
+load_selected_targets
+
 # Initialize JSON summary
 init_build_summary
 trap 'mark_build_failed_if_in_progress "build_error"' ERR
 trap 'mark_build_failed_if_in_progress "build_interrupted"; exit 130' INT TERM
 
 # Build each package, recording results
-maybe_build_node_package "rail_12306" 300 "$LOCAL_SERVERS_DIR/12306-mcp" "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" || {
-  fail_package "rail_12306" 300 "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" "build_error"
-  exit 1
-}
+if target_selected "rail_12306"; then
+  maybe_build_node_package "rail_12306" 300 "$LOCAL_SERVERS_DIR/12306-mcp" "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" || {
+    fail_package "rail_12306" 300 "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/12306-mcp/build/index.js")
+fi
 
-maybe_build_node_package "filesystem" 300 "$LOCAL_SERVERS_DIR/filesystem" "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" || {
-  fail_package "filesystem" 300 "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" "build_error"
-  exit 1
-}
+if target_selected "filesystem"; then
+  maybe_build_node_package "filesystem" 300 "$LOCAL_SERVERS_DIR/filesystem" "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" || {
+    fail_package "filesystem" 300 "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/filesystem/dist/index.js")
+fi
 
-maybe_build_node_package "google_calendar" 180 "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" || {
-  fail_package "google_calendar" 180 "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "build_error"
-  exit 1
-}
+if target_selected "google_calendar"; then
+  maybe_build_node_package "google_calendar" 180 "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" || {
+    fail_package "google_calendar" 180 "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js")
+fi
 
-maybe_build_node_package "canvas" 900 "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" || {
-  fail_package "canvas" 900 "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "timeout_or_build_error"
-  exit 1
-}
+if target_selected "canvas"; then
+  maybe_build_node_package "canvas" 900 "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" || {
+    fail_package "canvas" 900 "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "timeout_or_build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js")
+fi
 
-maybe_build_node_package "howtocook" 300 "$LOCAL_SERVERS_DIR/HowToCook-mcp" "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" || {
-  fail_package "howtocook" 300 "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "build_error"
-  exit 1
-}
+if target_selected "howtocook"; then
+  maybe_build_node_package "howtocook" 300 "$LOCAL_SERVERS_DIR/HowToCook-mcp" "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" || {
+    fail_package "howtocook" 300 "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js")
+fi
 
-maybe_build_node_package "memory" 300 "$LOCAL_SERVERS_DIR/servers/src/memory" "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" || {
-  fail_package "memory" 300 "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "build_error"
-  exit 1
-}
+if target_selected "memory"; then
+  maybe_build_node_package "memory" 300 "$LOCAL_SERVERS_DIR/servers/src/memory" "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" || {
+    fail_package "memory" 300 "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js")
+fi
 
-maybe_build_node_package "google_forms" 300 "$LOCAL_SERVERS_DIR/google-forms-mcp" "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" || {
-  fail_package "google_forms" 300 "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "build_error"
-  exit 1
-}
+if target_selected "google_forms"; then
+  maybe_build_node_package "google_forms" 300 "$LOCAL_SERVERS_DIR/google-forms-mcp" "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" || {
+    fail_package "google_forms" 300 "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js")
+fi
 
-maybe_build_node_package "fetch" 300 "$LOCAL_SERVERS_DIR/mcp-npx-fetch" "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" || {
-  fail_package "fetch" 300 "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "build_error"
-  exit 1
-}
+if target_selected "fetch"; then
+  maybe_build_node_package "fetch" 300 "$LOCAL_SERVERS_DIR/mcp-npx-fetch" "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" || {
+    fail_package "fetch" 300 "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js")
+fi
 
-maybe_build_node_package "notion" 900 "$LOCAL_SERVERS_DIR/notion-mcp-server" "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" || {
-  fail_package "notion" 900 "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "timeout_or_build_error"
-  exit 1
-}
+if target_selected "notion"; then
+  maybe_build_node_package "notion" 900 "$LOCAL_SERVERS_DIR/notion-mcp-server" "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" || {
+    fail_package "notion" 900 "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "timeout_or_build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs")
+fi
 
-maybe_build_node_package "woocommerce" 300 "$LOCAL_SERVERS_DIR/woocommerce-mcp" "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" || {
-  fail_package "woocommerce" 300 "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "build_error"
-  exit 1
-}
+if target_selected "woocommerce"; then
+  maybe_build_node_package "woocommerce" 300 "$LOCAL_SERVERS_DIR/woocommerce-mcp" "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" || {
+    fail_package "woocommerce" 300 "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js")
+fi
 
-maybe_build_node_package "youtube" 600 "$LOCAL_SERVERS_DIR/youtube-mcp-server" "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" || {
-  fail_package "youtube" 600 "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "build_error"
-  exit 1
-}
+if target_selected "youtube"; then
+  maybe_build_node_package "youtube" 600 "$LOCAL_SERVERS_DIR/youtube-mcp-server" "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" || {
+    fail_package "youtube" 600 "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js")
+fi
 
-maybe_build_python_package "youtube_transcript" 900 "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" || {
-  fail_package "youtube_transcript" 900 "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "timeout_or_build_error"
-  exit 1
-}
+if target_selected "youtube_transcript"; then
+  maybe_build_python_package "youtube_transcript" 900 "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" || {
+    fail_package "youtube_transcript" 900 "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "timeout_or_build_error"
+    exit 1
+  }
+  REQUIRED_ARTIFACTS+=("$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3")
+fi
 
 cd "$ROOT_DIR"
 if ! python scripts/smoke_mcp_servers.py --json-output "$SMOKE_SUMMARY_FILE"; then
@@ -466,19 +597,7 @@ if ! python scripts/preflight_mcp_paths.py --json-output "$PREFLIGHT_SUMMARY_JSO
   mark_build_failed_if_in_progress "preflight_failed"
 fi
 
-finalize_build_summary "$PREFLIGHT_SUMMARY_JSON" "$SMOKE_SUMMARY_FILE" \
-  "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" \
-  "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" \
-  "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" \
-  "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" \
-  "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" \
-  "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" \
-  "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" \
-  "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" \
-  "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" \
-  "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" \
-  "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" \
-  "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3"
+finalize_build_summary "$PREFLIGHT_SUMMARY_JSON" "$SMOKE_SUMMARY_FILE" "${REQUIRED_ARTIFACTS[@]}"
 
 summary_status=$(python3 - "$BUILD_SUMMARY_FILE" <<'PYEOF'
 import json
