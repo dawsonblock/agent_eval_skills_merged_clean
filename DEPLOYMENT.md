@@ -193,6 +193,29 @@ pip-audit
 
 ## Production Deployment
 
+## Distribution ZIP Hygiene
+
+When creating release ZIP files on macOS, exclude metadata files and cache artifacts so distributed archives do not include `__MACOSX` or `._*` entries.
+
+```bash
+zip -r dist/agent_eval_skills_merged_clean.zip . \
+   -x "*/__MACOSX/*" \
+   -x "*/._*" \
+   -x "*/.DS_Store" \
+   -x "*/node_modules/*" \
+   -x "*/.validation_logs/*" \
+   -x "*/__pycache__/*" \
+   -x "*/.pytest_cache/*"
+```
+
+If metadata files already exist, remove them before packaging:
+
+```bash
+find . -name ".DS_Store" -delete
+find . -name "._*" -delete
+find . -name "__MACOSX" -type d -prune -exec rm -rf {} +
+```
+
 ### Via Docker Compose
 
 ```bash

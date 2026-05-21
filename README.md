@@ -36,6 +36,8 @@ This repository ships with two validation profiles:
 
 Release-candidate status applies to the `smoke` profile by default. The `full` profile remains available for extended validation and should only be claimed when separate full-profile evidence is present.
 
+For release-candidate claims, all required summary artifacts must explicitly show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary). Evidence generated with `TOOLATHLON_PROFILE=full` does not satisfy the default release-candidate gate.
+
 Note: Profile-aware task manifests are retained under `toolathlon-gym-curated/profiles/`, but task selection is not yet enforced by the default validation scripts.
 
 See [VALIDATION_EVIDENCE.md](VALIDATION_EVIDENCE.md) for evidence state → repo status mapping.

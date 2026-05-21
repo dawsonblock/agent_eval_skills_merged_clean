@@ -29,6 +29,14 @@ Equivalent explicit invocation:
 TOOLATHLON_PROFILE=smoke bash scripts/validate_workspace.sh
 ```
 
+The canonical smoke release-candidate command enables strict gate scope enforcement:
+
+```bash
+bash scripts/validate_smoke_workspace.sh
+```
+
+This wrapper sets `ENFORCE_RC_SMOKE_PROFILE=1`, which fails fast if `TOOLATHLON_PROFILE` is not `smoke`.
+
 Run extended full profile (experimental):
 
 ```bash
@@ -113,6 +121,12 @@ Claim release-candidate status only when:
    - Explicitly marked unavailable in the environment profile (set `RUN_DOCKER=0`)
 
 If any condition is not met, classify as strong repair candidate.
+
+If evidence was generated with `TOOLATHLON_PROFILE=full`, regenerate smoke evidence before making a default release-candidate claim:
+
+```bash
+bash scripts/validate_smoke_workspace.sh
+```
 
 `full` profile evidence can be collected for expanded validation but does not override smoke-gate requirements for release-candidate status.
 

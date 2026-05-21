@@ -12,6 +12,7 @@ RUN_INTEGRATION="${RUN_INTEGRATION:-0}"
 RUN_DOCKER="${RUN_DOCKER:-0}"
 DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
 TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
+ENFORCE_RC_SMOKE_PROFILE="${ENFORCE_RC_SMOKE_PROFILE:-0}"
 export TOOLATHLON_PROFILE
 
 RED='\033[0;31m'
@@ -94,7 +95,13 @@ fi
 echo "Workspace root: $REPO_ROOT"
 echo "Log directory: $LOG_DIR"
 echo "Toolathlon profile: $TOOLATHLON_PROFILE"
+echo "Enforce RC smoke profile: $ENFORCE_RC_SMOKE_PROFILE"
 echo
+
+if [ "$ENFORCE_RC_SMOKE_PROFILE" = "1" ] && [ "$TOOLATHLON_PROFILE" != "smoke" ]; then
+  echo -e "${RED}✗ ENFORCE_RC_SMOKE_PROFILE=1 requires TOOLATHLON_PROFILE=smoke (got '$TOOLATHLON_PROFILE')${NC}"
+  exit 1
+fi
 
 run_step() {
   local label="$1"
@@ -160,6 +167,7 @@ write_validation_summary() {
   fi
 
   export RUN_STARTED_AT RUN_INTEGRATION RUN_DOCKER TOOLATHLON_PROFILE
+  export ENFORCE_RC_SMOKE_PROFILE
   export TOOLFORGE_STATUS AGENT_SKILLS_STATUS TOOLATHLON_STATUS DOCKER_STATUS
   export TOOLFORGE_DURATION_SECONDS AGENT_SKILLS_DURATION_SECONDS
   export TOOLATHLON_DURATION_SECONDS DOCKER_DURATION_SECONDS
@@ -212,7 +220,8 @@ summary = {
         "toolforge_python_supported": os.environ["TOOLFORGE_PYTHON_SUPPORTED"] == "true",
         "docker_requested": os.environ.get("RUN_DOCKER", "0") == "1",
         "integration_requested": os.environ.get("RUN_INTEGRATION", "0") == "1",
-      "toolathlon_profile": os.environ.get("TOOLATHLON_PROFILE", "smoke"),
+        "toolathlon_profile": os.environ.get("TOOLATHLON_PROFILE", "smoke"),
+        "rc_smoke_gate_enforced": os.environ.get("ENFORCE_RC_SMOKE_PROFILE", "0") == "1",
     },
     "phases": [
         phase_entry(
@@ -553,30 +562,41 @@ fi
 
 if python "$TOOLATHLON_DIR/scripts/preflight_mcp_paths.py" \
   --json-output "$TOOLATHLON_PREFLIGHT_SUMMARY_JSON" 2>&1 | tee "$TOOLATHLON_PREFLIGHT_LOG"; then
-  # Phase 9: Enforce missing_count = 0
-  missing_count=$(python - <<PYEOF
+  if preflight_gate=$(python - <<PYEOF
 import json
 from pathlib import Path
 
-try:
-    summary = json.loads(Path("$TOOLATHLON_PREFLIGHT_SUMMARY_JSON").read_text(encoding='utf-8'))
-    profile = summary.get('profile')
-    expected_profile = "$TOOLATHLON_PROFILE"
-    if profile != expected_profile:
-      print(-1)
-    else:
-      print(summary.get('missing_count', -1))
-except Exception as e:
-    print(-1)
+summary_path = Path("$TOOLATHLON_PREFLIGHT_SUMMARY_JSON")
+if not summary_path.exists():
+    print("missing_summary")
+    raise SystemExit(1)
+
+summary = json.loads(summary_path.read_text(encoding='utf-8'))
+profile = summary.get('profile')
+expected_profile = "$TOOLATHLON_PROFILE"
+missing_count = summary.get('missing_count')
+
+if profile != expected_profile:
+    print(f"profile={profile} expected_profile={expected_profile}")
+    raise SystemExit(1)
+
+if missing_count != 0:
+    print(f"missing_count={missing_count}")
+    raise SystemExit(1)
+
+print(f"profile={profile} missing_count={missing_count}")
 PYEOF
-)
-  if [ "$missing_count" = "0" ]; then
+  ); then
     echo "✓ MCP preflight passed (missing_count = 0)"
+    echo "Preflight summary gate details: $preflight_gate" | tee -a "$TOOLATHLON_PREFLIGHT_LOG"
     if [ "$TOOLATHLON_STATUS" != "failed" ]; then
       TOOLATHLON_STATUS="passed"
     fi
   else
-    echo -e "${RED}✗ MCP preflight found $missing_count missing paths${NC} (requirement: missing_count = 0)"
+    echo -e "${RED}✗ MCP preflight summary gate failed${NC} (requirement: profile matches requested profile and missing_count = 0)"
+    if [ -n "${preflight_gate:-}" ]; then
+      echo "Preflight summary gate details: ${preflight_gate}" | tee -a "$TOOLATHLON_PREFLIGHT_LOG"
+    fi
     TOOLATHLON_STATUS="failed"
     failed=$((failed + 1))
   fi

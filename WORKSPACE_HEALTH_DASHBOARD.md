@@ -49,6 +49,8 @@ Release-candidate gate is satisfied **only when** the listed evidence artifacts 
 
 The `full` profile remains available for extended validation but is not part of the default release-candidate gate until full evidence passes.
 
+If any required summary artifact shows `profile != smoke` (or unified summary shows `capabilities.toolathlon_profile != smoke`), default release-candidate status is not met and evidence must be regenerated using the smoke validation entrypoint.
+
 Production-grade claims remain out of scope pending separate hostile-code/runtime security audit.
 
 ## ⚠️ Dependency & Security Notes
