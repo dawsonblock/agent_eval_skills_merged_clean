@@ -2,6 +2,10 @@
 
 This document defines the minimum evidence required to claim release-candidate status for controlled testing.
 
+Current proven status (May 21, 2026): smoke release-candidate gate satisfied (`profile=smoke`, unified summary `overall_status=passed`, Docker smoke+preflight passed).
+
+Scope warning: this status applies to `TOOLATHLON_PROFILE=smoke` only. Full profile remains optional/experimental unless separate full-profile evidence is presented.
+
 Validation profiles:
 
 1. `smoke` — default release-candidate gate

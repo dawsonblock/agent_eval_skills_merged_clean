@@ -209,6 +209,18 @@ Optional output path override:
 RELEASE_ZIP_OUTPUT=dist/pruned-smoke-rc.zip make release-zip
 ```
 
+Compatibility command matching the pruned smoke release naming in checklists:
+
+```bash
+bash scripts/package_clean_zip.sh
+```
+
+Optional output path for the compatibility command:
+
+```bash
+OUT=/tmp/agent_eval_skills_merged_clean-pruned-smoke.zip bash scripts/package_clean_zip.sh
+```
+
 Manual fallback (if you need direct zip invocation):
 
 When creating release ZIP files on macOS, exclude metadata files and cache artifacts so distributed archives do not include `__MACOSX` or `._*` entries.

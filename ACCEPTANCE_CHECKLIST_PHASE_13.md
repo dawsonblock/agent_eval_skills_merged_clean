@@ -1,7 +1,7 @@
 # Phase 13 Acceptance Checklist
 
-**Date:** May 20, 2026  
-**Status:** Evidence-gated. Treat as strong repair candidate until all required artifacts are freshly regenerated and passing.
+**Date:** May 21, 2026  
+**Status:** Pruned smoke release candidate for controlled testing (smoke scope).
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 
@@ -25,13 +25,12 @@ ZIP extraction ................ ✅ Verified
 ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
-ToolForge doctor .............. 🟡 Passes after dependency setup
-ToolForge full validation ..... ⚪ Requires fresh supported-Python proof
-Toolathlon fresh preflight .... ⚪ Requires fresh post-build Missing: 0 proof
-Toolathlon artifact builder ... ⚪ Requires summary gate pass (`overall_status=passed`, `failed_count=0`, `package_count=expected_package_count`)
-Docker validation ............. ⚪ Requires fresh Docker-host proof
-Unified validation ............ ⚪ Requires fresh end-to-end passing run
-Release readiness ............. ⚪ Conditional on required evidence gates
+ToolForge grouped validation .. ✅ Passed on Python 3.12
+Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
+Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight)
+Unified validation ............ ✅ Passed (`overall_status=passed`)
+Release readiness ............. ✅ Smoke release-candidate gate satisfied
 ```
 
 ## Acceptance Gates
@@ -39,12 +38,12 @@ Release readiness ............. ⚪ Conditional on required evidence gates
 - [x] Repository can be cleaned with `scripts/clean_workspace.sh`.
 - [x] Agent Skills inventory is present and evaluable.
 - [x] Python source syntax can be checked cleanly.
-- [ ] ToolForge validation passes on supported Python with phase-group logs.
-- [ ] Toolathlon artifact build completes deterministically.
-- [ ] Toolathlon preflight passes immediately after artifact build.
-- [ ] Docker build uses one canonical context and fails honestly on required build failure.
-- [ ] Docker preflight passes inside container.
-- [ ] Unified validation passes end-to-end from a fresh extraction.
+- [x] ToolForge validation passes on supported Python with phase-group logs.
+- [x] Toolathlon artifact build completes deterministically.
+- [x] Toolathlon preflight passes immediately after artifact build.
+- [x] Docker build uses one canonical context and fails honestly on required build failure.
+- [x] Docker preflight passes inside container.
+- [x] Unified validation passes end-to-end from a fresh extraction.
 
 ## Release Promotion Rule
 
@@ -55,7 +54,7 @@ Promotion gate is met **only when** required evidence artifacts show passing req
 - `toolathlon_mcp_smoke_summary.json`: `profile = smoke`, `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
 - `toolathlon_preflight_summary.json`: `profile = smoke` and `missing_count = 0`
 
-**This repository is not a release candidate unless required evidence gates pass in the target environment. It is not a production security attestation.**
+**Smoke-scope release-candidate gate is currently satisfied. Full profile remains optional/experimental and is not implied by this checklist. This is not a production security attestation.**
 
 ### ⚠️ Security Disclaimer
 

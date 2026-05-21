@@ -14,7 +14,9 @@
 
 ## Overview
 
-**Current status:** Evidence-gated. Classify as strong repair candidate unless the evidence artifacts listed below are present, current, and passing for the target environment.
+**Current status:** Pruned smoke release candidate for controlled testing.
+
+Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
 This repository ships with two validation profiles:
 

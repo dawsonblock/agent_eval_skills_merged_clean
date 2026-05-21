@@ -138,6 +138,18 @@ print(f"Python version OK for ToolForge: {sys.version.split()[0]}")
 PY
 }
 
+ensure_pyyaml() {
+  if python - <<'PY' >/dev/null 2>&1
+import yaml  # noqa: F401
+PY
+  then
+    return 0
+  fi
+
+  echo "PyYAML missing; installing into current environment..." | tee -a "$TOOLATHLON_PREFLIGHT_LOG"
+  python -m pip install pyyaml >> "$TOOLATHLON_PREFLIGHT_LOG" 2>&1
+}
+
 status_to_exit_code() {
   case "$1" in
     passed) echo 0 ;;
@@ -433,6 +445,12 @@ echo
 toolathlon_phase_start="$(date +%s)"
 
 echo -e "${YELLOW}== Toolathlon ==${NC}"
+if ! ensure_pyyaml; then
+  echo -e "${RED}✗ Failed to install PyYAML dependency required for Toolathlon preflight${NC}"
+  TOOLATHLON_STATUS="failed"
+  failed=$((failed + 1))
+fi
+
 if python "$REPO_ROOT/scripts/run_with_timeout.py" --timeout 1800 -- \
   bash "$TOOLATHLON_DIR/scripts/build_required_mcp_artifacts.sh" 2>&1 | tee "$TOOLATHLON_BUILD_LOG"; then
   echo "✓ Required MCP artifacts built"

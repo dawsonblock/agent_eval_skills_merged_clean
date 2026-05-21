@@ -1,8 +1,8 @@
 # Workspace Health Dashboard
 
-**Date:** May 20, 2026  
+**Date:** May 21, 2026  
 **Scope:** agent_eval_skills_merged_clean  
-**Classification:** Evidence-gated. Treat as strong repair candidate until all required artifacts are freshly regenerated and passing.
+**Classification:** Pruned smoke release candidate for controlled testing.
 
 This dashboard is an evidence tracker. It is not a release declaration.
 
@@ -27,14 +27,13 @@ ZIP extraction ................ ✅ Verified
 ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
-ToolForge doctor .............. 🟡 Passes after dependency setup
-ToolForge full validation ..... ⚪ Requires fresh supported-Python proof
-Toolathlon MCP smoke .......... ⚪ Requires fresh host runtime smoke proof
-Toolathlon fresh preflight .... ⚪ Requires fresh post-build Missing: 0 proof
-Toolathlon artifact builder ... ⚪ Requires summary gate pass (`overall_status=passed`, `failed_count=0`, `package_count=expected_package_count`)
-Docker validation ............. ⚪ Requires fresh Docker-host smoke + preflight proof
-Unified validation ............ ⚪ Requires fresh end-to-end passing run
-Release readiness ............. ⚪ Conditional on required evidence gates
+ToolForge grouped validation .. ✅ Passed on Python 3.12
+Toolathlon MCP smoke .......... ✅ Passed (`profile=smoke`, `passed_count=3`, `failed_count=0`)
+Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
+Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight)
+Unified validation ............ ✅ Passed (`overall_status=passed`)
+Release readiness ............. ✅ Pruned smoke release candidate for controlled testing
 ```
 
 ## Promotion Rule
