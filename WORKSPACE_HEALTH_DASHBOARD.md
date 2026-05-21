@@ -16,11 +16,11 @@
 │  Agent Skills .............. ✅ Verified                         │
 │  Python syntax ............. ✅ Verified                         │
 │  ZIP cleanliness ........... ✅ Verified                         │
-│  ToolForge full tests ...... ❌ Blocked                          │
+│  ToolForge full tests ...... 🟡 Targeted slices pass; full run gated │
 │  Toolathlon preflight ...... ❌ Fails before artifact build       │
-│  Toolathlon artifact build . ❌ Times out / incomplete            │
-│  Docker validation ......... ❌ Context mismatch likely           │
-│  Unified validation ........ ❌ Not passing end-to-end            │
+│  Toolathlon artifact build . 🟡 False-success bug fixed            │
+│  Docker validation ......... ❌ Context mismatch needs fix        │
+│  Unified validation ........ 🟡 Partially passing / env-gated      │
 │                                                                 │
 │  Legend:                                                      │
 │  ✅ Verified from fresh extraction                             │
@@ -32,11 +32,11 @@
 │  Agent Skills .............. ✅ Verified                       │
 │  Python syntax ............. ✅ Verified                       │
 │  ZIP cleanliness ........... ✅ Verified                       │
-│  ToolForge full tests ...... ❌ Blocked                        │
+│  ToolForge full tests ...... 🟡 Targeted slices pass; full run gated │
 │  Toolathlon preflight ...... ❌ Fails before artifact build     │
-│  Toolathlon artifact build . ❌ Times out / incomplete          │
-│  Docker validation ......... ❌ Context mismatch likely         │
-│  Unified validation ........ ❌ Not passing end-to-end          │
+│  Toolathlon artifact build . 🟡 False-success bug fixed          │
+│  Docker validation ......... ❌ Context mismatch needs fix      │
+│  Unified validation ........ 🟡 Partially passing / env-gated    │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -188,17 +188,17 @@ Details:
   • 2 not integrated yet (logging, errors)
   • 41% coverage gap (fixable in Phase 2)
 
-Status: NO BLOCKERS ✅
+Status: OPEN BLOCKERS REMAIN ❌
 ```
 
 ---
 
 ## 🚀 Deployment Readiness
 
-### Prerequisites Met ✅
+### Prerequisites Met ⚠️
 - [x] Python 3.12 environment available
 - [x] All dependencies installed
-- [x] Test suite passing (43/43)
+- [ ] Full test suite passing (targeted validator slices pass; full workspace is still gated)
 - [x] Documentation complete
 - [x] Environment template created
 - [x] Pre-commit configured
@@ -213,7 +213,7 @@ Status: NO BLOCKERS ✅
 - [ ] Pre-commit tested locally
 - [ ] GitHub Actions tested in repo
 
-**Estimated Time to Production:** 4-6 hours (Phase 2)
+**Estimated Time to Production:** Unknown; release readiness is still blocked by Toolathlon and Docker validation
 
 ---
 
