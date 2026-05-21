@@ -12,7 +12,7 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
-**Validation status:** Pruned smoke release-candidate candidate for controlled testing.
+**Validation status:** Pruned smoke release-candidate for controlled testing.
 
 This repository ships with two validation profiles:
 
@@ -29,7 +29,7 @@ This repository ships with two validation profiles:
 
 **Promotion rule:** Evidence-gated only. If required evidence files are missing, stale, or show failing gates, classification must be downgraded to strong repair candidate. This is not a production security certification.
 
-Release-candidate status applies to the `smoke` profile only after fresh smoke evidence is attached, unless full-profile evidence is explicitly presented as a separate, non-default claim. For smoke release-candidate claims, all required summaries must show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary). Full profile remains retained but experimental.
+Release-candidate status applies to the `smoke` profile only. For smoke release-candidate claims, all required summaries must show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary). Full profile remains retained but experimental unless separate full-profile evidence is explicitly attached.
 
 **Security disclaimer:** This package contains local MCP server code with reported npm vulnerabilities. Acceptable only for disposable benchmark containers and controlled developer labs. Do not run on production hosts or systems with sensitive data. Hostile-code isolation and security hardening are out of scope.
 
