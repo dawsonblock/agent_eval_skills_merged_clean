@@ -12,7 +12,7 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
-**Validation status:** Pruned smoke release-candidate for controlled testing.
+**Validation status:** Pruned smoke release candidate for controlled testing.
 
 This repository ships with two validation profiles:
 
