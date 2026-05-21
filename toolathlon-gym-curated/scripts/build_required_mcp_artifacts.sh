@@ -72,7 +72,8 @@ ensure_file() {
   local file_path="$1"
   local label="$2"
 
-  if [ ! -f "$file_path" ] && [ ! -x "$file_path" ]; then
+  # Accept only regular files or symlinks; directories must not satisfy artifact checks.
+  if [ ! -e "$file_path" ] || { [ ! -f "$file_path" ] && [ ! -L "$file_path" ]; }; then
     echo "✗ Missing $label artifact after build:" >&2
     echo "  $file_path" >&2
     return 1
@@ -87,7 +88,7 @@ export -f ensure_python3_link
 
 artifact_exists() {
   local path="$1"
-  [ -f "$path" ] || [ -x "$path" ]
+  [ -e "$path" ] && { [ -f "$path" ] || [ -L "$path" ]; }
 }
 
 # Initialize JSON output
@@ -287,6 +288,7 @@ maybe_build_node_package() {
   local artifact="$4"
   local start
   start="$(date +%s)"
+  CURRENT_PACKAGE_START_EPOCH="$start"
 
   if [ "${FORCE_REBUILD:-0}" = "1" ]; then
     echo "→ Force rebuild requested for $name"
@@ -315,6 +317,7 @@ maybe_build_python_package() {
   local artifact="$4"
   local start
   start="$(date +%s)"
+  CURRENT_PACKAGE_START_EPOCH="$start"
 
   if [ "${FORCE_REBUILD:-0}" = "1" ]; then
     echo "→ Force rebuild requested for $name"
@@ -338,11 +341,17 @@ maybe_build_python_package() {
 
 fail_package() {
   local name="$1"
-  local timeout_sec="$2"
+  local fallback_duration="$2"
   local artifact="$3"
   local reason="$4"
+  local start_epoch="${5:-${CURRENT_PACKAGE_START_EPOCH:-}}"
+  local duration="$fallback_duration"
 
-  record_package_result "$name" "failed" "$timeout_sec" "$artifact" "false" "$reason"
+  if [[ "$start_epoch" =~ ^[0-9]+$ ]]; then
+    duration="$(( $(date +%s) - start_epoch ))"
+  fi
+
+  record_package_result "$name" "failed" "$duration" "$artifact" "false" "$reason"
   mark_build_failed_if_in_progress "$reason"
 }
 

@@ -437,9 +437,13 @@ overall_status = summary.get('overall_status')
 failed_count = summary.get('failed_count')
 package_count = summary.get('package_count')
 expected_count = summary.get('expected_package_count')
+reason = summary.get('reason')
 
 if overall_status != 'passed':
-    print(f"overall_status={overall_status}")
+    if reason:
+        print(f"overall_status={overall_status} reason={reason}")
+    else:
+        print(f"overall_status={overall_status}")
     raise SystemExit(1)
 
 if failed_count != 0:
