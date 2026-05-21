@@ -36,6 +36,55 @@ docker compose up -d postgres
 
 `toolathlon_pg` (PostgreSQL 15) is auto-initialized from `db/init.sql.gz` on first start. The agent image is kept separate — a fresh container is spawned per task.
 
+### Docker Validation (Fast Path)
+
+Use the validation helper to verify Docker build health and MCP preflight paths in a containerized run.
+
+```bash
+DOCKER_CONTEXT=default \
+DOCKER_PROGRESS=plain \
+DOCKER_INSTALL_PLAYWRIGHT=0 \
+bash scripts/validate_docker.sh
+```
+
+The validator uses a two-layer image flow:
+- `Dockerfile.base`: heavyweight reusable base image (`toolathlon:base` by default)
+- `Dockerfile`: thin validation layer on top of the base
+
+To force-refresh the base image after dependency changes:
+
+```bash
+DOCKER_CONTEXT=default \
+DOCKER_PROGRESS=plain \
+REBUILD_BASE_IMAGE=1 \
+DOCKER_INSTALL_PLAYWRIGHT=0 \
+bash scripts/validate_docker.sh
+```
+
+Environment variables:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `IMAGE_NAME` | `toolathlon:repair` | Final thin validation image name |
+| `BASE_IMAGE_NAME` | `toolathlon:base` | Reusable base image name |
+| `DOCKER_CONTEXT` | `default` | Docker context to use |
+| `DOCKER_PROGRESS` | `auto` | Build output mode (`auto`, `plain`, `tty`) |
+| `DOCKER_INSTALL_PLAYWRIGHT` | `0` | Build Playwright browser into base image (`1` to enable) |
+| `REBUILD_BASE_IMAGE` | `0` | Rebuild base image even if it already exists (`1` to force) |
+
+Typical timing profile on a warm local cache:
+- `REBUILD_BASE_IMAGE=0`: thin image build is usually fully cached (often near-instant), with overall runtime dominated by the container preflight check.
+- `REBUILD_BASE_IMAGE=1`: includes rebuilding heavyweight base layers, so runtime depends on dependency-layer cache hits and host Docker performance.
+
+If you are diagnosing slow builds, use plain progress output to identify which stage is expensive:
+
+```bash
+DOCKER_CONTEXT=default \
+DOCKER_PROGRESS=plain \
+DOCKER_INSTALL_PLAYWRIGHT=0 \
+bash scripts/validate_docker.sh
+```
+
 ### 2. Run a Single Task
 
 Each task runs in its own ephemeral Docker container. The container is created fresh for every task and destroyed on exit. For running multiple tasks concurrently, see [Run Tasks in Parallel](#3-run-tasks-in-parallel) below.

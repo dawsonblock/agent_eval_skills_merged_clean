@@ -6,17 +6,41 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLATHLON_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 IMAGE_NAME="${IMAGE_NAME:-toolathlon:repair}"
+BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-toolathlon:base}"
 DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
 OUT_DIR="${OUT_DIR:-$TOOLATHLON_DIR/../.validation_logs}"
 DOCKER_PROGRESS="${DOCKER_PROGRESS:-auto}"
 DOCKER_INSTALL_PLAYWRIGHT="${DOCKER_INSTALL_PLAYWRIGHT:-0}"
+REBUILD_BASE_IMAGE="${REBUILD_BASE_IMAGE:-0}"
 
 mkdir -p "$OUT_DIR"
+
+build_base_image() {
+  echo "Building reusable Docker base image: $BASE_IMAGE_NAME"
+  docker --context="$DOCKER_CONTEXT" buildx build \
+    --progress "$DOCKER_PROGRESS" \
+    --build-arg "INSTALL_PLAYWRIGHT=$DOCKER_INSTALL_PLAYWRIGHT" \
+    --load -t "$BASE_IMAGE_NAME" -f "$TOOLATHLON_DIR/Dockerfile.base" "$TOOLATHLON_DIR"
+}
+
+if [ "$REBUILD_BASE_IMAGE" = "1" ]; then
+  if ! build_base_image; then
+    echo "✗ Docker base image build failed"
+    exit 1
+  fi
+elif ! docker --context="$DOCKER_CONTEXT" image inspect "$BASE_IMAGE_NAME" >/dev/null 2>&1; then
+  if ! build_base_image; then
+    echo "✗ Docker base image build failed"
+    exit 1
+  fi
+else
+  echo "✓ Reusing existing Docker base image: $BASE_IMAGE_NAME"
+fi
 
 echo "Building Docker image: $IMAGE_NAME"
 if ! docker --context="$DOCKER_CONTEXT" buildx build \
   --progress "$DOCKER_PROGRESS" \
-  --build-arg "INSTALL_PLAYWRIGHT=$DOCKER_INSTALL_PLAYWRIGHT" \
+  --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
   --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
   echo "✗ Docker build failed"
   exit 1
@@ -36,4 +60,5 @@ echo "✓ Docker validation passed"
 echo "Evidence: $OUT_DIR/docker_preflight_summary.json"
 echo "Docker context: $DOCKER_CONTEXT"
 echo "Docker progress mode: $DOCKER_PROGRESS"
-echo "Install Playwright browser in image: $DOCKER_INSTALL_PLAYWRIGHT"
+echo "Base image: $BASE_IMAGE_NAME"
+echo "Install Playwright browser in base image: $DOCKER_INSTALL_PLAYWRIGHT"
