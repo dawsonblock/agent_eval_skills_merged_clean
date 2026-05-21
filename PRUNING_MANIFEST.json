@@ -1,15 +1,39 @@
 {
   "created_at": "2026-05-20 21:40:54 UTC",
+  "updated_at": "2026-05-21 UTC",
   "source_archives": [
     "toolathlon_gym-main.zip",
     "agent-skills-main 3.zip"
   ],
   "output_archive": "agent_eval_skills_merged_clean.zip",
+  "status": "pruned_controlled_testing_release",
+  "default_profile": "smoke",
+  "retained_subsystems": [
+    "ToolForge",
+    "agent-skills-curated",
+    "toolathlon-gym-curated smoke profile"
+  ],
+  "retained_skills": 23,
+  "toolathlon_total_tasks_available": 503,
+  "toolathlon_default_tasks_enabled": "smoke subset",
+  "toolathlon_full_profile_status": "available but not default release gate",
+  "quarantined_mcp_servers": [
+    "mcp-canvas-lms",
+    "google-forms-mcp",
+    "HowToCook-mcp",
+    "servers/src/memory",
+    "notion-mcp-server",
+    "mcp-npx-fetch",
+    "woocommerce-mcp",
+    "youtube-mcp-server",
+    "mcp-youtube-transcript"
+  ],
+  "reason": "Default validation gate is smoke-first for reproducible release-candidate evidence; expanded MCP/profile coverage remains experimental until independently proven.",
   "summary": {
     "total_skills_retained": 23,
     "categories_included": 8,
     "removed_items": 0,
-    "status": "full merged repo with all skills"
+    "status": "pruned controlled-testing release candidate surface"
   },
   "kept_agent_skills": [
     "browser-and-automation/webapp-testing",

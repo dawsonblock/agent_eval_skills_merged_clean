@@ -16,20 +16,39 @@
 
 **Current status:** Evidence-gated. Classify as strong repair candidate unless the evidence artifacts listed below are present, current, and passing for the target environment.
 
+This repository ships with two validation profiles:
+
+1. `smoke` — default release-candidate gate (fast, controlled-testing subset)
+2. `full` — expanded MCP validation gate (experimental, non-default; currently 12 MCP artifact/runtime targets)
+
 **This repository is not a production security attestation.** Promotion remains scoped to controlled testing and still requires re-validation in any new environment.
 
 ### Required Validation Evidence
 
 - Unified machine-readable summary: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) (must exist, `overall_status` = "passed")
-- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (must exist, `overall_status = "passed"`, `expected_package_count = 12`, `package_count = 12`, `passed_count = 12`, `failed_count = 0`)
-- Toolathlon MCP smoke summary: [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json) (must exist, `overall_status = "passed"`, `failed_count = 0`)
-- Toolathlon preflight machine-readable summary: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (must exist, `missing_count = 0`)
+- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (must exist, include `profile`, and satisfy `overall_status = "passed"`, `package_count = expected_package_count`, `failed_count = 0`)
+- Toolathlon MCP smoke summary: [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json) (must exist, include `profile`, and satisfy `overall_status = "passed"`, `failed_count = 0`)
+- Toolathlon preflight machine-readable summary: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (must exist, include `profile`, and satisfy `missing_count = 0`)
 - Docker MCP smoke summary when Docker proof is claimed: [.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json) (must exist, `overall_status = "passed"`, `failed_count = 0`)
 - Unified validator console logs: [.validation_logs/](.validation_logs/) (phase logs for audit trail)
 
 **Gate Rule:** If any artifact is missing, stale, or shows a failing gate, classify the repository as **strong repair candidate**, not release-ready.
 
+Release-candidate status applies to the `smoke` profile by default. The `full` profile remains available for extended validation and should only be claimed when separate full-profile evidence is present.
+
+Note: Profile-aware task manifests are retained under `toolathlon-gym-curated/profiles/`, but task selection is not yet enforced by the default validation scripts.
+
 See [VALIDATION_EVIDENCE.md](VALIDATION_EVIDENCE.md) for evidence state → repo status mapping.
+
+### CI Profile Policy
+
+The default CI gate uses `smoke` profile validation.
+
+1. `push` / `pull_request` runs enforce `smoke` profile checks.
+2. `workflow_dispatch` and scheduled runs also execute an experimental `full` profile job.
+3. The `full` profile CI job is non-blocking and does not gate release-candidate status.
+
+Release-candidate claims remain tied to passing `smoke` profile evidence unless separate full-profile evidence is explicitly presented.
 
 ### ⚠️ Dependency & Security Disclaimer
 
@@ -43,7 +62,7 @@ This repository is a controlled-merge of three interconnected systems designed f
 | --- | --- | --- |
 | [**ToolForge**](ToolForge/) | Create, validate, run, and package AI tool prototypes as MCP servers and Copilot Skills | CLI platform |
 | [**Agent Skills**](agent-skills-curated/) | Curated registry of reusable agent skills with built-in evaluation | 23 curated skills |
-| [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers |
+| [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers inventory (`smoke` gate is default) |
 
 ---
 

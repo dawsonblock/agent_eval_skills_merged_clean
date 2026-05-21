@@ -5,7 +5,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLATHLON_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-toolathlon:repair}"
+TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
+IMAGE_NAME="${IMAGE_NAME:-toolathlon:repair-${TOOLATHLON_PROFILE}}"
 BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-toolathlon:base}"
 DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
 OUT_DIR="${OUT_DIR:-$TOOLATHLON_DIR/../.validation_logs}"
@@ -44,6 +45,7 @@ if [ "$REBUILD_IMAGE" = "1" ]; then
   if ! docker --context="$DOCKER_CONTEXT" buildx build \
     --progress "$DOCKER_PROGRESS" \
     --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
+    --build-arg "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
     --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
     echo "✗ Docker build failed"
     exit 1
@@ -53,6 +55,7 @@ elif ! docker --context="$DOCKER_CONTEXT" image inspect "$IMAGE_NAME" >/dev/null
   if ! docker --context="$DOCKER_CONTEXT" buildx build \
     --progress "$DOCKER_PROGRESS" \
     --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
+    --build-arg "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
     --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
     echo "✗ Docker build failed"
     exit 1
@@ -61,8 +64,9 @@ else
   echo "✓ Reusing existing Docker image: $IMAGE_NAME"
 fi
 
-echo "Running preflight in container..."
+echo "Running MCP smoke checks in container..."
 if ! docker --context="$DOCKER_CONTEXT" run --rm \
+  -e "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
   -v "$OUT_DIR:/validation_logs" \
   "$IMAGE_NAME" \
   python scripts/smoke_mcp_servers.py \
@@ -71,8 +75,9 @@ if ! docker --context="$DOCKER_CONTEXT" run --rm \
   exit 1
 fi
 
-echo "Running preflight in container..."
+echo "Running MCP preflight checks in container..."
 if ! docker --context="$DOCKER_CONTEXT" run --rm \
+  -e "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
   -v "$OUT_DIR:/validation_logs" \
   "$IMAGE_NAME" \
   python scripts/preflight_mcp_paths.py \
@@ -89,3 +94,4 @@ echo "Docker progress mode: $DOCKER_PROGRESS"
 echo "Base image: $BASE_IMAGE_NAME"
 echo "Install Playwright browser in base image: $DOCKER_INSTALL_PLAYWRIGHT"
 echo "Rebuild repair image: $REBUILD_IMAGE"
+echo "Toolathlon profile: $TOOLATHLON_PROFILE"

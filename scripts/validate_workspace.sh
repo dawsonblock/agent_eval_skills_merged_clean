@@ -11,6 +11,8 @@ TOOLATHLON_DIR="$REPO_ROOT/toolathlon-gym-curated"
 RUN_INTEGRATION="${RUN_INTEGRATION:-0}"
 RUN_DOCKER="${RUN_DOCKER:-0}"
 DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
+TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
+export TOOLATHLON_PROFILE
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -91,6 +93,7 @@ fi
 
 echo "Workspace root: $REPO_ROOT"
 echo "Log directory: $LOG_DIR"
+echo "Toolathlon profile: $TOOLATHLON_PROFILE"
 echo
 
 run_step() {
@@ -156,7 +159,7 @@ write_validation_summary() {
     toolforge_python_supported=false
   fi
 
-  export RUN_STARTED_AT RUN_INTEGRATION RUN_DOCKER
+  export RUN_STARTED_AT RUN_INTEGRATION RUN_DOCKER TOOLATHLON_PROFILE
   export TOOLFORGE_STATUS AGENT_SKILLS_STATUS TOOLATHLON_STATUS DOCKER_STATUS
   export TOOLFORGE_DURATION_SECONDS AGENT_SKILLS_DURATION_SECONDS
   export TOOLATHLON_DURATION_SECONDS DOCKER_DURATION_SECONDS
@@ -209,6 +212,7 @@ summary = {
         "toolforge_python_supported": os.environ["TOOLFORGE_PYTHON_SUPPORTED"] == "true",
         "docker_requested": os.environ.get("RUN_DOCKER", "0") == "1",
         "integration_requested": os.environ.get("RUN_INTEGRATION", "0") == "1",
+      "toolathlon_profile": os.environ.get("TOOLATHLON_PROFILE", "smoke"),
     },
     "phases": [
         phase_entry(
@@ -269,9 +273,10 @@ PY
   echo "Validation summary JSON: $VALIDATION_SUMMARY_JSON"
 }
 
-marker_args=("-m" "not integration and not slow")
 if [ "$RUN_INTEGRATION" = "1" ]; then
-  marker_args=()
+  marker_args=("-q")
+else
+  marker_args=("-q" "-m" "not integration and not slow")
 fi
 
 # Phase 1: ToolForge validation
@@ -294,8 +299,8 @@ if run_python_version_check >"$TOOLFORGE_PYTHON_LOG" 2>&1; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge schema/path/safety tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_SCHEMA_PATH_SAFETY_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge schema/path/safety tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_SCHEMA_PATH_SAFETY_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_tool_spec.py \
       tests/test_path_safety.py \
       tests/test_safety_analyzer.py \
@@ -303,37 +308,37 @@ if run_python_version_check >"$TOOLFORGE_PYTHON_LOG" 2>&1; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge validator tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_VALIDATOR_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge validator tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_VALIDATOR_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_test_validator.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge registry tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_REGISTRY_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge registry tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_REGISTRY_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_registry.py \
       tests/test_registry_cli_exit.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge CLI tests" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge CLI tests" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_cli_command_exit.py \
       tests/test_cli_main_inprocess_coverage.py \
       tests/test_cli_validation_regressions.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_cli_e2e_csv_cleaner.py \
       tests/test_cli_e2e_json_schema_validator.py \
       tests/test_cli_e2e_local_file_hasher.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_eval_generator.py \
       tests/test_eval_runner_case_source.py \
       tests/test_eval_runner_expected_failures.py \
@@ -443,7 +448,13 @@ overall_status = summary.get('overall_status')
 failed_count = summary.get('failed_count')
 package_count = summary.get('package_count')
 expected_count = summary.get('expected_package_count')
+profile = summary.get('profile')
 reason = summary.get('reason')
+expected_profile = "$TOOLATHLON_PROFILE"
+
+if profile != expected_profile:
+  print(f"profile={profile} expected_profile={expected_profile}")
+  raise SystemExit(1)
 
 if overall_status != 'passed':
     if reason:
@@ -464,7 +475,11 @@ if package_count != expected_count:
     print(f"package_count={package_count} expected_package_count={expected_count}")
     raise SystemExit(1)
 
-print(f"package_count={package_count} expected_package_count={expected_count} failed_count={failed_count} overall_status={overall_status}")
+print(
+  f"profile={profile} package_count={package_count} "
+  f"expected_package_count={expected_count} failed_count={failed_count} "
+  f"overall_status={overall_status}"
+)
 PYEOF
 ); then
     if [ -n "$artifact_summary_gate" ]; then
@@ -500,6 +515,12 @@ overall_status = summary.get('overall_status')
 failed_count = summary.get('failed_count')
 target_count = summary.get('target_count')
 passed_count = summary.get('passed_count')
+profile = summary.get('profile')
+expected_profile = "$TOOLATHLON_PROFILE"
+
+if profile != expected_profile:
+  print(f"profile={profile} expected_profile={expected_profile}")
+  raise SystemExit(1)
 
 if overall_status != 'passed':
     print(f"overall_status={overall_status}")
@@ -514,7 +535,7 @@ if passed_count != target_count:
     raise SystemExit(1)
 
 print(
-    f"overall_status={overall_status} "
+  f"profile={profile} overall_status={overall_status} "
     f"target_count={target_count} passed_count={passed_count} failed_count={failed_count}"
 )
 PYEOF
@@ -539,7 +560,12 @@ from pathlib import Path
 
 try:
     summary = json.loads(Path("$TOOLATHLON_PREFLIGHT_SUMMARY_JSON").read_text(encoding='utf-8'))
-    print(summary.get('missing_count', -1))
+    profile = summary.get('profile')
+    expected_profile = "$TOOLATHLON_PROFILE"
+    if profile != expected_profile:
+      print(-1)
+    else:
+      print(summary.get('missing_count', -1))
 except Exception as e:
     print(-1)
 PYEOF
