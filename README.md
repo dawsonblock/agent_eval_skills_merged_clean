@@ -14,7 +14,7 @@
 
 ## Overview
 
-**Current status:** Pruned smoke release-candidate candidate for controlled testing.
+**Current status:** Pruned smoke release-candidate for controlled testing.
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 

@@ -2,7 +2,7 @@
 
 **Date:** May 21, 2026  
 **Scope:** agent_eval_skills_merged_clean  
-**Classification:** Pruned smoke release-candidate candidate for controlled testing.
+**Classification:** Pruned smoke release-candidate for controlled testing.
 
 This dashboard is an evidence tracker. It is not a release declaration.
 
@@ -31,9 +31,9 @@ ToolForge grouped validation .. ✅ Passed on Python 3.12
 Toolathlon MCP smoke .......... ✅ Passed (`profile=smoke`, `passed_count=3`, `failed_count=0`)
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ⏸️ Pending fresh Docker-capable environment proof
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight)
 Unified validation ............ ✅ Passed (`overall_status=passed`)
-Release readiness ............. 🟡 Very close; finalize after fresh Python 3.12 + Docker + clean ZIP proof
+Release readiness ............. ✅ Smoke release-candidate gate satisfied
 ```
 
 ## Promotion Rule
