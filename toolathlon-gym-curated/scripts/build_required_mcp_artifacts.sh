@@ -11,16 +11,13 @@ echo "Using LOCAL_SERVERS_DIR=$LOCAL_SERVERS_DIR"
 build_node_package() {
   local pkg_dir="$1"
   local name="$2"
-  local artifact_path="$3"
-  local start elapsed
 
-  if [ ! -f "$pkg_dir/package.json" ]; then
-    echo "✗ Missing package.json for $name: $pkg_dir" >&2
+  if [ ! -d "$pkg_dir" ]; then
+    echo "✗ Missing package directory for $name: $pkg_dir" >&2
     return 1
   fi
 
   echo "→ Building $name"
-  start="$(date +%s)"
   (
     cd "$pkg_dir"
     if [ -f package-lock.json ]; then
@@ -34,19 +31,21 @@ build_node_package() {
       echo "  - No build script for $name, skipping build step"
     fi
   )
-  ensure_file "$artifact_path" "$name"
-  elapsed="$(( $(date +%s) - start ))"
-  echo "✓ Built $name in ${elapsed}s"
 }
 
-build_python_package() {
+ensure_python3_link() {
+  local venv_bin="$1/.venv/bin"
+  if [ -x "$venv_bin/python" ] && [ ! -e "$venv_bin/python3" ]; then
+    ln -s python "$venv_bin/python3"
+  fi
+}
+
+build_python_uv_package() {
   local pkg_dir="$1"
   local name="$2"
-  local artifact_path="$3"
-  local start elapsed
 
-  if [ ! -f "$pkg_dir/pyproject.toml" ]; then
-    echo "✗ Missing pyproject.toml for $name: $pkg_dir" >&2
+  if [ ! -d "$pkg_dir" ]; then
+    echo "✗ Missing Python package directory for $name: $pkg_dir" >&2
     return 1
   fi
 
@@ -56,17 +55,11 @@ build_python_package() {
   fi
 
   echo "→ Building $name"
-  start="$(date +%s)"
   (
     cd "$pkg_dir"
     uv sync
   )
-  if [ -x "$pkg_dir/.venv/bin/python" ] && [ ! -e "$pkg_dir/.venv/bin/python3" ]; then
-    ln -s python "$pkg_dir/.venv/bin/python3"
-  fi
-  ensure_file "$artifact_path" "$name"
-  elapsed="$(( $(date +%s) - start ))"
-  echo "✓ Built $name in ${elapsed}s"
+  ensure_python3_link "$pkg_dir"
 }
 
 ensure_file() {
@@ -90,49 +83,62 @@ build_with_timeout() {
   local seconds="$2"
   shift 2
 
-  local command_string
-  printf -v command_string '%q ' "$@"
-  command_string="${command_string% }"
-
   echo "→ Building $name with ${seconds}s timeout"
+  local start
+  start="$(date +%s)"
 
   if command -v timeout >/dev/null 2>&1; then
-    timeout "${seconds}s" bash -lc "set -euo pipefail; $command_string"
-    return
-  fi
-
-  python3 - "$seconds" "$command_string" <<'PY'
+    if ! timeout "${seconds}s" bash -lc 'set -euo pipefail; "$@"' _ "$@"; then
+      echo "✗ Build failed or timed out: $name" >&2
+      return 1
+    fi
+  else
+    if ! python3 - "$seconds" "$@" <<'PY'
 import subprocess
 import sys
 
 timeout = int(sys.argv[1])
-command = sys.argv[2]
+command = sys.argv[2:]
 
-completed = subprocess.run(["bash", "-lc", "set -euo pipefail; " + command], check=False, timeout=timeout)
+try:
+    completed = subprocess.run(["bash", "-lc", "set -euo pipefail; \"$@\"", "_", *command], check=False, timeout=timeout)
+except subprocess.TimeoutExpired:
+    raise SystemExit(124)
 raise SystemExit(completed.returncode)
 PY
+    then
+      echo "✗ Build failed or timed out: $name" >&2
+      return 1
+    fi
+  fi
+
+  local elapsed
+  elapsed="$(( $(date +%s) - start ))"
+  echo "✓ Built $name in ${elapsed}s"
 }
 
 echo "Building required MCP artifacts in $LOCAL_SERVERS_DIR"
-build_with_timeout "google_calendar" 180 build_node_package "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "google_calendar" "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "google_calendar" || exit 1
-build_with_timeout "canvas" 900 build_node_package "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "canvas" "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "canvas" || exit 1
-build_with_timeout "howtocook" 300 build_node_package "$LOCAL_SERVERS_DIR/HowToCook-mcp" "howtocook" "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "howtocook" || exit 1
-build_with_timeout "memory" 300 build_node_package "$LOCAL_SERVERS_DIR/servers/src/memory" "memory" "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "memory" || exit 1
-build_with_timeout "google_forms" 300 build_node_package "$LOCAL_SERVERS_DIR/google-forms-mcp" "google_forms" "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "google_forms" || exit 1
-build_with_timeout "fetch" 300 build_node_package "$LOCAL_SERVERS_DIR/mcp-npx-fetch" "fetch" "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "fetch" || exit 1
-build_with_timeout "notion" 900 build_node_package "$LOCAL_SERVERS_DIR/notion-mcp-server" "notion" "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" && \
-  ensure_file "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "notion" || exit 1
-build_with_timeout "woocommerce" 300 build_node_package "$LOCAL_SERVERS_DIR/woocommerce-mcp" "woocommerce" "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "woocommerce" || exit 1
-build_with_timeout "youtube" 600 build_node_package "$LOCAL_SERVERS_DIR/youtube-mcp-server" "youtube" "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" && \
-  ensure_file "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "youtube" || exit 1
-build_with_timeout "youtube_transcript" 900 build_python_package "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "youtube_transcript" "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" && \
-  ensure_file "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "youtube_transcript" || exit 1
+build_with_timeout "google_calendar" 180 build_node_package "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "google_calendar" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "google_calendar" || exit 1
+build_with_timeout "canvas" 900 build_node_package "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "canvas" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "canvas" || exit 1
+build_with_timeout "howtocook" 300 build_node_package "$LOCAL_SERVERS_DIR/HowToCook-mcp" "howtocook" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "howtocook" || exit 1
+build_with_timeout "memory" 300 build_node_package "$LOCAL_SERVERS_DIR/servers/src/memory" "memory" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "memory" || exit 1
+build_with_timeout "google_forms" 300 build_node_package "$LOCAL_SERVERS_DIR/google-forms-mcp" "google_forms" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "google_forms" || exit 1
+build_with_timeout "fetch" 300 build_node_package "$LOCAL_SERVERS_DIR/mcp-npx-fetch" "fetch" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "fetch" || exit 1
+build_with_timeout "notion" 900 build_node_package "$LOCAL_SERVERS_DIR/notion-mcp-server" "notion" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "notion" || exit 1
+build_with_timeout "woocommerce" 300 build_node_package "$LOCAL_SERVERS_DIR/woocommerce-mcp" "woocommerce" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "woocommerce" || exit 1
+build_with_timeout "youtube" 600 build_node_package "$LOCAL_SERVERS_DIR/youtube-mcp-server" "youtube" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "youtube" || exit 1
+build_with_timeout "youtube_transcript" 900 build_python_uv_package "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "youtube_transcript" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "youtube_transcript" || exit 1
+
+python scripts/preflight_mcp_paths.py
 
 echo "✓ Required MCP artifacts built successfully."

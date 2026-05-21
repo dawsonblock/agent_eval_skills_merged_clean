@@ -320,7 +320,7 @@ bash scripts/validate_workspace.sh
 cd /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean
 bash scripts/clean_workspace.sh
 bash scripts/validate_workspace.sh
-# Expected (target): all green, exit 0
+# Expected (target): exit 0 only after fresh extraction, supported Python, and successful Toolathlon artifact/preflight validation
 ```
 
 ### For Docker deployment:
@@ -330,6 +330,7 @@ docker build -t toolathlon:repair .
 docker run --rm -it toolathlon:repair python scripts/preflight_mcp_paths.py
 # Expected: all paths found (inside container)
 ```
+This assumes the build context is `toolathlon-gym-curated/` only.
 
 ### For fresh clone validation:
 ```bash

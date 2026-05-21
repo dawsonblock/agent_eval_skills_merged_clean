@@ -12,6 +12,8 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
+Validation status: repair candidate, not release-ready. Do not treat this merged snapshot as a completed release gate until the workspace validates from a fresh extraction.
+
 Do not drop this directly into production application code. Keep it under a `labs/`, `agents/`, or separate tooling repo.
 
 ## What was kept
