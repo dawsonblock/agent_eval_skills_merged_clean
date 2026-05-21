@@ -291,15 +291,15 @@ bash scripts/validate_workspace.sh
 
 ## 🎯 Summary
 
-**Status**: ✅ VERIFIED. DEPLOY-CANDIDATE READY.
+**Status**: 🟡 REPAIR CANDIDATE. VALIDATION STILL IN PROGRESS.
 
 **Repair Scope**: 13 phases, 6 critical-path phases + 3 documentation phases implemented and merged.
 
 **Key Achievements (verified)**:
 1. ✅ Repository truth fixed (23 skills documented and verified)
-2. ✅ ToolForge tests passing (5/5 csv-cleaner, all example tools working)
-3. ✅ Toolathlon improved (preflight validation available; artifact/path parity validated)
-4. ✅ Validation infrastructure present (unified scripts and CI exist; reproducibility confirmed)
+2. ✅ ToolForge validator split improved (mocked unit tests + integration tests both pass)
+3. 🟡 Toolathlon improved, but preflight/build parity still needs fresh end-to-end verification
+4. 🟡 Validation infrastructure present, but reproducibility is not yet confirmed end-to-end
 5. ✅ Security posture improved (hardened Docker flags, honest threat model documentation)
 6. ✅ Execution modes documented (Mode 1 sequential vs Mode 2 isolated)
 7. ✅ Terminal MCP limitations documented (subprocess-only, not container-isolated)

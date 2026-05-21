@@ -17,6 +17,7 @@ NC='\033[0m' # No Color
 failed=0
 HAVE_GIT=0
 INITIAL_GIT_STATUS=""
+TOOLFORGE_PYTHON_OK=1
 LOG_ROOT="$REPO_ROOT/.validation_logs"
 mkdir -p "$LOG_ROOT"
 if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -75,31 +76,36 @@ PY
 # Phase 1: ToolForge validation (split groups)
 echo "${YELLOW}== ToolForge: Install & Doctor ==${NC}"
 TOOLFORGE_DIR="$REPO_ROOT/ToolForge"
-run_python_version_check
-if ! run_step "ToolForge install" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_INSTALL_LOG" "python -m pip install -e '.[dev]'"; then
-  failed=$((failed + 1))
-fi
-if ! run_step "ToolForge doctor" 120 "$TOOLFORGE_DIR" "$TOOLFORGE_DOCTOR_LOG" "PYTHONPATH=. python -m apps.cli.toolforge_cli.main doctor"; then
-  failed=$((failed + 1))
-fi
+if run_python_version_check; then
+  if ! run_step "ToolForge install" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_INSTALL_LOG" "python -m pip install -e '.[dev]'"; then
+    failed=$((failed + 1))
+  fi
+  if ! run_step "ToolForge doctor" 120 "$TOOLFORGE_DIR" "$TOOLFORGE_DOCTOR_LOG" "PYTHONPATH=. python -m apps.cli.toolforge_cli.main doctor"; then
+    failed=$((failed + 1))
+  fi
 
-echo "${YELLOW}== ToolForge: Core Tests ==${NC}"
-if ! run_step "ToolForge core tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_CORE_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_tool_spec.py tests/test_path_safety.py tests/test_safety_analyzer.py tests/test_package_builder.py tests/test_tool_schema.py tests/test_validators.py tests/test_repo_hygiene.py tests/test_errors.py tests/test_registry.py tests/test_registry_cli_exit.py tests/test_test_validator.py tests/test_skill_generator.py tests/test_tool_generator.py tests/test_mcp_generator.py tests/test_spec_from_prompt.py tests/test_doc_generator.py tests/test_example_specs.py tests/test_logger.py"; then
-  failed=$((failed + 1))
-fi
+  echo "${YELLOW}== ToolForge: Core Tests ==${NC}"
+  if ! run_step "ToolForge core tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_CORE_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_tool_spec.py tests/test_path_safety.py tests/test_safety_analyzer.py tests/test_package_builder.py tests/test_tool_schema.py tests/test_validators.py tests/test_repo_hygiene.py tests/test_errors.py tests/test_registry.py tests/test_registry_cli_exit.py tests/test_test_validator.py tests/test_skill_generator.py tests/test_tool_generator.py tests/test_mcp_generator.py tests/test_spec_from_prompt.py tests/test_doc_generator.py tests/test_example_specs.py tests/test_logger.py"; then
+    failed=$((failed + 1))
+  fi
 
-echo "${YELLOW}== ToolForge: CLI Tests ==${NC}"
-if ! run_step "ToolForge CLI tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_cli_command_exit.py tests/test_cli_main_inprocess_coverage.py tests/test_cli_validation_regressions.py"; then
-  failed=$((failed + 1))
-fi
+  echo "${YELLOW}== ToolForge: CLI Tests ==${NC}"
+  if ! run_step "ToolForge CLI tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_cli_command_exit.py tests/test_cli_main_inprocess_coverage.py tests/test_cli_validation_regressions.py"; then
+    failed=$((failed + 1))
+  fi
 
-echo "${YELLOW}== ToolForge: E2E Tests ==${NC}"
-if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_cli_e2e_*.py"; then
-  failed=$((failed + 1))
-fi
+  echo "${YELLOW}== ToolForge: E2E Tests ==${NC}"
+  if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_cli_e2e_*.py"; then
+    failed=$((failed + 1))
+  fi
 
-echo "${YELLOW}== ToolForge: Eval Tests ==${NC}"
-if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_eval_*.py tests/test_ai_spec_generator.py tests/test_eval_runner_case_source.py tests/test_eval_runner_expected_failures.py"; then
+  echo "${YELLOW}== ToolForge: Eval Tests ==${NC}"
+  if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_TESTS_LOG" "env PYTHONPATH=. pytest -q tests/test_eval_*.py tests/test_ai_spec_generator.py tests/test_eval_runner_case_source.py tests/test_eval_runner_expected_failures.py"; then
+    failed=$((failed + 1))
+  fi
+else
+  TOOLFORGE_PYTHON_OK=0
+  echo "${YELLOW}ToolForge skipped: unsupported Python version for this workspace.${NC}"
   failed=$((failed + 1))
 fi
 
