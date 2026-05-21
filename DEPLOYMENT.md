@@ -1,5 +1,7 @@
 # Deployment Guide
 
+Prerequisite: run smoke validation and ensure required evidence artifacts pass before using this guide for release promotion. See [VALIDATION_EVIDENCE.md](VALIDATION_EVIDENCE.md) and [ACCEPTANCE_CHECKLIST_PHASE_13.md](ACCEPTANCE_CHECKLIST_PHASE_13.md).
+
 ## System Requirements
 
 - Python 3.12+

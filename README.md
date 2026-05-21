@@ -14,11 +14,13 @@
 
 ## Overview
 
-**Current status:** Pruned smoke release-candidate for controlled testing.
+**Current status (May 21, 2026):** Pruned smoke release-candidate for controlled testing.
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
-This repository ships with two validation profiles:
+Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion.
+
+This repository can validate with two profiles:
 
 1. `smoke` — default release-candidate gate (fast, controlled-testing subset)
 2. `full` — expanded MCP validation gate (experimental, non-default; currently 12 MCP artifact/runtime targets)

@@ -4,6 +4,7 @@
 **Status:** Pruned smoke release candidate for controlled testing (smoke scope).
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
+All time-bound gate claims require fresh re-validation in the target environment before promotion.
 
 Validation profiles:
 
@@ -28,8 +29,8 @@ Agent Skills .................. ✅ Verified
 ToolForge grouped validation .. ✅ Passed on Python 3.12
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight)
-Unified validation ............ ✅ Passed (`overall_status=passed`)
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-21T23:45:47Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-21T23:45:32Z)
 Release readiness ............. ✅ Smoke release-candidate gate satisfied
 ```
 
@@ -54,7 +55,7 @@ Promotion gate is met **only when** required evidence artifacts show passing req
 - `toolathlon_mcp_smoke_summary.json`: `profile = smoke`, `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
 - `toolathlon_preflight_summary.json`: `profile = smoke` and `missing_count = 0`
 
-**Smoke-scope release-candidate gate is currently satisfied. Full profile remains optional/experimental and is not implied by this checklist. This is not a production security attestation.**
+**Smoke-scope release-candidate gate is satisfied for controlled testing based on fresh required artifacts for this environment. Full profile remains optional/experimental and is not implied by this checklist. This is not a production security attestation.**
 
 ### ⚠️ Security Disclaimer
 
