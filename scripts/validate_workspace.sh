@@ -568,20 +568,12 @@ docker_phase_start="$(date +%s)"
 if [ "$RUN_DOCKER" = "1" ]; then
   echo -e "${YELLOW}== Docker ==${NC}"
 
-  if run_step "Docker build" 3600 "$TOOLATHLON_DIR" "$DOCKER_BUILD_LOG" \
-    docker --context="$DOCKER_CONTEXT" buildx build --load -t toolathlon:repair .; then
-    if run_step "Docker preflight" 1800 "$TOOLATHLON_DIR" "$DOCKER_PREFLIGHT_LOG" \
-      docker --context="$DOCKER_CONTEXT" run --rm \
-        -v "$LOG_DIR:/validation_logs" \
-        toolathlon:repair \
-        python scripts/preflight_mcp_paths.py \
-        --json-output /validation_logs/docker_preflight_summary.json; then
-      DOCKER_STATUS="passed"
-    else
-      DOCKER_STATUS="failed"
-      failed=$((failed + 1))
-    fi
+  if run_step "Docker validation" 5400 "$TOOLATHLON_DIR" "$DOCKER_BUILD_LOG" \
+    env OUT_DIR="$LOG_DIR" DOCKER_CONTEXT="$DOCKER_CONTEXT" bash scripts/validate_docker.sh; then
+    printf '%s\n' "Docker validation completed via $TOOLATHLON_DIR/scripts/validate_docker.sh" > "$DOCKER_PREFLIGHT_LOG"
+    DOCKER_STATUS="passed"
   else
+    printf '%s\n' "Docker validation failed; inspect $DOCKER_BUILD_LOG for the combined build/smoke/preflight transcript." > "$DOCKER_PREFLIGHT_LOG"
     DOCKER_STATUS="failed"
     failed=$((failed + 1))
   fi
