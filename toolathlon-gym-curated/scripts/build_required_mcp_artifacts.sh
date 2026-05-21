@@ -184,6 +184,28 @@ artifact_exists() {
   [ -e "$path" ] && { [ -f "$path" ] || [ -L "$path" ]; }
 }
 
+node_runtime_ready() {
+  local pkg_dir="$1"
+  [ -d "$pkg_dir/node_modules" ]
+}
+
+python_runtime_ready() {
+  local pkg_dir="$1"
+  [ -d "$pkg_dir/.venv" ]
+}
+
+can_skip_existing_node() {
+  local pkg_dir="$1"
+  local artifact="$2"
+  artifact_exists "$artifact" && node_runtime_ready "$pkg_dir"
+}
+
+can_skip_existing_python() {
+  local pkg_dir="$1"
+  local artifact="$2"
+  artifact_exists "$artifact" && python_runtime_ready "$pkg_dir"
+}
+
 # Initialize JSON output
 init_build_summary() {
   mkdir -p "$(dirname "$BUILD_SUMMARY_FILE")"
@@ -419,13 +441,16 @@ maybe_build_node_package() {
   if [ "${FORCE_REBUILD:-0}" = "1" ]; then
     echo "→ Force rebuild requested for $name"
     build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
-  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
-    echo "✓ $name artifact already exists: $artifact (skipped)"
+  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && can_skip_existing_node "$pkg_dir" "$artifact"; then
+    echo "✓ $name artifact and runtime dependencies already exist: $artifact (skipped)"
     ensure_file "$artifact" "$name" || return 1
     local elapsed
     elapsed="$(( $(date +%s) - start ))"
-    record_package_result "$name" "passed" "$elapsed" "$artifact" "true"
+    record_package_result "$name" "passed" "$elapsed" "$artifact" "true" "runtime_ready_skip"
     return 0
+  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
+    echo "→ $name artifact exists but runtime dependencies are missing; rebuilding"
+    build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
   else
     build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
   fi
@@ -448,13 +473,16 @@ maybe_build_python_package() {
   if [ "${FORCE_REBUILD:-0}" = "1" ]; then
     echo "→ Force rebuild requested for $name"
     build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
-  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
-    echo "✓ $name artifact already exists: $artifact (skipped)"
+  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && can_skip_existing_python "$pkg_dir" "$artifact"; then
+    echo "✓ $name artifact and runtime dependencies already exist: $artifact (skipped)"
     ensure_file "$artifact" "$name" || return 1
     local elapsed
     elapsed="$(( $(date +%s) - start ))"
-    record_package_result "$name" "passed" "$elapsed" "$artifact" "true"
+    record_package_result "$name" "passed" "$elapsed" "$artifact" "true" "runtime_ready_skip"
     return 0
+  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
+    echo "→ $name artifact exists but runtime dependencies are missing; rebuilding"
+    build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
   else
     build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
   fi
