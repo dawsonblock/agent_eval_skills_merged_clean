@@ -414,9 +414,27 @@ fi
 
 if python "$TOOLATHLON_DIR/scripts/preflight_mcp_paths.py" \
   --json-output "$TOOLATHLON_PREFLIGHT_SUMMARY_JSON" 2>&1 | tee "$TOOLATHLON_PREFLIGHT_LOG"; then
-  echo "✓ MCP preflight passed"
-  if [ "$TOOLATHLON_STATUS" != "failed" ]; then
-    TOOLATHLON_STATUS="passed"
+  # Phase 9: Enforce missing_count = 0
+  missing_count=$(python - <<PYEOF
+import json
+from pathlib import Path
+
+try:
+    summary = json.loads(Path("$TOOLATHLON_PREFLIGHT_SUMMARY_JSON").read_text(encoding='utf-8'))
+    print(summary.get('missing_count', -1))
+except Exception as e:
+    print(-1)
+PYEOF
+)
+  if [ "$missing_count" = "0" ]; then
+    echo "✓ MCP preflight passed (missing_count = 0)"
+    if [ "$TOOLATHLON_STATUS" != "failed" ]; then
+      TOOLATHLON_STATUS="passed"
+    fi
+  else
+    echo -e "${RED}✗ MCP preflight found $missing_count missing paths${NC} (requirement: missing_count = 0)"
+    TOOLATHLON_STATUS="failed"
+    failed=$((failed + 1))
   fi
 else
   echo -e "${RED}✗ MCP preflight failed${NC} (log: $TOOLATHLON_PREFLIGHT_LOG)"
