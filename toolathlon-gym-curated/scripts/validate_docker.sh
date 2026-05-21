@@ -12,6 +12,7 @@ OUT_DIR="${OUT_DIR:-$TOOLATHLON_DIR/../.validation_logs}"
 DOCKER_PROGRESS="${DOCKER_PROGRESS:-auto}"
 DOCKER_INSTALL_PLAYWRIGHT="${DOCKER_INSTALL_PLAYWRIGHT:-0}"
 REBUILD_BASE_IMAGE="${REBUILD_BASE_IMAGE:-0}"
+DOCKER_SMOKE_SUMMARY_FILE="$OUT_DIR/docker_mcp_smoke_summary.json"
 
 mkdir -p "$OUT_DIR"
 
@@ -50,6 +51,16 @@ echo "Running preflight in container..."
 if ! docker --context="$DOCKER_CONTEXT" run --rm \
   -v "$OUT_DIR:/validation_logs" \
   "$IMAGE_NAME" \
+  python scripts/smoke_mcp_servers.py \
+  --json-output /validation_logs/docker_mcp_smoke_summary.json; then
+  echo "✗ Docker container MCP smoke tests failed"
+  exit 1
+fi
+
+echo "Running preflight in container..."
+if ! docker --context="$DOCKER_CONTEXT" run --rm \
+  -v "$OUT_DIR:/validation_logs" \
+  "$IMAGE_NAME" \
   python scripts/preflight_mcp_paths.py \
   --json-output /validation_logs/docker_preflight_summary.json; then
   echo "✗ Docker container preflight failed"
@@ -58,6 +69,7 @@ fi
 
 echo "✓ Docker validation passed"
 echo "Evidence: $OUT_DIR/docker_preflight_summary.json"
+echo "Evidence: $DOCKER_SMOKE_SUMMARY_FILE"
 echo "Docker context: $DOCKER_CONTEXT"
 echo "Docker progress mode: $DOCKER_PROGRESS"
 echo "Base image: $BASE_IMAGE_NAME"
