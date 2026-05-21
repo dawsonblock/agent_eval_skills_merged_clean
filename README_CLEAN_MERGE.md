@@ -14,14 +14,21 @@ Use this as controlled infrastructure for agent development:
 
 **Validation status:** Evidence-gated. Treat as strong repair candidate unless validation evidence artifacts are present and passing for the target environment.
 
+This repository ships with two validation profiles:
+
+1. `smoke` — default release-candidate gate
+2. `full` — expanded Toolathlon benchmark gate (experimental, non-default)
+
 **Required evidence artifacts:**
 
 - Unified summary JSON: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) (`overall_status = "passed"`)
-- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (`failed_count = 0`)
-- Toolathlon preflight JSON: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (`missing_count = 0`)
+- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (`profile` present, `failed_count = 0`, `package_count = expected_package_count`)
+- Toolathlon preflight JSON: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (`profile` present, `missing_count = 0`)
 - Phase logs: [.validation_logs/](.validation_logs/)
 
 **Promotion rule:** Evidence-gated only. If required evidence files are missing, stale, or show failing gates, classification must be downgraded to strong repair candidate. This is not a production security certification.
+
+Release-candidate status applies to the `smoke` profile unless full-profile evidence is explicitly present and passing.
 
 **Security disclaimer:** This package contains local MCP server code with reported npm vulnerabilities. Acceptable only for disposable benchmark containers and controlled developer labs. Do not run on production hosts or systems with sensitive data. Hostile-code isolation and security hardening are out of scope.
 

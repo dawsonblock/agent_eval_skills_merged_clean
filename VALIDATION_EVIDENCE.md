@@ -2,6 +2,11 @@
 
 This document defines the minimum evidence required to claim release-candidate status for controlled testing.
 
+Validation profiles:
+
+1. `smoke` — default release-candidate gate
+2. `full` — expanded Toolathlon gate (experimental, non-default)
+
 ## Required Artifacts
 
 - `.validation_logs/validation_summary.json`
@@ -15,7 +20,19 @@ This document defines the minimum evidence required to claim release-candidate s
 Run from repository root:
 
 ```bash
-bash scripts/validate_workspace.sh
+bash scripts/validate_smoke_workspace.sh
+```
+
+Equivalent explicit invocation:
+
+```bash
+TOOLATHLON_PROFILE=smoke bash scripts/validate_workspace.sh
+```
+
+Run extended full profile (experimental):
+
+```bash
+bash scripts/validate_full_workspace.sh
 ```
 
 Run Docker proof when Docker is available:
@@ -29,6 +46,12 @@ If your environment uses a non-default Docker context, set it explicitly:
 ```bash
 DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docker.sh
 ```
+
+## CI Behavior
+
+The repository CI workflow enforces `smoke` profile validation for default push and pull-request gates.
+
+An experimental `full` profile validation job is available via scheduled and manual workflow runs. That full-profile job is non-blocking and is intended for extended evidence collection, not default release gating.
 
 ## Evidence Interpretation
 
@@ -49,6 +72,7 @@ DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docke
 
 `toolathlon_mcp_smoke_summary.json` contains:
 
+- `profile`
 - `overall_status`
 - `target_count`
 - `passed_count`
@@ -64,6 +88,7 @@ DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docke
 | `toolathlon_mcp_smoke_summary.json` missing or failed | ❌ Strong repair candidate (runtime smoke proof missing) |
 | `toolathlon_preflight_summary.json` missing_count > 0 | ❌ Strong repair candidate (MCP paths missing) |
 | `toolathlon_artifact_build_summary.json` failed_count > 0 or package_count != expected_package_count | ❌ Strong repair candidate (artifact build failed or incomplete) |
+| Any required summary has `profile != smoke` for release-candidate claim | ❌ Strong repair candidate (wrong gate scope) |
 | Docker validation absent (RUN_DOCKER not set) | ⏸️ Docker-unverified (continue if host deployment only) |
 | All required summaries pass + smoke passes + missing_count = 0 + failed_count = 0 | ✅ Release candidate for controlled testing |
 
@@ -78,14 +103,16 @@ Claim release-candidate status only when:
    - `.validation_logs/toolathlon_mcp_smoke_summary.json`
 2. All required gates pass:
    - `validation_summary.json`: `overall_status = "passed"`
-   - `toolathlon_artifact_build_summary.json`: `overall_status = "passed"`, `expected_package_count = 12`, `package_count = expected_package_count`, `passed_count = expected_package_count`, `failed_count = 0`
-   - `toolathlon_mcp_smoke_summary.json`: `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
-   - `toolathlon_preflight_summary.json`: `missing_count = 0` and `found_count = 26`
+   - `toolathlon_artifact_build_summary.json`: `profile = "smoke"`, `overall_status = "passed"`, `package_count = expected_package_count`, `passed_count = expected_package_count`, `failed_count = 0`
+   - `toolathlon_mcp_smoke_summary.json`: `profile = "smoke"`, `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
+   - `toolathlon_preflight_summary.json`: `profile = "smoke"` and `missing_count = 0`
 3. Docker gate is either:
    - Proven in a Docker-capable environment (`docker_mcp_smoke_summary.json` with `overall_status = "passed"` and `docker_preflight_summary.json` with `missing_count = 0`), OR
    - Explicitly marked unavailable in the environment profile (set `RUN_DOCKER=0`)
 
 If any condition is not met, classify as strong repair candidate.
+
+`full` profile evidence can be collected for expanded validation but does not override smoke-gate requirements for release-candidate status.
 
 ## Dependency Risk & Security Scope
 
