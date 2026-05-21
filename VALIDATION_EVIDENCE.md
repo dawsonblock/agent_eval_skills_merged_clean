@@ -39,6 +39,7 @@ DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docke
 
 `toolathlon_preflight_summary.json` contains:
 
+- `status` (`"passed"` when `missing_count = 0`, else `"failed"`)
 - `found_count`
 - `missing_count`
 - `found` and `missing` path lists
