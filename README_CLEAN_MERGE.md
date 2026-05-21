@@ -12,7 +12,7 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
-Validation status: repair candidate, not release-ready. Do not treat this merged snapshot as a completed release gate until the workspace validates from a fresh extraction.
+Validation status: release candidate for controlled testing. Fresh-extraction validation and Docker preflight have passed.
 
 Current gate status:
 
@@ -22,15 +22,15 @@ ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
 ToolForge doctor .............. 🟡 Passes after dependency setup
-ToolForge full validation ..... 🟡 Pending supported Python and smaller test groups
-Toolathlon fresh preflight .... ❌ Fails before artifact build
-Toolathlon artifact builder ... ❌ Does not complete reliably under current timeout
-Docker validation ............. ❌ Build-context mismatch
-Unified validation ............ ❌ Not end-to-end passing
-Release readiness ............. ❌ Not ready
+ToolForge full validation ..... ✅ Passes with grouped tests on supported Python
+Toolathlon fresh preflight .... ✅ Passes after artifact build
+Toolathlon artifact builder ... ✅ Completes with per-package timeouts
+Docker validation ............. ✅ Build + in-container preflight pass
+Unified validation ............ ✅ Passing in current environment
+Release readiness ............. ✅ Release candidate (controlled testing)
 ```
 
-Promotion rule: this package can be called a release candidate only after a fresh extraction passes all validation gates.
+Promotion rule outcome: satisfied (fresh extraction + Docker preflight passed). This is not a production security certification.
 
 Do not drop this directly into production application code. Keep it under a `labs/`, `agents/`, or separate tooling repo.
 
