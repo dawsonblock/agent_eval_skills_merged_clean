@@ -198,6 +198,22 @@ required_artifacts = [Path(p) for p in sys.argv[4:]]
 with summary_path.open('r', encoding='utf-8') as f:
   data = json.load(f)
 
+# Keep only the latest result per package name so retries or overlapping runs
+# do not inflate package_count and cause false gate failures.
+packages = data.get('packages', [])
+latest_by_package = {}
+for entry in packages:
+  name = entry.get('package')
+  if name:
+    latest_by_package[name] = entry
+
+if len(latest_by_package) != len(packages):
+  data['packages'] = list(latest_by_package.values())
+
+data['package_count'] = len(data.get('packages', []))
+data['passed_count'] = sum(1 for p in data['packages'] if p.get('status') == 'passed')
+data['failed_count'] = sum(1 for p in data['packages'] if p.get('status') == 'failed')
+
 expected = int(data.get('expected_package_count', 0))
 package_count = int(data.get('package_count', 0))
 failed_count = int(data.get('failed_count', 0))
