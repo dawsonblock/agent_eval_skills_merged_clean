@@ -113,6 +113,47 @@ jobs:
               run: |
                   TOOLATHLON_PROFILE=smoke bash scripts/validate_workspace.sh
 
+            - name: Assert smoke profile evidence
+              run: |
+                  python - <<'PY'
+                  import json
+                  from pathlib import Path
+
+                  root = Path('.validation_logs')
+                  required = {
+                      'validation_summary.json': ('capabilities', 'toolathlon_profile'),
+                      'toolathlon_artifact_build_summary.json': ('profile',),
+                      'toolathlon_mcp_smoke_summary.json': ('profile',),
+                      'toolathlon_preflight_summary.json': ('profile',),
+                  }
+
+                  mismatches = []
+                  missing = []
+
+                  for filename, key_path in required.items():
+                      path = root / filename
+                      if not path.exists():
+                          missing.append(filename)
+                          continue
+                      data = json.loads(path.read_text(encoding='utf-8'))
+                      value = data
+                      for key in key_path:
+                          value = value.get(key) if isinstance(value, dict) else None
+                      if value != 'smoke':
+                          dotted = '.'.join(key_path)
+                          mismatches.append(f"{filename}:{dotted}={value!r}")
+
+                  if missing or mismatches:
+                      lines = []
+                      if missing:
+                          lines.append('missing files: ' + ', '.join(missing))
+                      if mismatches:
+                          lines.append('profile mismatches: ' + ', '.join(mismatches))
+                      raise SystemExit('Smoke evidence assertion failed: ' + '; '.join(lines))
+
+                  print('Smoke evidence assertion passed.')
+                  PY
+
     full-profile-validation:
         name: Full MCP Profile Validation (Experimental)
         runs-on: ubuntu-latest
@@ -135,3 +176,44 @@ jobs:
             - name: Run full profile validation (non-blocking)
               run: |
                   TOOLATHLON_PROFILE=full RUN_INTEGRATION=1 RUN_DOCKER=0 bash scripts/validate_workspace.sh
+
+            - name: Assert full profile evidence (non-blocking job)
+              run: |
+                  python - <<'PY'
+                  import json
+                  from pathlib import Path
+
+                  root = Path('.validation_logs')
+                  required = {
+                      'validation_summary.json': ('capabilities', 'toolathlon_profile'),
+                      'toolathlon_artifact_build_summary.json': ('profile',),
+                      'toolathlon_mcp_smoke_summary.json': ('profile',),
+                      'toolathlon_preflight_summary.json': ('profile',),
+                  }
+
+                  mismatches = []
+                  missing = []
+
+                  for filename, key_path in required.items():
+                      path = root / filename
+                      if not path.exists():
+                          missing.append(filename)
+                          continue
+                      data = json.loads(path.read_text(encoding='utf-8'))
+                      value = data
+                      for key in key_path:
+                          value = value.get(key) if isinstance(value, dict) else None
+                      if value != 'full':
+                          dotted = '.'.join(key_path)
+                          mismatches.append(f"{filename}:{dotted}={value!r}")
+
+                  if missing or mismatches:
+                      lines = []
+                      if missing:
+                          lines.append('missing files: ' + ', '.join(missing))
+                      if mismatches:
+                          lines.append('profile mismatches: ' + ', '.join(mismatches))
+                      raise SystemExit('Full evidence assertion failed: ' + '; '.join(lines))
+
+                  print('Full evidence assertion passed.')
+                  PY

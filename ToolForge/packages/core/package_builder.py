@@ -33,7 +33,7 @@ _EXCLUDE_PATTERNS = frozenset({
     "*.pem", "*.key", "*.p12", "*.pfx", "*.crt",
     "credentials*", "token*", "secret*", "password*",
     "__pycache__", ".pytest_cache", "node_modules",
-    ".git", ".gitignore", ".DS_Store",
+    ".git", ".gitignore", ".DS_Store", "__MACOSX", "._*",
     "*.pyc", "*.pyo",
     "dist", "build", "*.egg-info",
     "runs", "logs", "outputs", "htmlcov", ".venv", "venv",

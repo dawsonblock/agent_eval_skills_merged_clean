@@ -23,12 +23,13 @@ This repository ships with two validation profiles:
 
 - Unified summary JSON: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) (`overall_status = "passed"`)
 - Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (`profile` present, `failed_count = 0`, `package_count = expected_package_count`)
+- Toolathlon MCP smoke summary: [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json) (`profile` present, `overall_status = "passed"`, `failed_count = 0`, `passed_count = target_count`)
 - Toolathlon preflight JSON: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (`profile` present, `missing_count = 0`)
 - Phase logs: [.validation_logs/](.validation_logs/)
 
 **Promotion rule:** Evidence-gated only. If required evidence files are missing, stale, or show failing gates, classification must be downgraded to strong repair candidate. This is not a production security certification.
 
-Release-candidate status applies to the `smoke` profile unless full-profile evidence is explicitly present and passing.
+Release-candidate status applies to the `smoke` profile unless full-profile evidence is explicitly presented as a separate, non-default claim. For smoke release-candidate claims, all required summaries must show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary).
 
 **Security disclaimer:** This package contains local MCP server code with reported npm vulnerabilities. Acceptable only for disposable benchmark containers and controlled developer labs. Do not run on production hosts or systems with sensitive data. Hostile-code isolation and security hardening are out of scope.
 

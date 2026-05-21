@@ -14,6 +14,7 @@ Validation profiles:
 
 - [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) — must have `overall_status = "passed"`
 - [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) — must have `profile = smoke`, `failed_count = 0`, and `package_count = expected_package_count`
+- [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json) — must have `profile = smoke`, `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
 - [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) — must have `profile = smoke` and `missing_count = 0`
 - [.validation_logs/](.validation_logs/) — phase logs for audit trail
 
@@ -51,6 +52,7 @@ Promotion gate is met **only when** required evidence artifacts show passing req
 
 - `validation_summary.json`: `overall_status = "passed"`
 - `toolathlon_artifact_build_summary.json`: `profile = smoke`, `failed_count = 0`, and `overall_status = "passed"`
+- `toolathlon_mcp_smoke_summary.json`: `profile = smoke`, `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
 - `toolathlon_preflight_summary.json`: `profile = smoke` and `missing_count = 0`
 
 **This repository is not a release candidate unless required evidence gates pass in the target environment. It is not a production security attestation.**
