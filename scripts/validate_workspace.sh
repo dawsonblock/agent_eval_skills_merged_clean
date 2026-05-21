@@ -10,6 +10,7 @@ AGENT_SKILLS_DIR="$REPO_ROOT/agent-skills-curated"
 TOOLATHLON_DIR="$REPO_ROOT/toolathlon-gym-curated"
 RUN_INTEGRATION="${RUN_INTEGRATION:-0}"
 RUN_DOCKER="${RUN_DOCKER:-0}"
+DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -454,9 +455,9 @@ if [ "$RUN_DOCKER" = "1" ]; then
   echo -e "${YELLOW}== Docker ==${NC}"
 
   if run_step "Docker build" 3600 "$TOOLATHLON_DIR" "$DOCKER_BUILD_LOG" \
-    docker build -t toolathlon:repair .; then
+    docker --context="$DOCKER_CONTEXT" buildx build --load -t toolathlon:repair .; then
     if run_step "Docker preflight" 1800 "$TOOLATHLON_DIR" "$DOCKER_PREFLIGHT_LOG" \
-      docker run --rm toolathlon:repair python scripts/preflight_mcp_paths.py; then
+      docker --context="$DOCKER_CONTEXT" run --rm toolathlon:repair python scripts/preflight_mcp_paths.py; then
       DOCKER_STATUS="passed"
     else
       DOCKER_STATUS="failed"
