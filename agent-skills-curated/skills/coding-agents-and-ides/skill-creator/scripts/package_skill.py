@@ -30,6 +30,20 @@ from pathlib import Path
 from quick_validate import validate_skill
 
 
+_EXCLUDED_NAMES = {".DS_Store", "__MACOSX"}
+_EXCLUDED_PREFIXES = ("._",)
+
+
+def _should_exclude(file_path: Path) -> bool:
+    """Exclude macOS metadata artifacts from packaged skill archives."""
+    if any(part == "__MACOSX" for part in file_path.parts):
+        return True
+    name = file_path.name
+    if name in _EXCLUDED_NAMES:
+        return True
+    return name.startswith(_EXCLUDED_PREFIXES)
+
+
 def package_skill(skill_path, output_dir=None):
     """
     Package a skill folder into a .skill file.
@@ -82,7 +96,7 @@ def package_skill(skill_path, output_dir=None):
         with zipfile.ZipFile(skill_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Walk through the skill directory
             for file_path in skill_path.rglob('*'):
-                if file_path.is_file():
+                if file_path.is_file() and not _should_exclude(file_path):
                     # Calculate the relative path within the zip
                     arcname = file_path.relative_to(skill_path.parent)
                     zipf.write(file_path, arcname)

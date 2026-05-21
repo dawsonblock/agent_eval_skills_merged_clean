@@ -14,7 +14,9 @@
 
 ## Overview
 
-**Current status:** Evidence-gated. Classify as strong repair candidate unless the evidence artifacts listed below are present, current, and passing for the target environment.
+**Current status:** Pruned smoke release candidate for controlled testing.
+
+Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
 This repository ships with two validation profiles:
 
@@ -35,6 +37,8 @@ This repository ships with two validation profiles:
 **Gate Rule:** If any artifact is missing, stale, or shows a failing gate, classify the repository as **strong repair candidate**, not release-ready.
 
 Release-candidate status applies to the `smoke` profile by default. The `full` profile remains available for extended validation and should only be claimed when separate full-profile evidence is present.
+
+For release-candidate claims, all required summary artifacts must explicitly show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary). Evidence generated with `TOOLATHLON_PROFILE=full` does not satisfy the default release-candidate gate.
 
 Note: Profile-aware task manifests are retained under `toolathlon-gym-curated/profiles/`, but task selection is not yet enforced by the default validation scripts.
 
