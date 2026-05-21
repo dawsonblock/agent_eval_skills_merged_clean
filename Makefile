@@ -108,6 +108,14 @@ eval-csv:       ## Run evals for csv-cleaner (expects 100% pass rate)
 build-csv:      ## Package csv-cleaner to dist/
 	cd $(TOOLFORGE_DIR) && toolforge package csv-cleaner
 
+.PHONY: release-zip
+release-zip:    ## Build and validate a metadata-clean distribution ZIP
+	bash scripts/create_release_zip.sh
+
+.PHONY: package-clean-zip
+package-clean-zip: ## Build requested pruned-smoke clean ZIP name/location
+	bash scripts/package_clean_zip.sh
+
 # ── clean ────────────────────────────────────
 
 .PHONY: clean
