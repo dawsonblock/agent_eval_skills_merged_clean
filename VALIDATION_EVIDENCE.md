@@ -19,9 +19,13 @@ bash scripts/validate_workspace.sh
 Run Docker proof when Docker is available:
 
 ```bash
-cd toolathlon-gym-curated
-docker build -t toolathlon:repair .
-docker run --rm toolathlon:repair python scripts/preflight_mcp_paths.py --json-output /workspace/.validation_logs/toolathlon_preflight_summary.json
+DOCKER_CONTEXT=default bash toolathlon-gym-curated/scripts/validate_docker.sh
+```
+
+If your environment uses a non-default Docker context, set it explicitly:
+
+```bash
+DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docker.sh
 ```
 
 ## Evidence Interpretation

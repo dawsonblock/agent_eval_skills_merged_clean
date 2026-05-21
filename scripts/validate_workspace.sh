@@ -56,6 +56,7 @@ TOOLATHLON_PREFLIGHT_SUMMARY_JSON="$LOG_DIR/toolathlon_preflight_summary.json"
 TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON="$LOG_DIR/toolathlon_artifact_build_summary.json"
 DOCKER_BUILD_LOG="$LOG_DIR/docker_build.log"
 DOCKER_PREFLIGHT_LOG="$LOG_DIR/docker_preflight.log"
+DOCKER_PREFLIGHT_SUMMARY_JSON="$LOG_DIR/docker_preflight_summary.json"
 VALIDATION_SUMMARY_JSON="$LOG_DIR/validation_summary.json"
 
 # Clear logs from prior runs.
@@ -75,6 +76,7 @@ VALIDATION_SUMMARY_JSON="$LOG_DIR/validation_summary.json"
 : > "$TOOLATHLON_PREFLIGHT_LOG"
 : > "$DOCKER_BUILD_LOG"
 : > "$DOCKER_PREFLIGHT_LOG"
+rm -f "$DOCKER_PREFLIGHT_SUMMARY_JSON"
 
 if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   HAVE_GIT=1
@@ -163,7 +165,7 @@ write_validation_summary() {
   export AGENT_SKILLS_LIST_LOG AGENT_SKILLS_EVAL_LOG
   export TOOLATHLON_BUILD_LOG TOOLATHLON_PREFLIGHT_LOG TOOLATHLON_PREFLIGHT_SUMMARY_JSON
   export TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON
-  export DOCKER_BUILD_LOG DOCKER_PREFLIGHT_LOG VALIDATION_SUMMARY_JSON
+  export DOCKER_BUILD_LOG DOCKER_PREFLIGHT_LOG DOCKER_PREFLIGHT_SUMMARY_JSON VALIDATION_SUMMARY_JSON
 
   VALIDATION_FAILED_COUNT="$failed" \
   RUN_FINISHED_AT="$run_finished_at" \
@@ -243,7 +245,11 @@ summary = {
             "docker",
             os.environ["DOCKER_STATUS"],
             "DOCKER_DURATION_SECONDS",
-            [os.environ["DOCKER_BUILD_LOG"], os.environ["DOCKER_PREFLIGHT_LOG"]],
+          [
+            os.environ["DOCKER_BUILD_LOG"],
+            os.environ["DOCKER_PREFLIGHT_LOG"],
+            os.environ["DOCKER_PREFLIGHT_SUMMARY_JSON"],
+          ],
         ),
     ],
 }
@@ -457,7 +463,11 @@ if [ "$RUN_DOCKER" = "1" ]; then
   if run_step "Docker build" 3600 "$TOOLATHLON_DIR" "$DOCKER_BUILD_LOG" \
     docker --context="$DOCKER_CONTEXT" buildx build --load -t toolathlon:repair .; then
     if run_step "Docker preflight" 1800 "$TOOLATHLON_DIR" "$DOCKER_PREFLIGHT_LOG" \
-      docker --context="$DOCKER_CONTEXT" run --rm toolathlon:repair python scripts/preflight_mcp_paths.py; then
+      docker --context="$DOCKER_CONTEXT" run --rm \
+        -v "$LOG_DIR:/validation_logs" \
+        toolathlon:repair \
+        python scripts/preflight_mcp_paths.py \
+        --json-output /validation_logs/docker_preflight_summary.json; then
       DOCKER_STATUS="passed"
     else
       DOCKER_STATUS="failed"
