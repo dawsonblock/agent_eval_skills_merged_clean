@@ -53,5 +53,6 @@ COPY local_servers/ /opt/local_servers/
 ENV LOCAL_SERVERS_PATH="/opt/local_servers"
 WORKDIR /workspace
 RUN bash scripts/build_required_mcp_artifacts.sh
+RUN python scripts/preflight_mcp_paths.py
 
 CMD ["/bin/bash"]

@@ -12,7 +12,7 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
-Validation status: release candidate for controlled testing. Fresh-extraction validation and Docker preflight have passed.
+Validation status: release candidate for controlled testing. Validation gates were reproduced in this environment, including Toolathlon artifact/preflight and Docker preflight.
 
 Current gate status:
 
@@ -30,7 +30,7 @@ Unified validation ............ ✅ Passing in current environment
 Release readiness ............. ✅ Release candidate (controlled testing)
 ```
 
-Promotion rule outcome: satisfied (fresh extraction + Docker preflight passed). This is not a production security certification.
+Promotion rule outcome: satisfied in current environment (unified validation plus separate Docker preflight evidence). This is not a production security certification.
 
 Do not drop this directly into production application code. Keep it under a `labs/`, `agents/`, or separate tooling repo.
 

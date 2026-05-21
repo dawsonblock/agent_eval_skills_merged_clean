@@ -24,11 +24,11 @@ Release readiness ............. ✅ Release candidate (controlled testing)
 
 ## Promotion Rule
 
-Release-candidate gate is satisfied when fresh extraction passes validation gates and Docker preflight succeeds. Production-grade claims remain out of scope pending separate hostile-code/runtime security audit.
+Release-candidate gate is satisfied in this environment after unified validation pass and separate Docker preflight proof. Production-grade claims remain out of scope pending separate hostile-code/runtime security audit.
 
 ## Notes
 
 - Agent Skills and syntax hygiene are currently the strongest validated areas.
 - ToolForge validation now reports phase-level outcomes with stable logs in `.validation_logs/`.
-- Fresh extraction validation passed from `/tmp/agent_eval_test/extract`.
-- Docker build and in-container preflight passed with `toolathlon:repair`.
+- ToolForge grouped validation, Agent Skills evaluation, and Toolathlon artifact build plus preflight were reproduced in the latest unified run.
+- Docker preflight was re-verified separately with `Missing: 0` using `toolathlon:repair`.
