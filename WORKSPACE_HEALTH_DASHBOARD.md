@@ -2,7 +2,7 @@
 
 **Date:** May 20, 2026  
 **Scope:** agent_eval_skills_merged_clean  
-**Classification:** Release candidate for controlled testing.
+**Classification:** Evidence-gated. Treat as strong repair candidate until all required artifacts are freshly regenerated and passing.
 
 This dashboard is an evidence tracker. It is not a release declaration.
 
@@ -21,12 +21,12 @@ ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
 ToolForge doctor .............. 🟡 Passes after dependency setup
-ToolForge full validation ..... ✅ Passes with grouped tests on supported Python
-Toolathlon fresh preflight .... ✅ Passes after artifact build
-Toolathlon artifact builder ... ✅ Completes with per-package timeouts
-Docker validation ............. ✅ Build + in-container preflight pass
-Unified validation ............ ✅ Passing in current environment
-Release readiness ............. ✅ Release candidate (controlled testing)
+ToolForge full validation ..... ⚪ Requires fresh supported-Python proof
+Toolathlon fresh preflight .... ⚪ Requires fresh post-build Missing: 0 proof
+Toolathlon artifact builder ... ⚪ Requires summary gate pass (`overall_status=passed`, `failed_count=0`, `package_count=expected_package_count`)
+Docker validation ............. ⚪ Requires fresh Docker-host proof
+Unified validation ............ ⚪ Requires fresh end-to-end passing run
+Release readiness ............. ⚪ Conditional on required evidence gates
 ```
 
 ## Promotion Rule

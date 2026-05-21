@@ -416,6 +416,59 @@ echo -e "${YELLOW}== Toolathlon ==${NC}"
 if python "$REPO_ROOT/scripts/run_with_timeout.py" --timeout 1800 -- \
   bash "$TOOLATHLON_DIR/scripts/build_required_mcp_artifacts.sh" 2>&1 | tee "$TOOLATHLON_BUILD_LOG"; then
   echo "✓ Required MCP artifacts built"
+
+  if artifact_summary_gate=$(python - <<PYEOF
+import json
+from pathlib import Path
+
+summary_path = Path("$TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON")
+
+if not summary_path.exists():
+    print("missing_summary")
+    raise SystemExit(1)
+
+try:
+    summary = json.loads(summary_path.read_text(encoding='utf-8'))
+except Exception:
+    print("invalid_json")
+    raise SystemExit(1)
+
+overall_status = summary.get('overall_status')
+failed_count = summary.get('failed_count')
+package_count = summary.get('package_count')
+expected_count = summary.get('expected_package_count')
+
+if overall_status != 'passed':
+    print(f"overall_status={overall_status}")
+    raise SystemExit(1)
+
+if failed_count != 0:
+    print(f"failed_count={failed_count}")
+    raise SystemExit(1)
+
+if expected_count is None:
+    print("expected_package_count=missing")
+    raise SystemExit(1)
+
+if package_count != expected_count:
+    print(f"package_count={package_count} expected_package_count={expected_count}")
+    raise SystemExit(1)
+
+print(f"package_count={package_count} expected_package_count={expected_count} failed_count={failed_count} overall_status={overall_status}")
+PYEOF
+); then
+    if [ -n "$artifact_summary_gate" ]; then
+      echo "Artifact summary gate details: $artifact_summary_gate" | tee -a "$TOOLATHLON_BUILD_LOG"
+    fi
+    echo "✓ MCP artifact summary gate passed"
+  else
+    echo -e "${RED}✗ MCP artifact summary gate failed${NC} (requirement: overall_status=passed, failed_count=0, package_count=expected_package_count)"
+    if [ -n "${artifact_summary_gate:-}" ]; then
+      echo "Artifact summary gate details: ${artifact_summary_gate}" | tee -a "$TOOLATHLON_BUILD_LOG"
+    fi
+    TOOLATHLON_STATUS="failed"
+    failed=$((failed + 1))
+  fi
 else
   echo -e "${RED}✗ MCP artifact build failed or timed out${NC} (log: $TOOLATHLON_BUILD_LOG)"
   TOOLATHLON_STATUS="failed"

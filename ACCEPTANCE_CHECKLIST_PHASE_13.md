@@ -1,7 +1,7 @@
 # Phase 13 Acceptance Checklist
 
 **Date:** May 20, 2026  
-**Status:** Release candidate for controlled testing.
+**Status:** Evidence-gated. Treat as strong repair candidate until all required artifacts are freshly regenerated and passing.
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 
@@ -20,12 +20,12 @@ ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
 ToolForge doctor .............. 🟡 Passes after dependency setup
-ToolForge full validation ..... ✅ Passes with grouped tests on supported Python
-Toolathlon fresh preflight .... ✅ Passes after artifact build
-Toolathlon artifact builder ... ✅ Completes with per-package timeouts
-Docker validation ............. ✅ Build + in-container preflight pass
-Unified validation ............ ✅ Passing in current environment
-Release readiness ............. ✅ Release candidate (controlled testing)
+ToolForge full validation ..... ⚪ Requires fresh supported-Python proof
+Toolathlon fresh preflight .... ⚪ Requires fresh post-build Missing: 0 proof
+Toolathlon artifact builder ... ⚪ Requires summary gate pass (`overall_status=passed`, `failed_count=0`, `package_count=expected_package_count`)
+Docker validation ............. ⚪ Requires fresh Docker-host proof
+Unified validation ............ ⚪ Requires fresh end-to-end passing run
+Release readiness ............. ⚪ Conditional on required evidence gates
 ```
 
 ## Acceptance Gates
@@ -33,12 +33,12 @@ Release readiness ............. ✅ Release candidate (controlled testing)
 - [x] Repository can be cleaned with `scripts/clean_workspace.sh`.
 - [x] Agent Skills inventory is present and evaluable.
 - [x] Python source syntax can be checked cleanly.
-- [x] ToolForge validation passes on supported Python with phase-group logs.
-- [x] Toolathlon artifact build completes deterministically.
-- [x] Toolathlon preflight passes immediately after artifact build.
-- [x] Docker build uses one canonical context and fails honestly on required build failure.
-- [x] Docker preflight passes inside container.
-- [x] Unified validation passes end-to-end from a fresh extraction.
+- [ ] ToolForge validation passes on supported Python with phase-group logs.
+- [ ] Toolathlon artifact build completes deterministically.
+- [ ] Toolathlon preflight passes immediately after artifact build.
+- [ ] Docker build uses one canonical context and fails honestly on required build failure.
+- [ ] Docker preflight passes inside container.
+- [ ] Unified validation passes end-to-end from a fresh extraction.
 
 ## Release Promotion Rule
 
@@ -48,7 +48,7 @@ Promotion gate is met **only when** required evidence artifacts show passing req
 - `toolathlon_artifact_build_summary.json`: `failed_count = 0` and `overall_status = "passed"`
 - `toolathlon_preflight_summary.json`: `missing_count = 0` and `found_count = 26`
 
-**This repository is a release candidate for controlled testing. It is not a production security attestation.**
+**This repository is not a release candidate unless required evidence gates pass in the target environment. It is not a production security attestation.**
 
 ### ⚠️ Security Disclaimer
 

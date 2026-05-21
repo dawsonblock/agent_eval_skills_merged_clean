@@ -14,7 +14,7 @@
 
 ## Overview
 
-**Current status:** Release candidate for controlled testing **only when** the evidence artifacts listed below are present, current, and passing for the target environment.
+**Current status:** Evidence-gated. Classify as strong repair candidate unless the evidence artifacts listed below are present, current, and passing for the target environment.
 
 **This repository is not a production security attestation.** Promotion remains scoped to controlled testing and still requires re-validation in any new environment.
 

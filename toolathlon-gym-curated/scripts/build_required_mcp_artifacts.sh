@@ -8,6 +8,7 @@ LOCAL_SERVERS_DIR="${LOCAL_SERVERS_PATH:-$ROOT_DIR/local_servers}"
 SKIP_EXISTING_ARTIFACTS="${SKIP_EXISTING_ARTIFACTS:-0}"
 FORCE_REBUILD="${FORCE_REBUILD:-0}"
 BUILD_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_artifact_build_summary.json"
+EXPECTED_PACKAGE_COUNT=12
 
 echo "Using LOCAL_SERVERS_DIR=$LOCAL_SERVERS_DIR"
 echo "SKIP_EXISTING_ARTIFACTS=$SKIP_EXISTING_ARTIFACTS"
@@ -92,15 +93,43 @@ artifact_exists() {
 # Initialize JSON output
 init_build_summary() {
   mkdir -p "$(dirname "$BUILD_SUMMARY_FILE")"
-  cat >"$BUILD_SUMMARY_FILE" <<'EOF'
+  cat >"$BUILD_SUMMARY_FILE" <<EOF
 {
   "overall_status": "in_progress",
+  "expected_package_count": ${EXPECTED_PACKAGE_COUNT},
   "package_count": 0,
   "passed_count": 0,
   "failed_count": 0,
   "packages": []
 }
 EOF
+}
+
+mark_build_failed_if_in_progress() {
+  local reason="${1:-build_interrupted}"
+
+  if [ ! -f "$BUILD_SUMMARY_FILE" ]; then
+    return 0
+  fi
+
+  python3 - "$BUILD_SUMMARY_FILE" "$reason" <<'PYEOF'
+import json
+import sys
+
+summary_file = sys.argv[1]
+reason = sys.argv[2]
+
+with open(summary_file, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+if data.get('overall_status') != 'passed':
+    data['overall_status'] = 'failed'
+    if not data.get('reason'):
+        data['reason'] = reason
+
+with open(summary_file, 'w', encoding='utf-8') as f:
+    json.dump(data, f, indent=2)
+PYEOF
 }
 
 # Append a package result to JSON
@@ -144,13 +173,66 @@ if status == 'passed':
 elif status == 'failed':
     data['failed_count'] += 1
 
-if data['failed_count'] > 0:
-    data['overall_status'] = 'failed'
-else:
-    data['overall_status'] = 'passed'
-
 with open(summary_file, 'w') as f:
     json.dump(data, f, indent=2)
+PYEOF
+}
+
+finalize_build_summary() {
+  local preflight_json="$1"
+  shift
+
+  python3 - "$BUILD_SUMMARY_FILE" "$preflight_json" "$@" <<'PYEOF'
+import json
+import sys
+from pathlib import Path
+
+summary_path = Path(sys.argv[1])
+preflight_path = Path(sys.argv[2])
+required_artifacts = [Path(p) for p in sys.argv[3:]]
+
+with summary_path.open('r', encoding='utf-8') as f:
+  data = json.load(f)
+
+expected = int(data.get('expected_package_count', 0))
+package_count = int(data.get('package_count', 0))
+failed_count = int(data.get('failed_count', 0))
+
+reasons = []
+
+if failed_count != 0:
+  reasons.append(f"failed_count={failed_count}")
+
+if package_count != expected:
+  reasons.append(f"incomplete_build: expected {expected}, got {package_count}")
+
+missing_artifacts = [str(p) for p in required_artifacts if not (p.exists() and (p.is_file() or p.is_symlink()))]
+if missing_artifacts:
+  reasons.append(f"artifact_missing: {', '.join(missing_artifacts)}")
+
+preflight_missing = None
+if preflight_path.exists():
+  try:
+    with preflight_path.open('r', encoding='utf-8') as f:
+      preflight = json.load(f)
+    preflight_missing = int(preflight.get('missing_count', -1))
+  except Exception as exc:
+    reasons.append(f"preflight_parse_error: {exc}")
+else:
+  reasons.append("preflight_summary_missing")
+
+if preflight_missing is not None and preflight_missing != 0:
+  reasons.append(f"preflight_missing_count={preflight_missing}")
+
+if reasons:
+  data['overall_status'] = 'failed'
+  data['reason'] = '; '.join(reasons)
+else:
+  data['overall_status'] = 'passed'
+  data.pop('reason', None)
+
+with summary_path.open('w', encoding='utf-8') as f:
+  json.dump(data, f, indent=2)
 PYEOF
 }
 
@@ -210,15 +292,17 @@ maybe_build_node_package() {
     echo "→ Force rebuild requested for $name"
     build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
   elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
+    echo "✓ $name artifact already exists: $artifact (skipped)"
+    ensure_file "$artifact" "$name" || return 1
     local elapsed
     elapsed="$(( $(date +%s) - start ))"
-    echo "✓ $name artifact already exists: $artifact (skipped)"
     record_package_result "$name" "passed" "$elapsed" "$artifact" "true"
     return 0
   else
     build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
   fi
 
+  ensure_file "$artifact" "$name" || return 1
   local elapsed
   elapsed="$(( $(date +%s) - start ))"
   record_package_result "$name" "passed" "$elapsed" "$artifact"
@@ -236,100 +320,134 @@ maybe_build_python_package() {
     echo "→ Force rebuild requested for $name"
     build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
   elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
+    echo "✓ $name artifact already exists: $artifact (skipped)"
+    ensure_file "$artifact" "$name" || return 1
     local elapsed
     elapsed="$(( $(date +%s) - start ))"
-    echo "✓ $name artifact already exists: $artifact (skipped)"
     record_package_result "$name" "passed" "$elapsed" "$artifact" "true"
     return 0
   else
     build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
   fi
 
+  ensure_file "$artifact" "$name" || return 1
   local elapsed
   elapsed="$(( $(date +%s) - start ))"
   record_package_result "$name" "passed" "$elapsed" "$artifact"
+}
+
+fail_package() {
+  local name="$1"
+  local timeout_sec="$2"
+  local artifact="$3"
+  local reason="$4"
+
+  record_package_result "$name" "failed" "$timeout_sec" "$artifact" "false" "$reason"
+  mark_build_failed_if_in_progress "$reason"
 }
 
 echo "Building required MCP artifacts in $LOCAL_SERVERS_DIR"
 
 # Initialize JSON summary
 init_build_summary
+trap 'mark_build_failed_if_in_progress "build_error"' ERR
+trap 'mark_build_failed_if_in_progress "build_interrupted"; exit 130' INT TERM
 
 # Build each package, recording results
 maybe_build_node_package "rail_12306" 300 "$LOCAL_SERVERS_DIR/12306-mcp" "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" || {
-  record_package_result "rail_12306" "failed" 300 "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" "false" "build_error"
+  fail_package "rail_12306" 300 "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" "rail_12306" || exit 1
 
 maybe_build_node_package "filesystem" 300 "$LOCAL_SERVERS_DIR/filesystem" "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" || {
-  record_package_result "filesystem" "failed" 300 "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" "false" "build_error"
+  fail_package "filesystem" 300 "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" "filesystem" || exit 1
 
 maybe_build_node_package "google_calendar" 180 "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" || {
-  record_package_result "google_calendar" "failed" 180 "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "false" "build_error"
+  fail_package "google_calendar" 180 "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "google_calendar" || exit 1
 
 maybe_build_node_package "canvas" 900 "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" || {
-  record_package_result "canvas" "failed" 900 "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "false" "timeout_or_build_error"
+  fail_package "canvas" 900 "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "timeout_or_build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" "canvas" || exit 1
 
 maybe_build_node_package "howtocook" 300 "$LOCAL_SERVERS_DIR/HowToCook-mcp" "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" || {
-  record_package_result "howtocook" "failed" 300 "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "false" "build_error"
+  fail_package "howtocook" 300 "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" "howtocook" || exit 1
 
 maybe_build_node_package "memory" 300 "$LOCAL_SERVERS_DIR/servers/src/memory" "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" || {
-  record_package_result "memory" "failed" 300 "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "false" "build_error"
+  fail_package "memory" 300 "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" "memory" || exit 1
 
 maybe_build_node_package "google_forms" 300 "$LOCAL_SERVERS_DIR/google-forms-mcp" "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" || {
-  record_package_result "google_forms" "failed" 300 "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "false" "build_error"
+  fail_package "google_forms" 300 "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" "google_forms" || exit 1
 
 maybe_build_node_package "fetch" 300 "$LOCAL_SERVERS_DIR/mcp-npx-fetch" "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" || {
-  record_package_result "fetch" "failed" 300 "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "false" "build_error"
+  fail_package "fetch" 300 "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" "fetch" || exit 1
 
 maybe_build_node_package "notion" 900 "$LOCAL_SERVERS_DIR/notion-mcp-server" "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" || {
-  record_package_result "notion" "failed" 900 "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "false" "timeout_or_build_error"
+  fail_package "notion" 900 "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "timeout_or_build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" "notion" || exit 1
 
 maybe_build_node_package "woocommerce" 300 "$LOCAL_SERVERS_DIR/woocommerce-mcp" "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" || {
-  record_package_result "woocommerce" "failed" 300 "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "false" "build_error"
+  fail_package "woocommerce" 300 "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" "woocommerce" || exit 1
 
 maybe_build_node_package "youtube" 600 "$LOCAL_SERVERS_DIR/youtube-mcp-server" "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" || {
-  record_package_result "youtube" "failed" 600 "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "false" "build_error"
+  fail_package "youtube" 600 "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "youtube" || exit 1
 
 maybe_build_python_package "youtube_transcript" 900 "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" || {
-  record_package_result "youtube_transcript" "failed" 900 "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "false" "timeout_or_build_error"
+  fail_package "youtube_transcript" 900 "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "timeout_or_build_error"
   exit 1
 }
-ensure_file "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "youtube_transcript" || exit 1
 
 cd "$ROOT_DIR"
-python scripts/preflight_mcp_paths.py --json-output ../.validation_logs/toolathlon_preflight_summary.json
+PREFLIGHT_SUMMARY_JSON="${ROOT_DIR}/../.validation_logs/toolathlon_preflight_summary.json"
+if ! python scripts/preflight_mcp_paths.py --json-output "$PREFLIGHT_SUMMARY_JSON"; then
+  mark_build_failed_if_in_progress "preflight_failed"
+fi
+
+finalize_build_summary "$PREFLIGHT_SUMMARY_JSON" \
+  "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" \
+  "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" \
+  "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" \
+  "$LOCAL_SERVERS_DIR/mcp-canvas-lms/build/index.js" \
+  "$LOCAL_SERVERS_DIR/HowToCook-mcp/build/index.js" \
+  "$LOCAL_SERVERS_DIR/servers/src/memory/dist/index.js" \
+  "$LOCAL_SERVERS_DIR/google-forms-mcp/build/index.js" \
+  "$LOCAL_SERVERS_DIR/mcp-npx-fetch/dist/index.js" \
+  "$LOCAL_SERVERS_DIR/notion-mcp-server/bin/cli.mjs" \
+  "$LOCAL_SERVERS_DIR/woocommerce-mcp/dist/index.js" \
+  "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" \
+  "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3"
+
+summary_status=$(python3 - "$BUILD_SUMMARY_FILE" <<'PYEOF'
+import json
+import sys
+
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
+    data = json.load(f)
+print(data.get('overall_status', 'failed'))
+PYEOF
+)
+
+if [ "$summary_status" != "passed" ]; then
+  echo "✗ Required MCP artifacts build summary did not pass. See $BUILD_SUMMARY_FILE" >&2
+  exit 1
+fi
 
 echo "✓ Required MCP artifacts built successfully."
 echo "Build summary: $BUILD_SUMMARY_FILE"

@@ -12,7 +12,7 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
-**Validation status:** Release candidate for controlled testing **only when** validation evidence artifacts are present and passing for the target environment.
+**Validation status:** Evidence-gated. Treat as strong repair candidate unless validation evidence artifacts are present and passing for the target environment.
 
 **Required evidence artifacts:**
 
