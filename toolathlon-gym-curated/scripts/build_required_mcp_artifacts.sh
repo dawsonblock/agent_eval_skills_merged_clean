@@ -7,7 +7,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 LOCAL_SERVERS_DIR="${LOCAL_SERVERS_PATH:-$ROOT_DIR/local_servers}"
 SKIP_EXISTING_ARTIFACTS="${SKIP_EXISTING_ARTIFACTS:-0}"
 FORCE_REBUILD="${FORCE_REBUILD:-0}"
-TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
+export TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
 BUILD_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_artifact_build_summary.json"
 SMOKE_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_mcp_smoke_summary.json"
 
