@@ -51,9 +51,10 @@ AGENT_SKILLS_LIST_LOG="$LOG_DIR/agent_skills_list.log"
 AGENT_SKILLS_EVAL_LOG="$LOG_DIR/agent_skills_eval.log"
 TOOLATHLON_BUILD_LOG="$LOG_DIR/toolathlon_artifact_build.log"
 TOOLATHLON_PREFLIGHT_LOG="$LOG_DIR/toolathlon_preflight.log"
+TOOLATHLON_PREFLIGHT_SUMMARY_JSON="$LOG_DIR/toolathlon_preflight_summary.json"
+TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON="$LOG_DIR/toolathlon_artifact_build_summary.json"
 DOCKER_BUILD_LOG="$LOG_DIR/docker_build.log"
 DOCKER_PREFLIGHT_LOG="$LOG_DIR/docker_preflight.log"
-TOOLATHLON_PREFLIGHT_SUMMARY_JSON="$LOG_DIR/toolathlon_preflight_summary.json"
 VALIDATION_SUMMARY_JSON="$LOG_DIR/validation_summary.json"
 
 # Clear logs from prior runs.
@@ -160,6 +161,7 @@ write_validation_summary() {
   export TOOLFORGE_EVAL_LOG TOOLFORGE_INTEGRATION_LOG
   export AGENT_SKILLS_LIST_LOG AGENT_SKILLS_EVAL_LOG
   export TOOLATHLON_BUILD_LOG TOOLATHLON_PREFLIGHT_LOG TOOLATHLON_PREFLIGHT_SUMMARY_JSON
+  export TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON
   export DOCKER_BUILD_LOG DOCKER_PREFLIGHT_LOG VALIDATION_SUMMARY_JSON
 
   VALIDATION_FAILED_COUNT="$failed" \
@@ -233,6 +235,7 @@ summary = {
                 os.environ["TOOLATHLON_BUILD_LOG"],
                 os.environ["TOOLATHLON_PREFLIGHT_LOG"],
                 os.environ["TOOLATHLON_PREFLIGHT_SUMMARY_JSON"],
+                os.environ["TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON"],
             ],
         ),
         phase_entry(
