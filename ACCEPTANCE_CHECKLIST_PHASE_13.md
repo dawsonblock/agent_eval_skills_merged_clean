@@ -5,6 +5,12 @@
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 
+Required evidence artifacts:
+
+- [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)
+- [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)
+- [.validation_logs/](.validation_logs/) phase logs
+
 ## Required Gate Status
 
 ```text
@@ -35,6 +41,6 @@ Release readiness ............. ✅ Release candidate (controlled testing)
 
 ## Release Promotion Rule
 
-Promotion gate is met in current environment: unified validation passed and Docker preflight was independently re-verified.
+Promotion gate is met only when required evidence artifacts show passing required gates for the target environment.
 
 This repository is a release candidate for controlled testing. It is not a production security attestation.

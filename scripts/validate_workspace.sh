@@ -26,6 +26,14 @@ AGENT_SKILLS_STATUS="not-run"
 TOOLATHLON_STATUS="not-run"
 DOCKER_STATUS="skipped"
 
+RUN_STARTED_EPOCH="$(date +%s)"
+RUN_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+TOOLFORGE_DURATION_SECONDS=0
+AGENT_SKILLS_DURATION_SECONDS=0
+TOOLATHLON_DURATION_SECONDS=0
+DOCKER_DURATION_SECONDS=0
+
 LOG_DIR="$REPO_ROOT/.validation_logs"
 mkdir -p "$LOG_DIR"
 
@@ -45,6 +53,8 @@ TOOLATHLON_BUILD_LOG="$LOG_DIR/toolathlon_artifact_build.log"
 TOOLATHLON_PREFLIGHT_LOG="$LOG_DIR/toolathlon_preflight.log"
 DOCKER_BUILD_LOG="$LOG_DIR/docker_build.log"
 DOCKER_PREFLIGHT_LOG="$LOG_DIR/docker_preflight.log"
+TOOLATHLON_PREFLIGHT_SUMMARY_JSON="$LOG_DIR/toolathlon_preflight_summary.json"
+VALIDATION_SUMMARY_JSON="$LOG_DIR/validation_summary.json"
 
 # Clear logs from prior runs.
 : > "$TOOLFORGE_PYTHON_LOG"
@@ -111,12 +121,146 @@ print(f"Python version OK for ToolForge: {sys.version.split()[0]}")
 PY
 }
 
+status_to_exit_code() {
+  case "$1" in
+    passed) echo 0 ;;
+    failed|unsupported-python) echo 1 ;;
+    skipped|not-run) echo "" ;;
+    *) echo "" ;;
+  esac
+}
+
+write_validation_summary() {
+  local run_finished_epoch run_finished_at run_duration
+  run_finished_epoch="$(date +%s)"
+  run_finished_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  run_duration="$((run_finished_epoch - RUN_STARTED_EPOCH))"
+
+  local docker_available toolforge_python_supported
+  if command -v docker >/dev/null 2>&1; then
+    docker_available=true
+  else
+    docker_available=false
+  fi
+
+  if [ "$TOOLFORGE_PYTHON_OK" -eq 1 ]; then
+    toolforge_python_supported=true
+  else
+    toolforge_python_supported=false
+  fi
+
+  export RUN_STARTED_AT RUN_INTEGRATION RUN_DOCKER
+  export TOOLFORGE_STATUS AGENT_SKILLS_STATUS TOOLATHLON_STATUS DOCKER_STATUS
+  export TOOLFORGE_DURATION_SECONDS AGENT_SKILLS_DURATION_SECONDS
+  export TOOLATHLON_DURATION_SECONDS DOCKER_DURATION_SECONDS
+  export TOOLFORGE_EXIT_CODE AGENT_SKILLS_EXIT_CODE TOOLATHLON_EXIT_CODE DOCKER_EXIT_CODE
+  export TOOLFORGE_PYTHON_LOG TOOLFORGE_INSTALL_LOG TOOLFORGE_DOCTOR_LOG
+  export TOOLFORGE_SCHEMA_PATH_SAFETY_LOG TOOLFORGE_VALIDATOR_LOG
+  export TOOLFORGE_REGISTRY_LOG TOOLFORGE_CLI_LOG TOOLFORGE_E2E_LOG
+  export TOOLFORGE_EVAL_LOG TOOLFORGE_INTEGRATION_LOG
+  export AGENT_SKILLS_LIST_LOG AGENT_SKILLS_EVAL_LOG
+  export TOOLATHLON_BUILD_LOG TOOLATHLON_PREFLIGHT_LOG TOOLATHLON_PREFLIGHT_SUMMARY_JSON
+  export DOCKER_BUILD_LOG DOCKER_PREFLIGHT_LOG VALIDATION_SUMMARY_JSON
+
+  VALIDATION_FAILED_COUNT="$failed" \
+  RUN_FINISHED_AT="$run_finished_at" \
+  RUN_DURATION_SECONDS="$run_duration" \
+  DOCKER_AVAILABLE="$docker_available" \
+  TOOLFORGE_PYTHON_SUPPORTED="$toolforge_python_supported" \
+  python - <<'PY'
+import json
+import os
+from pathlib import Path
+
+
+def to_int(value: str) -> int:
+    return int(value)
+
+
+def phase_entry(name: str, status: str, duration_key: str, logs: list[str]) -> dict:
+    exit_code_text = os.environ.get(f"{name.upper()}_EXIT_CODE", "")
+    exit_code = int(exit_code_text) if exit_code_text else None
+    return {
+        "phase": name,
+        "status": status,
+        "duration_seconds": to_int(os.environ.get(duration_key, "0")),
+        "exit_code": exit_code,
+        "logs": logs,
+    }
+
+
+summary = {
+    "run_started_at": os.environ["RUN_STARTED_AT"],
+    "run_finished_at": os.environ["RUN_FINISHED_AT"],
+    "run_duration_seconds": to_int(os.environ["RUN_DURATION_SECONDS"]),
+    "overall_status": "passed" if to_int(os.environ["VALIDATION_FAILED_COUNT"]) == 0 else "failed",
+    "failed_phase_count": to_int(os.environ["VALIDATION_FAILED_COUNT"]),
+    "capabilities": {
+        "docker_available": os.environ["DOCKER_AVAILABLE"] == "true",
+        "toolforge_python_supported": os.environ["TOOLFORGE_PYTHON_SUPPORTED"] == "true",
+        "docker_requested": os.environ.get("RUN_DOCKER", "0") == "1",
+        "integration_requested": os.environ.get("RUN_INTEGRATION", "0") == "1",
+    },
+    "phases": [
+        phase_entry(
+            "toolforge",
+            os.environ["TOOLFORGE_STATUS"],
+            "TOOLFORGE_DURATION_SECONDS",
+            [
+                os.environ["TOOLFORGE_PYTHON_LOG"],
+                os.environ["TOOLFORGE_INSTALL_LOG"],
+                os.environ["TOOLFORGE_DOCTOR_LOG"],
+                os.environ["TOOLFORGE_SCHEMA_PATH_SAFETY_LOG"],
+                os.environ["TOOLFORGE_VALIDATOR_LOG"],
+                os.environ["TOOLFORGE_REGISTRY_LOG"],
+                os.environ["TOOLFORGE_CLI_LOG"],
+                os.environ["TOOLFORGE_E2E_LOG"],
+                os.environ["TOOLFORGE_EVAL_LOG"],
+                os.environ["TOOLFORGE_INTEGRATION_LOG"],
+            ],
+        ),
+        phase_entry(
+            "agent_skills",
+            os.environ["AGENT_SKILLS_STATUS"],
+            "AGENT_SKILLS_DURATION_SECONDS",
+            [os.environ["AGENT_SKILLS_LIST_LOG"], os.environ["AGENT_SKILLS_EVAL_LOG"]],
+        ),
+        phase_entry(
+            "toolathlon",
+            os.environ["TOOLATHLON_STATUS"],
+            "TOOLATHLON_DURATION_SECONDS",
+            [
+                os.environ["TOOLATHLON_BUILD_LOG"],
+                os.environ["TOOLATHLON_PREFLIGHT_LOG"],
+                os.environ["TOOLATHLON_PREFLIGHT_SUMMARY_JSON"],
+            ],
+        ),
+        phase_entry(
+            "docker",
+            os.environ["DOCKER_STATUS"],
+            "DOCKER_DURATION_SECONDS",
+            [os.environ["DOCKER_BUILD_LOG"], os.environ["DOCKER_PREFLIGHT_LOG"]],
+        ),
+    ],
+}
+
+Path(os.environ["VALIDATION_SUMMARY_JSON"]).write_text(
+    json.dumps(summary, indent=2, sort_keys=True) + "\n",
+    encoding="utf-8",
+)
+PY
+
+  echo "Validation summary JSON: $VALIDATION_SUMMARY_JSON"
+}
+
 marker_args=("-m" "not integration and not slow")
 if [ "$RUN_INTEGRATION" = "1" ]; then
   marker_args=()
 fi
 
 # Phase 1: ToolForge validation
+
+toolforge_phase_start="$(date +%s)"
 
 echo -e "${YELLOW}== ToolForge ==${NC}"
 if run_python_version_check >"$TOOLFORGE_PYTHON_LOG" 2>&1; then
@@ -202,10 +346,13 @@ else
   failed=$((failed + 1))
   cat "$TOOLFORGE_PYTHON_LOG"
 fi
+TOOLFORGE_DURATION_SECONDS="$(( $(date +%s) - toolforge_phase_start ))"
 
 echo
 
 # Phase 2: Agent Skills validation
+
+agent_skills_phase_start="$(date +%s)"
 
 echo -e "${YELLOW}== Agent Skills ==${NC}"
 if node "$AGENT_SKILLS_DIR/bin/cli.js" list > "$AGENT_SKILLS_LIST_LOG" 2>&1; then
@@ -247,10 +394,13 @@ else
   AGENT_SKILLS_STATUS="failed"
   failed=$((failed + 1))
 fi
+AGENT_SKILLS_DURATION_SECONDS="$(( $(date +%s) - agent_skills_phase_start ))"
 
 echo
 
 # Phase 3: Toolathlon build + preflight
+
+toolathlon_phase_start="$(date +%s)"
 
 echo -e "${YELLOW}== Toolathlon ==${NC}"
 if python "$REPO_ROOT/scripts/run_with_timeout.py" --timeout 1800 -- \
@@ -262,7 +412,8 @@ else
   failed=$((failed + 1))
 fi
 
-if python "$TOOLATHLON_DIR/scripts/preflight_mcp_paths.py" 2>&1 | tee "$TOOLATHLON_PREFLIGHT_LOG"; then
+if python "$TOOLATHLON_DIR/scripts/preflight_mcp_paths.py" \
+  --json-output "$TOOLATHLON_PREFLIGHT_SUMMARY_JSON" 2>&1 | tee "$TOOLATHLON_PREFLIGHT_LOG"; then
   echo "✓ MCP preflight passed"
   if [ "$TOOLATHLON_STATUS" != "failed" ]; then
     TOOLATHLON_STATUS="passed"
@@ -272,10 +423,12 @@ else
   TOOLATHLON_STATUS="failed"
   failed=$((failed + 1))
 fi
+TOOLATHLON_DURATION_SECONDS="$(( $(date +%s) - toolathlon_phase_start ))"
 
 echo
 
 # Optional phase: Docker validation.
+docker_phase_start="$(date +%s)"
 if [ "$RUN_DOCKER" = "1" ]; then
   echo -e "${YELLOW}== Docker ==${NC}"
 
@@ -297,6 +450,7 @@ if [ "$RUN_DOCKER" = "1" ]; then
 else
   echo "Docker validation skipped (set RUN_DOCKER=1 to enable)." | tee "$DOCKER_BUILD_LOG" "$DOCKER_PREFLIGHT_LOG" >/dev/null
 fi
+DOCKER_DURATION_SECONDS="$(( $(date +%s) - docker_phase_start ))"
 
 if [ "$HAVE_GIT" -eq 1 ]; then
   FINAL_GIT_STATUS="$(git -C "$REPO_ROOT" status --porcelain)"
@@ -336,6 +490,13 @@ elif [ "$DOCKER_STATUS" = "failed" ]; then
 else
   echo "⚪ Docker - skipped (set RUN_DOCKER=1), see $DOCKER_BUILD_LOG"
 fi
+
+TOOLFORGE_EXIT_CODE="$(status_to_exit_code "$TOOLFORGE_STATUS")"
+AGENT_SKILLS_EXIT_CODE="$(status_to_exit_code "$AGENT_SKILLS_STATUS")"
+TOOLATHLON_EXIT_CODE="$(status_to_exit_code "$TOOLATHLON_STATUS")"
+DOCKER_EXIT_CODE="$(status_to_exit_code "$DOCKER_STATUS")"
+
+write_validation_summary
 
 if [ "$failed" -eq 0 ]; then
   echo -e "${GREEN}✓ Workspace validation passed.${NC}"

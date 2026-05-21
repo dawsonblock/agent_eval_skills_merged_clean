@@ -14,9 +14,17 @@
 
 ## Overview
 
-**Current status:** Release candidate for controlled testing. ToolForge grouped validation, Agent Skills evaluation, Toolathlon artifact build/preflight, and Docker preflight have been reproduced in this environment.
+**Current status:** Release candidate for controlled testing when the evidence artifacts listed below are present and green for the target environment.
 
 This repository is not a production security attestation. Promotion remains scoped to controlled testing and still requires re-validation in any new environment.
+
+### Validation Evidence
+
+- Unified machine-readable summary: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)
+- Toolathlon preflight machine-readable summary: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)
+- Unified validator console logs: [.validation_logs/](.validation_logs/)
+
+If these artifacts are missing, incomplete, or contain failing phase statuses for required gates, treat the repository as a strong repair candidate instead of a release candidate.
 
 This repository is a controlled-merge of three interconnected systems designed for end-to-end AI agent development: from authoring tools to evaluating agents against real-world task benchmarks.
 
