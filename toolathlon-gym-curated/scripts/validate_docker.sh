@@ -5,7 +5,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLATHLON_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-toolathlon:repair}"
+TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
+IMAGE_NAME="${IMAGE_NAME:-toolathlon:repair-${TOOLATHLON_PROFILE}}"
 BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-toolathlon:base}"
 DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
 OUT_DIR="${OUT_DIR:-$TOOLATHLON_DIR/../.validation_logs}"
@@ -13,7 +14,6 @@ DOCKER_PROGRESS="${DOCKER_PROGRESS:-auto}"
 DOCKER_INSTALL_PLAYWRIGHT="${DOCKER_INSTALL_PLAYWRIGHT:-0}"
 REBUILD_BASE_IMAGE="${REBUILD_BASE_IMAGE:-0}"
 REBUILD_IMAGE="${REBUILD_IMAGE:-0}"
-TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
 DOCKER_SMOKE_SUMMARY_FILE="$OUT_DIR/docker_mcp_smoke_summary.json"
 
 mkdir -p "$OUT_DIR"
@@ -64,7 +64,7 @@ else
   echo "✓ Reusing existing Docker image: $IMAGE_NAME"
 fi
 
-echo "Running preflight in container..."
+echo "Running MCP smoke checks in container..."
 if ! docker --context="$DOCKER_CONTEXT" run --rm \
   -e "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
   -v "$OUT_DIR:/validation_logs" \
@@ -75,7 +75,7 @@ if ! docker --context="$DOCKER_CONTEXT" run --rm \
   exit 1
 fi
 
-echo "Running preflight in container..."
+echo "Running MCP preflight checks in container..."
 if ! docker --context="$DOCKER_CONTEXT" run --rm \
   -e "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
   -v "$OUT_DIR:/validation_logs" \

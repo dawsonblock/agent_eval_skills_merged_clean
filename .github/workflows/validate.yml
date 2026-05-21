@@ -114,7 +114,7 @@ jobs:
                   TOOLATHLON_PROFILE=smoke bash scripts/validate_workspace.sh
 
     full-profile-validation:
-        name: Full Profile Validation (Experimental)
+        name: Full MCP Profile Validation (Experimental)
         runs-on: ubuntu-latest
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         continue-on-error: true

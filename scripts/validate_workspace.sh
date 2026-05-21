@@ -273,9 +273,10 @@ PY
   echo "Validation summary JSON: $VALIDATION_SUMMARY_JSON"
 }
 
-marker_args=("-m" "not integration and not slow")
 if [ "$RUN_INTEGRATION" = "1" ]; then
-  marker_args=()
+  marker_args=("-q")
+else
+  marker_args=("-q" "-m" "not integration and not slow")
 fi
 
 # Phase 1: ToolForge validation
@@ -298,8 +299,8 @@ if run_python_version_check >"$TOOLFORGE_PYTHON_LOG" 2>&1; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge schema/path/safety tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_SCHEMA_PATH_SAFETY_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge schema/path/safety tests" 180 "$TOOLFORGE_DIR" "$TOOLFORGE_SCHEMA_PATH_SAFETY_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_tool_spec.py \
       tests/test_path_safety.py \
       tests/test_safety_analyzer.py \
@@ -307,37 +308,37 @@ if run_python_version_check >"$TOOLFORGE_PYTHON_LOG" 2>&1; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge validator tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_VALIDATOR_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge validator tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_VALIDATOR_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_test_validator.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge registry tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_REGISTRY_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge registry tests" 240 "$TOOLFORGE_DIR" "$TOOLFORGE_REGISTRY_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_registry.py \
       tests/test_registry_cli_exit.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge CLI tests" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge CLI tests" 300 "$TOOLFORGE_DIR" "$TOOLFORGE_CLI_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_cli_command_exit.py \
       tests/test_cli_main_inprocess_coverage.py \
       tests/test_cli_validation_regressions.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge E2E tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_E2E_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_cli_e2e_csv_cleaner.py \
       tests/test_cli_e2e_json_schema_validator.py \
       tests/test_cli_e2e_local_file_hasher.py; then
     toolforge_failed=1
   fi
 
-  if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_LOG" \
-    env PYTHONPATH=. pytest -q "${marker_args[@]}" \
+    if ! run_step "ToolForge eval tests" 600 "$TOOLFORGE_DIR" "$TOOLFORGE_EVAL_LOG" \
+      env PYTHONPATH=. pytest "${marker_args[@]}" \
       tests/test_eval_generator.py \
       tests/test_eval_runner_case_source.py \
       tests/test_eval_runner_expected_failures.py \

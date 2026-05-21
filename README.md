@@ -19,7 +19,7 @@
 This repository ships with two validation profiles:
 
 1. `smoke` — default release-candidate gate (fast, controlled-testing subset)
-2. `full` — expanded Toolathlon gate (experimental, long-running, non-default)
+2. `full` — expanded MCP validation gate (experimental, non-default; currently 12 MCP artifact/runtime targets)
 
 **This repository is not a production security attestation.** Promotion remains scoped to controlled testing and still requires re-validation in any new environment.
 
@@ -35,6 +35,8 @@ This repository ships with two validation profiles:
 **Gate Rule:** If any artifact is missing, stale, or shows a failing gate, classify the repository as **strong repair candidate**, not release-ready.
 
 Release-candidate status applies to the `smoke` profile by default. The `full` profile remains available for extended validation and should only be claimed when separate full-profile evidence is present.
+
+Note: Profile-aware task manifests are retained under `toolathlon-gym-curated/profiles/`, but task selection is not yet enforced by the default validation scripts.
 
 See [VALIDATION_EVIDENCE.md](VALIDATION_EVIDENCE.md) for evidence state → repo status mapping.
 

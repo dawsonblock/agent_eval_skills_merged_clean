@@ -5,7 +5,7 @@ This document defines the minimum evidence required to claim release-candidate s
 Validation profiles:
 
 1. `smoke` — default release-candidate gate
-2. `full` — expanded Toolathlon gate (experimental, non-default)
+2. `full` — expanded MCP validation gate (experimental, non-default; currently 12 MCP artifact/runtime targets)
 
 ## Required Artifacts
 
@@ -52,6 +52,8 @@ DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docke
 The repository CI workflow enforces `smoke` profile validation for default push and pull-request gates.
 
 An experimental `full` profile validation job is available via scheduled and manual workflow runs. That full-profile job is non-blocking and is intended for extended evidence collection, not default release gating.
+
+Task profile manifests are retained for future expansion, but current gate scripts only enforce profile-aware MCP artifact/runtime/preflight scope.
 
 ## Evidence Interpretation
 
