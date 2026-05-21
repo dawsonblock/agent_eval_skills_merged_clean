@@ -8,11 +8,16 @@ TOOLATHLON_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 IMAGE_NAME="${IMAGE_NAME:-toolathlon:repair}"
 DOCKER_CONTEXT="${DOCKER_CONTEXT:-default}"
 OUT_DIR="${OUT_DIR:-$TOOLATHLON_DIR/../.validation_logs}"
+DOCKER_PROGRESS="${DOCKER_PROGRESS:-auto}"
+DOCKER_INSTALL_PLAYWRIGHT="${DOCKER_INSTALL_PLAYWRIGHT:-0}"
 
 mkdir -p "$OUT_DIR"
 
 echo "Building Docker image: $IMAGE_NAME"
-if ! docker --context="$DOCKER_CONTEXT" buildx build --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
+if ! docker --context="$DOCKER_CONTEXT" buildx build \
+  --progress "$DOCKER_PROGRESS" \
+  --build-arg "INSTALL_PLAYWRIGHT=$DOCKER_INSTALL_PLAYWRIGHT" \
+  --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
   echo "✗ Docker build failed"
   exit 1
 fi
@@ -30,3 +35,5 @@ fi
 echo "✓ Docker validation passed"
 echo "Evidence: $OUT_DIR/docker_preflight_summary.json"
 echo "Docker context: $DOCKER_CONTEXT"
+echo "Docker progress mode: $DOCKER_PROGRESS"
+echo "Install Playwright browser in image: $DOCKER_INSTALL_PLAYWRIGHT"
