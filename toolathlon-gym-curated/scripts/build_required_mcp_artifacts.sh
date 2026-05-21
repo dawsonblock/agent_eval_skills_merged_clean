@@ -8,6 +8,7 @@ LOCAL_SERVERS_DIR="${LOCAL_SERVERS_PATH:-$ROOT_DIR/local_servers}"
 SKIP_EXISTING_ARTIFACTS="${SKIP_EXISTING_ARTIFACTS:-0}"
 FORCE_REBUILD="${FORCE_REBUILD:-0}"
 BUILD_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_artifact_build_summary.json"
+SMOKE_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_mcp_smoke_summary.json"
 EXPECTED_PACKAGE_COUNT=12
 
 echo "Using LOCAL_SERVERS_DIR=$LOCAL_SERVERS_DIR"
@@ -181,16 +182,18 @@ PYEOF
 
 finalize_build_summary() {
   local preflight_json="$1"
-  shift
+  local smoke_json="$2"
+  shift 2
 
-  python3 - "$BUILD_SUMMARY_FILE" "$preflight_json" "$@" <<'PYEOF'
+  python3 - "$BUILD_SUMMARY_FILE" "$preflight_json" "$smoke_json" "$@" <<'PYEOF'
 import json
 import sys
 from pathlib import Path
 
 summary_path = Path(sys.argv[1])
 preflight_path = Path(sys.argv[2])
-required_artifacts = [Path(p) for p in sys.argv[3:]]
+smoke_path = Path(sys.argv[3])
+required_artifacts = [Path(p) for p in sys.argv[4:]]
 
 with summary_path.open('r', encoding='utf-8') as f:
   data = json.load(f)
@@ -224,6 +227,20 @@ else:
 
 if preflight_missing is not None and preflight_missing != 0:
   reasons.append(f"preflight_missing_count={preflight_missing}")
+
+smoke_status = None
+if smoke_path.exists():
+  try:
+    with smoke_path.open('r', encoding='utf-8') as f:
+      smoke = json.load(f)
+    smoke_status = smoke.get('overall_status')
+  except Exception as exc:
+    reasons.append(f"smoke_parse_error: {exc}")
+else:
+  reasons.append("smoke_summary_missing")
+
+if smoke_status is not None and smoke_status != 'passed':
+  reasons.append(f"smoke_status={smoke_status}")
 
 if reasons:
   data['overall_status'] = 'failed'
@@ -424,12 +441,16 @@ maybe_build_python_package "youtube_transcript" 900 "$LOCAL_SERVERS_DIR/mcp-yout
 }
 
 cd "$ROOT_DIR"
+if ! python scripts/smoke_mcp_servers.py --json-output "$SMOKE_SUMMARY_FILE"; then
+  echo "✗ MCP runtime smoke tests failed. See $SMOKE_SUMMARY_FILE" >&2
+fi
+
 PREFLIGHT_SUMMARY_JSON="${ROOT_DIR}/../.validation_logs/toolathlon_preflight_summary.json"
 if ! python scripts/preflight_mcp_paths.py --json-output "$PREFLIGHT_SUMMARY_JSON"; then
   mark_build_failed_if_in_progress "preflight_failed"
 fi
 
-finalize_build_summary "$PREFLIGHT_SUMMARY_JSON" \
+finalize_build_summary "$PREFLIGHT_SUMMARY_JSON" "$SMOKE_SUMMARY_FILE" \
   "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" \
   "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" \
   "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" \

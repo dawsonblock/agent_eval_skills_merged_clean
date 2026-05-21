@@ -21,8 +21,10 @@
 ### Required Validation Evidence
 
 - Unified machine-readable summary: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) (must exist, `overall_status` = "passed")
-- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (must exist, `failed_count = 0`)
+- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (must exist, `overall_status = "passed"`, `expected_package_count = 12`, `package_count = 12`, `passed_count = 12`, `failed_count = 0`)
+- Toolathlon MCP smoke summary: [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json) (must exist, `overall_status = "passed"`, `failed_count = 0`)
 - Toolathlon preflight machine-readable summary: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (must exist, `missing_count = 0`)
+- Docker MCP smoke summary when Docker proof is claimed: [.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json) (must exist, `overall_status = "passed"`, `failed_count = 0`)
 - Unified validator console logs: [.validation_logs/](.validation_logs/) (phase logs for audit trail)
 
 **Gate Rule:** If any artifact is missing, stale, or shows a failing gate, classify the repository as **strong repair candidate**, not release-ready.
@@ -40,7 +42,7 @@ This repository is a controlled-merge of three interconnected systems designed f
 | Component | Purpose | Scale |
 | --- | --- | --- |
 | [**ToolForge**](ToolForge/) | Create, validate, run, and package AI tool prototypes as MCP servers and Copilot Skills | CLI platform |
-| [**Agent Skills**](agent-skills-curated/) | Curated registry of reusable agent skills with built-in evaluation | 10+ curated skills |
+| [**Agent Skills**](agent-skills-curated/) | Curated registry of reusable agent skills with built-in evaluation | 23 curated skills |
 | [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers |
 
 ---

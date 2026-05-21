@@ -54,9 +54,11 @@ TOOLATHLON_BUILD_LOG="$LOG_DIR/toolathlon_artifact_build.log"
 TOOLATHLON_PREFLIGHT_LOG="$LOG_DIR/toolathlon_preflight.log"
 TOOLATHLON_PREFLIGHT_SUMMARY_JSON="$LOG_DIR/toolathlon_preflight_summary.json"
 TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON="$LOG_DIR/toolathlon_artifact_build_summary.json"
+TOOLATHLON_SMOKE_SUMMARY_JSON="$LOG_DIR/toolathlon_mcp_smoke_summary.json"
 DOCKER_BUILD_LOG="$LOG_DIR/docker_build.log"
 DOCKER_PREFLIGHT_LOG="$LOG_DIR/docker_preflight.log"
 DOCKER_PREFLIGHT_SUMMARY_JSON="$LOG_DIR/docker_preflight_summary.json"
+DOCKER_SMOKE_SUMMARY_JSON="$LOG_DIR/docker_mcp_smoke_summary.json"
 VALIDATION_SUMMARY_JSON="$LOG_DIR/validation_summary.json"
 
 # Clear logs from prior runs.
@@ -77,6 +79,7 @@ VALIDATION_SUMMARY_JSON="$LOG_DIR/validation_summary.json"
 : > "$DOCKER_BUILD_LOG"
 : > "$DOCKER_PREFLIGHT_LOG"
 rm -f "$DOCKER_PREFLIGHT_SUMMARY_JSON"
+rm -f "$TOOLATHLON_SMOKE_SUMMARY_JSON" "$DOCKER_SMOKE_SUMMARY_JSON"
 
 if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   HAVE_GIT=1
@@ -164,8 +167,9 @@ write_validation_summary() {
   export TOOLFORGE_EVAL_LOG TOOLFORGE_INTEGRATION_LOG
   export AGENT_SKILLS_LIST_LOG AGENT_SKILLS_EVAL_LOG
   export TOOLATHLON_BUILD_LOG TOOLATHLON_PREFLIGHT_LOG TOOLATHLON_PREFLIGHT_SUMMARY_JSON
-  export TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON
-  export DOCKER_BUILD_LOG DOCKER_PREFLIGHT_LOG DOCKER_PREFLIGHT_SUMMARY_JSON VALIDATION_SUMMARY_JSON
+  export TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON TOOLATHLON_SMOKE_SUMMARY_JSON
+  export DOCKER_BUILD_LOG DOCKER_PREFLIGHT_LOG DOCKER_PREFLIGHT_SUMMARY_JSON
+  export DOCKER_SMOKE_SUMMARY_JSON VALIDATION_SUMMARY_JSON
 
   VALIDATION_FAILED_COUNT="$failed" \
   RUN_FINISHED_AT="$run_finished_at" \
@@ -237,6 +241,7 @@ summary = {
             [
                 os.environ["TOOLATHLON_BUILD_LOG"],
                 os.environ["TOOLATHLON_PREFLIGHT_LOG"],
+              os.environ["TOOLATHLON_SMOKE_SUMMARY_JSON"],
                 os.environ["TOOLATHLON_PREFLIGHT_SUMMARY_JSON"],
                 os.environ["TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON"],
             ],
@@ -248,6 +253,7 @@ summary = {
           [
             os.environ["DOCKER_BUILD_LOG"],
             os.environ["DOCKER_PREFLIGHT_LOG"],
+            os.environ["DOCKER_SMOKE_SUMMARY_JSON"],
             os.environ["DOCKER_PREFLIGHT_SUMMARY_JSON"],
           ],
         ),
@@ -475,6 +481,51 @@ PYEOF
   fi
 else
   echo -e "${RED}✗ MCP artifact build failed or timed out${NC} (log: $TOOLATHLON_BUILD_LOG)"
+  TOOLATHLON_STATUS="failed"
+  failed=$((failed + 1))
+fi
+
+if toolathlon_smoke_gate=$(python - <<PYEOF
+import json
+from pathlib import Path
+
+summary_path = Path("$TOOLATHLON_SMOKE_SUMMARY_JSON")
+
+if not summary_path.exists():
+    print("missing_summary")
+    raise SystemExit(1)
+
+summary = json.loads(summary_path.read_text(encoding='utf-8'))
+overall_status = summary.get('overall_status')
+failed_count = summary.get('failed_count')
+target_count = summary.get('target_count')
+passed_count = summary.get('passed_count')
+
+if overall_status != 'passed':
+    print(f"overall_status={overall_status}")
+    raise SystemExit(1)
+
+if failed_count != 0:
+    print(f"failed_count={failed_count}")
+    raise SystemExit(1)
+
+if passed_count != target_count:
+    print(f"passed_count={passed_count} target_count={target_count}")
+    raise SystemExit(1)
+
+print(
+    f"overall_status={overall_status} "
+    f"target_count={target_count} passed_count={passed_count} failed_count={failed_count}"
+)
+PYEOF
+); then
+  echo "✓ MCP smoke summary gate passed"
+  echo "Smoke summary gate details: $toolathlon_smoke_gate" | tee -a "$TOOLATHLON_BUILD_LOG"
+else
+  echo -e "${RED}✗ MCP smoke summary gate failed${NC}"
+  if [ -n "${toolathlon_smoke_gate:-}" ]; then
+    echo "Smoke summary gate details: ${toolathlon_smoke_gate}" | tee -a "$TOOLATHLON_BUILD_LOG"
+  fi
   TOOLATHLON_STATUS="failed"
   failed=$((failed + 1))
 fi

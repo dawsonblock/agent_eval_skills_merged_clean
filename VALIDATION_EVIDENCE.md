@@ -5,6 +5,8 @@ This document defines the minimum evidence required to claim release-candidate s
 ## Required Artifacts
 
 - `.validation_logs/validation_summary.json`
+- `.validation_logs/toolathlon_artifact_build_summary.json`
+- `.validation_logs/toolathlon_mcp_smoke_summary.json`
 - `.validation_logs/toolathlon_preflight_summary.json`
 - Phase logs in `.validation_logs/`
 
@@ -45,16 +47,25 @@ DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docke
 - `found` and `missing` path lists
 - Timestamp and source directories
 
+`toolathlon_mcp_smoke_summary.json` contains:
+
+- `overall_status`
+- `target_count`
+- `passed_count`
+- `failed_count`
+- Per-target runtime/import smoke results for the required artifact-producing MCP servers
+
 ## Evidence State → Repo Status Mapping
 
 | Evidence State | Repository Classification |
 |---|---|
 | `validation_summary.json` absent or stale | ❌ Strong repair candidate (not release-ready) |
 | `validation_summary.json` overall_status = "failed" | ❌ Strong repair candidate (validation failed) |
+| `toolathlon_mcp_smoke_summary.json` missing or failed | ❌ Strong repair candidate (runtime smoke proof missing) |
 | `toolathlon_preflight_summary.json` missing_count > 0 | ❌ Strong repair candidate (MCP paths missing) |
-| `toolathlon_artifact_build_summary.json` failed_count > 0 | ❌ Strong repair candidate (artifact build failed) |
+| `toolathlon_artifact_build_summary.json` failed_count > 0 or package_count != expected_package_count | ❌ Strong repair candidate (artifact build failed or incomplete) |
 | Docker validation absent (RUN_DOCKER not set) | ⏸️ Docker-unverified (continue if host deployment only) |
-| All required summaries pass + missing_count = 0 + failed_count = 0 | ✅ Release candidate for controlled testing |
+| All required summaries pass + smoke passes + missing_count = 0 + failed_count = 0 | ✅ Release candidate for controlled testing |
 
 ## Promotion Rule
 
@@ -64,12 +75,14 @@ Claim release-candidate status only when:
    - `.validation_logs/validation_summary.json`
    - `.validation_logs/toolathlon_preflight_summary.json`
    - `.validation_logs/toolathlon_artifact_build_summary.json`
+   - `.validation_logs/toolathlon_mcp_smoke_summary.json`
 2. All required gates pass:
    - `validation_summary.json`: `overall_status = "passed"`
+   - `toolathlon_artifact_build_summary.json`: `overall_status = "passed"`, `expected_package_count = 12`, `package_count = expected_package_count`, `passed_count = expected_package_count`, `failed_count = 0`
+   - `toolathlon_mcp_smoke_summary.json`: `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
    - `toolathlon_preflight_summary.json`: `missing_count = 0` and `found_count = 26`
-   - `toolathlon_artifact_build_summary.json`: `failed_count = 0` and `overall_status = "passed"`
 3. Docker gate is either:
-   - Proven in a Docker-capable environment (`docker_preflight_summary.json` with `missing_count = 0`), OR
+   - Proven in a Docker-capable environment (`docker_mcp_smoke_summary.json` with `overall_status = "passed"` and `docker_preflight_summary.json` with `missing_count = 0`), OR
    - Explicitly marked unavailable in the environment profile (set `RUN_DOCKER=0`)
 
 If any condition is not met, classify as strong repair candidate.

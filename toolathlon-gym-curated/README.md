@@ -27,8 +27,12 @@ so removing `dist/` breaks direct local execution unless a fresh TypeScript buil
 ```bash
 cd toolathlon-gym-curated
 
-# Build the agent image
-docker build -t toolathlon-pack:latest .
+# Preferred: build and validate the two-layer Docker image flow
+bash scripts/validate_docker.sh
+
+# Or build manually in two steps
+docker build -f Dockerfile.base -t toolathlon:base .
+docker build --build-arg BASE_IMAGE=toolathlon:base -t toolathlon-pack:latest .
 
 # Start PostgreSQL
 docker compose up -d postgres
@@ -38,7 +42,7 @@ docker compose up -d postgres
 
 ### Docker Validation (Fast Path)
 
-Use the validation helper to verify Docker build health and MCP preflight paths in a containerized run.
+Use the validation helper to verify Docker build health, MCP runtime smoke checks, and MCP preflight paths in a containerized run.
 
 ```bash
 DOCKER_CONTEXT=default \
