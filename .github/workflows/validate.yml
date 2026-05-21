@@ -154,6 +154,31 @@ jobs:
                   print('Smoke evidence assertion passed.')
                   PY
 
+    release-zip-hygiene:
+        name: Release ZIP Hygiene
+        runs-on: ubuntu-latest
+        needs: [unified-validation]
+        if: success()
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Build and validate release ZIP
+              run: |
+                  RELEASE_ZIP_OUTPUT=dist/ci-release.zip bash scripts/create_release_zip.sh
+
+            - name: Confirm release ZIP exists
+              run: |
+                  test -f dist/ci-release.zip
+                  zipinfo -1 dist/ci-release.zip | wc -l
+
+            - name: Upload release ZIP artifact (hygiene proof)
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ci-release-zip
+                  path: dist/ci-release.zip
+                  if-no-files-found: error
+                  retention-days: 7
+
     full-profile-validation:
         name: Full MCP Profile Validation (Experimental)
         runs-on: ubuntu-latest
