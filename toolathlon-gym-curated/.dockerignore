@@ -7,5 +7,3 @@ local_servers/**/.venv
 local_servers/**/node_modules
 local_servers/**/__pycache__
 local_servers/**/.pytest_cache
-local_servers/**/build
-local_servers/**/dist

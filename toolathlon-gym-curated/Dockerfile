@@ -44,15 +44,24 @@ RUN uv venv /opt/venv && uv pip install --python /opt/venv/bin/python \
 
 ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/opt/venv"
+ENV SKIP_EXISTING_ARTIFACTS=1
+ARG INSTALL_PLAYWRIGHT=0
 
-# Install Playwright browser
-RUN playwright install chromium
+# Install Playwright browser only when explicitly requested.
+RUN if [ "$INSTALL_PLAYWRIGHT" = "1" ]; then \
+            playwright install chromium; \
+        else \
+            echo "Skipping Playwright browser install (INSTALL_PLAYWRIGHT=$INSTALL_PLAYWRIGHT)"; \
+        fi
 
-COPY . /workspace
+# Copy only required runtime/build inputs to keep cache stable and context small.
+COPY scripts/ /workspace/scripts/
+COPY configs/ /workspace/configs/
 COPY local_servers/ /opt/local_servers/
 ENV LOCAL_SERVERS_PATH="/opt/local_servers"
 WORKDIR /workspace
-RUN bash scripts/build_required_mcp_artifacts.sh
+RUN bash scripts/build_required_mcp_artifacts.sh && \
+    find /opt/local_servers -type d -name node_modules -prune -exec rm -rf '{}' +
 RUN python scripts/preflight_mcp_paths.py
 
 CMD ["/bin/bash"]
