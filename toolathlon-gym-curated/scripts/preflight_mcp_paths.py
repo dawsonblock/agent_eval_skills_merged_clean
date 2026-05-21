@@ -246,6 +246,11 @@ def write_json_output(
     )
 
 
+def canonical_server_id(value: str) -> str:
+    """Normalize server IDs so profile/config aliases map consistently."""
+    return value.strip().lower().replace("-", "_")
+
+
 def main() -> int:
     """Run preflight validation for all MCP servers."""
     parser = argparse.ArgumentParser(
@@ -270,6 +275,10 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
+    selected_servers_canonical = {
+        canonical_server_id(server_name) for server_name in selected_servers
+    }
+
     config_dir = repo_root / "configs" / "mcp_servers"
     local_servers_dir = Path(
         os.environ.get("LOCAL_SERVERS_PATH", str(repo_root / "local_servers"))
@@ -288,11 +297,20 @@ def main() -> int:
     # (config_name, server_name, path)
     all_missing: list[tuple[str, str, str]] = []
     all_found: list[tuple[str, str, str]] = []
+    matched_servers: set[str] = set()
 
     for config_name, config in sorted(configs.items()):
         server_name = config.get("name", config_name.replace(".yaml", ""))
-        if server_name not in selected_servers:
+        config_name_stem = config_name.replace(".yaml", "")
+        candidate_ids = {
+            canonical_server_id(server_name),
+            canonical_server_id(config_name_stem),
+        }
+
+        if candidate_ids.isdisjoint(selected_servers_canonical):
             continue
+
+        matched_servers.update(candidate_ids.intersection(selected_servers_canonical))
 
         paths = extract_command_paths(config_name, config, local_servers_dir)
 
@@ -304,6 +322,22 @@ def main() -> int:
             else:
                 all_missing.append((config_name, server_name, str(path)))
                 print(f"✗ MISSING {server_name:24} {path}", file=sys.stderr)
+
+    unmatched_servers = sorted(selected_servers_canonical - matched_servers)
+    if unmatched_servers:
+        for missing_server in unmatched_servers:
+            all_missing.append(
+                (
+                    "profile-selection",
+                    missing_server,
+                    f"missing MCP config for selected profile server '{missing_server}'",
+                )
+            )
+            print(
+                f"✗ MISSING CONFIG {missing_server:17} "
+                f"no matching YAML config in {config_dir}",
+                file=sys.stderr,
+            )
 
     print()
     print(f"Found: {len(all_found)} paths")
