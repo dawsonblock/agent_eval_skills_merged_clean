@@ -35,6 +35,6 @@ Release readiness ............. ✅ Release candidate (controlled testing)
 
 ## Release Promotion Rule
 
-Promotion gate is now met: fresh extraction validation and Docker preflight both passed.
+Promotion gate is met in current environment: unified validation passed and Docker preflight was independently re-verified.
 
-This repository is a release candidate for controlled testing, not a production security attestation.
+This repository is a release candidate for controlled testing. It is not a production security attestation.

@@ -14,9 +14,9 @@
 
 ## Overview
 
-**Current status:** Release candidate for controlled testing. Fresh-extraction validation and Docker preflight have passed; production-grade security claims remain out of scope.
+**Current status:** Release candidate for controlled testing. ToolForge grouped validation, Agent Skills evaluation, Toolathlon artifact build/preflight, and Docker preflight have been reproduced in this environment.
 
-This repository should not be treated as a release candidate until fresh-extraction validation passes end-to-end for ToolForge (supported Python), Agent Skills, Toolathlon artifact build and preflight, and Docker preflight.
+This repository is not a production security attestation. Promotion remains scoped to controlled testing and still requires re-validation in any new environment.
 
 This repository is a controlled-merge of three interconnected systems designed for end-to-end AI agent development: from authoring tools to evaluating agents against real-world task benchmarks.
 
