@@ -6,12 +6,17 @@
 
 This dashboard is an evidence tracker. It is not a release declaration.
 
+Validation profiles:
+
+1. `smoke` (default release-candidate gate)
+2. `full` (experimental extended gate)
+
 **Required evidence artifacts for release-candidate gate:**
 
 - [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) — must have `overall_status = "passed"`
-- [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) — must have `overall_status = "passed"`, `expected_package_count = 12`, `package_count = 12`, `passed_count = 12`, `failed_count = 0`
-- [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json) — must have `overall_status = "passed"` and `failed_count = 0`
-- [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) — must have `missing_count = 0` and `found_count = 26`
+- [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) — must have `profile = smoke`, `overall_status = "passed"`, `package_count = expected_package_count`, `failed_count = 0`
+- [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json) — must have `profile = smoke`, `overall_status = "passed"`, and `failed_count = 0`
+- [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) — must have `profile = smoke` and `missing_count = 0`
 - [.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json) — required when claiming Docker proof
 - [.validation_logs/](.validation_logs/) — phase logs for audit trail
 
@@ -37,10 +42,12 @@ Release readiness ............. ⚪ Conditional on required evidence gates
 Release-candidate gate is satisfied **only when** the listed evidence artifacts show passing required gates for the target environment:
 
 - `validation_summary.json`: `overall_status = "passed"`
-- `toolathlon_artifact_build_summary.json`: `overall_status = "passed"`, `expected_package_count = 12`, `package_count = 12`, `passed_count = 12`, `failed_count = 0`
-- `toolathlon_mcp_smoke_summary.json`: `overall_status = "passed"`, `failed_count = 0`, `passed_count = target_count`
-- `toolathlon_preflight_summary.json`: `missing_count = 0` and `found_count = 26`
+- `toolathlon_artifact_build_summary.json`: `profile = smoke`, `overall_status = "passed"`, `package_count = expected_package_count`, `failed_count = 0`
+- `toolathlon_mcp_smoke_summary.json`: `profile = smoke`, `overall_status = "passed"`, `failed_count = 0`, `passed_count = target_count`
+- `toolathlon_preflight_summary.json`: `profile = smoke`, `missing_count = 0`
 - `docker_mcp_smoke_summary.json`: `overall_status = "passed"` when Docker proof is claimed
+
+The `full` profile remains available for extended validation but is not part of the default release-candidate gate until full evidence passes.
 
 Production-grade claims remain out of scope pending separate hostile-code/runtime security audit.
 
