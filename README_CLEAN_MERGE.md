@@ -12,33 +12,20 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
-Validation status: release candidate for controlled testing only when validation evidence artifacts are present for the target environment.
+**Validation status:** Release candidate for controlled testing **only when** validation evidence artifacts are present and passing for the target environment.
 
-Evidence artifacts:
+**Required evidence artifacts:**
 
-- Unified summary JSON: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)
-- Toolathlon preflight JSON: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)
+- Unified summary JSON: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) (`overall_status = "passed"`)
+- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (`failed_count = 0`)
+- Toolathlon preflight JSON: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (`missing_count = 0`)
 - Phase logs: [.validation_logs/](.validation_logs/)
 
-Current gate status:
+**Promotion rule:** Evidence-gated only. If required evidence files are missing, stale, or show failing gates, classification must be downgraded to strong repair candidate. This is not a production security certification.
 
-```text
-ZIP extraction ................ ✅ Verified
-ZIP cache cleanliness ......... ✅ Verified
-Python syntax ................. ✅ Verified
-Agent Skills .................. ✅ Verified
-ToolForge doctor .............. 🟡 Passes after dependency setup
-ToolForge full validation ..... ✅ Passes with grouped tests on supported Python
-Toolathlon fresh preflight .... ✅ Passes after artifact build
-Toolathlon artifact builder ... ✅ Completes with per-package timeouts
-Docker validation ............. ✅ Build + in-container preflight pass
-Unified validation ............ ✅ Passing in current environment
-Release readiness ............. ✅ Release candidate (controlled testing)
-```
+**Security disclaimer:** This package contains local MCP server code with reported npm vulnerabilities. Acceptable only for disposable benchmark containers and controlled developer labs. Do not run on production hosts or systems with sensitive data. Hostile-code isolation and security hardening are out of scope.
 
-Promotion rule outcome is evidence-gated. If required evidence files are missing or show non-passing required gates, downgrade classification to strong repair candidate. This is not a production security certification.
-
-Do not drop this directly into production application code. Keep it under a `labs/`, `agents/`, or separate tooling repo.
+**Deployment guidance:** Do not drop this directly into production application code. Keep it under a `labs/`, `agents/`, or separate tooling repo. Requires separate security audit before broader distribution.
 
 ## What was kept
 

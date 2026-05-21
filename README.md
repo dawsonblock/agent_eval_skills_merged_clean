@@ -14,17 +14,26 @@
 
 ## Overview
 
-**Current status:** Release candidate for controlled testing when the evidence artifacts listed below are present and green for the target environment.
+**Current status:** Release candidate for controlled testing **only when** the evidence artifacts listed below are present, current, and passing for the target environment.
 
-This repository is not a production security attestation. Promotion remains scoped to controlled testing and still requires re-validation in any new environment.
+**This repository is not a production security attestation.** Promotion remains scoped to controlled testing and still requires re-validation in any new environment.
 
-### Validation Evidence
+### Required Validation Evidence
 
-- Unified machine-readable summary: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)
-- Toolathlon preflight machine-readable summary: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)
-- Unified validator console logs: [.validation_logs/](.validation_logs/)
+- Unified machine-readable summary: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) (must exist, `overall_status` = "passed")
+- Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (must exist, `failed_count = 0`)
+- Toolathlon preflight machine-readable summary: [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json) (must exist, `missing_count = 0`)
+- Unified validator console logs: [.validation_logs/](.validation_logs/) (phase logs for audit trail)
 
-If these artifacts are missing, incomplete, or contain failing phase statuses for required gates, treat the repository as a strong repair candidate instead of a release candidate.
+**Gate Rule:** If any artifact is missing, stale, or shows a failing gate, classify the repository as **strong repair candidate**, not release-ready.
+
+See [VALIDATION_EVIDENCE.md](VALIDATION_EVIDENCE.md) for evidence state → repo status mapping.
+
+### ⚠️ Dependency & Security Disclaimer
+
+**This repository contains local MCP servers with reported npm vulnerabilities.** These are acceptable for disposable benchmark containers in controlled environments only. Do not run Toolathlon workloads on hosts with sensitive files, credentials, or production data.
+
+Hostile-code isolation and production-grade security hardening are out of scope for this release. A separate dependency audit and security review are required before wider distribution.
 
 This repository is a controlled-merge of three interconnected systems designed for end-to-end AI agent development: from authoring tools to evaluating agents against real-world task benchmarks.
 
