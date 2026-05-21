@@ -195,6 +195,22 @@ pip-audit
 
 ## Distribution ZIP Hygiene
 
+Use the canonical release packager (recommended):
+
+```bash
+make release-zip
+```
+
+This calls `scripts/create_release_zip.sh`, which both builds the archive and validates that forbidden metadata/cache entries are not present.
+
+Optional output path override:
+
+```bash
+RELEASE_ZIP_OUTPUT=dist/pruned-smoke-rc.zip make release-zip
+```
+
+Manual fallback (if you need direct zip invocation):
+
 When creating release ZIP files on macOS, exclude metadata files and cache artifacts so distributed archives do not include `__MACOSX` or `._*` entries.
 
 ```bash
