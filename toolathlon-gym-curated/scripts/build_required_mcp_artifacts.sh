@@ -66,12 +66,13 @@ ensure_file() {
   local file_path="$1"
   local label="$2"
 
-  if [ -f "$file_path" ]; then
-    echo "✓ $label artifact: $file_path"
-  else
-    echo "✗ Missing $label artifact after build: $file_path" >&2
+  if [ ! -f "$file_path" ] && [ ! -x "$file_path" ]; then
+    echo "✗ Missing $label artifact after build:" >&2
+    echo "  $file_path" >&2
     return 1
   fi
+
+    echo "✓ $label artifact: $file_path"
 }
 
 export -f build_node_package
@@ -119,6 +120,10 @@ PY
 }
 
 echo "Building required MCP artifacts in $LOCAL_SERVERS_DIR"
+build_with_timeout "rail_12306" 300 build_node_package "$LOCAL_SERVERS_DIR/12306-mcp" "rail_12306" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/12306-mcp/build/index.js" "rail_12306" || exit 1
+build_with_timeout "filesystem" 300 build_node_package "$LOCAL_SERVERS_DIR/filesystem" "filesystem" || exit 1
+ensure_file "$LOCAL_SERVERS_DIR/filesystem/dist/index.js" "filesystem" || exit 1
 build_with_timeout "google_calendar" 180 build_node_package "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server" "google_calendar" || exit 1
 ensure_file "$LOCAL_SERVERS_DIR/Calendar-Autoauth-MCP-Server/build/index.js" "google_calendar" || exit 1
 build_with_timeout "canvas" 900 build_node_package "$LOCAL_SERVERS_DIR/mcp-canvas-lms" "canvas" || exit 1
@@ -140,6 +145,7 @@ ensure_file "$LOCAL_SERVERS_DIR/youtube-mcp-server/dist/index.js" "youtube" || e
 build_with_timeout "youtube_transcript" 900 build_python_uv_package "$LOCAL_SERVERS_DIR/mcp-youtube-transcript" "youtube_transcript" || exit 1
 ensure_file "$LOCAL_SERVERS_DIR/mcp-youtube-transcript/.venv/bin/python3" "youtube_transcript" || exit 1
 
+cd "$ROOT_DIR"
 python scripts/preflight_mcp_paths.py
 
 echo "✓ Required MCP artifacts built successfully."

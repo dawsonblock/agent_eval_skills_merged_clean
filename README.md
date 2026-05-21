@@ -14,6 +14,10 @@
 
 ## Overview
 
+**Current status:** Repair candidate, not release-ready.
+
+This repository should not be treated as a release candidate until fresh-extraction validation passes end-to-end for ToolForge (supported Python), Agent Skills, Toolathlon artifact build and preflight, and Docker preflight.
+
 This repository is a controlled-merge of three interconnected systems designed for end-to-end AI agent development: from authoring tools to evaluating agents against real-world task benchmarks.
 
 | Component | Purpose | Scale |
