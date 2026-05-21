@@ -12,6 +12,7 @@ OUT_DIR="${OUT_DIR:-$TOOLATHLON_DIR/../.validation_logs}"
 DOCKER_PROGRESS="${DOCKER_PROGRESS:-auto}"
 DOCKER_INSTALL_PLAYWRIGHT="${DOCKER_INSTALL_PLAYWRIGHT:-0}"
 REBUILD_BASE_IMAGE="${REBUILD_BASE_IMAGE:-0}"
+REBUILD_IMAGE="${REBUILD_IMAGE:-0}"
 DOCKER_SMOKE_SUMMARY_FILE="$OUT_DIR/docker_mcp_smoke_summary.json"
 
 mkdir -p "$OUT_DIR"
@@ -38,13 +39,26 @@ else
   echo "✓ Reusing existing Docker base image: $BASE_IMAGE_NAME"
 fi
 
-echo "Building Docker image: $IMAGE_NAME"
-if ! docker --context="$DOCKER_CONTEXT" buildx build \
-  --progress "$DOCKER_PROGRESS" \
-  --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
-  --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
-  echo "✗ Docker build failed"
-  exit 1
+if [ "$REBUILD_IMAGE" = "1" ]; then
+  echo "Building Docker image: $IMAGE_NAME"
+  if ! docker --context="$DOCKER_CONTEXT" buildx build \
+    --progress "$DOCKER_PROGRESS" \
+    --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
+    --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
+    echo "✗ Docker build failed"
+    exit 1
+  fi
+elif ! docker --context="$DOCKER_CONTEXT" image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+  echo "Building Docker image: $IMAGE_NAME"
+  if ! docker --context="$DOCKER_CONTEXT" buildx build \
+    --progress "$DOCKER_PROGRESS" \
+    --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
+    --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
+    echo "✗ Docker build failed"
+    exit 1
+  fi
+else
+  echo "✓ Reusing existing Docker image: $IMAGE_NAME"
 fi
 
 echo "Running preflight in container..."
@@ -74,3 +88,4 @@ echo "Docker context: $DOCKER_CONTEXT"
 echo "Docker progress mode: $DOCKER_PROGRESS"
 echo "Base image: $BASE_IMAGE_NAME"
 echo "Install Playwright browser in base image: $DOCKER_INSTALL_PLAYWRIGHT"
+echo "Rebuild repair image: $REBUILD_IMAGE"
