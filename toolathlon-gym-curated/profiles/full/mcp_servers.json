@@ -1,0 +1,18 @@
+{
+  "profile": "full",
+  "description": "Expanded MCP validation profile retained for experimental full-gate runs",
+  "servers": [
+    "rail_12306",
+    "filesystem",
+    "google_calendar",
+    "canvas",
+    "howtocook",
+    "memory",
+    "google_forms",
+    "fetch",
+    "notion",
+    "woocommerce",
+    "youtube",
+    "youtube_transcript"
+  ]
+}

@@ -15,6 +15,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from profile_utils import (
+    ProfileConfigError,
+    get_profile_name,
+    load_profile_servers,
+)
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LOCAL_SERVERS_DIR = Path(
@@ -274,6 +280,15 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Optional path for a machine-readable summary.",
     )
+    parser.add_argument(
+        "--profile",
+        type=str,
+        default=None,
+        help=(
+            "Validation profile to use (defaults to TOOLATHLON_PROFILE or "
+            "'smoke')."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -359,12 +374,19 @@ def run_target(
 
 def main() -> int:
     args = parse_args()
+    profile = (args.profile or get_profile_name()).strip() or "smoke"
     with tempfile.TemporaryDirectory(prefix="mcp-smoke-") as tmp_dir:
         workspace_root = Path(tmp_dir)
         (workspace_root / "memory").mkdir(parents=True, exist_ok=True)
         targets = build_targets(workspace_root)
 
-        selected_names = args.targets or list(targets.keys())
+        try:
+            profile_targets = load_profile_servers(REPO_ROOT, profile)
+        except ProfileConfigError as exc:
+            print(f"Profile configuration error: {exc}", file=sys.stderr)
+            return 2
+
+        selected_names = args.targets or profile_targets
         unknown = sorted(set(selected_names) - set(targets))
         if unknown:
             print(f"Unknown targets: {', '.join(unknown)}", file=sys.stderr)
@@ -378,6 +400,7 @@ def main() -> int:
 
         summary = {
             "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "profile": profile,
             "local_servers_dir": str(LOCAL_SERVERS_DIR),
             "target_count": len(results),
             "passed_count": len(results) - len(failed),

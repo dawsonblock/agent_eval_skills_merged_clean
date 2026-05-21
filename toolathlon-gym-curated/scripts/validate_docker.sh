@@ -13,6 +13,7 @@ DOCKER_PROGRESS="${DOCKER_PROGRESS:-auto}"
 DOCKER_INSTALL_PLAYWRIGHT="${DOCKER_INSTALL_PLAYWRIGHT:-0}"
 REBUILD_BASE_IMAGE="${REBUILD_BASE_IMAGE:-0}"
 REBUILD_IMAGE="${REBUILD_IMAGE:-0}"
+TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
 DOCKER_SMOKE_SUMMARY_FILE="$OUT_DIR/docker_mcp_smoke_summary.json"
 
 mkdir -p "$OUT_DIR"
@@ -44,6 +45,7 @@ if [ "$REBUILD_IMAGE" = "1" ]; then
   if ! docker --context="$DOCKER_CONTEXT" buildx build \
     --progress "$DOCKER_PROGRESS" \
     --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
+    --build-arg "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
     --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
     echo "✗ Docker build failed"
     exit 1
@@ -53,6 +55,7 @@ elif ! docker --context="$DOCKER_CONTEXT" image inspect "$IMAGE_NAME" >/dev/null
   if ! docker --context="$DOCKER_CONTEXT" buildx build \
     --progress "$DOCKER_PROGRESS" \
     --build-arg "BASE_IMAGE=$BASE_IMAGE_NAME" \
+    --build-arg "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
     --load -t "$IMAGE_NAME" "$TOOLATHLON_DIR"; then
     echo "✗ Docker build failed"
     exit 1
@@ -63,6 +66,7 @@ fi
 
 echo "Running preflight in container..."
 if ! docker --context="$DOCKER_CONTEXT" run --rm \
+  -e "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
   -v "$OUT_DIR:/validation_logs" \
   "$IMAGE_NAME" \
   python scripts/smoke_mcp_servers.py \
@@ -73,6 +77,7 @@ fi
 
 echo "Running preflight in container..."
 if ! docker --context="$DOCKER_CONTEXT" run --rm \
+  -e "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE" \
   -v "$OUT_DIR:/validation_logs" \
   "$IMAGE_NAME" \
   python scripts/preflight_mcp_paths.py \
@@ -89,3 +94,4 @@ echo "Docker progress mode: $DOCKER_PROGRESS"
 echo "Base image: $BASE_IMAGE_NAME"
 echo "Install Playwright browser in base image: $DOCKER_INSTALL_PLAYWRIGHT"
 echo "Rebuild repair image: $REBUILD_IMAGE"
+echo "Toolathlon profile: $TOOLATHLON_PROFILE"

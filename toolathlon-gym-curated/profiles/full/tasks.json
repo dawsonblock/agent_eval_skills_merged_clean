@@ -1,0 +1,9 @@
+{
+  "profile": "full",
+  "description": "Full benchmark task pool retained for extended validation",
+  "task_selection": {
+    "mode": "all",
+    "source": "tasks/finalpool",
+    "notes": "Full profile is experimental and non-default until complete evidence passes."
+  }
+}

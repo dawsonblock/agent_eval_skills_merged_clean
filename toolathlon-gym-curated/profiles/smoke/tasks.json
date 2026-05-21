@@ -1,0 +1,8 @@
+{
+  "profile": "smoke",
+  "description": "Minimal controlled-testing task subset",
+  "task_selection": {
+    "mode": "subset",
+    "notes": "Smoke task selection is intentionally minimal and can be expanded after stable evidence runs."
+  }
+}
