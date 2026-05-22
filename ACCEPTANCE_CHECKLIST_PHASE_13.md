@@ -2,7 +2,7 @@
 
 **Date:** May 22, 2026  
 **Status:** Pruned smoke release candidate for controlled testing (smoke scope evidence attached).
-**Final clean archive SHA256:** `8f778e8a67c016fc8dfcacae5ca704dc0bc5803f1a25f44d72c1284bc16649f3`
+**Final clean archive SHA256:** `b8cb0960ba6f4093288ef38b2ca8d8630f962f3172355f672e575366e884bf97`
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
@@ -30,8 +30,8 @@ Agent Skills .................. ✅ Verified
 ToolForge grouped validation .. ✅ Passed on supported Python
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-22T08:32:54Z)
-Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T08:30:45Z)
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-22T08:50:15Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T08:49:20Z)
 Release readiness ............. ✅ Pruned smoke release candidate for controlled testing
 ```
 

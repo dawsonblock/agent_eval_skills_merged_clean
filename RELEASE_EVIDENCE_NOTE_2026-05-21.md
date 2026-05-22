@@ -23,7 +23,7 @@ Source: [.validation_logs/validation_summary.json](.validation_logs/validation_s
 
 - overall_status: passed
 - failed_phase_count: 0
-- run_finished_at: 2026-05-22T08:30:45Z
+- run_finished_at: 2026-05-22T08:49:20Z
 - capabilities.toolathlon_profile: smoke
 - capabilities.docker_requested: false
 - capabilities.rc_smoke_gate_enforced: true
@@ -50,14 +50,14 @@ MCP smoke summary:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T08:30:45Z
+- checked_at: 2026-05-22T08:49:20Z
 
 Preflight summary:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T08:32:45.414566+00:00
+- checked_at: 2026-05-22T08:50:02.167768+00:00
 
 ## Docker Proof
 
@@ -71,14 +71,14 @@ Docker MCP smoke:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T08:32:54Z
+- checked_at: 2026-05-22T08:50:15Z
 
 Docker preflight:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T08:32:55.782038+00:00
+- checked_at: 2026-05-22T08:50:16.579941+00:00
 
 Command used for this proof set:
 
@@ -111,7 +111,7 @@ bash scripts/create_release_zip.sh --output agent_eval_skills_merged_clean-prune
 Source archive: [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
 
 - Forbidden-entry scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
-- SHA256: 8f778e8a67c016fc8dfcacae5ca704dc0bc5803f1a25f44d72c1284bc16649f3
+- SHA256: b8cb0960ba6f4093288ef38b2ca8d8630f962f3172355f672e575366e884bf97
 
 ## Scope Statement
 

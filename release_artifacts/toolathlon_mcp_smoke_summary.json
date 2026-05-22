@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-05-22T08:32:45Z",
+  "checked_at": "2026-05-22T08:50:02Z",
   "profile": "smoke",
   "local_servers_dir": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers",
   "target_count": 3,
@@ -11,7 +11,7 @@
       "target": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.771,
+      "duration_seconds": 0.706,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
@@ -21,7 +21,7 @@
       "target": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.109,
+      "duration_seconds": 0.11,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",
@@ -31,9 +31,9 @@
       "target": "google_calendar",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.059,
+      "duration_seconds": 0.058,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "cwd": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/mcp-smoke-cphqhrdy",
+      "cwd": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/mcp-smoke-u8gzi48_",
       "stdout": "",
       "stderr": "Google Calendar MCP Server running on stdio\n"
     }
