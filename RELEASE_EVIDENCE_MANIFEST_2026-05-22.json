@@ -10,7 +10,7 @@
   },
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "771788dcc38b4020ef6259c96c07ff9047b616056a714a7ed414efe22c58a3f7",
+    "sha256": "8211f984171eca17b26332a1fa4e4223719f2d95f391042ea86ecbc45ff92be1",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",

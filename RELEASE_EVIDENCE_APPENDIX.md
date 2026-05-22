@@ -38,7 +38,7 @@ Unified workspace validation ([.validation_logs/validation_summary.json](.valida
 
 - overall_status: passed
 - failed_phase_count: 0
-- run_started_at: 2026-05-22T05:53:45Z
+- run_started_at: 2026-05-22T06:35:43Z
 - run_finished_at: 2026-05-22T06:36:38Z
 - python_version: 3.12.9
 - capabilities.toolathlon_profile: smoke
@@ -126,7 +126,7 @@ TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
 Clean release archive:
 
 - [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
-- SHA256: 771788dcc38b4020ef6259c96c07ff9047b616056a714a7ed414efe22c58a3f7
+- SHA256: 8211f984171eca17b26332a1fa4e4223719f2d95f391042ea86ecbc45ff92be1
 
 Hygiene checks:
 
