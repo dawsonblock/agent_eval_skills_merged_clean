@@ -6,8 +6,8 @@ Repository: agent_eval_skills_merged_clean
 
 ## Verdict
 
-Smoke release-candidate gate is satisfied for controlled testing.
-Docker proof is attached from a separate direct Docker run.
+Smoke release candidate gate is satisfied for controlled testing.
+Docker proof is included and passing in this unified run.
 
 Environment:
 - host OS: macOS
@@ -20,11 +20,11 @@ Source: [.validation_logs/validation_summary.json](.validation_logs/validation_s
 
 - overall_status: passed
 - failed_phase_count: 0
-- run_finished_at: 2026-05-22T02:53:38Z
+- run_finished_at: 2026-05-22T04:03:20Z
 - capabilities.toolathlon_profile: smoke
-- capabilities.docker_requested: false
+- capabilities.docker_requested: true
 - capabilities.rc_smoke_gate_enforced: true
-- phase.docker.status: skipped
+- phase.docker.status: passed
 
 ## Toolathlon Smoke Proof
 
@@ -47,14 +47,14 @@ MCP smoke summary:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T02:54:13Z
+- checked_at: 2026-05-22T04:03:16Z
 
 Preflight summary:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T02:54:13.608936+00:00
+- checked_at: 2026-05-22T04:03:16.713519+00:00
 
 ## Docker Proof
 
@@ -68,20 +68,19 @@ Docker MCP smoke:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T02:54:18Z
+- checked_at: 2026-05-22T04:03:19Z
 
 Docker preflight:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T02:54:19.986899+00:00
+- checked_at: 2026-05-22T04:03:20.559687+00:00
 
-Commands used for this proof set:
+Command used for this proof set:
 
 ```bash
-source .venv/bin/activate && bash scripts/validate_smoke_workspace.sh
-TOOLATHLON_PROFILE=smoke bash toolathlon-gym-curated/scripts/validate_docker.sh
+TOOLATHLON_PROFILE=smoke ENFORCE_RC_SMOKE_PROFILE=1 RUN_DOCKER=1 bash scripts/validate_workspace.sh
 ```
 
 ## Final Distributable ZIP

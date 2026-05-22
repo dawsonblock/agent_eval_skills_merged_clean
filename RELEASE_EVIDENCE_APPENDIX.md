@@ -31,12 +31,12 @@ Retained but not release-validated:
 Unified workspace validation ([.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)):
 - overall_status: passed
 - failed_phase_count: 0
-- run_started_at: 2026-05-22T02:53:00Z
-- run_finished_at: 2026-05-22T02:53:38Z
+- run_started_at: 2026-05-22T04:02:18Z
+- run_finished_at: 2026-05-22T04:03:20Z
 - capabilities.toolathlon_profile: smoke
 - capabilities.rc_smoke_gate_enforced: true
-- capabilities.docker_requested: false
-- phase statuses: toolforge=passed, agent_skills=passed, toolathlon=passed, docker=skipped
+- capabilities.docker_requested: true
+- phase statuses: toolforge=passed, agent_skills=passed, toolathlon=passed, docker=passed
 
 Toolathlon artifact summary ([.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json)):
 - profile: smoke
@@ -53,14 +53,14 @@ Toolathlon runtime smoke ([.validation_logs/toolathlon_mcp_smoke_summary.json](.
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T02:54:13Z
+- checked_at: 2026-05-22T04:03:16Z
 
 Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)):
 - profile: smoke
 - status: passed
 - found_count: 3
 - missing_count: 0
-- checked_at: 2026-05-22T02:54:13.608936+00:00
+- checked_at: 2026-05-22T04:03:16.713519+00:00
 
 Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)):
 - profile: smoke
@@ -68,20 +68,19 @@ Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validati
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T02:54:18Z
+- checked_at: 2026-05-22T04:03:19Z
 
 Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)):
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T02:54:19.986899+00:00
+- checked_at: 2026-05-22T04:03:20.559687+00:00
 
 Command used:
 
 ```bash
-source .venv/bin/activate && bash scripts/validate_smoke_workspace.sh
-TOOLATHLON_PROFILE=smoke bash toolathlon-gym-curated/scripts/validate_docker.sh
+TOOLATHLON_PROFILE=smoke ENFORCE_RC_SMOKE_PROFILE=1 RUN_DOCKER=1 bash scripts/validate_workspace.sh
 ```
 
 ## Packaging Evidence
