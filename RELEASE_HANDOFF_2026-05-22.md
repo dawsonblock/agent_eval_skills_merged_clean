@@ -2,7 +2,7 @@
 
 Repository: agent_eval_skills_merged_clean
 Branch: repair/pruned-release-candidate
-Commit: 7ed6c50
+Commit: 0e92ebd
 
 ## Current Label
 
@@ -13,7 +13,7 @@ Promotion label is permitted only when the matching machine-readable evidence bu
 ## Upload Archive
 
 - Archive: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-- SHA256: `8211f984171eca17b26332a1fa4e4223719f2d95f391042ea86ecbc45ff92be1`
+- SHA256: `54875905e8019818cb58a0d475d72afb3fae2f7fd0dd914acca123e66f768ebc`
 - Forbidden-entry scan: passed (`__MACOSX`, `._*`, `.DS_Store`, `node_modules`, `.validation_logs`, caches, `.venv` absent)
 
 ## Required Evidence Bundle (same build/hash)

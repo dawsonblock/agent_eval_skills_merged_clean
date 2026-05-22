@@ -1,8 +1,8 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "repair/pruned-release-candidate",
-  "commit": "7ed6c50",
-  "generated_at_utc": "2026-05-22T06:52:00Z",
+  "commit": "0e92ebd",
+  "generated_at_utc": "2026-05-22T07:15:29Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
     "promotion_label": "Pruned smoke release candidate for controlled testing",
@@ -10,7 +10,7 @@
   },
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "8211f984171eca17b26332a1fa4e4223719f2d95f391042ea86ecbc45ff92be1",
+    "sha256": "54875905e8019818cb58a0d475d72afb3fae2f7fd0dd914acca123e66f768ebc",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -60,14 +60,14 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T06:36:38Z"
+    "checked_at": "2026-05-22T07:15:23Z"
   },
   "toolathlon_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T06:36:38.697509+00:00"
+    "checked_at": "2026-05-22T07:15:23.828526+00:00"
   },
   "docker_mcp_smoke_summary": {
     "profile": "smoke",
@@ -75,13 +75,13 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T06:36:57Z"
+    "checked_at": "2026-05-22T07:15:27Z"
   },
   "docker_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T06:36:59.138651+00:00"
+    "checked_at": "2026-05-22T07:15:28.818781+00:00"
   }
 }

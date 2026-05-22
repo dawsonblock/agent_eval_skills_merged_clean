@@ -38,8 +38,8 @@ Unified workspace validation ([.validation_logs/validation_summary.json](.valida
 
 - overall_status: passed
 - failed_phase_count: 0
-- run_started_at: 2026-05-22T06:35:43Z
-- run_finished_at: 2026-05-22T06:36:38Z
+- run_started_at: 2026-05-22T07:14:42Z
+- run_finished_at: 2026-05-22T07:15:24Z
 - python_version: 3.12.9
 - capabilities.toolathlon_profile: smoke
 - capabilities.rc_smoke_gate_enforced: true
@@ -64,7 +64,7 @@ Toolathlon runtime smoke ([.validation_logs/toolathlon_mcp_smoke_summary.json](.
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T06:36:38Z
+- checked_at: 2026-05-22T07:15:23Z
 
 Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)):
 
@@ -72,7 +72,7 @@ Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.vali
 - status: passed
 - found_count: 3
 - missing_count: 0
-- checked_at: 2026-05-22T06:36:38.697509+00:00
+- checked_at: 2026-05-22T07:15:23.828526+00:00
 
 Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)):
 
@@ -81,7 +81,7 @@ Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validati
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T06:36:57Z
+- checked_at: 2026-05-22T07:15:27Z
 
 Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)):
 
@@ -89,7 +89,7 @@ Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_l
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T06:36:59.138651+00:00
+- checked_at: 2026-05-22T07:15:28.818781+00:00
 
 Smoke command used:
 
@@ -107,18 +107,15 @@ TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
 Direct proof commands executed in this cycle:
 
 ```bash
-cd ToolForge
-PYTHONPATH=. python -m apps.cli.toolforge_cli.main doctor
-PYTHONPATH=. pytest -q tests/test_test_validator.py tests/integration/test_test_validator_subprocess.py
+python3.12 -m venv .venv
+source .venv/bin/activate
+bash scripts/validate_smoke_workspace.sh
 
-cd ../agent-skills-curated
-node bin/cli.js list
-node bin/cli.js eval --json
-
-cd ../toolathlon-gym-curated
-TOOLATHLON_PROFILE=smoke FORCE_REBUILD=1 bash scripts/build_required_mcp_artifacts.sh
-TOOLATHLON_PROFILE=smoke SKIP_EXISTING_ARTIFACTS=1 bash scripts/build_required_mcp_artifacts.sh
+cd toolathlon-gym-curated
 TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
+
+cd ..
+bash scripts/create_release_zip.sh --output agent_eval_skills_merged_clean-pruned-smoke.zip
 ```
 
 ## Packaging Evidence
@@ -126,7 +123,7 @@ TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
 Clean release archive:
 
 - [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
-- SHA256: 8211f984171eca17b26332a1fa4e4223719f2d95f391042ea86ecbc45ff92be1
+- SHA256: 54875905e8019818cb58a0d475d72afb3fae2f7fd0dd914acca123e66f768ebc
 
 Hygiene checks:
 
