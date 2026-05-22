@@ -5,6 +5,17 @@ Scope: Pruned smoke release candidate for controlled testing
 
 This runbook defines the exact release gate for smoke profile promotion. Full Toolathlon profile remains retained but non-default and experimental.
 
+Evidence publication rule:
+
+- A release can be labeled release candidate only if required machine-readable summaries are attached as CI/release artifacts for that same build.
+- Recommended artifact set:
+  - `.validation_logs/validation_summary.json`
+  - `.validation_logs/toolathlon_artifact_build_summary.json`
+  - `.validation_logs/toolathlon_mcp_smoke_summary.json`
+  - `.validation_logs/toolathlon_preflight_summary.json`
+  - `.validation_logs/docker_mcp_smoke_summary.json` (when Docker proof is claimed)
+  - `.validation_logs/docker_preflight_summary.json` (when Docker proof is claimed)
+
 ## 1) Profile Policy
 
 - Default gate: `TOOLATHLON_PROFILE=smoke`

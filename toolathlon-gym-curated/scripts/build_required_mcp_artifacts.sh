@@ -184,9 +184,73 @@ artifact_exists() {
   [ -e "$path" ] && { [ -f "$path" ] || [ -L "$path" ]; }
 }
 
+NODE_SKIP_DIAGNOSTIC="not_evaluated"
+
 node_runtime_ready() {
   local pkg_dir="$1"
   [ -d "$pkg_dir/node_modules" ]
+}
+
+node_dependency_tree_ready() {
+  local pkg_dir="$1"
+
+  if ! command -v npm >/dev/null 2>&1; then
+    return 1
+  fi
+
+  (
+    cd "$pkg_dir"
+    npm ls --omit=dev --depth=0 >/dev/null 2>&1
+  )
+}
+
+node_artifact_smoke_ready() {
+  local artifact="$1"
+  local timeout_seconds="${2:-5}"
+
+  if ! command -v node >/dev/null 2>&1; then
+    return 1
+  fi
+
+  python3 - "$artifact" "$timeout_seconds" <<'PYEOF'
+import subprocess
+import sys
+
+artifact = sys.argv[1]
+timeout_seconds = float(sys.argv[2])
+
+cmd = [
+    "node",
+    "--input-type=module",
+    "-e",
+    (
+        "import { pathToFileURL } from 'node:url';"
+        "const entry = process.argv[1];"
+        "try {"
+        "  await import(pathToFileURL(entry).href);"
+        "  process.exit(0);"
+        "} catch (error) {"
+        "  console.error(error && error.stack ? error.stack : String(error));"
+        "  process.exit(1);"
+        "}"
+    ),
+    artifact,
+]
+
+try:
+    completed = subprocess.run(
+        cmd,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+    )
+except subprocess.TimeoutExpired:
+    # Long-running MCP entrypoints are treated as runtime-ready.
+    raise SystemExit(0)
+
+raise SystemExit(completed.returncode)
+PYEOF
 }
 
 python_runtime_ready() {
@@ -197,7 +261,31 @@ python_runtime_ready() {
 can_skip_existing_node() {
   local pkg_dir="$1"
   local artifact="$2"
-  artifact_exists "$artifact" && node_runtime_ready "$pkg_dir"
+
+  NODE_SKIP_DIAGNOSTIC="not_evaluated"
+
+  if ! artifact_exists "$artifact"; then
+    NODE_SKIP_DIAGNOSTIC="artifact_missing"
+    return 1
+  fi
+
+  if ! node_runtime_ready "$pkg_dir"; then
+    NODE_SKIP_DIAGNOSTIC="node_modules_missing"
+    return 1
+  fi
+
+  if ! node_dependency_tree_ready "$pkg_dir"; then
+    NODE_SKIP_DIAGNOSTIC="npm_tree_unhealthy"
+    return 1
+  fi
+
+  if ! node_artifact_smoke_ready "$artifact" 5; then
+    NODE_SKIP_DIAGNOSTIC="artifact_import_failed"
+    return 1
+  fi
+
+  NODE_SKIP_DIAGNOSTIC="runtime_ready_skip"
+  return 0
 }
 
 can_skip_existing_python() {
@@ -434,6 +522,7 @@ maybe_build_node_package() {
   local timeout_sec="$2"
   local pkg_dir="$3"
   local artifact="$4"
+  local skip_rebuild_reason=""
   local start
   start="$(date +%s)"
   CURRENT_PACKAGE_START_EPOCH="$start"
@@ -446,10 +535,11 @@ maybe_build_node_package() {
     ensure_file "$artifact" "$name" || return 1
     local elapsed
     elapsed="$(( $(date +%s) - start ))"
-    record_package_result "$name" "passed" "$elapsed" "$artifact" "true" "runtime_ready_skip"
+    record_package_result "$name" "passed" "$elapsed" "$artifact" "true" "$NODE_SKIP_DIAGNOSTIC"
     return 0
   elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
-    echo "→ $name artifact exists but runtime dependencies are missing; rebuilding"
+    skip_rebuild_reason="$NODE_SKIP_DIAGNOSTIC"
+    echo "→ $name artifact exists but skip checks failed ($skip_rebuild_reason); rebuilding"
     build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
   else
     build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
@@ -458,7 +548,11 @@ maybe_build_node_package() {
   ensure_file "$artifact" "$name" || return 1
   local elapsed
   elapsed="$(( $(date +%s) - start ))"
-  record_package_result "$name" "passed" "$elapsed" "$artifact"
+  if [ -n "$skip_rebuild_reason" ]; then
+    record_package_result "$name" "passed" "$elapsed" "$artifact" "false" "rebuilt_after_${skip_rebuild_reason}"
+  else
+    record_package_result "$name" "passed" "$elapsed" "$artifact"
+  fi
 }
 
 maybe_build_python_package() {

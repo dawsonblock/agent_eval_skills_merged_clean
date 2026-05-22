@@ -18,7 +18,7 @@
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
-Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion.
+Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion. If required machine-readable proof is missing from CI/release artifacts for the current build, classification remains release-candidate candidate.
 
 This repository can validate with two profiles:
 
@@ -39,6 +39,8 @@ This repository can validate with two profiles:
 **Gate Rule:** If any artifact is missing, stale, or shows a failing gate, classify the repository as **strong repair candidate**, not release-ready.
 
 Release-candidate status applies to the `smoke` profile by default only after fresh environment proof is attached. The `full` profile remains available for extended validation and should only be claimed when separate full-profile evidence is present.
+
+For this repository, only 3 smoke-profile Toolathlon MCP targets are release-gated (`rail_12306`, `filesystem`, `google_calendar`). The broader 25-server inventory is retained but not fully release-validated by the default gate.
 
 For release-candidate claims, all required summary artifacts must explicitly show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary). Evidence generated with `TOOLATHLON_PROFILE=full` does not satisfy the default release-candidate gate.
 
@@ -68,7 +70,7 @@ This repository is a controlled-merge of three interconnected systems designed f
 | --- | --- | --- |
 | [**ToolForge**](ToolForge/) | Create, validate, run, and package AI tool prototypes as MCP servers and Copilot Skills | CLI platform |
 | [**Agent Skills**](agent-skills-curated/) | Curated registry of reusable agent skills with built-in evaluation | 23 curated skills |
-| [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers inventory (`smoke` gate is default) |
+| [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers inventory (default smoke gate validates 3 targets) |
 
 ---
 

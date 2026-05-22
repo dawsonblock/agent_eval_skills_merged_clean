@@ -2,9 +2,9 @@
 
 This document defines the minimum evidence required to claim release candidate status for controlled testing.
 
-Current status (May 22, 2026): smoke release candidate gate satisfied for controlled testing (`profile=smoke`, unified summary `overall_status=passed` at `run_finished_at=2026-05-22T04:03:20Z`, Docker smoke+preflight passed, and clean packaging evidence generated).
+Current status (May 22, 2026): smoke release candidate gate satisfied for controlled testing in the latest local proof run (`validation_summary.json` `overall_status=passed`, smoke and Docker summaries passing).
 
-Scope warning: this status applies to `TOOLATHLON_PROFILE=smoke` only. Full profile remains optional/experimental unless separate full-profile evidence is presented.
+Scope warning: status and promotion rules apply to `TOOLATHLON_PROFILE=smoke` only. Full profile remains optional/experimental unless separate full-profile evidence is presented.
 
 Validation profiles:
 
@@ -58,6 +58,8 @@ If your environment uses a non-default Docker context, set it explicitly:
 ```bash
 DOCKER_CONTEXT=<your-context> bash toolathlon-gym-curated/scripts/validate_docker.sh
 ```
+
+Docker proof is conditional and should only be claimed when the Docker summaries from the same run are published.
 
 ## CI Behavior
 
@@ -125,6 +127,8 @@ Claim release-candidate status only when:
    - Explicitly marked unavailable in the environment profile (set `RUN_DOCKER=0`)
 
 If any condition is not met, classify as strong repair candidate.
+
+If evidence exists from a prior run but is not published with the current candidate build, keep the label at release-candidate candidate.
 
 If evidence was generated with `TOOLATHLON_PROFILE=full`, regenerate smoke evidence before making a default release-candidate claim:
 

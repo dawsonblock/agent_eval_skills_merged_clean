@@ -6,8 +6,11 @@ Repository: agent_eval_skills_merged_clean
 
 ## Verdict
 
-Smoke release candidate gate is satisfied for controlled testing.
-Docker proof is included and passing in this unified run.
+This note documents one specific unified validation run.
+It does not, by itself, promote a new archive to release-candidate status unless the corresponding `.validation_logs` artifacts are attached for that same build.
+
+Smoke release candidate gate is satisfied for controlled testing for the run documented below.
+Docker proof is included and passing in that run.
 
 Environment:
 - host OS: macOS
@@ -20,11 +23,11 @@ Source: [.validation_logs/validation_summary.json](.validation_logs/validation_s
 
 - overall_status: passed
 - failed_phase_count: 0
-- run_finished_at: 2026-05-22T04:03:20Z
+- run_finished_at: 2026-05-22T04:41:08Z
 - capabilities.toolathlon_profile: smoke
-- capabilities.docker_requested: true
+- capabilities.docker_requested: false
 - capabilities.rc_smoke_gate_enforced: true
-- phase.docker.status: passed
+- phase.docker.status: skipped
 
 ## Toolathlon Smoke Proof
 
@@ -47,14 +50,14 @@ MCP smoke summary:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T04:03:16Z
+- checked_at: 2026-05-22T04:41:07Z
 
 Preflight summary:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T04:03:16.713519+00:00
+- checked_at: 2026-05-22T04:41:08.330336+00:00
 
 ## Docker Proof
 
@@ -68,27 +71,28 @@ Docker MCP smoke:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T04:03:19Z
+- checked_at: 2026-05-22T04:41:24Z
 
 Docker preflight:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T04:03:20.559687+00:00
+- checked_at: 2026-05-22T04:41:26.300281+00:00
 
 Command used for this proof set:
 
 ```bash
-TOOLATHLON_PROFILE=smoke ENFORCE_RC_SMOKE_PROFILE=1 RUN_DOCKER=1 bash scripts/validate_workspace.sh
+bash scripts/validate_smoke_workspace.sh
+TOOLATHLON_PROFILE=smoke bash toolathlon-gym-curated/scripts/validate_docker.sh
 ```
 
 ## Final Distributable ZIP
 
-Source archive: [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
+Source archive: [dist/agent_eval_skills_merged_clean-pruned-smoke-test.zip](dist/agent_eval_skills_merged_clean-pruned-smoke-test.zip)
 
 - Forbidden-entry scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
-- SHA256: 7753ee61fd84148e8ff2feb6a8214d120aef74411f827eaeb8c59aaa4333cdc0
+- SHA256: 1f6047e1709b7490545085f692ea455808b92565b978fe7fba7fa9fa527e61dc
 
 ## Scope Statement
 
