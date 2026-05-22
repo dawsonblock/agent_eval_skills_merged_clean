@@ -18,6 +18,12 @@ The release is defined by this exact artifact pair:
 
 These values are hash-bound in the release attestation and evidence manifest.
 
+## Artifact Identity Policy
+
+Release-candidate status is bound to the exact canonical artifact pair and exact SHA256 values above.
+
+Any wrapper/source bundle upload or regenerated ZIP with different bytes is out of scope for this release note and must be classified as unbound until a new manifest plus attestation explicitly rebinding to those new hashes is issued.
+
 ## Scope Covered By Attached Evidence
 
 - ToolForge validation under Python 3.12

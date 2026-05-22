@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 Repository: agent_eval_skills_merged_clean
-Branch: repair/pruned-release-candidate
+Branch: main
 Classification: Pruned smoke release candidate for controlled testing
 
 ## Scope

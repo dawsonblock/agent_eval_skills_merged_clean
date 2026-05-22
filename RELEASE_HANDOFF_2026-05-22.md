@@ -1,8 +1,8 @@
 # Release Handoff (2026-05-22)
 
 Repository: agent_eval_skills_merged_clean
-Branch: repair/pruned-release-candidate
-Commit: 0be66ac
+Branch: main
+Commit: cd757b1
 
 ## Current Label
 

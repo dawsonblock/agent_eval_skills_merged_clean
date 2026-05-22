@@ -1,5 +1,7 @@
 # Release Evidence Note (Pruned Smoke RC)
 
+Historical note: this document captures a prior run context and is superseded by current canonical attestation documents (`RELEASE_ATTESTATION_2026-05-22.md` and `RELEASE_EVIDENCE_MANIFEST_2026-05-22.json`) for release identity and promotion decisions.
+
 Date: 2026-05-22
 Branch: repair/pruned-release-candidate
 Repository: agent_eval_skills_merged_clean

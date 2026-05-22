@@ -22,6 +22,15 @@ Status claims are time-bound to attached evidence artifacts and must be re-valid
 
 Promotion label (only when matching evidence is attached for the same build): pruned smoke release candidate for controlled testing.
 
+### Artifact Identity Policy
+
+Release identity is hash-bound to one canonical artifact pair:
+
+1. `agent_eval_skills_merged_clean-pruned-smoke.zip`
+2. `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
+
+Only exact SHA256 matches to the attestation/manifest values are in scope for the current release classification. Wrapper/source uploads and independently regenerated ZIPs are treated as unbound artifacts unless a new manifest plus attestation is published for their exact hashes.
+
 This repository can validate with two profiles:
 
 1. `smoke` — default release-candidate gate (fast, controlled-testing subset)
