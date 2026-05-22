@@ -1,8 +1,8 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "repair/pruned-release-candidate",
-  "commit": "79ff5bf",
-  "generated_at_utc": "2026-05-22T07:27:16Z",
+  "commit": "0be66ac",
+  "generated_at_utc": "2026-05-22T08:20:14Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
     "promotion_label": "Pruned smoke release candidate for controlled testing",
@@ -11,7 +11,7 @@
   },
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "3402c2793c7125ef123b14596cf1390eb06023b4b843bcb0197e239e7bd8f6ce",
+    "sha256": "887b0da241988dbd933a911319a16992c3f69d6af6e657eff7f6ff51a323af90",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -26,7 +26,7 @@
       ".venv"
     ]
   },
-  "archive_sha256": "3402c2793c7125ef123b14596cf1390eb06023b4b843bcb0197e239e7bd8f6ce",
+  "archive_sha256": "887b0da241988dbd933a911319a16992c3f69d6af6e657eff7f6ff51a323af90",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",
@@ -62,14 +62,14 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T07:27:11Z"
+    "checked_at": "2026-05-22T08:20:08Z"
   },
   "toolathlon_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T07:27:11.978233+00:00"
+    "checked_at": "2026-05-22T08:20:08.404247+00:00"
   },
   "docker_mcp_smoke_summary": {
     "profile": "smoke",
@@ -77,13 +77,13 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T07:27:14Z"
+    "checked_at": "2026-05-22T08:20:13Z"
   },
   "docker_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T07:27:15.287689+00:00"
+    "checked_at": "2026-05-22T08:20:14.263970+00:00"
   }
 }

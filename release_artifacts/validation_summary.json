@@ -11,7 +11,7 @@
   "overall_status": "passed",
   "phases": [
     {
-      "duration_seconds": 16,
+      "duration_seconds": 15,
       "exit_code": 0,
       "logs": [
         "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_python_version.log",
@@ -39,7 +39,7 @@
       "status": "passed"
     },
     {
-      "duration_seconds": 20,
+      "duration_seconds": 22,
       "exit_code": 0,
       "logs": [
         "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_artifact_build.log",
@@ -66,7 +66,7 @@
   ],
   "python_executable": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.venv/bin/python",
   "python_version": "3.12.9",
-  "run_duration_seconds": 36,
-  "run_finished_at": "2026-05-22T07:27:12Z",
-  "run_started_at": "2026-05-22T07:26:36Z"
+  "run_duration_seconds": 37,
+  "run_finished_at": "2026-05-22T08:20:08Z",
+  "run_started_at": "2026-05-22T08:19:31Z"
 }

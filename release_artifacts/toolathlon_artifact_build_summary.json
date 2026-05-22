@@ -9,21 +9,21 @@
     {
       "package": "rail_12306",
       "status": "passed",
-      "duration_seconds": 8,
+      "duration_seconds": 11,
       "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "skipped_existing": false
     },
     {
       "package": "filesystem",
       "status": "passed",
-      "duration_seconds": 4,
+      "duration_seconds": 5,
       "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "skipped_existing": false
     },
     {
       "package": "google_calendar",
       "status": "passed",
-      "duration_seconds": 5,
+      "duration_seconds": 4,
       "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
       "skipped_existing": false
     }

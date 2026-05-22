@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-05-22T07:27:11Z",
+  "checked_at": "2026-05-22T08:20:08Z",
   "profile": "smoke",
   "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
   "target_count": 3,
@@ -11,7 +11,7 @@
       "target": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.93,
+      "duration_seconds": 1.028,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
@@ -21,7 +21,7 @@
       "target": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.165,
+      "duration_seconds": 0.148,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",
@@ -31,9 +31,9 @@
       "target": "google_calendar",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.115,
+      "duration_seconds": 0.057,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "cwd": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/mcp-smoke-9qcdwiki",
+      "cwd": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/mcp-smoke-tpujopad",
       "stdout": "",
       "stderr": "Google Calendar MCP Server running on stdio\n"
     }
