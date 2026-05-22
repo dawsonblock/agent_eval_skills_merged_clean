@@ -2,7 +2,7 @@
 
 Repository: agent_eval_skills_merged_clean
 Branch: repair/pruned-release-candidate
-Commit: 5ae8912fc7a9d9310360ab2be9f3a838bff334ba
+Commit: 0a33446
 
 ## Current Label
 
