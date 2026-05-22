@@ -25,3 +25,5 @@ htmlcov/
 
 # Generated release bundles
 dist/*.zip
+dist/*.tgz
+dist/*.tar.gz
