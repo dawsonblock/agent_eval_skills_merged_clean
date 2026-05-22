@@ -29,8 +29,8 @@ Agent Skills .................. ✅ Verified
 ToolForge grouped validation .. ✅ Passed on Python 3.12
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-21T23:45:47Z)
-Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-21T23:45:32Z)
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-21T23:59:17Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-21T23:59:03Z)
 Release readiness ............. ✅ Smoke release-candidate gate satisfied
 ```
 
