@@ -128,7 +128,7 @@ pip install -e ".[dev]"
 
 ### Project Structure
 
-```
+```text
 ToolForge/
 ├── apps/cli/                  # Click-based CLI (toolforge command)
 ├── packages/
@@ -148,7 +148,7 @@ ToolForge/
 ### Documentation
 
 | Document | Description |
-|----------|-------------|
+| ---------- | ----------- |
 | [ARCHITECTURE.md](ToolForge/docs/ARCHITECTURE.md) | System design, data flow, security model |
 | [CLI_REFERENCE.md](ToolForge/docs/CLI_REFERENCE.md) | Full `toolforge` command reference |
 | [TOOL_SPEC.md](ToolForge/docs/TOOL_SPEC.md) | `toolforge.yaml` field reference |
@@ -176,14 +176,14 @@ A collection of high-quality skill definitions for AI coding agents, organized b
 #### Coding Agents & IDEs
 
 | Skill | Description |
-|-------|-------------|
+| ------- | ----------- |
 | [`mcp-builder`](agent-skills-curated/skills/coding-agents-and-ides/mcp-builder/) | Build MCP servers in Python (FastMCP) or TypeScript. Includes planning workflows, MCP best-practices, and evaluation scripts |
 | [`skill-creator`](agent-skills-curated/skills/coding-agents-and-ides/skill-creator/) | Author, evaluate, and benchmark `SKILL.md` files. Covers bundling, eval runs, and performance measurement |
 
 #### Web & Frontend Development
 
 | Skill | Description |
-|-------|-------------|
+| ------- | ----------- |
 | [`frontend-design`](agent-skills-curated/skills/web-and-frontend-development/frontend-design/) | Generate distinctive frontend interfaces with intentional design direction — avoids generic AI aesthetics |
 | [`web-artifacts-builder`](agent-skills-curated/skills/web-and-frontend-development/web-artifacts-builder/) | Build multi-component HTML artifacts with React, Tailwind CSS, and shadcn/ui |
 | [`excalidraw`](agent-skills-curated/skills/web-and-frontend-development/excalidraw/) | Generate valid `.excalidraw` architecture diagrams from codebase analysis |
@@ -191,7 +191,7 @@ A collection of high-quality skill definitions for AI coding agents, organized b
 #### PDF & Documents
 
 | Skill | Description |
-|-------|-------------|
+| ------- | ----------- |
 | [`pdf`](agent-skills-curated/skills/pdf-and-documents/pdf/) | Extract, parse, and work with PDF documents |
 | [`docx`](agent-skills-curated/skills/pdf-and-documents/docx/) | Read and write Word documents programmatically |
 | [`xlsx`](agent-skills-curated/skills/pdf-and-documents/xlsx/) | Read and write Excel workbooks programmatically |
@@ -200,7 +200,7 @@ A collection of high-quality skill definitions for AI coding agents, organized b
 #### Browser & Automation
 
 | Skill | Description |
-|-------|-------------|
+| ------- | ----------- |
 | [`webapp-testing`](agent-skills-curated/skills/browser-and-automation/webapp-testing/) | Test local web apps with Playwright — verify UI behavior, capture screenshots, view browser logs |
 
 ### CLI & Evaluation
@@ -218,7 +218,7 @@ node evals/evaluate.js --skill mcp-builder
 
 ### Structure
 
-```
+```text
 agent-skills-curated/
 ├── bin/cli.js                 # Skill CLI
 ├── evals/
@@ -256,7 +256,7 @@ Built on and extending [Toolathlon](https://github.com/hkust-nlp/Toolathlon) by 
 ### Task Domains
 
 | Domain | Example Tasks |
-|--------|--------------|
+| -------- | -------------- |
 | **Salesforce CRM** | Sales forecasting, HR attrition, support SLA audits, territory analysis |
 | **WooCommerce** | Inventory management, coupon analysis, customer lifetime value, shipping audits |
 | **Yahoo Finance** | Portfolio analysis, sector rotation, earnings reports, dividend tracking |
@@ -300,16 +300,16 @@ Task output is written to `dumps/<task>/<timestamp>/`. Full conversation traject
 The 25 bundled MCP servers cover:
 
 | Category | Servers |
-|----------|---------|
+| ---------- | --------- |
 | **Data & Spreadsheets** | Excel, Google Sheets, PDF tools |
 | **Productivity** | Notion, Google Forms, Google Calendar |
 | **Communication** | Email (SMTP/IMAP) |
 | **Development** | CLI, Filesystem, Playwright |
 | **Domain-specific** | Salesforce, WooCommerce, Yahoo Finance, Canvas LMS, Arxiv, HowToCook, YouTube, 12306, Scholarly |
 
-### Structure
+### Directory Structure
 
-```
+```text
 toolathlon-gym-curated/
 ├── tasks/finalpool/           # 503 task definitions
 ├── local_servers/             # 25 local MCP server implementations
@@ -331,7 +331,7 @@ Toolathlon's terminal-style MCP tooling is powerful. **Only run it inside dispos
 ### Prerequisites
 
 | Tool | Version |
-|------|---------|
+| ------ | --------- |
 | Python | 3.9+ |
 | Node.js | 18+ |
 | Docker | 24+ |
@@ -361,7 +361,7 @@ Keep this repository under a dedicated `labs/`, `agents/`, or `tooling/` directo
 
 ## Architecture
 
-```
+```text
 agent_eval_skills_merged_clean/
 │
 ├── ToolForge/                     # Tool creation + packaging platform
@@ -395,6 +395,4 @@ The three components are designed to compose:
 
 ---
 
-<div align="center">
-<sub>Built for controlled agent development. Pin this in your own repo and review updates before pulling.</sub>
-</div>
+*Built for controlled agent development. Pin this in your own repo and review updates before pulling.*

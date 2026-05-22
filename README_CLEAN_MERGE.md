@@ -17,11 +17,13 @@ Use this as controlled infrastructure for agent development:
 **Final clean archive SHA256:** `079ce8bdde9529dffc854a0cc6a1fbf249fe4603afb76fff349a1aad4ca9eecd`
 
 Validated scope:
+
 - ToolForge
 - Agent Skills
 - Toolathlon smoke profile
 
 Retained but not release-validated:
+
 - Full Toolathlon profile
 - all 503 tasks
 - full MCP server set
@@ -31,7 +33,7 @@ This repository ships with two validation profiles:
 1. `smoke` — default release-candidate gate
 2. `full` — expanded Toolathlon benchmark gate (experimental, non-default)
 
-**Required evidence artifacts:**
+### Required evidence artifacts
 
 - Unified summary JSON: [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json) (`overall_status = "passed"`)
 - Toolathlon artifact build summary: [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json) (`profile` present, `failed_count = 0`, `package_count = expected_package_count`)
@@ -59,39 +61,47 @@ Kept the benchmark runner, task definitions, preprocess/evaluation scripts, MCP 
 
 Kept the CLI, evaluator scripts, root docs, and all 23 agent skills:
 
-**Coding & IDE Integration (3 skills)**
+### Coding & IDE Integration (3 skills)
+
 - coding-agents-and-ides/mcp-builder
 - coding-agents-and-ides/mintlify-docs-updater
 - coding-agents-and-ides/skill-creator
 
-**Browser Automation (1 skill)**
+### Browser Automation (1 skill)
+
 - browser-and-automation/webapp-testing
 
-**Communication (1 skill)**
+### Communication (1 skill)
+
 - communication/internal-comms
 
-**Image & Video Generation (5 skills)**
+### Image & Video Generation (5 skills)
+
 - image-and-video-generation/algorithmic-art
 - image-and-video-generation/canvas-design
 - image-and-video-generation/instagram-reel-editor
 - image-and-video-generation/remotion
 - image-and-video-generation/slack-gif-creator
 
-**Marketing & Sales (2 skills)**
+### Marketing & Sales (2 skills)
+
 - marketing-and-sales/humanizer
 - marketing-and-sales/instagram-posting
 
-**PDF & Documents (5 skills)**
+### PDF & Documents (5 skills)
+
 - pdf-and-documents/doc-coauthoring
 - pdf-and-documents/docx
 - pdf-and-documents/pdf
 - pdf-and-documents/pptx
 - pdf-and-documents/xlsx
 
-**Productivity & Tasks (1 skill)**
+### Productivity & Tasks (1 skill)
+
 - productivity-and-tasks/pm-skills
 
-**Web & Frontend Development (5 skills)**
+### Web & Frontend Development (5 skills)
+
 - web-and-frontend-development/brand-guidelines
 - web-and-frontend-development/excalidraw
 - web-and-frontend-development/frontend-design
