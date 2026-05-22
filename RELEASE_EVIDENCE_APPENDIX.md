@@ -34,8 +34,8 @@ Retained but not release-validated:
 Unified workspace validation ([.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)):
 - overall_status: passed
 - failed_phase_count: 0
-- run_started_at: 2026-05-22T05:17:46Z
-- run_finished_at: 2026-05-22T05:18:44Z
+- run_started_at: 2026-05-22T05:53:45Z
+- run_finished_at: 2026-05-22T05:54:39Z
 - capabilities.toolathlon_profile: smoke
 - capabilities.rc_smoke_gate_enforced: true
 - capabilities.docker_requested: true
@@ -57,14 +57,14 @@ Toolathlon runtime smoke ([.validation_logs/toolathlon_mcp_smoke_summary.json](.
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T05:18:34Z
+- checked_at: 2026-05-22T05:54:33Z
 
 Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)):
 - profile: smoke
 - status: passed
 - found_count: 3
 - missing_count: 0
-- checked_at: 2026-05-22T05:18:35.291252+00:00
+- checked_at: 2026-05-22T05:54:34.191692+00:00
 
 Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)):
 - profile: smoke
@@ -72,14 +72,14 @@ Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validati
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T05:18:40Z
+- checked_at: 2026-05-22T05:54:39Z
 
 Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)):
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T05:18:43.344280+00:00
+- checked_at: 2026-05-22T05:54:39.671134+00:00
 
 Command used:
 
@@ -108,7 +108,7 @@ TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
 
 Clean release archive:
 - [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
-- SHA256: 731cf5d7696a94ff02552a1565c55808a104593cd99294979893b98d411855cd
+- SHA256: 812bd3880fff39c2446a6dde5652b5012af94e45cacffa475de5fdf3c3aab0ed
 
 Hygiene checks:
 - Forbidden archive entries scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv

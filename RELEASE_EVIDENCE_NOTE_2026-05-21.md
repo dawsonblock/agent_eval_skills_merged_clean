@@ -10,7 +10,7 @@ This note documents one specific unified validation run.
 It does not, by itself, promote a new archive to release-candidate status unless the corresponding `.validation_logs` artifacts are attached for that same build.
 
 Smoke release candidate gate is satisfied for controlled testing for the run documented below.
-Docker proof is included and passing in that run.
+Docker proof is included and passing in that run (optional for the default smoke gate).
 
 Environment:
 - host OS: macOS
@@ -23,7 +23,7 @@ Source: [.validation_logs/validation_summary.json](.validation_logs/validation_s
 
 - overall_status: passed
 - failed_phase_count: 0
-- run_finished_at: 2026-05-22T05:18:44Z
+- run_finished_at: 2026-05-22T05:54:39Z
 - capabilities.toolathlon_profile: smoke
 - capabilities.docker_requested: true
 - capabilities.rc_smoke_gate_enforced: true
@@ -50,14 +50,14 @@ MCP smoke summary:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T05:18:34Z
+- checked_at: 2026-05-22T05:54:33Z
 
 Preflight summary:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T05:18:35.291252+00:00
+- checked_at: 2026-05-22T05:54:34.191692+00:00
 
 ## Docker Proof
 
@@ -71,14 +71,14 @@ Docker MCP smoke:
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T05:18:40Z
+- checked_at: 2026-05-22T05:54:39Z
 
 Docker preflight:
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T05:18:43.344280+00:00
+- checked_at: 2026-05-22T05:54:39.671134+00:00
 
 Command used for this proof set:
 
@@ -103,7 +103,7 @@ TOOLATHLON_PROFILE=smoke SKIP_EXISTING_ARTIFACTS=1 bash scripts/build_required_m
 Source archive: [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
 
 - Forbidden-entry scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
-- SHA256: 731cf5d7696a94ff02552a1565c55808a104593cd99294979893b98d411855cd
+- SHA256: 812bd3880fff39c2446a6dde5652b5012af94e45cacffa475de5fdf3c3aab0ed
 
 ## Scope Statement
 

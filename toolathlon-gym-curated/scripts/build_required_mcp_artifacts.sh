@@ -733,12 +733,12 @@ if target_selected "youtube_transcript"; then
 fi
 
 cd "$ROOT_DIR"
-if ! python scripts/smoke_mcp_servers.py --json-output "$SMOKE_SUMMARY_FILE"; then
+if ! build_with_timeout "runtime_smoke" 120 python3 scripts/smoke_mcp_servers.py --json-output "$SMOKE_SUMMARY_FILE"; then
   echo "✗ MCP runtime smoke tests failed. See $SMOKE_SUMMARY_FILE" >&2
 fi
 
 PREFLIGHT_SUMMARY_JSON="${ROOT_DIR}/../.validation_logs/toolathlon_preflight_summary.json"
-if ! python scripts/preflight_mcp_paths.py --json-output "$PREFLIGHT_SUMMARY_JSON"; then
+if ! build_with_timeout "preflight_paths" 120 python3 scripts/preflight_mcp_paths.py --json-output "$PREFLIGHT_SUMMARY_JSON"; then
   mark_build_failed_if_in_progress "preflight_failed"
 fi
 
