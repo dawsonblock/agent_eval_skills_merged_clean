@@ -2,7 +2,7 @@
   "repository": "agent_eval_skills_merged_clean",
   "branch": "repair/pruned-release-candidate",
   "commit": "5ae8912fc7a9d9310360ab2be9f3a838bff334ba",
-  "generated_at_utc": "2026-05-22T05:54:39Z",
+  "generated_at_utc": "2026-05-22T06:36:59Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
     "promotion_label": "Pruned smoke release candidate for controlled testing",
@@ -10,7 +10,7 @@
   },
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "812bd3880fff39c2446a6dde5652b5012af94e45cacffa475de5fdf3c3aab0ed",
+    "sha256": "771788dcc38b4020ef6259c96c07ff9047b616056a714a7ed414efe22c58a3f7",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -36,9 +36,10 @@
   "validation_summary": {
     "overall_status": "passed",
     "failed_phase_count": 0,
+    "python_version": "3.12.9",
     "capabilities": {
       "docker_available": true,
-      "docker_requested": true,
+      "docker_requested": false,
       "integration_requested": false,
       "rc_smoke_gate_enforced": true,
       "toolathlon_profile": "smoke",
@@ -59,14 +60,14 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T05:54:33Z"
+    "checked_at": "2026-05-22T06:36:38Z"
   },
   "toolathlon_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T05:54:34.191692+00:00"
+    "checked_at": "2026-05-22T06:36:38.697509+00:00"
   },
   "docker_mcp_smoke_summary": {
     "profile": "smoke",
@@ -74,13 +75,13 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T05:54:39Z"
+    "checked_at": "2026-05-22T06:36:57Z"
   },
   "docker_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T05:54:39.671134+00:00"
+    "checked_at": "2026-05-22T06:36:59.138651+00:00"
   }
 }

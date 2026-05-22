@@ -3,19 +3,22 @@
 Date: 2026-05-22
 Repository: agent_eval_skills_merged_clean
 Branch: repair/pruned-release-candidate
-Classification: Pruned smoke release-candidate candidate
+Classification: Pruned smoke release candidate for controlled testing
 
 ## Scope
 
 Promotion label (only when this evidence bundle is attached for the same archive hash):
+
 - Pruned smoke release candidate for controlled testing
 
 Validated scope:
+
 - ToolForge
 - Agent Skills
 - Toolathlon smoke profile
 
 Retained but not release-validated:
+
 - Toolathlon full profile
 - All 503 Toolathlon tasks
 - Full MCP server benchmark set
@@ -32,16 +35,19 @@ Retained but not release-validated:
 ## Evidence Snapshot
 
 Unified workspace validation ([.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)):
+
 - overall_status: passed
 - failed_phase_count: 0
 - run_started_at: 2026-05-22T05:53:45Z
-- run_finished_at: 2026-05-22T05:54:39Z
+- run_finished_at: 2026-05-22T06:36:38Z
+- python_version: 3.12.9
 - capabilities.toolathlon_profile: smoke
 - capabilities.rc_smoke_gate_enforced: true
-- capabilities.docker_requested: true
-- phase statuses: toolforge=passed, agent_skills=passed, toolathlon=passed, docker=passed
+- capabilities.docker_requested: false
+- phase statuses: toolforge=passed, agent_skills=passed, toolathlon=passed, docker=skipped (separate docker proof captured below)
 
 Toolathlon artifact summary ([.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json)):
+
 - profile: smoke
 - overall_status: passed
 - expected_package_count: 3
@@ -52,39 +58,50 @@ Toolathlon artifact summary ([.validation_logs/toolathlon_artifact_build_summary
 - partial dependency negative test: deleting `filesystem/node_modules/@modelcontextprotocol/sdk` forced rebuild with reason `rebuilt_after_npm_tree_unhealthy` (skip was correctly rejected)
 
 Toolathlon runtime smoke ([.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json)):
+
 - profile: smoke
 - overall_status: passed
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T05:54:33Z
+- checked_at: 2026-05-22T06:36:38Z
 
 Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)):
+
 - profile: smoke
 - status: passed
 - found_count: 3
 - missing_count: 0
-- checked_at: 2026-05-22T05:54:34.191692+00:00
+- checked_at: 2026-05-22T06:36:38.697509+00:00
 
 Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)):
+
 - profile: smoke
 - overall_status: passed
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T05:54:39Z
+- checked_at: 2026-05-22T06:36:57Z
 
 Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)):
+
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T05:54:39.671134+00:00
+- checked_at: 2026-05-22T06:36:59.138651+00:00
 
-Command used:
+Smoke command used:
 
 ```bash
-TOOLATHLON_PROFILE=smoke ENFORCE_RC_SMOKE_PROFILE=1 RUN_DOCKER=1 bash scripts/validate_workspace.sh
+bash scripts/validate_smoke_workspace.sh
+```
+
+Docker command used:
+
+```bash
+cd toolathlon-gym-curated
+TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
 ```
 
 Direct proof commands executed in this cycle:
@@ -107,10 +124,12 @@ TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
 ## Packaging Evidence
 
 Clean release archive:
+
 - [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
-- SHA256: 812bd3880fff39c2446a6dde5652b5012af94e45cacffa475de5fdf3c3aab0ed
+- SHA256: 771788dcc38b4020ef6259c96c07ff9047b616056a714a7ed414efe22c58a3f7
 
 Hygiene checks:
+
 - Forbidden archive entries scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
 - Scratch extraction scan: no matches for __MACOSX, ._ files, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache
 

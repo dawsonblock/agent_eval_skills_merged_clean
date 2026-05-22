@@ -165,6 +165,18 @@ write_validation_summary() {
   run_finished_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   run_duration="$((run_finished_epoch - RUN_STARTED_EPOCH))"
 
+  local workspace_python_version workspace_python_executable
+  workspace_python_version="$(python - <<'PY'
+import sys
+print(sys.version.split()[0])
+PY
+)"
+  workspace_python_executable="$(python - <<'PY'
+import sys
+print(sys.executable)
+PY
+)"
+
   local docker_available toolforge_python_supported
   if command -v docker >/dev/null 2>&1; then
     docker_available=true
@@ -183,6 +195,8 @@ write_validation_summary() {
   export TOOLFORGE_STATUS AGENT_SKILLS_STATUS TOOLATHLON_STATUS DOCKER_STATUS
   export TOOLFORGE_DURATION_SECONDS AGENT_SKILLS_DURATION_SECONDS
   export TOOLATHLON_DURATION_SECONDS DOCKER_DURATION_SECONDS
+  export WORKSPACE_PYTHON_VERSION="$workspace_python_version"
+  export WORKSPACE_PYTHON_EXECUTABLE="$workspace_python_executable"
   export TOOLFORGE_EXIT_CODE AGENT_SKILLS_EXIT_CODE TOOLATHLON_EXIT_CODE DOCKER_EXIT_CODE
   export TOOLFORGE_PYTHON_LOG TOOLFORGE_INSTALL_LOG TOOLFORGE_DOCTOR_LOG
   export TOOLFORGE_SCHEMA_PATH_SAFETY_LOG TOOLFORGE_VALIDATOR_LOG
@@ -225,6 +239,8 @@ summary = {
     "run_started_at": os.environ["RUN_STARTED_AT"],
     "run_finished_at": os.environ["RUN_FINISHED_AT"],
     "run_duration_seconds": to_int(os.environ["RUN_DURATION_SECONDS"]),
+    "python_version": os.environ.get("WORKSPACE_PYTHON_VERSION", "unknown"),
+    "python_executable": os.environ.get("WORKSPACE_PYTHON_EXECUTABLE", "unknown"),
     "overall_status": "passed" if to_int(os.environ["VALIDATION_FAILED_COUNT"]) == 0 else "failed",
     "failed_phase_count": to_int(os.environ["VALIDATION_FAILED_COUNT"]),
     "capabilities": {

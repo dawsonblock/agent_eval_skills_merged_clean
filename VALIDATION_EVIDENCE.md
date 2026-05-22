@@ -73,6 +73,7 @@ Task profile manifests are retained for future expansion, but current gate scrip
 
 `validation_summary.json` contains:
 
+- `python_version` and `python_executable`
 - `overall_status`
 - `failed_phase_count`
 - `capabilities` (Docker availability, Python support, requested modes)
@@ -98,7 +99,7 @@ Task profile manifests are retained for future expansion, but current gate scrip
 ## Evidence State → Repo Status Mapping
 
 | Evidence State | Repository Classification |
-|---|---|
+| --- | --- |
 | `validation_summary.json` absent or stale | ❌ Strong repair candidate (not release-ready) |
 | `validation_summary.json` overall_status = "failed" | ❌ Strong repair candidate (validation failed) |
 | `toolathlon_mcp_smoke_summary.json` missing or failed | ❌ Strong repair candidate (runtime smoke proof missing) |
@@ -155,11 +156,13 @@ bash scripts/validate_smoke_workspace.sh
 3. Runtime security review for production-grade claims.
 
 This repository is suitable for:
+
 - ✅ Local development and testing.
 - ✅ Controlled benchmark environments in isolated containers.
 - ✅ Evaluation labs under developer control.
 
 This repository is NOT suitable for:
+
 - ❌ Production application code without separate security audit.
 - ❌ Untrusted code execution environments.
 - ❌ Systems with sensitive data access.

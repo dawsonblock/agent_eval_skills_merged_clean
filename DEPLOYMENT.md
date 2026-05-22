@@ -6,7 +6,7 @@ Status claims in packaged ZIPs are advisory unless the matching evidence artifac
 
 ## System Requirements
 
-- Python 3.12+
+- Python 3.9-3.12 (3.12 preferred for release-proof validation runs)
 - PostgreSQL 14+ (for toolathlon-gym-curated)
 - Docker & Docker Compose (optional, for sandboxed execution)
 - 2GB free disk space
@@ -147,6 +147,7 @@ pre-commit install
 ```
 
 The hooks will:
+
 - Format code with ruff
 - Check type hints with mypy
 - Remove trailing whitespace
@@ -269,6 +270,7 @@ docker compose logs -f
 ### Manual Deployment (Controlled Environments Only)
 
 1. **Install in controlled environment:**
+
    ```bash
    python -m venv venv
    source venv/bin/activate
@@ -276,6 +278,7 @@ docker compose logs -f
    ```
 
 2. **Set environment variables:**
+
    ```bash
    export TOOLFORGE_LOG_LEVEL=WARNING
    export TOOLFORGE_SANDBOX_LEVEL=3
@@ -283,6 +286,7 @@ docker compose logs -f
    ```
 
 3. **Run service:**
+
    ```bash
    # As CLI
    toolforge eval my-tool --task-dir /data/tasks
@@ -297,7 +301,7 @@ docker compose logs -f
 
 ```bash
 # Verify Python version
-python --version  # Should be 3.12+
+python --version  # Should be 3.9-3.12 (3.12 preferred for release-proof runs)
 
 # If using pyenv
 pyenv local 3.12.12

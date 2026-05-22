@@ -78,7 +78,7 @@ TOOLATHLON_PROFILE=smoke SKIP_EXISTING_ARTIFACTS=1 bash scripts/build_required_m
 
 Required: still 3/3 packages, smoke pass, preflight `missing_count = 0`.
 
-## 5) Unified Workspace Validation (Python 3.12)
+## 5) Unified Workspace Validation (Supported: Python 3.9-3.12; preferred release proof: 3.12)
 
 ```bash
 python3.12 -m venv .venv
@@ -86,11 +86,14 @@ source .venv/bin/activate
 bash scripts/validate_smoke_workspace.sh
 ```
 
+If Python 3.12 is unavailable in a local environment, `python3` may be used for smoke checks as long as it resolves to Python 3.9-3.12. Release-candidate promotion evidence should be produced from a Python 3.12 run whenever possible.
+
 Required in `.validation_logs/validation_summary.json`:
 
 - `overall_status = passed`
 - `failed_phase_count = 0`
 - `capabilities.toolathlon_profile = smoke`
+- `python_version` present (preferably `3.12.x` for promotion evidence)
 
 ## 6) ToolForge Direct Proof (targeted)
 

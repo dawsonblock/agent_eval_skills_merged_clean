@@ -7,6 +7,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 LOCAL_SERVERS_DIR="${LOCAL_SERVERS_PATH:-$ROOT_DIR/local_servers}"
 SKIP_EXISTING_ARTIFACTS="${SKIP_EXISTING_ARTIFACTS:-0}"
 FORCE_REBUILD="${FORCE_REBUILD:-0}"
+SKIP_SMOKE_TIMEOUT_SECONDS="${SKIP_SMOKE_TIMEOUT_SECONDS:-120}"
 export TOOLATHLON_PROFILE="${TOOLATHLON_PROFILE:-smoke}"
 BUILD_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_artifact_build_summary.json"
 SMOKE_SUMMARY_FILE="${ROOT_DIR}/../.validation_logs/toolathlon_mcp_smoke_summary.json"
@@ -33,7 +34,13 @@ REQUIRED_ARTIFACTS=()
 echo "Using LOCAL_SERVERS_DIR=$LOCAL_SERVERS_DIR"
 echo "SKIP_EXISTING_ARTIFACTS=$SKIP_EXISTING_ARTIFACTS"
 echo "FORCE_REBUILD=$FORCE_REBUILD"
+echo "SKIP_SMOKE_TIMEOUT_SECONDS=$SKIP_SMOKE_TIMEOUT_SECONDS"
 echo "TOOLATHLON_PROFILE=$TOOLATHLON_PROFILE"
+
+if [ "$FORCE_REBUILD" = "1" ] && [ "$SKIP_EXISTING_ARTIFACTS" = "1" ]; then
+  echo "⚠ FORCE_REBUILD=1 overrides SKIP_EXISTING_ARTIFACTS=1; all targets will rebuild"
+  SKIP_EXISTING_ARTIFACTS=0
+fi
 
 load_selected_targets() {
   local profile_file="$ROOT_DIR/profiles/$TOOLATHLON_PROFILE/mcp_servers.json"
@@ -185,6 +192,7 @@ artifact_exists() {
 }
 
 NODE_SKIP_DIAGNOSTIC="not_evaluated"
+PYTHON_SKIP_DIAGNOSTIC="not_evaluated"
 
 node_runtime_ready() {
   local pkg_dir="$1"
@@ -206,7 +214,7 @@ node_dependency_tree_ready() {
 
 node_target_smoke_ready() {
   local target="$1"
-  local timeout_seconds="${2:-5}"
+  local timeout_seconds="${2:-$SKIP_SMOKE_TIMEOUT_SECONDS}"
 
   if ! command -v python3 >/dev/null 2>&1; then
     return 1
@@ -223,7 +231,7 @@ node_target_smoke_ready() {
 
 node_artifact_smoke_ready() {
   local artifact="$1"
-  local timeout_seconds="${2:-5}"
+  local timeout_seconds="${2:-$SKIP_SMOKE_TIMEOUT_SECONDS}"
 
   if ! command -v node >/dev/null 2>&1; then
     return 1
@@ -272,7 +280,17 @@ PYEOF
 
 python_runtime_ready() {
   local pkg_dir="$1"
-  [ -d "$pkg_dir/.venv" ]
+  [ -d "$pkg_dir/.venv" ] && [ -x "$pkg_dir/.venv/bin/python3" ]
+}
+
+python_artifact_smoke_ready() {
+  local artifact="$1"
+
+  if [ ! -x "$artifact" ]; then
+    return 1
+  fi
+
+  "$artifact" -c "import sys; raise SystemExit(0 if sys.executable else 1)" >/dev/null 2>&1
 }
 
 can_skip_existing_node() {
@@ -297,12 +315,12 @@ can_skip_existing_node() {
     return 1
   fi
 
-  if ! node_artifact_smoke_ready "$artifact" 5; then
+  if ! node_artifact_smoke_ready "$artifact" "$SKIP_SMOKE_TIMEOUT_SECONDS"; then
     NODE_SKIP_DIAGNOSTIC="artifact_import_failed"
     return 1
   fi
 
-  if ! node_target_smoke_ready "$target" 5; then
+  if ! node_target_smoke_ready "$target" "$SKIP_SMOKE_TIMEOUT_SECONDS"; then
     NODE_SKIP_DIAGNOSTIC="runtime_smoke_failed"
     return 1
   fi
@@ -312,9 +330,34 @@ can_skip_existing_node() {
 }
 
 can_skip_existing_python() {
-  local pkg_dir="$1"
-  local artifact="$2"
-  artifact_exists "$artifact" && python_runtime_ready "$pkg_dir"
+  local target="$1"
+  local pkg_dir="$2"
+  local artifact="$3"
+
+  PYTHON_SKIP_DIAGNOSTIC="not_evaluated"
+
+  if ! artifact_exists "$artifact"; then
+    PYTHON_SKIP_DIAGNOSTIC="artifact_missing"
+    return 1
+  fi
+
+  if ! python_runtime_ready "$pkg_dir"; then
+    PYTHON_SKIP_DIAGNOSTIC="venv_missing"
+    return 1
+  fi
+
+  if ! python_artifact_smoke_ready "$artifact"; then
+    PYTHON_SKIP_DIAGNOSTIC="python_runtime_unhealthy"
+    return 1
+  fi
+
+  if ! node_target_smoke_ready "$target" "$SKIP_SMOKE_TIMEOUT_SECONDS"; then
+    PYTHON_SKIP_DIAGNOSTIC="runtime_smoke_failed"
+    return 1
+  fi
+
+  PYTHON_SKIP_DIAGNOSTIC="runtime_ready_skip"
+  return 0
 }
 
 # Initialize JSON output
@@ -583,6 +626,7 @@ maybe_build_python_package() {
   local timeout_sec="$2"
   local pkg_dir="$3"
   local artifact="$4"
+  local skip_rebuild_reason=""
   local start
   start="$(date +%s)"
   CURRENT_PACKAGE_START_EPOCH="$start"
@@ -590,15 +634,16 @@ maybe_build_python_package() {
   if [ "${FORCE_REBUILD:-0}" = "1" ]; then
     echo "→ Force rebuild requested for $name"
     build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
-  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && can_skip_existing_python "$pkg_dir" "$artifact"; then
+  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && can_skip_existing_python "$name" "$pkg_dir" "$artifact"; then
     echo "✓ $name artifact and runtime dependencies already exist: $artifact (skipped)"
     ensure_file "$artifact" "$name" || return 1
     local elapsed
     elapsed="$(( $(date +%s) - start ))"
-    record_package_result "$name" "passed" "$elapsed" "$artifact" "true" "runtime_ready_skip"
+    record_package_result "$name" "passed" "$elapsed" "$artifact" "true" "$PYTHON_SKIP_DIAGNOSTIC"
     return 0
   elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && artifact_exists "$artifact"; then
-    echo "→ $name artifact exists but runtime dependencies are missing; rebuilding"
+    skip_rebuild_reason="$PYTHON_SKIP_DIAGNOSTIC"
+    echo "→ $name artifact exists but skip checks failed ($skip_rebuild_reason); rebuilding"
     build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
   else
     build_with_timeout "$name" "$timeout_sec" build_python_uv_package "$pkg_dir" "$name" || return 1
@@ -607,7 +652,11 @@ maybe_build_python_package() {
   ensure_file "$artifact" "$name" || return 1
   local elapsed
   elapsed="$(( $(date +%s) - start ))"
-  record_package_result "$name" "passed" "$elapsed" "$artifact"
+  if [ -n "$skip_rebuild_reason" ]; then
+    record_package_result "$name" "passed" "$elapsed" "$artifact" "false" "rebuilt_after_${skip_rebuild_reason}"
+  else
+    record_package_result "$name" "passed" "$elapsed" "$artifact"
+  fi
 }
 
 fail_package() {
