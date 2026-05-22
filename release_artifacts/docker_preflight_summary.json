@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-05-22T07:27:15.287689+00:00",
+  "config_dir": "/workspace/configs/mcp_servers",
+  "found": [
+    {
+      "config": "12306.yaml",
+      "path": "/opt/local_servers/12306-mcp/build/index.js",
+      "server": "rail_12306"
+    },
+    {
+      "config": "filesystem.yaml",
+      "path": "/opt/local_servers/filesystem/dist/index.js",
+      "server": "filesystem"
+    },
+    {
+      "config": "google_calendar.yaml",
+      "path": "/opt/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+      "server": "google_calendar"
+    }
+  ],
+  "found_count": 3,
+  "local_servers_dir": "/opt/local_servers",
+  "missing": [],
+  "missing_count": 0,
+  "profile": "smoke",
+  "status": "passed"
+}

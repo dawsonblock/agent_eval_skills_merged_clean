@@ -1,0 +1,138 @@
+# Release Evidence Appendix (Pruned Smoke RC)
+
+Date: 2026-05-22
+Repository: agent_eval_skills_merged_clean
+Branch: repair/pruned-release-candidate
+Classification: Pruned smoke release candidate for controlled testing
+
+## Scope
+
+Promotion label (only when this evidence bundle is attached for the same archive hash):
+
+- Pruned smoke release candidate for controlled testing
+
+Validated scope:
+
+- ToolForge
+- Agent Skills
+- Toolathlon smoke profile
+
+Retained but not release-validated:
+
+- Toolathlon full profile
+- All 503 Toolathlon tasks
+- Full MCP server benchmark set
+
+## Canonical Evidence Files
+
+- [.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)
+- [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json)
+- [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json)
+- [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)
+- [.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json) (required only when Docker proof is claimed)
+- [.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json) (required only when Docker proof is claimed)
+
+## Evidence Snapshot
+
+Unified workspace validation ([.validation_logs/validation_summary.json](.validation_logs/validation_summary.json)):
+
+- overall_status: passed
+- failed_phase_count: 0
+- run_started_at: 2026-05-22T07:26:36Z
+- run_finished_at: 2026-05-22T07:27:12Z
+- python_version: 3.12.9
+- capabilities.toolathlon_profile: smoke
+- capabilities.rc_smoke_gate_enforced: true
+- capabilities.docker_requested: false
+- phase statuses: toolforge=passed, agent_skills=passed, toolathlon=passed, docker=skipped (separate docker proof captured below)
+
+Toolathlon artifact summary ([.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json)):
+
+- profile: smoke
+- overall_status: passed
+- expected_package_count: 3
+- package_count: 3
+- passed_count: 3
+- failed_count: 0
+- skip mode behavior: runtime_ready_skip observed for all 3 packages
+- partial dependency negative test: deleting `filesystem/node_modules/@modelcontextprotocol/sdk` forced rebuild with reason `rebuilt_after_npm_tree_unhealthy` (skip was correctly rejected)
+
+Toolathlon runtime smoke ([.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json)):
+
+- profile: smoke
+- overall_status: passed
+- target_count: 3
+- passed_count: 3
+- failed_count: 0
+- checked_at: 2026-05-22T07:27:11Z
+
+Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)):
+
+- profile: smoke
+- status: passed
+- found_count: 3
+- missing_count: 0
+- checked_at: 2026-05-22T07:27:11.978233+00:00
+
+Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)):
+
+- profile: smoke
+- overall_status: passed
+- target_count: 3
+- passed_count: 3
+- failed_count: 0
+- checked_at: 2026-05-22T07:27:14Z
+
+Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)):
+
+- profile: smoke
+- status: passed
+- missing_count: 0
+- found_count: 3
+- checked_at: 2026-05-22T07:27:15.287689+00:00
+
+Smoke command used:
+
+```bash
+bash scripts/validate_smoke_workspace.sh
+```
+
+Docker command used:
+
+```bash
+cd toolathlon-gym-curated
+TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
+```
+
+Direct proof commands executed in this cycle:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+bash scripts/validate_smoke_workspace.sh
+
+cd toolathlon-gym-curated
+TOOLATHLON_PROFILE=smoke bash scripts/validate_docker.sh
+
+cd ..
+bash scripts/create_release_zip.sh --output agent_eval_skills_merged_clean-pruned-smoke.zip
+```
+
+## Packaging Evidence
+
+Clean release archive:
+
+- [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
+- SHA256: 3402c2793c7125ef123b14596cf1390eb06023b4b843bcb0197e239e7bd8f6ce
+
+Hygiene checks:
+
+- Forbidden archive entries scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
+- Scratch extraction scan: no matches for __MACOSX, ._ files, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache
+
+## Safety Statement
+
+- Not production-grade.
+- Not hostile-code-safe.
+- Use disposable benchmark containers.
+- Dependency/security audit required before broader deployment.

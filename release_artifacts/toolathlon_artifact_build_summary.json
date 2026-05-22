@@ -1,0 +1,31 @@
+{
+  "profile": "smoke",
+  "overall_status": "passed",
+  "expected_package_count": 3,
+  "package_count": 3,
+  "passed_count": 3,
+  "failed_count": 0,
+  "packages": [
+    {
+      "package": "rail_12306",
+      "status": "passed",
+      "duration_seconds": 8,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "skipped_existing": false
+    },
+    {
+      "package": "filesystem",
+      "status": "passed",
+      "duration_seconds": 4,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "skipped_existing": false
+    },
+    {
+      "package": "google_calendar",
+      "status": "passed",
+      "duration_seconds": 5,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+      "skipped_existing": false
+    }
+  ]
+}
