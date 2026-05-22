@@ -2,7 +2,7 @@
 
 This document defines the minimum evidence required to claim release candidate status for controlled testing.
 
-Current status (May 22, 2026): smoke release candidate gate satisfied for controlled testing in the latest local proof run (`validation_summary.json` `overall_status=passed`, smoke and Docker summaries passing).
+Current status (May 22, 2026): latest local proof run passed smoke and Docker gates, but distributed builds remain release-candidate candidates unless matching machine-readable artifacts are attached.
 
 Scope warning: status and promotion rules apply to `TOOLATHLON_PROFILE=smoke` only. Full profile remains optional/experimental unless separate full-profile evidence is presented.
 

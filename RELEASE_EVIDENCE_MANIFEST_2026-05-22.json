@@ -1,0 +1,86 @@
+{
+  "repository": "agent_eval_skills_merged_clean",
+  "branch": "repair/pruned-release-candidate",
+  "commit": "47feaa251a79ed6b3ec60481032b243bfff7a95a",
+  "generated_at_utc": "2026-05-22T05:18:44Z",
+  "status_policy": {
+    "default_label": "Pruned smoke release-candidate candidate",
+    "promotion_label": "Pruned smoke release candidate for controlled testing",
+    "promotion_requires_attached_evidence": true
+  },
+  "archive": {
+    "path": "agent_eval_skills_merged_clean-pruned-smoke-upload.zip",
+    "sha256": "26c6c02b09a4eefbeaf1a19e9d63c1e16dccc9b42bb197b1c625c4fa618c1089",
+    "forbidden_entries_scan": "passed",
+    "forbidden_entries": [
+      "__MACOSX",
+      "._*",
+      ".DS_Store",
+      "node_modules",
+      ".validation_logs",
+      "__pycache__",
+      ".pytest_cache",
+      ".mypy_cache",
+      ".ruff_cache",
+      ".venv"
+    ]
+  },
+  "evidence_files": [
+    ".validation_logs/validation_summary.json",
+    ".validation_logs/toolathlon_artifact_build_summary.json",
+    ".validation_logs/toolathlon_mcp_smoke_summary.json",
+    ".validation_logs/toolathlon_preflight_summary.json",
+    ".validation_logs/docker_mcp_smoke_summary.json",
+    ".validation_logs/docker_preflight_summary.json"
+  ],
+  "validation_summary": {
+    "overall_status": "passed",
+    "failed_phase_count": 0,
+    "capabilities": {
+      "docker_available": true,
+      "docker_requested": true,
+      "integration_requested": false,
+      "rc_smoke_gate_enforced": true,
+      "toolathlon_profile": "smoke",
+      "toolforge_python_supported": true
+    }
+  },
+  "toolathlon_artifact_build_summary": {
+    "profile": "smoke",
+    "overall_status": "passed",
+    "expected_package_count": 3,
+    "package_count": 3,
+    "passed_count": 3,
+    "failed_count": 0
+  },
+  "toolathlon_mcp_smoke_summary": {
+    "profile": "smoke",
+    "overall_status": "passed",
+    "target_count": 3,
+    "passed_count": 3,
+    "failed_count": 0,
+    "checked_at": "2026-05-22T05:18:34Z"
+  },
+  "toolathlon_preflight_summary": {
+    "profile": "smoke",
+    "status": "passed",
+    "found_count": 3,
+    "missing_count": 0,
+    "checked_at": "2026-05-22T05:18:35.291252+00:00"
+  },
+  "docker_mcp_smoke_summary": {
+    "profile": "smoke",
+    "overall_status": "passed",
+    "target_count": 3,
+    "passed_count": 3,
+    "failed_count": 0,
+    "checked_at": "2026-05-22T05:18:40Z"
+  },
+  "docker_preflight_summary": {
+    "profile": "smoke",
+    "status": "passed",
+    "found_count": 3,
+    "missing_count": 0,
+    "checked_at": "2026-05-22T05:18:43.344280+00:00"
+  }
+}

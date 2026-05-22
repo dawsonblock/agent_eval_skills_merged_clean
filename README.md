@@ -14,11 +14,13 @@
 
 ## Overview
 
-**Current status (May 22, 2026):** Pruned smoke release candidate for controlled testing.
+**Current status (May 22, 2026):** Pruned smoke release-candidate candidate.
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
 Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion. If required machine-readable proof is missing from CI/release artifacts for the current build, classification remains release-candidate candidate.
+
+Promotion label (only when matching evidence is attached for the same build): pruned smoke release candidate for controlled testing.
 
 This repository can validate with two profiles:
 

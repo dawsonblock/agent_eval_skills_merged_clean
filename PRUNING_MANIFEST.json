@@ -6,7 +6,8 @@
     "agent-skills-main 3.zip"
   ],
   "output_archive": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "status": "pruned_smoke_release_candidate",
+  "status": "pruned_smoke_release_candidate_candidate",
+  "promotion_label": "pruned_smoke_release_candidate_for_controlled_testing",
   "default_profile": "smoke",
   "release_gate_profile": "smoke",
   "validated_scope": [
@@ -49,7 +50,7 @@
     "total_skills_retained": 23,
     "categories_included": 8,
     "removed_items": 0,
-    "status": "Pruned smoke release candidate for controlled testing"
+    "status": "Pruned smoke release-candidate candidate"
   },
   "kept_agent_skills": [
     "browser-and-automation/webapp-testing",

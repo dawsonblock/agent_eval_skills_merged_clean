@@ -1,7 +1,7 @@
 # Phase 13 Acceptance Checklist
 
 **Date:** May 22, 2026  
-**Status:** Pruned smoke release candidate for controlled testing (smoke scope).
+**Status:** Pruned smoke release-candidate candidate (smoke scope).
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
@@ -29,9 +29,9 @@ Agent Skills .................. ✅ Verified
 ToolForge grouped validation .. ✅ Passed on supported Python
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-22T04:03:19Z)
-Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T04:03:20Z)
-Release readiness ............. ✅ Smoke release candidate gate satisfied
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-22T05:18:40Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T05:18:44Z)
+Release readiness ............. 🟡 Evidence-gated candidate unless matching artifacts are attached
 ```
 
 ## Acceptance Gates
@@ -55,7 +55,7 @@ Promotion gate is met **only when** required evidence artifacts show passing req
 - `toolathlon_mcp_smoke_summary.json`: `profile = smoke`, `overall_status = "passed"`, `failed_count = 0`, and `passed_count = target_count`
 - `toolathlon_preflight_summary.json`: `profile = smoke` and `missing_count = 0`
 
-**Smoke-scope release candidate gate is satisfied for controlled testing based on fresh required artifacts for this environment. Full profile remains optional/experimental and is not implied by this checklist. This is not a production security attestation.**
+**Smoke-scope promotion to release candidate is allowed only when the matching evidence artifact bundle is published for the same archive hash. Full profile remains optional/experimental and is not implied by this checklist. This is not a production security attestation.**
 
 ### ⚠️ Security Disclaimer
 

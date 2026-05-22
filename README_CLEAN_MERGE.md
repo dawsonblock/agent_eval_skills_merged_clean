@@ -12,7 +12,7 @@ Use this as controlled infrastructure for agent development:
 - `toolathlon-gym-curated/` is the benchmark/evaluation lab.
 - `agent-skills-curated/` is the reusable skill/instruction registry.
 
-**Validation status:** Pruned smoke release candidate for controlled testing.
+**Validation status:** Pruned smoke release-candidate candidate.
 
 Validated scope:
 - ToolForge
@@ -38,6 +38,8 @@ This repository ships with two validation profiles:
 - Phase logs: [.validation_logs/](.validation_logs/)
 
 **Promotion rule:** Evidence-gated only. If required evidence files are missing, stale, or show failing gates, classification must be downgraded to strong repair candidate. This is not a production security certification.
+
+Final release-candidate wording is allowed only when matching machine-readable evidence is attached for the same build.
 
 Release-candidate status applies to the `smoke` profile only. For smoke release-candidate claims, all required summaries must show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary). Full profile remains retained but experimental unless separate full-profile evidence is explicitly attached.
 

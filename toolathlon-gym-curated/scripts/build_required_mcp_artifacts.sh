@@ -204,6 +204,23 @@ node_dependency_tree_ready() {
   )
 }
 
+node_target_smoke_ready() {
+  local target="$1"
+  local timeout_seconds="${2:-5}"
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    return 1
+  fi
+
+  (
+    cd "$ROOT_DIR"
+    python3 scripts/smoke_mcp_servers.py \
+      --profile "$TOOLATHLON_PROFILE" \
+      --target "$target" \
+      --timeout-seconds "$timeout_seconds" >/dev/null 2>&1
+  )
+}
+
 node_artifact_smoke_ready() {
   local artifact="$1"
   local timeout_seconds="${2:-5}"
@@ -259,8 +276,9 @@ python_runtime_ready() {
 }
 
 can_skip_existing_node() {
-  local pkg_dir="$1"
-  local artifact="$2"
+  local target="$1"
+  local pkg_dir="$2"
+  local artifact="$3"
 
   NODE_SKIP_DIAGNOSTIC="not_evaluated"
 
@@ -281,6 +299,11 @@ can_skip_existing_node() {
 
   if ! node_artifact_smoke_ready "$artifact" 5; then
     NODE_SKIP_DIAGNOSTIC="artifact_import_failed"
+    return 1
+  fi
+
+  if ! node_target_smoke_ready "$target" 5; then
+    NODE_SKIP_DIAGNOSTIC="runtime_smoke_failed"
     return 1
   fi
 
@@ -530,7 +553,7 @@ maybe_build_node_package() {
   if [ "${FORCE_REBUILD:-0}" = "1" ]; then
     echo "→ Force rebuild requested for $name"
     build_with_timeout "$name" "$timeout_sec" build_node_package "$pkg_dir" "$name" || return 1
-  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && can_skip_existing_node "$pkg_dir" "$artifact"; then
+  elif [ "${SKIP_EXISTING_ARTIFACTS:-0}" = "1" ] && can_skip_existing_node "$name" "$pkg_dir" "$artifact"; then
     echo "✓ $name artifact and runtime dependencies already exist: $artifact (skipped)"
     ensure_file "$artifact" "$name" || return 1
     local elapsed
