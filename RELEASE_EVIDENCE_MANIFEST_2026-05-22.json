@@ -1,16 +1,17 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "repair/pruned-release-candidate",
-  "commit": "0e92ebd",
-  "generated_at_utc": "2026-05-22T07:15:29Z",
+  "commit": "0de44c2",
+  "generated_at_utc": "2026-05-22T07:27:16Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
     "promotion_label": "Pruned smoke release candidate for controlled testing",
+    "current_label": "Pruned smoke release candidate for controlled testing",
     "promotion_requires_attached_evidence": true
   },
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "54875905e8019818cb58a0d475d72afb3fae2f7fd0dd914acca123e66f768ebc",
+    "sha256": "3402c2793c7125ef123b14596cf1390eb06023b4b843bcb0197e239e7bd8f6ce",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -25,6 +26,7 @@
       ".venv"
     ]
   },
+  "archive_sha256": "3402c2793c7125ef123b14596cf1390eb06023b4b843bcb0197e239e7bd8f6ce",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",
@@ -60,14 +62,14 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T07:15:23Z"
+    "checked_at": "2026-05-22T07:27:11Z"
   },
   "toolathlon_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T07:15:23.828526+00:00"
+    "checked_at": "2026-05-22T07:27:11.978233+00:00"
   },
   "docker_mcp_smoke_summary": {
     "profile": "smoke",
@@ -75,13 +77,13 @@
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T07:15:27Z"
+    "checked_at": "2026-05-22T07:27:14Z"
   },
   "docker_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
     "found_count": 3,
     "missing_count": 0,
-    "checked_at": "2026-05-22T07:15:28.818781+00:00"
+    "checked_at": "2026-05-22T07:27:15.287689+00:00"
   }
 }

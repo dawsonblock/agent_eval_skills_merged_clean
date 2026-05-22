@@ -2,7 +2,7 @@
 
 **Date:** May 22, 2026  
 **Scope:** agent_eval_skills_merged_clean  
-**Classification:** Pruned smoke release-candidate candidate unless matching evidence artifacts for the same archive hash are attached.
+**Classification:** Pruned smoke release candidate for controlled testing.
 
 This dashboard is an evidence tracker. It is not a release declaration.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
@@ -33,9 +33,9 @@ ToolForge grouped validation .. ✅ Passed on supported Python
 Toolathlon MCP smoke .......... ✅ Passed (`profile=smoke`, `passed_count=3`, `failed_count=0`)
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, `target_count=3`, `failed_count=0`, checked_at=2026-05-22T05:54:39Z)
-Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T05:54:39Z)
-Release readiness ............. 🟡 Evidence-gated candidate unless matching evidence artifacts for the same archive hash are attached
+Docker validation ............. ✅ Passed (`profile=smoke`, `target_count=3`, `failed_count=0`, checked_at=2026-05-22T07:27:14Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T07:27:12Z)
+Release readiness ............. ✅ Pruned smoke release candidate for controlled testing (hash-bound evidence attached)
 ```
 
 ## Promotion Rule

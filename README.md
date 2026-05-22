@@ -14,11 +14,11 @@
 
 ## Overview
 
-**Current status (May 22, 2026):** Pruned smoke release-candidate candidate unless matching evidence artifacts for the same archive hash are attached.
+**Current status (May 22, 2026):** Pruned smoke release candidate for controlled testing (evidence attached for archive hash `3402c2793c7125ef123b14596cf1390eb06023b4b843bcb0197e239e7bd8f6ce`).
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
-Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion. If required machine-readable proof is missing from CI/release artifacts for the current build, classification remains release-candidate candidate.
+Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion. If required machine-readable proof is missing from CI/release artifacts for a future build, classification reverts to release-candidate candidate.
 
 Promotion label (only when matching evidence is attached for the same build): pruned smoke release candidate for controlled testing.
 
