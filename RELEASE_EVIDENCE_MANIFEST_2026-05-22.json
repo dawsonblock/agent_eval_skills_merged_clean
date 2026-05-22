@@ -1,7 +1,7 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "repair/pruned-release-candidate",
-  "commit": "0a33446",
+  "commit": "7ed6c50",
   "generated_at_utc": "2026-05-22T06:52:00Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
