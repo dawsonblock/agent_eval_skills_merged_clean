@@ -27,6 +27,7 @@ htmlcov/
 dist/*.zip
 dist/*.tgz
 dist/*.tar.gz
+dist/._*
 
 # Root-level release bundles (upload artifacts)
 agent_eval_skills_merged_clean-pruned-smoke*.zip
