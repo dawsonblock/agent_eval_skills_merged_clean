@@ -75,7 +75,7 @@ Docker preflight:
 Source archive: [dist/agent_eval_skills_merged_clean-pruned-smoke.zip](dist/agent_eval_skills_merged_clean-pruned-smoke.zip)
 
 - Forbidden-entry scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
-- SHA256: c261e1e21a00d9e9120d027b485a8f98b85228c0f3eca7a983a15b8d66252db0
+- SHA256: 3e24b62cdf1eed97ea618e4d47222c1dc5a9b28d7ecc7bc0079b0d7f62aafff0
 
 ## Scope Statement
 
