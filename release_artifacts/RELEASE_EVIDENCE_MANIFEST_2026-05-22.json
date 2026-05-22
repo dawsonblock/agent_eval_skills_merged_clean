@@ -1,8 +1,8 @@
 {
   "repository": "agent_eval_skills_merged_clean",
-  "branch": "repair/pruned-release-candidate",
-  "commit": "67ca514",
-  "generated_at_utc": "2026-05-22T19:59:16Z",
+  "branch": "main",
+  "commit": "3bf4b90",
+  "generated_at_utc": "2026-05-22T20:54:49Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
     "promotion_label": "Pruned smoke release candidate for controlled testing",
@@ -11,7 +11,7 @@
   },
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4",
+    "sha256": "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -26,7 +26,7 @@
       ".venv"
     ]
   },
-  "archive_sha256": "883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4",
+  "archive_sha256": "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",

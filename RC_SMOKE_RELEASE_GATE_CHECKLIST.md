@@ -1,7 +1,7 @@
 # RC Smoke Release Gate Checklist
 
 Date: 2026-05-21
-Scope: Pruned smoke release-candidate candidate (promotable to release candidate only with attached matching evidence)
+Scope: Pruned smoke release candidate for controlled testing (hash-bound evidence attached)
 
 This runbook defines the exact release gate for smoke profile promotion. Full Toolathlon profile remains retained but non-default and experimental.
 

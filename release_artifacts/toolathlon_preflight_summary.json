@@ -1,25 +1,25 @@
 {
-  "checked_at": "2026-05-22T19:56:15.131913+00:00",
-  "config_dir": "/private/tmp/agent_eval_v6_test/toolathlon-gym-curated/configs/mcp_servers",
+  "checked_at": "2026-05-22T20:53:47.496589+00:00",
+  "config_dir": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/configs/mcp_servers",
   "found": [
     {
       "config": "12306.yaml",
-      "path": "/private/tmp/agent_eval_v6_test/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "path": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "server": "rail_12306"
     },
     {
       "config": "filesystem.yaml",
-      "path": "/private/tmp/agent_eval_v6_test/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "path": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "server": "filesystem"
     },
     {
       "config": "google_calendar.yaml",
-      "path": "/private/tmp/agent_eval_v6_test/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+      "path": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
       "server": "google_calendar"
     }
   ],
   "found_count": 3,
-  "local_servers_dir": "/private/tmp/agent_eval_v6_test/toolathlon-gym-curated/local_servers",
+  "local_servers_dir": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers",
   "missing": [],
   "missing_count": 0,
   "profile": "smoke",

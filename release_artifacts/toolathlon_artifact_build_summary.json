@@ -10,21 +10,21 @@
       "package": "rail_12306",
       "status": "passed",
       "duration_seconds": 5,
-      "artifact": "/tmp/agent_eval_v6_test/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "artifact": "/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "skipped_existing": false
     },
     {
       "package": "filesystem",
       "status": "passed",
-      "duration_seconds": 2,
-      "artifact": "/tmp/agent_eval_v6_test/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "duration_seconds": 3,
+      "artifact": "/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "skipped_existing": false
     },
     {
       "package": "google_calendar",
       "status": "passed",
-      "duration_seconds": 3,
-      "artifact": "/tmp/agent_eval_v6_test/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+      "duration_seconds": 2,
+      "artifact": "/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
       "skipped_existing": false
     }
   ]

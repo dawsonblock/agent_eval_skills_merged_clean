@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-05-22T19:57:01Z",
+  "checked_at": "2026-05-22T20:54:02Z",
   "profile": "smoke",
   "local_servers_dir": "/opt/local_servers",
   "target_count": 3,
@@ -11,7 +11,7 @@
       "target": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 2.272,
+      "duration_seconds": 2.979,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /opt/local_servers/12306-mcp/build/index.js",
       "cwd": "/opt/local_servers/12306-mcp",
       "stdout": "",
@@ -21,7 +21,7 @@
       "target": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.235,
+      "duration_seconds": 0.53,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /opt/local_servers/filesystem/dist/index.js",
       "cwd": "/opt/local_servers/filesystem",
       "stdout": "",
@@ -31,9 +31,9 @@
       "target": "google_calendar",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.104,
+      "duration_seconds": 0.145,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /opt/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "cwd": "/tmp/mcp-smoke-0zms3hs0",
+      "cwd": "/tmp/mcp-smoke-ftqh7dlq",
       "stdout": "",
       "stderr": "Google Calendar MCP Server running on stdio\n"
     }

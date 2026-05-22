@@ -2,7 +2,7 @@
 
 **Date:** May 22, 2026  
 **Status:** Pruned smoke release candidate for controlled testing (smoke scope evidence attached).
-**Final clean archive SHA256:** `883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4`
+**Final clean archive SHA256:** `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
