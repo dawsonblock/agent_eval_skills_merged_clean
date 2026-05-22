@@ -13,6 +13,7 @@ Smoke release candidate gate is satisfied for controlled testing for the run doc
 Docker proof is included and passing as a paired evidence set for the same archive hash.
 
 Environment:
+
 - host OS: macOS
 - Python: 3.12.9
 - Docker: available (default context)
@@ -32,11 +33,13 @@ Source: [.validation_logs/validation_summary.json](.validation_logs/validation_s
 ## Toolathlon Smoke Proof
 
 Sources:
+
 - [.validation_logs/toolathlon_artifact_build_summary.json](.validation_logs/toolathlon_artifact_build_summary.json)
 - [.validation_logs/toolathlon_mcp_smoke_summary.json](.validation_logs/toolathlon_mcp_smoke_summary.json)
 - [.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)
 
 Artifact build summary:
+
 - profile: smoke
 - overall_status: passed
 - expected_package_count: 3
@@ -45,6 +48,7 @@ Artifact build summary:
 - failed_count: 0
 
 MCP smoke summary:
+
 - profile: smoke
 - overall_status: passed
 - target_count: 3
@@ -53,6 +57,7 @@ MCP smoke summary:
 - checked_at: 2026-05-22T08:49:20Z
 
 Preflight summary:
+
 - profile: smoke
 - status: passed
 - missing_count: 0
@@ -62,10 +67,12 @@ Preflight summary:
 ## Docker Proof
 
 Sources:
+
 - [.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)
 - [.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)
 
 Docker MCP smoke:
+
 - profile: smoke
 - overall_status: passed
 - target_count: 3
@@ -74,6 +81,7 @@ Docker MCP smoke:
 - checked_at: 2026-05-22T08:50:15Z
 
 Docker preflight:
+
 - profile: smoke
 - status: passed
 - missing_count: 0
@@ -116,11 +124,13 @@ Source archive: [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_ski
 ## Scope Statement
 
 Validated:
+
 - ToolForge
 - Agent Skills
 - Toolathlon smoke profile
 - Docker smoke + preflight
 
 Retained but outside this gate:
+
 - full Toolathlon profile (experimental, non-default)
 - exhaustive benchmark claims beyond smoke gate
