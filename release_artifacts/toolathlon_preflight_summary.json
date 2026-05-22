@@ -1,25 +1,25 @@
 {
-  "checked_at": "2026-05-22T08:20:08.404247+00:00",
-  "config_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/configs/mcp_servers",
+  "checked_at": "2026-05-22T08:32:45.414566+00:00",
+  "config_dir": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/configs/mcp_servers",
   "found": [
     {
       "config": "12306.yaml",
-      "path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "path": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "server": "rail_12306"
     },
     {
       "config": "filesystem.yaml",
-      "path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "path": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "server": "filesystem"
     },
     {
       "config": "google_calendar.yaml",
-      "path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+      "path": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
       "server": "google_calendar"
     }
   ],
   "found_count": 3,
-  "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
+  "local_servers_dir": "/private/tmp/agent_eval_release_test/toolathlon-gym-curated/local_servers",
   "missing": [],
   "missing_count": 0,
   "profile": "smoke",

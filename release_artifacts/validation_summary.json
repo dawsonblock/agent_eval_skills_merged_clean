@@ -11,19 +11,19 @@
   "overall_status": "passed",
   "phases": [
     {
-      "duration_seconds": 15,
+      "duration_seconds": 26,
       "exit_code": 0,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_python_version.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_install.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_doctor.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_schema_path_safety.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_validator_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_registry_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_cli_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_e2e_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_eval_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_integration_tests.log"
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_python_version.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_install.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_doctor.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_schema_path_safety.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_validator_tests.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_registry_tests.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_cli_tests.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_e2e_tests.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_eval_tests.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolforge_integration_tests.log"
       ],
       "phase": "toolforge",
       "status": "passed"
@@ -32,21 +32,21 @@
       "duration_seconds": 0,
       "exit_code": 0,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/agent_skills_list.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/agent_skills_eval.log"
+        "/tmp/agent_eval_release_test/.validation_logs/agent_skills_list.log",
+        "/tmp/agent_eval_release_test/.validation_logs/agent_skills_eval.log"
       ],
       "phase": "agent_skills",
       "status": "passed"
     },
     {
-      "duration_seconds": 22,
+      "duration_seconds": 15,
       "exit_code": 0,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_artifact_build.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_preflight.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_mcp_smoke_summary.json",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_preflight_summary.json",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_artifact_build_summary.json"
+        "/tmp/agent_eval_release_test/.validation_logs/toolathlon_artifact_build.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolathlon_preflight.log",
+        "/tmp/agent_eval_release_test/.validation_logs/toolathlon_mcp_smoke_summary.json",
+        "/tmp/agent_eval_release_test/.validation_logs/toolathlon_preflight_summary.json",
+        "/tmp/agent_eval_release_test/.validation_logs/toolathlon_artifact_build_summary.json"
       ],
       "phase": "toolathlon",
       "status": "passed"
@@ -55,18 +55,18 @@
       "duration_seconds": 0,
       "exit_code": null,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_build.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_preflight.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_mcp_smoke_summary.json",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_preflight_summary.json"
+        "/tmp/agent_eval_release_test/.validation_logs/docker_build.log",
+        "/tmp/agent_eval_release_test/.validation_logs/docker_preflight.log",
+        "/tmp/agent_eval_release_test/.validation_logs/docker_mcp_smoke_summary.json",
+        "/tmp/agent_eval_release_test/.validation_logs/docker_preflight_summary.json"
       ],
       "phase": "docker",
       "status": "skipped"
     }
   ],
-  "python_executable": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.venv/bin/python",
+  "python_executable": "/private/tmp/agent_eval_release_test/.venv/bin/python",
   "python_version": "3.12.9",
-  "run_duration_seconds": 37,
-  "run_finished_at": "2026-05-22T08:20:08Z",
-  "run_started_at": "2026-05-22T08:19:31Z"
+  "run_duration_seconds": 42,
+  "run_finished_at": "2026-05-22T08:30:45Z",
+  "run_started_at": "2026-05-22T08:30:04Z"
 }

@@ -14,6 +14,8 @@ Use this as controlled infrastructure for agent development:
 
 **Validation status:** Pruned smoke release candidate for controlled testing.
 
+**Final clean archive SHA256:** `8f778e8a67c016fc8dfcacae5ca704dc0bc5803f1a25f44d72c1284bc16649f3`
+
 Validated scope:
 - ToolForge
 - Agent Skills

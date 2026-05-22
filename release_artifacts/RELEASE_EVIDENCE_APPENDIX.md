@@ -38,8 +38,8 @@ Unified workspace validation ([.validation_logs/validation_summary.json](.valida
 
 - overall_status: passed
 - failed_phase_count: 0
-- run_started_at: 2026-05-22T08:19:31Z
-- run_finished_at: 2026-05-22T08:20:08Z
+- run_started_at: 2026-05-22T08:30:04Z
+- run_finished_at: 2026-05-22T08:30:45Z
 - python_version: 3.12.9
 - capabilities.toolathlon_profile: smoke
 - capabilities.rc_smoke_gate_enforced: true
@@ -64,7 +64,7 @@ Toolathlon runtime smoke ([.validation_logs/toolathlon_mcp_smoke_summary.json](.
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T08:20:08Z
+- checked_at: 2026-05-22T08:30:45Z
 
 Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)):
 
@@ -72,7 +72,7 @@ Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.vali
 - status: passed
 - found_count: 3
 - missing_count: 0
-- checked_at: 2026-05-22T08:20:08.404247+00:00
+- checked_at: 2026-05-22T08:32:45.414566+00:00
 
 Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)):
 
@@ -81,7 +81,7 @@ Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validati
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-22T08:20:13Z
+- checked_at: 2026-05-22T08:32:54Z
 
 Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)):
 
@@ -89,7 +89,7 @@ Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_l
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-22T08:20:14.263970+00:00
+- checked_at: 2026-05-22T08:32:55.782038+00:00
 
 Smoke command used:
 
@@ -123,7 +123,7 @@ bash scripts/create_release_zip.sh --output agent_eval_skills_merged_clean-prune
 Clean release archive:
 
 - [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
-- SHA256: 887b0da241988dbd933a911319a16992c3f69d6af6e657eff7f6ff51a323af90
+- SHA256: 8f778e8a67c016fc8dfcacae5ca704dc0bc5803f1a25f44d72c1284bc16649f3
 
 Hygiene checks:
 

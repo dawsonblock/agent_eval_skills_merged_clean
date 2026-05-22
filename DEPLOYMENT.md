@@ -4,6 +4,8 @@ Prerequisite: run smoke validation and ensure required evidence artifacts pass b
 
 Status claims in packaged ZIPs are advisory unless the matching evidence artifact bundle is published for the same archive hash.
 
+Current smoke release-candidate archive SHA256: `8f778e8a67c016fc8dfcacae5ca704dc0bc5803f1a25f44d72c1284bc16649f3`.
+
 ## System Requirements
 
 - Python 3.9-3.12 (3.12 preferred for release-proof validation runs)
