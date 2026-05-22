@@ -32,7 +32,7 @@ Unified workspace validation ([.validation_logs/validation_summary.json](.valida
 - overall_status: passed
 - failed_phase_count: 0
 - run_started_at: 2026-05-21T23:44:45Z
-- run_finished_at: 2026-05-21T23:45:32Z
+- run_finished_at: 2026-05-21T23:59:03Z
 - capabilities.toolathlon_profile: smoke
 - capabilities.rc_smoke_gate_enforced: true
 - phase statuses: toolforge=passed, agent_skills=passed, toolathlon=passed, docker=skipped
@@ -52,14 +52,14 @@ Toolathlon runtime smoke ([.validation_logs/toolathlon_mcp_smoke_summary.json](.
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-21T23:50:26Z
+- checked_at: 2026-05-21T23:59:02Z
 
 Toolathlon preflight ([.validation_logs/toolathlon_preflight_summary.json](.validation_logs/toolathlon_preflight_summary.json)):
 - profile: smoke
 - status: passed
 - found_count: 3
 - missing_count: 0
-- checked_at: 2026-05-21T23:50:26.549759+00:00
+- checked_at: 2026-05-21T23:59:03.243999+00:00
 
 Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validation_logs/docker_mcp_smoke_summary.json)):
 - profile: smoke
@@ -67,20 +67,20 @@ Docker runtime smoke ([.validation_logs/docker_mcp_smoke_summary.json](.validati
 - target_count: 3
 - passed_count: 3
 - failed_count: 0
-- checked_at: 2026-05-21T23:45:47Z
+- checked_at: 2026-05-21T23:59:17Z
 
 Docker preflight ([.validation_logs/docker_preflight_summary.json](.validation_logs/docker_preflight_summary.json)):
 - profile: smoke
 - status: passed
 - missing_count: 0
 - found_count: 3
-- checked_at: 2026-05-21T23:45:48.718974+00:00
+- checked_at: 2026-05-21T23:59:17.916712+00:00
 
 ## Packaging Evidence
 
 Clean release archive:
 - [dist/agent_eval_skills_merged_clean-pruned-smoke.zip](dist/agent_eval_skills_merged_clean-pruned-smoke.zip)
-- SHA256: 8b8090d295afa5af162443aa39206dc679e19e5eafd4df80f53a170cafa4afa1
+- SHA256: c261e1e21a00d9e9120d027b485a8f98b85228c0f3eca7a983a15b8d66252db0
 
 Hygiene checks:
 - Forbidden archive entries scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
