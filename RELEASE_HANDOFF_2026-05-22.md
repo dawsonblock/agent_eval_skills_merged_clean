@@ -13,7 +13,7 @@ Promotion label is permitted only when the matching machine-readable evidence bu
 ## Upload Archive
 
 - Archive: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-- SHA256: `079ce8bdde9529dffc854a0cc6a1fbf249fe4603afb76fff349a1aad4ca9eecd`
+- SHA256: `883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4`
 - Forbidden-entry scan: passed (`__MACOSX`, `._*`, `.DS_Store`, `node_modules`, `.validation_logs`, caches, `.venv` absent)
 
 ## Required Evidence Bundle (same build/hash)

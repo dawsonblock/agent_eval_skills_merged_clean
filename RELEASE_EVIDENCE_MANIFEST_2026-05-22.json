@@ -11,7 +11,7 @@
   },
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "079ce8bdde9529dffc854a0cc6a1fbf249fe4603afb76fff349a1aad4ca9eecd",
+    "sha256": "883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -26,7 +26,7 @@
       ".venv"
     ]
   },
-  "archive_sha256": "079ce8bdde9529dffc854a0cc6a1fbf249fe4603afb76fff349a1aad4ca9eecd",
+  "archive_sha256": "883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",

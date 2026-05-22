@@ -4,7 +4,7 @@ Prerequisite: run smoke validation and ensure required evidence artifacts pass b
 
 Status claims in packaged ZIPs are advisory unless the matching evidence artifact bundle is published for the same archive hash.
 
-Current smoke release-candidate archive SHA256: `079ce8bdde9529dffc854a0cc6a1fbf249fe4603afb76fff349a1aad4ca9eecd`.
+Current smoke release-candidate archive SHA256: `883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4`.
 
 ## System Requirements
 

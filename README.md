@@ -14,7 +14,7 @@
 
 ## Overview
 
-**Current status (May 22, 2026):** Pruned smoke release candidate for controlled testing (evidence attached for archive hash `079ce8bdde9529dffc854a0cc6a1fbf249fe4603afb76fff349a1aad4ca9eecd`).
+**Current status (May 22, 2026):** Pruned smoke release candidate for controlled testing (evidence attached for archive hash `883d45ad21143a0d2ad8949cc66582616bba60ff291a41bd95058db135e3aea4`).
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
