@@ -1,6 +1,6 @@
 # Phase 13 Acceptance Checklist
 
-**Date:** May 21, 2026  
+**Date:** May 22, 2026  
 **Status:** Pruned smoke release candidate for controlled testing (smoke scope).
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
@@ -26,11 +26,11 @@ ZIP extraction ................ ✅ Verified
 ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
-ToolForge grouped validation .. ✅ Passed on Python 3.12
+ToolForge grouped validation .. ✅ Passed on supported Python
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-21T23:59:17Z)
-Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-21T23:59:03Z)
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-22T02:54:18Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T02:53:38Z)
 Release readiness ............. ✅ Smoke release-candidate gate satisfied
 ```
 

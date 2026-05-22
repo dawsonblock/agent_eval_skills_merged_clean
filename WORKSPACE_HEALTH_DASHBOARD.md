@@ -1,6 +1,6 @@
 # Workspace Health Dashboard
 
-**Date:** May 21, 2026  
+**Date:** May 22, 2026  
 **Scope:** agent_eval_skills_merged_clean  
 **Classification:** Pruned smoke release-candidate for controlled testing.
 
@@ -28,12 +28,12 @@ ZIP extraction ................ ✅ Verified
 ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
-ToolForge grouped validation .. ✅ Passed on Python 3.12
+ToolForge grouped validation .. ✅ Passed on supported Python
 Toolathlon MCP smoke .......... ✅ Passed (`profile=smoke`, `passed_count=3`, `failed_count=0`)
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-21T23:59:17Z)
-Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-21T23:59:03Z)
+Docker validation ............. ✅ Passed (`profile=smoke`, smoke + preflight, checked_at=2026-05-22T02:54:18Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T02:53:38Z)
 Release readiness ............. ✅ Smoke release-candidate gate satisfied for controlled testing
 ```
 
@@ -46,6 +46,8 @@ Release-candidate gate is satisfied **only when** the listed evidence artifacts 
 - `toolathlon_mcp_smoke_summary.json`: `profile = smoke`, `overall_status = "passed"`, `failed_count = 0`, `passed_count = target_count`
 - `toolathlon_preflight_summary.json`: `profile = smoke`, `missing_count = 0`
 - `docker_mcp_smoke_summary.json`: `overall_status = "passed"` when Docker proof is claimed
+
+Docker proof is optional for the default smoke gate and must only be claimed when generated in the same evidence run (or explicitly attached as external CI evidence). In this run, Docker proof is attached and passing.
 
 The `full` profile remains available for extended validation but is not part of the default release-candidate gate until full evidence passes.
 

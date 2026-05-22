@@ -193,7 +193,7 @@ bandit -r packages/ apps/
 pip-audit
 ```
 
-## Production Deployment
+## Controlled Deployment
 
 ## Distribution ZIP Hygiene
 
@@ -264,9 +264,9 @@ docker compose ps
 docker compose logs -f
 ```
 
-### Manual Deployment
+### Manual Deployment (Controlled Environments Only)
 
-1. **Install in production environment:**
+1. **Install in controlled environment:**
    ```bash
    python -m venv venv
    source venv/bin/activate
@@ -277,7 +277,7 @@ docker compose logs -f
    ```bash
    export TOOLFORGE_LOG_LEVEL=WARNING
    export TOOLFORGE_SANDBOX_LEVEL=3
-   export MODEL_API_KEY=<production-key>
+   export MODEL_API_KEY=<environment-key>
    ```
 
 3. **Run service:**
@@ -368,7 +368,7 @@ export TOOLFORGE_SANDBOX_LEVEL=1
 export TOOLFORGE_LOG_LEVEL=DEBUG
 ```
 
-### For Production
+### For Controlled Environments
 
 ```bash
 # Use Docker sandbox (safer)

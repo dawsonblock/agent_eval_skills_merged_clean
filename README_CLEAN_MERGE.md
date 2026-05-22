@@ -14,6 +14,16 @@ Use this as controlled infrastructure for agent development:
 
 **Validation status:** Pruned smoke release candidate for controlled testing.
 
+Validated scope:
+- ToolForge
+- Agent Skills
+- Toolathlon smoke profile
+
+Retained but not release-validated:
+- Full Toolathlon profile
+- all 503 tasks
+- full MCP server set
+
 This repository ships with two validation profiles:
 
 1. `smoke` — default release-candidate gate
