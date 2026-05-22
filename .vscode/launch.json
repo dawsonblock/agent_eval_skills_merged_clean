@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean",
+      "program": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/build/Debug/outDebug"
+    }
+  ]
+}
