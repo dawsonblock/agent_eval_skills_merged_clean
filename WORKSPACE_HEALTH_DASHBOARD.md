@@ -3,7 +3,7 @@
 **Date:** May 22, 2026  
 **Scope:** agent_eval_skills_merged_clean  
 **Classification:** Pruned smoke release candidate for controlled testing.
-**Final clean archive SHA256:** `b8cb0960ba6f4093288ef38b2ca8d8630f962f3172355f672e575366e884bf97`
+**Final clean archive SHA256:** `079ce8bdde9529dffc854a0cc6a1fbf249fe4603afb76fff349a1aad4ca9eecd`
 
 This dashboard is an evidence tracker. It is not a release declaration.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
