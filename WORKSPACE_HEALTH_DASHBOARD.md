@@ -1,9 +1,9 @@
 # Workspace Health Dashboard
 
-**Date:** May 22, 2026  
+**Date:** May 23, 2026  
 **Scope:** agent_eval_skills_merged_clean  
 **Classification:** Pruned smoke release candidate for controlled testing.
-**Final clean archive SHA256:** `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+**Final clean archive SHA256:** `8a94525e47c3c0bef54234435512ae4f8b8b53aa3eef3776115b2f4205d6d46e`
 
 This dashboard is an evidence tracker. It is not a release declaration.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
@@ -34,8 +34,8 @@ ToolForge grouped validation .. ✅ Passed on supported Python
 Toolathlon MCP smoke .......... ✅ Passed (`profile=smoke`, `passed_count=3`, `failed_count=0`)
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
 Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, `target_count=3`, `failed_count=0`, checked_at=2026-05-22T08:50:15Z)
-Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-22T08:49:20Z)
+Docker validation ............. ✅ Passed (`profile=smoke`, `target_count=3`, `failed_count=0`, checked_at=2026-05-23T20:49:14Z)
+Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-23T20:47:54Z)
 Release readiness ............. ✅ Pruned smoke release candidate for controlled testing (hash-bound evidence attached)
 ```
 

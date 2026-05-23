@@ -2,7 +2,7 @@
 
 This document defines the minimum evidence required to claim release candidate status for controlled testing.
 
-Current status (May 22, 2026): pruned smoke release candidate for controlled testing with matching machine-readable evidence attached for archive hash `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`.
+Current status (May 23, 2026): pruned smoke release candidate for controlled testing with matching machine-readable evidence attached for archive hash `8a94525e47c3c0bef54234435512ae4f8b8b53aa3eef3776115b2f4205d6d46e`.
 
 Scope warning: status and promotion rules apply to `TOOLATHLON_PROFILE=smoke` only. Full profile remains optional/experimental unless separate full-profile evidence is presented.
 

@@ -9,23 +9,26 @@
     {
       "package": "rail_12306",
       "status": "passed",
-      "duration_seconds": 5,
-      "artifact": "/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
-      "skipped_existing": false
+      "duration_seconds": 2,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "skipped_existing": true,
+      "reason": "runtime_ready_skip"
     },
     {
       "package": "filesystem",
       "status": "passed",
-      "duration_seconds": 3,
-      "artifact": "/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
-      "skipped_existing": false
+      "duration_seconds": 0,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "skipped_existing": true,
+      "reason": "runtime_ready_skip"
     },
     {
       "package": "google_calendar",
       "status": "passed",
-      "duration_seconds": 2,
-      "artifact": "/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "skipped_existing": false
+      "duration_seconds": 1,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+      "skipped_existing": true,
+      "reason": "runtime_ready_skip"
     }
   ]
 }

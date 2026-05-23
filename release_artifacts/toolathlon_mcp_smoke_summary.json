@@ -1,7 +1,7 @@
 {
-  "checked_at": "2026-05-22T20:53:47Z",
+  "checked_at": "2026-05-23T20:48:47Z",
   "profile": "smoke",
-  "local_servers_dir": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers",
+  "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
   "target_count": 3,
   "passed_count": 3,
   "failed_count": 0,
@@ -11,9 +11,9 @@
       "target": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 1.105,
-      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
-      "cwd": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/12306-mcp",
+      "duration_seconds": 0.922,
+      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
       "stderr": ""
     },
@@ -21,9 +21,9 @@
       "target": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.153,
-      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
-      "cwd": "/private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/filesystem",
+      "duration_seconds": 0.113,
+      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",
       "stderr": "Usage: mcp-server-filesystem [allowed-directory] [additional-directories...]\nNote: Allowed directories can be provided via:\n  1. Command-line arguments (shown above)\n  2. MCP roots protocol (if client supports it)\nAt least one directory must be provided by EITHER method for the server to operate.\nSecure MCP Filesystem Server running on stdio\nStarted without allowed directories - waiting for client to provide roots via MCP protocol\n"
     },
@@ -31,9 +31,9 @@
       "target": "google_calendar",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.071,
-      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /private/tmp/agent_eval_final_rc/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "cwd": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/mcp-smoke-njvt13aq",
+      "duration_seconds": 0.059,
+      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+      "cwd": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/mcp-smoke-1csw9yhg",
       "stdout": "",
       "stderr": "Google Calendar MCP Server running on stdio\n"
     }

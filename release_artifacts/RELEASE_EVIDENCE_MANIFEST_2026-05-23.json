@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.1",
+  "release_date": "2026-05-23",
+  "release_label": "agent_eval_skills_merged_clean pruned-smoke RC",
+  "git_commit": "a0b34ab7f88906ef4699a5edb43b4d8d5c1ff153",
+  "git_branch": "main",
+  "archive_name": "agent_eval_skills_merged_clean-pruned-smoke.zip",
+  "archive_sha256": "8a94525e47c3c0bef54234435512ae4f8b8b53aa3eef3776115b2f4205d6d46e",
+  "evidence_bundle_name": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-23.zip",
+  "evidence_bundle_sha256": "437c6048a12c69428b4c900b8dc5a2ce848422e30cb000180bdd6036f1e40830",
+  "validation": {
+    "run_started_at": "2026-05-23T20:47:11Z",
+    "run_finished_at": "2026-05-23T20:47:54Z",
+    "run_duration_seconds": 43,
+    "overall_status": "passed",
+    "failed_phase_count": 0,
+    "toolathlon_profile": "smoke",
+    "rc_smoke_gate_enforced": true,
+    "python_version": "3.12.9",
+    "phases": {
+      "toolforge": "passed",
+      "agent_skills": "passed",
+      "toolathlon": "passed",
+      "docker": "passed_separate_run"
+    },
+    "toolforge": {
+      "tests_schema_path_safety": 38,
+      "tests_validator": 4,
+      "tests_registry": 21,
+      "tests_cli": 10,
+      "tests_e2e": 3,
+      "tests_eval": 22,
+      "total_tests": 98,
+      "failed": 0
+    },
+    "agent_skills": {
+      "skills_found": 23,
+      "hard_failures": 0
+    },
+    "toolathlon": {
+      "smoke_targets": 3,
+      "passed_count": 3,
+      "failed_count": 0,
+      "preflight_missing_count": 0,
+      "skip_existing_verified": true
+    },
+    "docker": {
+      "checked_at": "2026-05-23T20:49:14Z",
+      "passed_count": 3,
+      "failed_count": 0,
+      "overall_status": "passed",
+      "note": "Validated via separate validate_docker.sh run with TOOLATHLON_PROFILE=smoke"
+    }
+  },
+  "artifacts": [
+    "release_artifacts/validation_summary.json",
+    "release_artifacts/toolathlon_artifact_build_summary.json",
+    "release_artifacts/toolathlon_mcp_smoke_summary.json",
+    "release_artifacts/toolathlon_preflight_summary.json",
+    "release_artifacts/docker_mcp_smoke_summary.json",
+    "release_artifacts/docker_preflight_summary.json",
+    "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
+    "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
+    "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md"
+  ]
+}

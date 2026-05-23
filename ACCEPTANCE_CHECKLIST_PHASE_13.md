@@ -1,8 +1,8 @@
 # Phase 13 Acceptance Checklist
 
-**Date:** May 22, 2026  
+**Date:** May 23, 2026  
 **Status:** Pruned smoke release candidate for controlled testing (smoke scope evidence attached).
-**Final clean archive SHA256:** `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+**Final clean archive SHA256:** `8a94525e47c3c0bef54234435512ae4f8b8b53aa3eef3776115b2f4205d6d46e`
 
 This checklist is a repair tracker and evidence log. Checkboxes do not imply release readiness unless all required gates pass from a fresh extraction.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
