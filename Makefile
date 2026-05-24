@@ -127,6 +127,10 @@ prepublish-gate: verify-release-pair ## Fail-closed local pre-publish gate for c
 operator-release-gate-check: ## Run operator helper: verify canonical pair and print required check names
 	bash scripts/operator_release_gate_check.sh
 
+.PHONY: verify-release-gate-policy
+verify-release-gate-policy: ## Verify release gate naming consistency across workflows/docs
+	bash scripts/verify_release_gate_policy.sh
+
 # ── clean ────────────────────────────────────
 
 .PHONY: clean
