@@ -74,6 +74,14 @@ The default CI gate uses `smoke` profile validation.
 
 Release-candidate claims remain tied to passing `smoke` profile evidence unless separate full-profile evidence is explicitly presented.
 
+### Release Gate Policy
+
+Canonical artifact publication must pass the workflow check `Release Attested Pair Gate / Verify Canonical Attested Pair`.
+
+Repository maintainers should configure branch protection or repository rulesets so this check is required for release-path merges.
+
+If this check does not pass for the exact release/evidence pair being distributed, classify the upload as an unbound wrapper/source bundle.
+
 ### ⚠️ Dependency & Security Disclaimer
 
 **This repository contains local MCP servers with reported npm vulnerabilities.** These are acceptable for disposable benchmark containers in controlled environments only. Do not run Toolathlon workloads on hosts with sensitive files, credentials, or production data.

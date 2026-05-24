@@ -273,6 +273,21 @@ Run the GitHub Actions workflow `Release Attested Pair Gate` before any release 
 
 Treat this workflow as a required pre-publish approval gate in repository policy.
 
+### Repository Rule Configuration (Required)
+
+To prevent accidental wrapper/source bundle publication, enforce the following in GitHub branch protection or repository rulesets for `main`:
+
+1. Require status checks to pass before merging.
+2. Mark `Validate Workspace / Unified Workspace Validation` as required.
+3. Mark `Release Attested Pair Gate / Verify Canonical Attested Pair` as required for release PRs or release-branch promotion flow.
+4. Require pull request reviews before merging release workflow or attestation/manifest changes.
+
+Operational recommendation:
+
+1. Keep `Release Attested Pair Gate` as a manual approval gate before any release upload action.
+2. If your release process uses a dedicated release branch, enforce the same required check set on that branch.
+3. Do not treat uploaded artifacts as release-candidate unless the gate run succeeded for the exact pair being published.
+
 Manual fallback (if you need direct zip invocation):
 
 When creating release ZIP files on macOS, exclude metadata files and cache artifacts so distributed archives do not include `__MACOSX` or `._*` entries.
