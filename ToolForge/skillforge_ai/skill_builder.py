@@ -366,8 +366,8 @@ class SkillBuilder:
         ]
 
         permissions: list[str] = []
-        for cap in spec.capabilities:
-            permissions.append(cap.value)
+        for cap in getattr(spec, "capabilities", []) or []:
+            permissions.append(getattr(cap, "value", str(cap)))
 
         risk = "high" if spec.sandbox_level >= 3 else (
             "medium" if spec.sandbox_level >= 1 else "low"

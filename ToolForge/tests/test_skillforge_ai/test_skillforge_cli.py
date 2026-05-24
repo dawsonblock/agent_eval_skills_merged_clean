@@ -216,6 +216,40 @@ class TestMCPSmokeCommand:
         assert result.exit_code == 0
         assert "passed" in result.output.lower()
 
+    @patch("skillforge_ai.commands.mcp.smoke_toolathlon_profile")
+    def test_mcp_smoke_profile_mode(self, mock_smoke_profile, runner: CliRunner, ws: Path):
+        summary = ws / ".validation_logs" / "toolathlon_mcp_smoke_summary.json"
+        mock_smoke_profile.return_value = (0, "", "", summary)
+
+        result = runner.invoke(
+            main,
+            ["--workspace", str(ws), "mcp", "smoke", "--profile", "smoke"],
+        )
+        assert result.exit_code == 0
+        assert "profile 'smoke'" in result.output.lower()
+
+
+class TestToolsCommands:
+    def test_tools_list_registry_mode(self, runner: CliRunner, ws: Path):
+        from skillforge_ai.tool_registry import SkillForgeRegistry
+
+        reg = SkillForgeRegistry(ws)
+        reg.register_tool(
+            {
+                "name": "csv_cleaner_tool",
+                "type": "python",
+                "entrypoint": "skills/csv-cleaner/tool/main.py",
+                "validated": True,
+            }
+        )
+
+        result = runner.invoke(
+            main,
+            ["--workspace", str(ws), "tools", "list"],
+        )
+        assert result.exit_code == 0
+        assert "csv_cleaner_tool" in result.output
+
 
 class TestRepairCommand:
     @patch("skillforge_ai.validation_runner.ValidationRunner.repair_loop")

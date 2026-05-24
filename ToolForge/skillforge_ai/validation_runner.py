@@ -294,7 +294,7 @@ class ValidationRunner:
         try:
             from jsonschema import ValidationError, validate
 
-            schema_path = self._root / "skillforge_ai" / "schemas" / "skill_schema.json"
+            schema_path = Path(__file__).resolve().parent / "schemas" / "skill_schema.json"
             schema = json.loads(schema_path.read_text(encoding="utf-8"))
             payload = json.loads(metadata_path.read_text(encoding="utf-8"))
             validate(instance=payload, schema=schema)

@@ -20,7 +20,6 @@ Commands:
 from __future__ import annotations
 
 import sys
-import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -463,9 +462,9 @@ def tools_list(ctx: click.Context, slug: Optional[str], server_path: Optional[Pa
     ws_root: Path = ctx.obj["workspace"]
 
     if slug is None and server_path is None:
-        from skillforge_ai.tool_registry import SkillForgeRegistry
+        from skillforge_ai.commands.tools import list_registry_tools
 
-        reg_tools = SkillForgeRegistry(ws_root).list_registered_tools()
+        reg_tools = list_registry_tools(ws_root)
         if not reg_tools:
             console.print("[yellow]No registered tools found.[/]")
             return
@@ -497,13 +496,10 @@ def tools_list(ctx: click.Context, slug: Optional[str], server_path: Optional[Pa
         err_console.print(f"[red]MCP server not found: {server_path}[/]")
         sys.exit(1)
 
-    from skillforge_ai.mcp_controller import MCPController
+    from skillforge_ai.commands.tools import list_mcp_tools
 
-    ctrl = MCPController()
     try:
-        ctrl.start(server_path)
-        mcp_tools = ctrl.list_tools()
-        ctrl.stop()
+        mcp_tools = list_mcp_tools(server_path)
     except Exception as exc:
         err_console.print(f"[red]MCP error: {exc}[/]")
         sys.exit(1)
@@ -556,13 +552,10 @@ def tools_call(
             k, v = item.split("=", 1)
             arguments[k.strip()] = v.strip()
 
-    from skillforge_ai.mcp_controller import MCPController
+    from skillforge_ai.commands.tools import call_mcp_tool
 
-    ctrl = MCPController()
     try:
-        ctrl.start(server_path)
-        result = ctrl.call_tool(tool_name, arguments)
-        ctrl.stop()
+        result = call_mcp_tool(server_path, tool_name, arguments)
     except Exception as exc:
         err_console.print(f"[red]MCP call failed: {exc}[/]")
         sys.exit(1)
@@ -606,43 +599,27 @@ def mcp_smoke(
     ws_root: Path = ctx.obj["workspace"]
 
     if profile:
-        repo_root = ws_root
-        if not (repo_root / "toolathlon-gym-curated").exists() and (repo_root.parent / "toolathlon-gym-curated").exists():
-            repo_root = repo_root.parent
-
-        smoke_script = repo_root / "toolathlon-gym-curated" / "scripts" / "smoke_mcp_servers.py"
-        if not smoke_script.exists():
-            err_console.print(f"[red]Toolathlon smoke script not found: {smoke_script}[/]")
-            sys.exit(1)
-
-        summary_path = repo_root / ".validation_logs" / "toolathlon_mcp_smoke_summary.json"
-        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        from skillforge_ai.commands.mcp import smoke_toolathlon_profile
 
         with console.status(f"[bold]Running Toolathlon MCP smoke profile '{profile}'…[/]"):
-            completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(smoke_script),
-                    "--profile",
+            try:
+                exit_code, _stdout, stderr, summary_path = smoke_toolathlon_profile(
+                    ws_root,
                     profile,
-                    "--json-output",
-                    str(summary_path),
-                ],
-                cwd=str(repo_root / "toolathlon-gym-curated"),
-                capture_output=True,
-                text=True,
-                check=False,
-            )
+                )
+            except FileNotFoundError as exc:
+                err_console.print(f"[red]{exc}[/]")
+                sys.exit(1)
 
-        if completed.returncode == 0:
+        if exit_code == 0:
             console.print(f"[green]✓ Toolathlon MCP smoke passed for profile '{profile}'[/]")
             console.print(f"Summary: {summary_path}")
             return
 
         err_console.print(f"[red]✗ Toolathlon MCP smoke failed for profile '{profile}'[/]")
-        if completed.stderr:
-            err_console.print(completed.stderr.strip())
-        sys.exit(completed.returncode)
+        if stderr:
+            err_console.print(stderr.strip())
+        sys.exit(exit_code)
 
     if slug is None:
         err_console.print("[red]Provide a SLUG for skill-local MCP smoke or use --profile.[/]")
@@ -655,11 +632,10 @@ def mcp_smoke(
         err_console.print(f"[red]MCP server not found: {server_path}[/]")
         sys.exit(1)
 
-    from skillforge_ai.mcp_controller import MCPController
+    from skillforge_ai.commands.mcp import smoke_skill_server
 
-    ctrl = MCPController()
     with console.status("[bold]Running MCP smoke test…[/]"):
-        ok = ctrl.smoke_test(server_path)
+        ok = smoke_skill_server(server_path)
 
     if ok:
         console.print(f"[green]✓ MCP smoke test passed for '{slug}'[/]")
