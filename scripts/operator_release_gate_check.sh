@@ -10,8 +10,9 @@ usage() {
   cat <<'USAGE'
 Usage: bash scripts/operator_release_gate_check.sh [--release PATH] [--evidence PATH] [--no-verify]
 
-Runs canonical release/evidence verification and prints required GitHub check names
-for branch protection/ruleset setup.
+Runs canonical release/evidence verification (filename/hash + evidence bundle
+content/value policy checks) and prints required GitHub check names for
+branch protection/ruleset setup.
 
 Options:
   --release PATH   Path to release ZIP (passed through to verify_release_pair.sh)

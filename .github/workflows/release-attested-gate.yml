@@ -32,6 +32,12 @@ jobs:
               run: |
                   bash scripts/verify_release_pair.sh
 
+            - name: Verify evidence bundle policy values
+              env:
+                  EVIDENCE_ZIP_PATH: ${{ github.event.inputs.evidence_zip }}
+              run: |
+                  bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_ZIP_PATH"
+
             - name: Upload verified pair (gate proof)
               uses: actions/upload-artifact@v4
               with:

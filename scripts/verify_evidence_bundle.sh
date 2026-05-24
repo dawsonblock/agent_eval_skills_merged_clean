@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# Verify evidence ZIP contains required files and required smoke-profile values.
+
+set -euo pipefail
+
+EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
+
+usage() {
+  cat <<'USAGE'
+Usage: bash scripts/verify_evidence_bundle.sh --evidence PATH
+
+Validates an evidence bundle for smoke-profile release policy:
+- Required evidence files exist in the ZIP.
+- Required JSON fields/values match expected smoke release criteria.
+- Forbidden metadata/cache entries are absent.
+
+Options:
+  --evidence PATH   Path to evidence ZIP (required)
+  -h, --help        Show this help
+
+Environment overrides:
+  EVIDENCE_ZIP_PATH
+
+Exit codes:
+  0 = evidence bundle satisfies required policy checks
+  1 = missing files, forbidden entries, parse errors, or value mismatches
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --evidence)
+      if [ "$#" -lt 2 ]; then
+        echo "Missing value for --evidence" >&2
+        exit 1
+      fi
+      EVIDENCE_PATH="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "$EVIDENCE_PATH" ]; then
+  echo "Error: --evidence is required" >&2
+  usage >&2
+  exit 1
+fi
+
+if [ ! -f "$EVIDENCE_PATH" ]; then
+  echo "Error: file not found: $EVIDENCE_PATH" >&2
+  exit 1
+fi
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Error: python3 is required for evidence ZIP validation." >&2
+  exit 1
+fi
+
+python3 - "$EVIDENCE_PATH" <<'PYEOF'
+import json
+import sys
+import zipfile
+
+zip_path = sys.argv[1]
+
+required_files = [
+    "release_artifacts/validation_summary.json",
+    "release_artifacts/toolathlon_artifact_build_summary.json",
+    "release_artifacts/toolathlon_mcp_smoke_summary.json",
+    "release_artifacts/toolathlon_preflight_summary.json",
+    "release_artifacts/docker_mcp_smoke_summary.json",
+    "release_artifacts/docker_preflight_summary.json",
+    "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
+    "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
+    "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md",
+]
+
+forbidden_markers = [
+    "__MACOSX/",
+    "/._",
+    ".DS_Store",
+    "node_modules/",
+    ".validation_logs/",
+    "__pycache__/",
+    ".pytest_cache/",
+    ".mypy_cache/",
+    ".ruff_cache/",
+    ".venv/",
+]
+
+def get_in(data, path):
+    current = data
+    for key in path:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(key)
+    return current
+
+def require(data, path, expected, errors, label):
+    actual = get_in(data, path)
+    if actual != expected:
+        dotted = ".".join(path)
+        errors.append(f"{label}:{dotted} expected {expected!r}, got {actual!r}")
+
+errors = []
+
+with zipfile.ZipFile(zip_path, "r") as zf:
+    entries = zf.namelist()
+
+    missing = [name for name in required_files if name not in entries]
+    if missing:
+        errors.append("missing required evidence files: " + ", ".join(missing))
+
+    forbidden = []
+    for entry in entries:
+        for marker in forbidden_markers:
+            if marker.startswith("/"):
+                if marker in entry:
+                    forbidden.append(entry)
+                    break
+            elif marker in entry:
+                forbidden.append(entry)
+                break
+
+    if forbidden:
+        errors.append("forbidden entries found: " + ", ".join(sorted(set(forbidden))))
+
+    def read_json(path):
+        try:
+            with zf.open(path) as f:
+                return json.load(f)
+        except KeyError:
+            return None
+        except Exception as exc:
+            errors.append(f"failed parsing {path}: {exc}")
+            return None
+
+    validation_summary = read_json("release_artifacts/validation_summary.json")
+    if validation_summary is not None:
+        require(validation_summary, ["overall_status"], "passed", errors, "validation_summary")
+        require(validation_summary, ["failed_phase_count"], 0, errors, "validation_summary")
+        require(validation_summary, ["python_version"], "3.12.9", errors, "validation_summary")
+        require(validation_summary, ["capabilities", "toolathlon_profile"], "smoke", errors, "validation_summary")
+
+    artifact_summary = read_json("release_artifacts/toolathlon_artifact_build_summary.json")
+    if artifact_summary is not None:
+        require(artifact_summary, ["profile"], "smoke", errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["overall_status"], "passed", errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["expected_package_count"], 3, errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["package_count"], 3, errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["passed_count"], 3, errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["failed_count"], 0, errors, "toolathlon_artifact_build_summary")
+
+    smoke_summary = read_json("release_artifacts/toolathlon_mcp_smoke_summary.json")
+    if smoke_summary is not None:
+        require(smoke_summary, ["profile"], "smoke", errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["overall_status"], "passed", errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["target_count"], 3, errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["passed_count"], 3, errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["failed_count"], 0, errors, "toolathlon_mcp_smoke_summary")
+
+    preflight_summary = read_json("release_artifacts/toolathlon_preflight_summary.json")
+    if preflight_summary is not None:
+        require(preflight_summary, ["profile"], "smoke", errors, "toolathlon_preflight_summary")
+        require(preflight_summary, ["status"], "passed", errors, "toolathlon_preflight_summary")
+        require(preflight_summary, ["found_count"], 3, errors, "toolathlon_preflight_summary")
+        require(preflight_summary, ["missing_count"], 0, errors, "toolathlon_preflight_summary")
+
+    docker_smoke = read_json("release_artifacts/docker_mcp_smoke_summary.json")
+    if docker_smoke is not None:
+        require(docker_smoke, ["profile"], "smoke", errors, "docker_mcp_smoke_summary")
+        require(docker_smoke, ["overall_status"], "passed", errors, "docker_mcp_smoke_summary")
+        require(docker_smoke, ["target_count"], 3, errors, "docker_mcp_smoke_summary")
+        require(docker_smoke, ["passed_count"], 3, errors, "docker_mcp_smoke_summary")
+        require(docker_smoke, ["failed_count"], 0, errors, "docker_mcp_smoke_summary")
+
+    docker_preflight = read_json("release_artifacts/docker_preflight_summary.json")
+    if docker_preflight is not None:
+        require(docker_preflight, ["profile"], "smoke", errors, "docker_preflight_summary")
+        require(docker_preflight, ["status"], "passed", errors, "docker_preflight_summary")
+        require(docker_preflight, ["missing_count"], 0, errors, "docker_preflight_summary")
+
+if errors:
+    print("Evidence bundle policy check failed.", file=sys.stderr)
+    for error in errors:
+        print(f"- {error}", file=sys.stderr)
+    raise SystemExit(1)
+
+print("Evidence bundle policy check passed.")
+PYEOF

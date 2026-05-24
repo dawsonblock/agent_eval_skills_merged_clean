@@ -58,9 +58,9 @@ Validated scope:
 
 Retained but not release-validated:
 
-- Toolathlon full profile
-- all 503 tasks
-- full MCP server benchmark set
+- Full Toolathlon profile
+- all task material
+- full MCP server set
 
 ## Safety Statement
 

@@ -210,6 +210,12 @@ jobs:
               run: |
                   bash scripts/verify_release_pair.sh
 
+            - name: Verify evidence bundle policy values
+              env:
+                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
+              run: |
+                  bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_ZIP_PATH"
+
     upload-triage-verification:
         name: Classify Uploaded Release Artifact
         runs-on: ubuntu-latest

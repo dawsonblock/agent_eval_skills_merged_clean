@@ -6,6 +6,18 @@ Current status (May 23, 2026): pruned smoke release candidate for controlled tes
 
 Scope warning: status and promotion rules apply to `TOOLATHLON_PROFILE=smoke` only. Full profile remains optional/experimental unless separate full-profile evidence is presented.
 
+Validated scope:
+
+- ToolForge
+- Agent Skills
+- Toolathlon smoke profile
+
+Retained but not release-validated:
+
+- Full Toolathlon profile
+- all task material
+- full MCP server set
+
 Validation profiles:
 
 1. `smoke` — default release-candidate gate

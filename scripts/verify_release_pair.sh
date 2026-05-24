@@ -93,6 +93,11 @@ if ! command -v zipinfo >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Error: python3 is required for evidence bundle verification." >&2
+  exit 1
+fi
+
 for p in "$RELEASE_PATH" "$EVIDENCE_PATH"; do
   if [ ! -f "$p" ]; then
     echo "Error: file not found: $p" >&2
@@ -146,6 +151,11 @@ fi
 if ! check_forbidden_entries "$EVIDENCE_PATH"; then
   status=1
   notes+=("evidence archive contains forbidden metadata entries")
+fi
+
+if ! (cd "$REPO_ROOT" && bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_PATH"); then
+  status=1
+  notes+=("evidence bundle content/value verification failed")
 fi
 
 echo "Release ZIP:   $RELEASE_PATH"

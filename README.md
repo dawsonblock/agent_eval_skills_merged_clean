@@ -58,6 +58,18 @@ Release-candidate status applies to the `smoke` profile by default only after fr
 
 For this repository, only 3 smoke-profile Toolathlon MCP targets are release-gated (`rail_12306`, `filesystem`, `google_calendar`). The broader 25-server inventory is retained but not fully release-validated by the default gate.
 
+Validated scope:
+
+- ToolForge
+- Agent Skills
+- Toolathlon smoke profile
+
+Retained but not release-validated:
+
+- Full Toolathlon profile
+- all task material
+- full MCP server set
+
 For release-candidate claims, all required summary artifacts must explicitly show `profile = "smoke"` (or `capabilities.toolathlon_profile = "smoke"` in the unified summary). Evidence generated with `TOOLATHLON_PROFILE=full` does not satisfy the default release-candidate gate.
 
 Note: Profile-aware task manifests are retained under `toolathlon-gym-curated/profiles/`, but task selection is not yet enforced by the default validation scripts.

@@ -5,11 +5,11 @@
 #   bash scripts/create_evidence_bundle.sh [--date YYYYMMDD] [--output PATH] [--skip-validate]
 #
 # The bundle includes:
-#   - All JSON validation summaries in release_artifacts/
+#   - Required JSON validation summaries in release_artifacts/
 #   - RELEASE_EVIDENCE_MANIFEST_<date>.json
 #   - RELEASE_HANDOFF_<date>.md
 #   - RELEASE_EVIDENCE_APPENDIX.md
-#   - Any RELEASE_ATTESTATION_<date>.md found at the repo root
+#   - Optional matching-date RELEASE_ATTESTATION_<date>.md at repo root
 
 set -euo pipefail
 
@@ -25,7 +25,7 @@ usage() {
 Usage: bash scripts/create_evidence_bundle.sh [--date YYYYMMDD] [--output PATH] [--skip-validate]
 
 Options:
-  --date YYYYMMDD   Date tag for the bundle (default: today UTC in YYYYMMDD format)
+  --date YYYYMMDD   Date tag for the bundle (default: canonical 2026-05-22)
   --output PATH     Write bundle to PATH (default: repo root / agent_eval_skills_merged_clean-smoke-evidence-<date>.zip)
   --skip-validate   Skip post-build forbidden-entry scan
   -h, --help        Show this help message
@@ -63,7 +63,7 @@ while [ "$#" -gt 0 ]; do
     -h|--help)
       usage
       exit 0
-      ;;
+        DATE_TAG="${EVIDENCE_DATE_TAG:-2026-05-22}"
     *)
       echo "Unknown argument: $1" >&2
       usage >&2
@@ -73,7 +73,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$OUTPUT_PATH" ]; then
-  OUTPUT_PATH="$REPO_ROOT/agent_eval_skills_merged_clean-smoke-evidence-${DATE_TAG}.zip"
+          --output PATH     Write bundle to PATH (default: repo root / agent_eval_skills_merged_clean-smoke-evidence-<date>.zip)
 fi
 
 # Resolve to absolute path
@@ -101,46 +101,41 @@ echo "Date tag         : $DATE_TAG"
 
 rm -f "$OUTPUT_PATH"
 
-# Build list of files to include
+# Build list of files to include.
 FILES_TO_BUNDLE=()
+missing_required=()
 
-# JSON validation summaries
-for f in \
-  validation_summary.json \
-  toolathlon_artifact_build_summary.json \
-  toolathlon_mcp_smoke_summary.json \
-  toolathlon_preflight_summary.json \
-  docker_mcp_smoke_summary.json \
-  docker_preflight_summary.json; do
-  if [ -f "$ARTIFACTS_DIR/$f" ]; then
-    FILES_TO_BUNDLE+=("release_artifacts/$f")
+required_files=(
+  "release_artifacts/validation_summary.json"
+  "release_artifacts/toolathlon_artifact_build_summary.json"
+  "release_artifacts/toolathlon_mcp_smoke_summary.json"
+  "release_artifacts/toolathlon_preflight_summary.json"
+  "release_artifacts/docker_mcp_smoke_summary.json"
+  "release_artifacts/docker_preflight_summary.json"
+  "release_artifacts/RELEASE_EVIDENCE_MANIFEST_${DATE_TAG}.json"
+  "release_artifacts/RELEASE_HANDOFF_${DATE_TAG}.md"
+  "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md"
+)
+
+for rel in "${required_files[@]}"; do
+  if [ -f "$REPO_ROOT/$rel" ]; then
+    FILES_TO_BUNDLE+=("$rel")
   else
-    echo "Warning: expected evidence file missing: release_artifacts/$f" >&2
+    missing_required+=("$rel")
   fi
 done
 
-# Dated manifest — match by date tag (YYYY-MM-DD form)
-for f in "$ARTIFACTS_DIR"/RELEASE_EVIDENCE_MANIFEST_*.json; do
-  [ -f "$f" ] && FILES_TO_BUNDLE+=("release_artifacts/$(basename "$f")")
-done
-
-# Dated handoff notes
-for f in "$ARTIFACTS_DIR"/RELEASE_HANDOFF_*.md; do
-  [ -f "$f" ] && FILES_TO_BUNDLE+=("release_artifacts/$(basename "$f")")
-done
-
-# Appendix
-if [ -f "$ARTIFACTS_DIR/RELEASE_EVIDENCE_APPENDIX.md" ]; then
-  FILES_TO_BUNDLE+=("release_artifacts/RELEASE_EVIDENCE_APPENDIX.md")
+# Include matching-date attestation when present; keep optional for compatibility.
+attestation_file="$REPO_ROOT/RELEASE_ATTESTATION_${DATE_TAG}.md"
+if [ -f "$attestation_file" ]; then
+  FILES_TO_BUNDLE+=("RELEASE_ATTESTATION_${DATE_TAG}.md")
 fi
 
-# Attestation at repo root
-for f in "$REPO_ROOT"/RELEASE_ATTESTATION_*.md; do
-  [ -f "$f" ] && FILES_TO_BUNDLE+=("$(basename "$f")")
-done
-
-if [ "${#FILES_TO_BUNDLE[@]}" -eq 0 ]; then
-  echo "Error: no evidence files found to bundle" >&2
+if [ "${#missing_required[@]}" -gt 0 ]; then
+  echo "Error: missing required evidence files:" >&2
+  for item in "${missing_required[@]}"; do
+    echo "  $item" >&2
+  done
   exit 1
 fi
 
@@ -160,9 +155,9 @@ if [ "$VALIDATE_BUNDLE" -eq 1 ]; then
 
   zipinfo -1 "$OUTPUT_PATH" > "$tmp_entries"
 
-  if grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/)' "$tmp_entries" >/dev/null; then
+  if grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.venv/)' "$tmp_entries" >/dev/null; then
     echo "Forbidden entries found in evidence bundle:" >&2
-    grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/)' "$tmp_entries" >&2
+    grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.venv/)' "$tmp_entries" >&2
     exit 1
   fi
 
