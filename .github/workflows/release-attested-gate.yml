@@ -21,6 +21,10 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - name: Verify release gate naming consistency
+              run: |
+                  bash scripts/verify_release_gate_policy.sh
+
             - name: Verify release+evidence pair
               env:
                   RELEASE_ZIP_PATH: ${{ github.event.inputs.release_zip }}

@@ -75,8 +75,9 @@ Before any release upload/distribution event:
 
 1. Run workflow `Release Attested Pair Gate`.
 2. Supply release and evidence ZIP paths.
-3. Confirm job `Verify Canonical Attested Pair` passes.
-4. Publish only the verified pair from that run.
+3. Confirm policy consistency step passes (`verify_release_gate_policy.sh`).
+4. Confirm job `Verify Canonical Attested Pair` passes.
+5. Publish only the verified pair from that run.
 
 If this workflow fails, classify the candidate as an unbound wrapper/source bundle and do not publish as release-candidate.
 

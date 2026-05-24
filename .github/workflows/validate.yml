@@ -104,7 +104,13 @@ jobs:
     unified-validation:
         name: Unified Workspace Validation
         runs-on: ubuntu-latest
-        needs: [release-gate-policy-consistency, toolforge, agent-skills, toolathlon-preflight]
+        needs:
+            [
+                release-gate-policy-consistency,
+                toolforge,
+                agent-skills,
+                toolathlon-preflight,
+            ]
         if: success()
         steps:
             - uses: actions/checkout@v4
