@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skillforge.local/schemas/skill_schema.json",
+  "title": "SkillForge Skill Metadata",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "category",
+    "inputs",
+    "outputs",
+    "tools_required",
+    "mcp_servers",
+    "permissions",
+    "risk_level",
+    "validation"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "required"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "minLength": 1},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "required"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "minLength": 1},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "tools_required": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "mcp_servers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "permissions": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "validation": {
+      "type": "object",
+      "required": ["syntax", "tests", "smoke"],
+      "additionalProperties": false,
+      "properties": {
+        "syntax": {"type": "string"},
+        "tests": {"type": "string"},
+        "smoke": {"type": "string"}
+      }
+    }
+  }
+}

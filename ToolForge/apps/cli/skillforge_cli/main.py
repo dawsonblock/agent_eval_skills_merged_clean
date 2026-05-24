@@ -20,6 +20,7 @@ Commands:
 from __future__ import annotations
 
 import sys
+import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -498,7 +499,7 @@ def tools_group() -> None:
 
 
 @tools_group.command(name="list")
-@click.argument("slug")
+@click.argument("slug", required=False)
 @click.option(
     "--server-path",
     default=None,
@@ -506,9 +507,37 @@ def tools_group() -> None:
     help="Path to MCP server file (auto-detected if omitted).",
 )
 @click.pass_context
-def tools_list(ctx: click.Context, slug: str, server_path: Optional[Path]) -> None:
-    """List tools exposed by the MCP server for SLUG."""
+def tools_list(ctx: click.Context, slug: Optional[str], server_path: Optional[Path]) -> None:
+    """List tools exposed by MCP or list registered tools when SLUG is omitted."""
     ws_root: Path = ctx.obj["workspace"]
+
+    if slug is None and server_path is None:
+        from skillforge_ai.tool_registry import SkillForgeRegistry
+
+        reg_tools = SkillForgeRegistry(ws_root).list_registered_tools()
+        if not reg_tools:
+            console.print("[yellow]No registered tools found.[/]")
+            return
+
+        table = Table(title="Registered Tools")
+        table.add_column("Name", style="cyan")
+        table.add_column("Type")
+        table.add_column("Entrypoint")
+        table.add_column("Validated")
+
+        for item in reg_tools:
+            table.add_row(
+                str(item.get("name", "")),
+                str(item.get("type", "python")),
+                str(item.get("entrypoint", "")),
+                "✓" if item.get("validated") else "✗",
+            )
+        console.print(table)
+        return
+
+    if slug is None:
+        err_console.print("[red]Provide a SLUG or omit --server-path to list registry tools.[/]")
+        sys.exit(1)
 
     if server_path is None:
         server_path = ws_root / "tools" / "generated" / slug / "mcp" / "server.py"
@@ -603,17 +632,70 @@ def mcp_group() -> None:
 
 
 @mcp_group.command(name="smoke")
-@click.argument("slug")
+@click.argument("slug", required=False)
 @click.option(
     "--server-path",
     default=None,
     type=click.Path(path_type=Path),
     help="Path to MCP server file (auto-detected if omitted).",
 )
+@click.option(
+    "--profile",
+    default=None,
+    help="Run Toolathlon profile smoke (e.g. smoke) instead of skill-local MCP smoke.",
+)
 @click.pass_context
-def mcp_smoke(ctx: click.Context, slug: str, server_path: Optional[Path]) -> None:
-    """Run a smoke test against the MCP server for SLUG."""
+def mcp_smoke(
+    ctx: click.Context,
+    slug: Optional[str],
+    server_path: Optional[Path],
+    profile: Optional[str],
+) -> None:
+    """Run smoke against skill MCP or Toolathlon profile."""
     ws_root: Path = ctx.obj["workspace"]
+
+    if profile:
+        repo_root = ws_root
+        if not (repo_root / "toolathlon-gym-curated").exists() and (repo_root.parent / "toolathlon-gym-curated").exists():
+            repo_root = repo_root.parent
+
+        smoke_script = repo_root / "toolathlon-gym-curated" / "scripts" / "smoke_mcp_servers.py"
+        if not smoke_script.exists():
+            err_console.print(f"[red]Toolathlon smoke script not found: {smoke_script}[/]")
+            sys.exit(1)
+
+        summary_path = repo_root / ".validation_logs" / "toolathlon_mcp_smoke_summary.json"
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with console.status(f"[bold]Running Toolathlon MCP smoke profile '{profile}'…[/]"):
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(smoke_script),
+                    "--profile",
+                    profile,
+                    "--json-output",
+                    str(summary_path),
+                ],
+                cwd=str(repo_root / "toolathlon-gym-curated"),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        if completed.returncode == 0:
+            console.print(f"[green]✓ Toolathlon MCP smoke passed for profile '{profile}'[/]")
+            console.print(f"Summary: {summary_path}")
+            return
+
+        err_console.print(f"[red]✗ Toolathlon MCP smoke failed for profile '{profile}'[/]")
+        if completed.stderr:
+            err_console.print(completed.stderr.strip())
+        sys.exit(completed.returncode)
+
+    if slug is None:
+        err_console.print("[red]Provide a SLUG for skill-local MCP smoke or use --profile.[/]")
+        sys.exit(1)
 
     if server_path is None:
         server_path = ws_root / "tools" / "generated" / slug / "mcp" / "server.py"

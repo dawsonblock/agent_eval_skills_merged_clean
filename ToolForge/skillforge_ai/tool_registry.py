@@ -22,10 +22,12 @@ Usage::
 from __future__ import annotations
 
 import logging
+import json
 import sys
 from pathlib import Path
 from typing import Any
 
+from skillforge_ai.config import ensure_runtime_state
 from skillforge_ai.models import SkillManifest
 
 logger = logging.getLogger(__name__)
@@ -50,6 +52,8 @@ class SkillForgeRegistry:
     def __init__(self, workspace_root: Path) -> None:
         self._root = workspace_root.resolve()
         self._registry_path = self._root / "toolforge_registry.json"
+        self._paths = ensure_runtime_state(self._root)
+        self._tool_registry_path = self._paths.tool_registry_path
         _add_packages_to_path(self._root)
 
     # ------------------------------------------------------------------
@@ -133,6 +137,33 @@ class SkillForgeRegistry:
         """Promote a skill to *packaged* status."""
         self._set_status(name, "packaged")
 
+    def register_tool(self, tool_entry: dict[str, Any]) -> None:
+        """Register a callable tool in the local SkillForge tool registry."""
+        data = self._read_tool_registry()
+        out: list[dict[str, Any]] = []
+        replaced = False
+        name = str(tool_entry.get("name", "")).strip()
+        for item in data:
+            if item.get("name") == name:
+                out.append(tool_entry)
+                replaced = True
+            else:
+                out.append(item)
+        if not replaced:
+            out.append(tool_entry)
+        self._write_tool_registry(out)
+
+    def get_registered_tool(self, name: str) -> dict[str, Any] | None:
+        """Lookup a callable tool by name from local SkillForge tool registry."""
+        for item in self._read_tool_registry():
+            if item.get("name") == name:
+                return item
+        return None
+
+    def list_registered_tools(self) -> list[dict[str, Any]]:
+        """Return callable tools from local SkillForge tool registry."""
+        return self._read_tool_registry()
+
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -200,6 +231,19 @@ class SkillForgeRegistry:
             registry.set_status(name, status)
         except Exception as exc:
             logger.warning("set_status(%s, %s) failed: %s", name, status, exc)
+
+    def _read_tool_registry(self) -> list[dict[str, Any]]:
+        try:
+            payload = json.loads(self._tool_registry_path.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+        return payload if isinstance(payload, list) else []
+
+    def _write_tool_registry(self, data: list[dict[str, Any]]) -> None:
+        self._tool_registry_path.write_text(
+            json.dumps(data, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
     def _to_skill_dict(self, entry: Any, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
         """Convert a registry entry (ToolRegistry format) to SkillForge format."""
