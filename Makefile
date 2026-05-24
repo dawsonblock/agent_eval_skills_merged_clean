@@ -139,6 +139,10 @@ verify-skip-strictness: ## Verify strict SKIP_EXISTING_ARTIFACTS behavior for sm
 finalize-release-distribution: ## Run final canonical release/evidence distribution gate and emit publish note
 	bash scripts/finalize_release_distribution.sh
 
+.PHONY: publish-manifest
+publish-manifest: ## Verify canonical pair and generate a concise publish manifest markdown file
+	bash scripts/generate_publish_manifest.sh
+
 .PHONY: classify-release-upload
 classify-release-upload: ## Classify uploaded release ZIP as attested pair or unbound wrapper/source bundle
 	@if [ -z "$(RELEASE_ZIP)" ]; then \

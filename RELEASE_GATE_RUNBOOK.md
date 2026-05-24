@@ -27,6 +27,14 @@ make finalize-release-distribution
 
 This command enforces canonical hash matching, release ZIP hygiene, evidence bundle value checks, and emits the publish note text.
 
+Publish manifest command:
+
+```bash
+make publish-manifest
+```
+
+This command fail-closes on the same final gate and writes `release_artifacts/PUBLISH_MANIFEST_CANONICAL_PAIR.md` for release body/handoff reuse.
+
 If artifacts are stored outside the repository root:
 
 ```bash
