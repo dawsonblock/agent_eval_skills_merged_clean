@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import datetime
+import hashlib
 import zipfile
 from pathlib import Path
 
+from skillforge_ai.skill_registry import SkillRegistry
 from skillforge_ai.tool_registry import SkillForgeRegistry
 
 
@@ -11,7 +13,7 @@ def run_package(
     workspace_root: Path,
     slug: str,
     output: Path | None,
-) -> Path:
+) -> tuple[Path, str]:
     tool_dir = workspace_root / "tools" / "generated" / slug
     if not tool_dir.exists():
         raise FileNotFoundError(f"Tool directory not found for '{slug}'")
@@ -29,4 +31,24 @@ def run_package(
                 zf.write(file_path, file_path.relative_to(tool_dir))
 
     SkillForgeRegistry(workspace_root).mark_packaged(slug)
-    return output
+    sha256 = _sha256(output)
+
+    reg = SkillRegistry(workspace_root)
+    entry = reg.get(slug) or {"name": slug}
+    entry.update(
+        {
+            "package_hash": sha256,
+            "package_path": str(output),
+            "status": "packaged",
+        }
+    )
+    reg.upsert(entry)
+    return output, sha256
+
+
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()

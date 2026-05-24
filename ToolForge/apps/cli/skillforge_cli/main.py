@@ -329,13 +329,14 @@ def package(ctx: click.Context, slug: str, output: Optional[Path]) -> None:
 
     from skillforge_ai.commands.package import run_package
 
-    output = run_package(
+    output, sha256 = run_package(
         workspace_root=ws_root,
         slug=slug,
         output=output,
     )
 
     console.print(f"[green]✓ Packaged '{slug}' → {output}[/]")
+    console.print(f"SHA256: {sha256}")
 
 
 # ---------------------------------------------------------------------------
@@ -358,9 +359,13 @@ def install(ctx: click.Context, skill_path: Path) -> None:
         sys.exit(1)
 
     with console.status(f"[bold]Installing '{skill_path.stem}'…[/]"):
-        slug, dest = run_install(workspace_root=ws_root, archive_path=skill_path)
+        slug, dest, sha256 = run_install(
+            workspace_root=ws_root,
+            archive_path=skill_path,
+        )
 
     console.print(f"[green]✓ Installed '{slug}' → {dest}[/]")
+    console.print(f"Archive SHA256: {sha256}")
 
 
 # ---------------------------------------------------------------------------

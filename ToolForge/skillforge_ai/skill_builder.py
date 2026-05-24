@@ -92,6 +92,9 @@ class SkillBuilder:
         # 2. Scaffold full tool directory
         tool_dir = self._root / "tools" / "generated" / spec.slug
         files_created = self._scaffold(spec, tool_dir)
+        toolforge_yaml = self._ensure_toolforge_yaml(spec, tool_dir)
+        if toolforge_yaml is not None:
+            files_created.append(toolforge_yaml)
 
         # 3. Generate MCP server (optional)
         if self._gen_mcp and spec.mcp.enabled:
@@ -264,6 +267,26 @@ class SkillBuilder:
         files.append(example_file)
 
         return files
+
+    def _ensure_toolforge_yaml(self, spec: Any, tool_dir: Path) -> Path | None:
+        yaml_path = tool_dir / "toolforge.yaml"
+        if yaml_path.exists():
+            return None
+
+        tool_dir.mkdir(parents=True, exist_ok=True)
+        from ruamel.yaml import YAML
+
+        if hasattr(spec, "model_dump"):
+            payload = spec.model_dump(mode="json")
+        elif hasattr(spec, "dict"):
+            payload = spec.dict()
+        else:
+            payload = dict(spec)
+
+        yaml = YAML()
+        with yaml_path.open("w", encoding="utf-8") as fh:
+            yaml.dump(payload, fh)
+        return yaml_path
 
     # ------------------------------------------------------------------
     # Internal steps
