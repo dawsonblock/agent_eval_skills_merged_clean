@@ -123,6 +123,10 @@ verify-release-pair: ## Verify release+evidence ZIPs match canonical attested fi
 .PHONY: prepublish-gate
 prepublish-gate: verify-release-pair ## Fail-closed local pre-publish gate for canonical attested pair
 
+.PHONY: operator-release-gate-check
+operator-release-gate-check: ## Run operator helper: verify canonical pair and print required check names
+	bash scripts/operator_release_gate_check.sh
+
 # ── clean ────────────────────────────────────
 
 .PHONY: clean

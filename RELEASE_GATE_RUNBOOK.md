@@ -6,6 +6,27 @@ This runbook defines the exact GitHub settings flow to enforce attested-pair rel
 
 Only allow release-path changes and release publication when the canonical attested-pair checks pass.
 
+## One-Command Operator Check
+
+Use this command before configuring rules or preparing a release upload:
+
+```bash
+make operator-release-gate-check
+```
+
+This command:
+
+1. Runs canonical attested-pair verification.
+2. Prints the exact required check names to copy into branch protection or rulesets.
+
+If artifacts are stored outside the repository root:
+
+```bash
+bash scripts/operator_release_gate_check.sh \
+   --release /path/to/agent_eval_skills_merged_clean-pruned-smoke.zip \
+   --evidence /path/to/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
+```
+
 ## Required Checks
 
 Configure these as required checks on the release path:
