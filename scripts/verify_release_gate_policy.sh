@@ -25,6 +25,9 @@ required_strings=(
   "Release Attested Pair Gate / Verify Canonical Attested Pair"
 )
 
+expected_release_zip="agent_eval_skills_merged_clean-pruned-smoke.zip"
+expected_evidence_zip="agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip"
+
 declare -a files=(
   "$REPO_ROOT/.github/workflows/validate.yml"
   "$REPO_ROOT/.github/workflows/release-attested-gate.yml"
@@ -74,6 +77,26 @@ fi
 
 if ! grep -Fq "name: Verify Canonical Attested Pair" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
   echo "release-attested-gate.yml missing expected job name." >&2
+  missing=1
+fi
+
+if ! grep -Fq "RELEASE_ZIP_PATH: $expected_release_zip" "$REPO_ROOT/.github/workflows/validate.yml"; then
+  echo "validate.yml missing canonical release zip path: $expected_release_zip" >&2
+  missing=1
+fi
+
+if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip" "$REPO_ROOT/.github/workflows/validate.yml"; then
+  echo "validate.yml missing canonical evidence zip path: $expected_evidence_zip" >&2
+  missing=1
+fi
+
+if ! grep -Fq "default: \"$expected_release_zip\"" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
+  echo "release-attested-gate.yml missing canonical release_zip default: $expected_release_zip" >&2
+  missing=1
+fi
+
+if ! grep -Fq "default: \"$expected_evidence_zip\"" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
+  echo "release-attested-gate.yml missing canonical evidence_zip default: $expected_evidence_zip" >&2
   missing=1
 fi
 
