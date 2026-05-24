@@ -110,13 +110,13 @@ if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip" "$REPO_ROOT/.github/wo
   missing=1
 fi
 
-if ! grep -Fq "default: \"$expected_release_zip\"" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
-  echo "release-attested-gate.yml missing canonical release_zip default: $expected_release_zip" >&2
+if ! grep -Fq "RELEASE_ZIP_PATH: $expected_release_zip" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
+  echo "release-attested-gate.yml missing canonical release zip path: $expected_release_zip" >&2
   missing=1
 fi
 
-if ! grep -Fq "default: \"$expected_evidence_zip\"" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
-  echo "release-attested-gate.yml missing canonical evidence_zip default: $expected_evidence_zip" >&2
+if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
+  echo "release-attested-gate.yml missing canonical evidence zip path: $expected_evidence_zip" >&2
   missing=1
 fi
 

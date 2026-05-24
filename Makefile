@@ -131,6 +131,10 @@ operator-release-gate-check: ## Run operator helper: verify canonical pair and p
 verify-release-gate-policy: ## Verify release gate naming consistency across workflows/docs
 	bash scripts/verify_release_gate_policy.sh
 
+.PHONY: verify-skip-strictness
+verify-skip-strictness: ## Verify strict SKIP_EXISTING_ARTIFACTS behavior for smoke MCP builds
+	bash scripts/verify_skip_existing_artifacts_strict.sh
+
 .PHONY: classify-release-upload
 classify-release-upload: ## Classify uploaded release ZIP as attested pair or unbound wrapper/source bundle
 	@if [ -z "$(RELEASE_ZIP)" ]; then \

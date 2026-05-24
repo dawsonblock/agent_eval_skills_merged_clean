@@ -78,6 +78,17 @@ TOOLATHLON_PROFILE=smoke SKIP_EXISTING_ARTIFACTS=1 bash scripts/build_required_m
 
 Required: still 3/3 packages, smoke pass, preflight `missing_count = 0`.
 
+Automated strictness regression check (required before release promotion):
+
+```bash
+make verify-skip-strictness
+```
+
+Required outcomes:
+
+- healthy skip run reports `runtime_ready_skip` for all three smoke targets
+- unhealthy dependency perturbation forces rebuild with `filesystem` reason `rebuilt_after_npm_tree_unhealthy`
+
 ## 5) Unified Workspace Validation (Supported: Python 3.9-3.12; preferred release proof: 3.12)
 
 ```bash

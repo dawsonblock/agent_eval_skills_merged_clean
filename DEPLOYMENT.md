@@ -286,24 +286,34 @@ Two CI checks are now available:
 Run the manual workflow before any release upload/distribution step.
 
 1. Workflow: `.github/workflows/release-attested-gate.yml`
-2. Inputs:
-   - `release_zip` (default: `agent_eval_skills_merged_clean-pruned-smoke.zip`)
-   - `evidence_zip` (default: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`)
-3. Behavior:
+2. Behavior:
    - Runs `scripts/verify_release_pair.sh`
    - Hard-fails on filename/hash mismatch or forbidden metadata entries
-   - Uploads verified pair as run artifact only when checks pass
+   - Runs `scripts/verify_evidence_bundle.sh` for evidence-value enforcement
+   - Uploads verified canonical pair as run artifact only when checks pass
 
 Uploaded wrapper triage workflow:
 
 1. Workflow: `.github/workflows/release-upload-triage.yml`
-2. Inputs:
-   - `release_zip` (required)
-   - `evidence_zip` (optional)
-3. Behavior:
+2. Behavior:
    - Runs `scripts/classify_release_upload.sh`
-   - Emits human-readable release classification
+   - Verifies canonical attested release/evidence pair classification
    - Uploads `.validation_logs/release_upload_triage_verdict.json` for audit
+
+For third-party uploaded wrapper/source artifacts, use local operator triage:
+
+```bash
+make operator-release-upload-triage RELEASE_ZIP=/path/to/uploaded-wrapper.zip
+```
+
+Optional pair-aware local triage:
+
+```bash
+make operator-release-upload-triage \
+   RELEASE_ZIP=/path/to/uploaded-wrapper.zip \
+   EVIDENCE_ZIP=/path/to/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip \
+   JSON_OUTPUT=.validation_logs/release_upload_triage_verdict.json
+```
 
 Treat this workflow as a required pre-publish approval gate in repository policy.
 

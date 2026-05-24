@@ -96,8 +96,8 @@ Use this when you manage protections through rulesets.
 Before any release upload/distribution event:
 
 1. Run workflow `Release Attested Pair Gate`.
-2. Supply release and evidence ZIP paths.
-3. Confirm policy consistency step passes (`verify_release_gate_policy.sh`).
+2. Confirm policy consistency step passes (`verify_release_gate_policy.sh`).
+3. Confirm strict skip regression check passes (`make verify-skip-strictness`).
 4. Confirm job `Verify Canonical Attested Pair` passes.
 5. Publish only the verified pair from that run.
 
@@ -107,12 +107,13 @@ If this workflow fails, classify the candidate as an unbound wrapper/source bund
 
 Before acting on externally uploaded ZIP files:
 
-1. Run workflow `Release Upload Triage`.
-2. Supply `release_zip` for the uploaded artifact.
-3. Optionally supply `evidence_zip` when testing an exact attested pair.
-4. Confirm job `Classify Uploaded Release Artifact` completes.
-5. Treat any non-canonical result as unbound wrapper/source bundle.
-6. Use uploaded `release-upload-triage-verdict` JSON artifact for audit records.
+1. Run local operator triage command:
+   - `make operator-release-upload-triage RELEASE_ZIP=/path/to/uploaded-wrapper.zip`
+2. Optionally add evidence path when testing an exact pair:
+   - `make operator-release-upload-triage RELEASE_ZIP=/path/to/uploaded-wrapper.zip EVIDENCE_ZIP=/path/to/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip JSON_OUTPUT=.validation_logs/release_upload_triage_verdict.json`
+3. Confirm classification output completes.
+4. Treat any non-canonical result as unbound wrapper/source bundle.
+5. Preserve the JSON verdict artifact for audit records.
 
 ## Release-Path Checklist
 

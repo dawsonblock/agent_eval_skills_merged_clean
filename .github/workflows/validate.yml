@@ -1,5 +1,7 @@
 name: Validate Workspace
 
+permissions: read-all
+
 on:
     push:
         branches: [main, develop]
@@ -7,7 +9,7 @@ on:
         branches: [main]
     workflow_dispatch:
     schedule:
-        - cron: "30 6 * * 1"
+        - cron: 30 6 * * 1
 
 env:
     TOOLATHLON_PROFILE: smoke

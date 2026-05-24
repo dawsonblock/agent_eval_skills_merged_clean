@@ -45,6 +45,12 @@ Equivalent explicit invocation:
 TOOLATHLON_PROFILE=smoke bash scripts/validate_workspace.sh
 ```
 
+Strict skip regression check (required to preserve runtime-aware rebuild behavior):
+
+```bash
+make verify-skip-strictness
+```
+
 The canonical smoke release-candidate command enables strict gate scope enforcement:
 
 ```bash
