@@ -36,9 +36,10 @@ llm = ["openai>=1.30", "anthropic>=0.28"]
 
 [project.scripts]
 toolforge = "toolforge_cli.main:main"
+skillforge = "skillforge_cli.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["toolforge", "apps/cli/toolforge_cli", "packages"]
+packages = ["toolforge", "apps/cli/toolforge_cli", "apps/cli/skillforge_cli", "packages", "skillforge_ai"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
