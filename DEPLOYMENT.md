@@ -242,6 +242,12 @@ Canonical pair verification before distribution (required):
 make verify-release-pair
 ```
 
+Equivalent local pre-publish gate alias:
+
+```bash
+make prepublish-gate
+```
+
 Override paths when artifacts are stored outside the repository root:
 
 ```bash
@@ -251,6 +257,21 @@ bash scripts/verify_release_pair.sh \
 ```
 
 If verification fails, classify the package as an unbound wrapper/source bundle and do not publish as release-candidate until a new matching manifest + attestation is issued.
+
+### CI Pre-Publish Gate (Recommended)
+
+Run the GitHub Actions workflow `Release Attested Pair Gate` before any release upload/distribution step.
+
+1. Workflow: `.github/workflows/release-attested-gate.yml`
+2. Inputs:
+   - `release_zip` (default: `agent_eval_skills_merged_clean-pruned-smoke.zip`)
+   - `evidence_zip` (default: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`)
+3. Behavior:
+   - Runs `scripts/verify_release_pair.sh`
+   - Hard-fails on filename/hash mismatch or forbidden metadata entries
+   - Uploads verified pair as run artifact only when checks pass
+
+Treat this workflow as a required pre-publish approval gate in repository policy.
 
 Manual fallback (if you need direct zip invocation):
 

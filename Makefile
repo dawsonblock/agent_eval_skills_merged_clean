@@ -120,6 +120,9 @@ package-clean-zip: ## Build requested pruned-smoke clean ZIP name/location
 verify-release-pair: ## Verify release+evidence ZIPs match canonical attested filenames/hashes
 	bash scripts/verify_release_pair.sh
 
+.PHONY: prepublish-gate
+prepublish-gate: verify-release-pair ## Fail-closed local pre-publish gate for canonical attested pair
+
 # ── clean ────────────────────────────────────
 
 .PHONY: clean

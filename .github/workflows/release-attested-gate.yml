@@ -1,0 +1,39 @@
+name: Release Attested Pair Gate
+
+on:
+    workflow_dispatch:
+        inputs:
+            release_zip:
+                description: "Path to release ZIP relative to repo root"
+                required: true
+                default: "agent_eval_skills_merged_clean-pruned-smoke.zip"
+                type: string
+            evidence_zip:
+                description: "Path to evidence ZIP relative to repo root"
+                required: true
+                default: "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip"
+                type: string
+
+jobs:
+    verify-attested-pair:
+        name: Verify Canonical Attested Pair
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Verify release+evidence pair
+              env:
+                  RELEASE_ZIP_PATH: ${{ github.event.inputs.release_zip }}
+                  EVIDENCE_ZIP_PATH: ${{ github.event.inputs.evidence_zip }}
+              run: |
+                  bash scripts/verify_release_pair.sh
+
+            - name: Upload verified pair (gate proof)
+              uses: actions/upload-artifact@v4
+              with:
+                  name: attested-release-pair
+                  path: |
+                      ${{ github.event.inputs.release_zip }}
+                      ${{ github.event.inputs.evidence_zip }}
+                  if-no-files-found: error
+                  retention-days: 14
