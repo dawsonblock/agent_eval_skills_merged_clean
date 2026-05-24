@@ -25,7 +25,7 @@ Validated scope:
 Retained but not release-validated:
 
 - Full Toolathlon profile
-- all 503 tasks
+- all task material
 - full MCP server set
 
 This repository ships with two validation profiles:

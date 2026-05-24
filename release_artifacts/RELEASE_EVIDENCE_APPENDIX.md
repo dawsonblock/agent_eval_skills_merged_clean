@@ -19,9 +19,9 @@ Validated scope:
 
 Retained but not release-validated:
 
-- Toolathlon full profile
-- All 503 Toolathlon tasks
-- Full MCP server benchmark set
+- Full Toolathlon profile
+- all task material
+- full MCP server set
 
 ## Canonical Evidence Files
 

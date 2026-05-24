@@ -16,7 +16,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-DATE_TAG="$(date -u +%Y-%m-%d)"
+DATE_TAG="${EVIDENCE_DATE_TAG:-2026-05-22}"
 OUTPUT_PATH=""
 VALIDATE_BUNDLE=1
 
@@ -63,7 +63,7 @@ while [ "$#" -gt 0 ]; do
     -h|--help)
       usage
       exit 0
-        DATE_TAG="${EVIDENCE_DATE_TAG:-2026-05-22}"
+      ;;
     *)
       echo "Unknown argument: $1" >&2
       usage >&2
@@ -73,7 +73,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$OUTPUT_PATH" ]; then
-          --output PATH     Write bundle to PATH (default: repo root / agent_eval_skills_merged_clean-smoke-evidence-<date>.zip)
+  OUTPUT_PATH="$REPO_ROOT/agent_eval_skills_merged_clean-smoke-evidence-${DATE_TAG}.zip"
 fi
 
 # Resolve to absolute path
