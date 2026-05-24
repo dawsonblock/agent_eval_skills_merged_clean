@@ -81,6 +81,7 @@ cat <<'CHECKS'
 Required check names for repository rules:
 1. Validate Workspace / Unified Workspace Validation
 2. Validate Workspace / Verify Canonical Attested Pair
+3. Validate Workspace / Classify Uploaded Release Artifact
 
 Manual pre-publish gate:
 1. Release Attested Pair Gate / Verify Canonical Attested Pair

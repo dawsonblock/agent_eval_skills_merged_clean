@@ -22,6 +22,7 @@ fi
 required_strings=(
   "Validate Workspace / Unified Workspace Validation"
   "Validate Workspace / Verify Canonical Attested Pair"
+  "Validate Workspace / Classify Uploaded Release Artifact"
   "Release Attested Pair Gate / Verify Canonical Attested Pair"
   "Release Upload Triage / Classify Uploaded Release Artifact"
 )
@@ -71,6 +72,11 @@ fi
 
 if ! grep -Fq "name: Verify Canonical Attested Pair" "$REPO_ROOT/.github/workflows/validate.yml"; then
   echo "validate.yml missing job name: Verify Canonical Attested Pair" >&2
+  missing=1
+fi
+
+if ! grep -Fq "name: Classify Uploaded Release Artifact" "$REPO_ROOT/.github/workflows/validate.yml"; then
+  echo "validate.yml missing job name: Classify Uploaded Release Artifact" >&2
   missing=1
 fi
 

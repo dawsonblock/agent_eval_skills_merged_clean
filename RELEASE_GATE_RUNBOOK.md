@@ -48,6 +48,7 @@ Configure these as required checks on the release path:
 
 1. `Validate Workspace / Unified Workspace Validation`
 2. `Validate Workspace / Verify Canonical Attested Pair`
+3. `Validate Workspace / Classify Uploaded Release Artifact`
 
 Manual pre-publish gate for distribution events:
 
@@ -70,6 +71,7 @@ Use this when your repository uses branch protection rules directly.
 7. In required checks, add:
    - `Validate Workspace / Unified Workspace Validation`
    - `Validate Workspace / Verify Canonical Attested Pair`
+   - `Validate Workspace / Classify Uploaded Release Artifact`
 8. Enable `Require branches to be up to date before merging`.
 9. Save the rule.
 
@@ -86,6 +88,7 @@ Use this when you manage protections through rulesets.
 7. Add required checks:
    - `Validate Workspace / Unified Workspace Validation`
    - `Validate Workspace / Verify Canonical Attested Pair`
+   - `Validate Workspace / Classify Uploaded Release Artifact`
 8. Save and enable the ruleset.
 
 ## Manual Pre-Publish Procedure

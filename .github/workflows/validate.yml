@@ -210,6 +210,32 @@ jobs:
               run: |
                   bash scripts/verify_release_pair.sh
 
+    upload-triage-verification:
+        name: Classify Uploaded Release Artifact
+        runs-on: ubuntu-latest
+        needs: [attested-pair-verification]
+        if: success()
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Classify canonical release upload and emit triage verdict
+              env:
+                  RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
+                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
+              run: |
+                  bash scripts/classify_release_upload.sh \
+                    --release "$RELEASE_ZIP_PATH" \
+                    --evidence "$EVIDENCE_ZIP_PATH" \
+                    --json-output .validation_logs/validate_workflow_upload_triage_verdict.json
+
+            - name: Upload upload-triage verdict artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: validate-upload-triage-verdict
+                  path: .validation_logs/validate_workflow_upload_triage_verdict.json
+                  if-no-files-found: error
+                  retention-days: 7
+
     full-profile-validation:
         name: Full MCP Profile Validation (Experimental)
         runs-on: ubuntu-latest

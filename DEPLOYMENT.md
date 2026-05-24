@@ -316,7 +316,8 @@ To prevent accidental wrapper/source bundle publication, enforce the following i
 1. Require status checks to pass before merging.
 2. Mark `Validate Workspace / Unified Workspace Validation` as required.
 3. Mark `Validate Workspace / Verify Canonical Attested Pair` as required for release PRs or release-branch promotion flow.
-4. Require pull request reviews before merging release workflow or attestation/manifest changes.
+4. Mark `Validate Workspace / Classify Uploaded Release Artifact` as required for release PRs or release-branch promotion flow.
+5. Require pull request reviews before merging release workflow or attestation/manifest changes.
 
 Operational recommendation:
 

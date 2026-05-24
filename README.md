@@ -79,8 +79,9 @@ Release-candidate claims remain tied to passing `smoke` profile evidence unless 
 Canonical artifact publication must pass attested-pair checks:
 
 1. Automatic required-check candidate: `Validate Workspace / Verify Canonical Attested Pair`
-2. Manual pre-publish gate: `Release Attested Pair Gate / Verify Canonical Attested Pair`
-3. Manual upload triage gate: `Release Upload Triage / Classify Uploaded Release Artifact`
+2. Automatic required-check candidate: `Validate Workspace / Classify Uploaded Release Artifact`
+3. Manual pre-publish gate: `Release Attested Pair Gate / Verify Canonical Attested Pair`
+4. Manual upload triage gate: `Release Upload Triage / Classify Uploaded Release Artifact`
 
 Repository maintainers should configure branch protection or repository rulesets so this check is required for release-path merges.
 
