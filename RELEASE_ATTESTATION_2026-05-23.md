@@ -1,3 +1,7 @@
+> **SUPERSEDED** — This attestation is withdrawn. The accepted canonical release is the 2026-05-22 pair.
+> This document records a separate build attempt (commit `a0b34ab7`) whose archive SHA256 (`8a94525e...`) does not match the canonical accepted release.
+> See [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md) for the authoritative hash binding.
+
 # Release Attestation — 2026-05-23
 
 **Release Label:** agent_eval_skills_merged_clean pruned-smoke RC

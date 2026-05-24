@@ -1,5 +1,8 @@
 {
   "schema_version": "1.1",
+  "superseded_by": "RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
+  "status": "withdrawn",
+  "superseded_note": "This manifest records a separate build attempt (commit a0b34ab7) that does not match the canonical accepted release. See RELEASE_EVIDENCE_MANIFEST_2026-05-22.json for the authoritative evidence.",
   "release_date": "2026-05-23",
   "release_label": "agent_eval_skills_merged_clean pruned-smoke RC",
   "git_commit": "a0b34ab7f88906ef4699a5edb43b4d8d5c1ff153",

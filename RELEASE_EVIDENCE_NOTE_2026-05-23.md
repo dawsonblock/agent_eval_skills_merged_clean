@@ -1,3 +1,6 @@
+> **SUPERSEDED** — This evidence note is withdrawn. The accepted canonical release and evidence bundle are from 2026-05-22.
+> This note records a separate build (commit `a0b34ab7`) with a different archive hash. It does not supersede [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md).
+
 # Release Evidence Note — 2026-05-23
 
 **Repository:** agent_eval_skills_merged_clean
