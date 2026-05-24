@@ -233,7 +233,7 @@ class TestRepairCommand:
 
 
 class TestChatCommand:
-    @patch("skillforge_ai.orchestrator.AIOrchestrator.run_chat_loop")
+    @patch("skillforge_ai.chat_runtime.ChatRuntime.run_loop")
     def test_chat_invokes_repl(self, mock_repl, runner: CliRunner, ws: Path):
         result = runner.invoke(
             main,

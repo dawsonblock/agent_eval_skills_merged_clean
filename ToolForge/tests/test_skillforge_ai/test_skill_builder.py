@@ -54,6 +54,12 @@ class TestSkillBuilderBuild:
 
         assert isinstance(manifest, SkillManifest)
         assert manifest.name == spec.slug
+        skill_root = tmp_path / "skills" / spec.slug
+        assert (skill_root / "SKILL.md").exists()
+        assert (skill_root / "metadata.json").exists()
+        assert (skill_root / "README.md").exists()
+        assert (skill_root / "tool" / "main.py").exists()
+        assert (skill_root / "examples" / "messy.csv").exists()
         mock_scaffold.assert_called_once()
         mock_mcp.assert_called_once()
         mock_skill.assert_called_once()

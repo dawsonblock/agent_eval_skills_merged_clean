@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 import sys
+import json
 from pathlib import Path
 from typing import Any
 
@@ -119,8 +120,9 @@ class ValidationRunner:
         else:
             report.mcp_ok = None  # not checked
 
-        # 4. Skill SKILL.md
-        skill_dir = self._root / "skills" / "generated"
+        # 4. Skill files and metadata schema
+        canonical_skill_dir = self._root / "skills" / slug
+        skill_dir = canonical_skill_dir if canonical_skill_dir.exists() else self._root / "skills" / "generated"
         skill_md = self._find_skill_md(skill_dir, slug)
         if skill_md is not None:
             skill_errs = self._run_skill_validator(skill_md)
@@ -128,6 +130,14 @@ class ValidationRunner:
                 report.skill_ok = False
                 report.passed = False
                 report.errors.extend(skill_errs)
+
+        metadata_path = canonical_skill_dir / "metadata.json"
+        if canonical_skill_dir.exists():
+            metadata_errs = self._run_skill_schema_validator(metadata_path)
+            if metadata_errs:
+                report.schema_ok = False
+                report.passed = False
+                report.errors.extend(metadata_errs)
 
         # 5. Tests
         test_errs, test_warnings = self._run_test_validator(tool_dir)
@@ -155,6 +165,8 @@ class ValidationRunner:
                 self._ev.log_validation(slug, report)
             except Exception as exc:
                 logger.debug("EvidenceLogger.log_validation failed: %s", exc)
+
+        self._write_skill_validation_report(slug, report)
 
         return report
 
@@ -276,6 +288,22 @@ class ValidationRunner:
         except Exception as exc:
             return [], [f"Safety analyzer error: {exc}"]
 
+    def _run_skill_schema_validator(self, metadata_path: Path) -> list[str]:
+        if not metadata_path.exists():
+            return [f"Metadata: Missing metadata.json at {metadata_path}"]
+        try:
+            from jsonschema import ValidationError, validate
+
+            schema_path = self._root / "skillforge_ai" / "schemas" / "skill_schema.json"
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+            validate(instance=payload, schema=schema)
+            return []
+        except ValidationError as exc:
+            return [f"Metadata: {exc.message}"]
+        except Exception as exc:
+            return [f"Metadata schema validator error: {exc}"]
+
     # ------------------------------------------------------------------
     # Repair
     # ------------------------------------------------------------------
@@ -384,3 +412,27 @@ class ValidationRunner:
                 registry.set_status(slug, "failed")
         except Exception as exc:
             logger.debug("Registry update failed: %s", exc)
+
+    def _write_skill_validation_report(
+        self,
+        slug: str,
+        report: ValidationReport,
+    ) -> None:
+        skill_dir = self._root / "skills" / slug
+        if not skill_dir.exists():
+            return
+        out_path = skill_dir / "validation_report.json"
+        payload = {
+            "skill": slug,
+            "status": "passed" if report.passed else "failed",
+            "checks": {
+                "metadata": "passed" if report.schema_ok else "failed",
+                "skill_md": "passed" if report.skill_ok else "failed",
+                "syntax": "passed" if report.schema_ok else "failed",
+                "tests": "passed" if report.tests_ok else "failed",
+                "package": "passed" if report.safety_ok else "failed",
+            },
+            "errors": report.errors,
+            "warnings": report.warnings,
+        }
+        out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")

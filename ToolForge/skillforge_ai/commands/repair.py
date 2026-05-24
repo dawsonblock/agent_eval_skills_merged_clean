@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from skillforge_ai.repair_loop import RepairLoop
+from skillforge_ai.validation_runner import ValidationRunner
 
 
-def run_repair(workspace_root: Path, slug: str, provider: str = "rule_based") -> dict:
-    ok, attempts = RepairLoop(workspace_root=workspace_root).run(slug, provider=provider)
-    return {
-        "skill": slug,
-        "status": "passed" if ok else "failed",
-        "attempts": [a.__dict__ for a in attempts],
-    }
+def run_repair(
+    workspace_root: Path,
+    slug: str,
+    provider: str,
+    max_attempts: int,
+):
+    runner = ValidationRunner(
+        workspace_root=workspace_root,
+        max_repair_attempts=max_attempts,
+    )
+    return runner.repair_loop(slug, provider=provider)

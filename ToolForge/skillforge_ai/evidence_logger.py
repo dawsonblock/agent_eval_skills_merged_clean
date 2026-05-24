@@ -55,6 +55,11 @@ class EvidenceLogger:
         self._log_dir.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         safe_name = skill_name.replace("/", "_").replace(" ", "_")
+        self._run_dir = log_dir / "runs" / f"{stamp}_{safe_name}"
+        self._run_dir.mkdir(parents=True, exist_ok=True)
+        self._run_json = self._run_dir / "run.json"
+        self._files_changed_json = self._run_dir / "files_changed.json"
+        self._validation_json = self._run_dir / "validation.json"
         self._log_path = log_dir / f"{stamp}_{safe_name}.jsonl"
         self._summary_path = log_dir / f"{stamp}_{safe_name}_summary.json"
         self._counts: dict[str, int] = {
@@ -68,6 +73,11 @@ class EvidenceLogger:
         }
         self._errors: list[str] = []
         self._packages: list[dict[str, str]] = []
+        self._latest_run: dict[str, Any] = {
+            "skill": skill_name,
+            "started_at": _now_iso(),
+            "events": [],
+        }
 
     # ------------------------------------------------------------------
     # Context manager
@@ -85,11 +95,21 @@ class EvidenceLogger:
 
     def _write(self, record: dict[str, Any]) -> None:
         record.setdefault("ts", _now_iso())
+        self._latest_run["events"].append(record)
         try:
             with self._log_path.open("a", encoding="utf-8") as fh:
                 fh.write(json.dumps(record, default=str) + "\n")
         except OSError as exc:
             logger.warning("EvidenceLogger: could not write to %s: %s", self._log_path, exc)
+
+    def _write_artifact(self, path: Path, payload: dict[str, Any]) -> None:
+        try:
+            path.write_text(
+                json.dumps(payload, indent=2, default=str) + "\n",
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            logger.warning("EvidenceLogger: could not write artifact %s: %s", path, exc)
 
     # ------------------------------------------------------------------
     # Public API
@@ -112,6 +132,26 @@ class EvidenceLogger:
                 "language": spec.get("language") if spec else None,
             },
         })
+        self._write_artifact(
+            self._run_json,
+            {
+                "skill": skill_name,
+                "event": "build",
+                "ts": _now_iso(),
+                "spec_summary": {
+                    "name": spec.get("name") if spec else None,
+                    "language": spec.get("language") if spec else None,
+                },
+            },
+        )
+        self._write_artifact(
+            self._files_changed_json,
+            {
+                "skill": skill_name,
+                "files_changed": [str(f) for f in files_created],
+                "ts": _now_iso(),
+            },
+        )
 
     def log_validation(
         self,
@@ -138,6 +178,24 @@ class EvidenceLogger:
                 "safety": report.safety_ok,
             },
         })
+        self._write_artifact(
+            self._validation_json,
+            {
+                "skill": skill_name,
+                "attempt": report.attempt,
+                "status": "passed" if report.passed else "failed",
+                "errors": report.errors,
+                "warnings": report.warnings,
+                "validators": {
+                    "schema": report.schema_ok,
+                    "security": report.security_ok,
+                    "mcp": report.mcp_ok,
+                    "skill": report.skill_ok,
+                    "tests": report.tests_ok,
+                    "safety": report.safety_ok,
+                },
+            },
+        )
 
     def log_repair(
         self,
@@ -239,6 +297,7 @@ class EvidenceLogger:
         summary = {
             "ts": _now_iso(),
             "log_file": str(self._log_path),
+            "run_dir": str(self._run_dir),
             "counts": self._counts,
             "total_errors": len(self._errors),
             "unique_errors": list(dict.fromkeys(self._errors)),
@@ -259,3 +318,7 @@ class EvidenceLogger:
     @property
     def summary_path(self) -> Path:
         return self._summary_path
+
+    @property
+    def run_dir(self) -> Path:
+        return self._run_dir

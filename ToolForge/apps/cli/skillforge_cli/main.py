@@ -152,17 +152,9 @@ def chat(ctx: click.Context) -> None:
     """Launch the interactive AI REPL."""
     ws_root: Path = ctx.obj["workspace"]
     provider: str = ctx.obj["provider"]
-    yes: bool = ctx.obj["yes"]
+    from skillforge_ai.commands.chat import run_chat
 
-    from skillforge_ai.orchestrator import AIOrchestrator
-
-    orch = AIOrchestrator(
-        workspace_root=ws_root,
-        provider=provider,
-        interactive=not yes,
-        auto_approve=yes,
-    )
-    orch.run_chat_loop()
+    run_chat(workspace_root=ws_root, provider=provider)
 
 
 # ---------------------------------------------------------------------------
@@ -189,28 +181,21 @@ def create(
 
     request = " ".join(prompt)
 
-    from skillforge_ai.skill_builder import SkillBuilder
-    from skillforge_ai.tool_registry import SkillForgeRegistry
-
-    builder = SkillBuilder(
-        workspace_root=ws_root,
-        provider=provider,
-        generate_mcp=not no_mcp,
-        generate_eval_harness=not no_eval,
-    )
+    from skillforge_ai.commands.create import run_create
 
     with console.status(f"[bold green]Generating skill from: {request!r}…[/]"):
         try:
-            tool_dir, manifest = builder.build(request, skill_name=name)
+            tool_dir, manifest = run_create(
+                workspace_root=ws_root,
+                prompt=request,
+                provider=provider,
+                name=name,
+                generate_mcp=not no_mcp,
+                generate_eval_harness=not no_eval,
+            )
         except Exception as exc:
             err_console.print(f"[red]Error: {exc}[/]")
             sys.exit(1)
-
-    reg = SkillForgeRegistry(ws_root)
-    try:
-        reg.register_skill(manifest, tool_dir)
-    except Exception:
-        pass
 
     console.print(f"[green]✓ Skill '{manifest.name}' created[/]")
     console.print(f"  Location : {tool_dir}")
@@ -233,15 +218,15 @@ def validate(ctx: click.Context, slug: str, repair: bool) -> None:
     ws_root: Path = ctx.obj["workspace"]
     provider: str = ctx.obj["provider"]
 
-    from skillforge_ai.validation_runner import ValidationRunner
-
-    runner = ValidationRunner(workspace_root=ws_root)
+    from skillforge_ai.commands.validate import run_validate
 
     with console.status(f"[bold]Validating '{slug}'…[/]"):
-        if repair:
-            report = runner.repair_loop(slug, provider=provider)
-        else:
-            report = runner.validate(slug)
+        report = run_validate(
+            workspace_root=ws_root,
+            slug=slug,
+            repair=repair,
+            provider=provider,
+        )
 
     _print_validation_report(report)
     if not report.passed:
@@ -262,15 +247,15 @@ def repair(ctx: click.Context, slug: str, max_attempts: int) -> None:
     ws_root: Path = ctx.obj["workspace"]
     provider: str = ctx.obj["provider"]
 
-    from skillforge_ai.validation_runner import ValidationRunner
-
-    runner = ValidationRunner(
-        workspace_root=ws_root,
-        max_repair_attempts=max_attempts,
-    )
+    from skillforge_ai.commands.repair import run_repair
 
     with console.status(f"[bold]Repairing '{slug}'…[/]"):
-        report = runner.repair_loop(slug, provider=provider)
+        report = run_repair(
+            workspace_root=ws_root,
+            slug=slug,
+            provider=provider,
+            max_attempts=max_attempts,
+        )
 
     _print_validation_report(report)
     if not report.passed:
@@ -304,24 +289,11 @@ def run(ctx: click.Context, slug: str, inputs: tuple[str, ...]) -> None:
         else:
             err_console.print(f"[yellow]Ignoring malformed input (expected KEY=VALUE): {item}[/]")
 
-    tool_dir = ws_root / "tools" / "generated" / slug
-    if not tool_dir.exists():
-        err_console.print(f"[red]Tool '{slug}' not found at {tool_dir}[/]")
-        sys.exit(1)
-
     try:
-        from packages.runners.tool_runner import run_tool
-        from packages.validators.schema_validator import validate_yaml_file
-
-        spec_path = tool_dir / "toolforge.yaml"
-        if not spec_path.exists():
-            err_console.print(f"[red]Missing tool spec: {spec_path}[/]")
-            sys.exit(1)
-
-        spec = validate_yaml_file(spec_path)
+        from skillforge_ai.commands.run import run_skill
 
         with console.status(f"[bold]Running '{slug}'…[/]"):
-            result = run_tool(spec, tool_dir, params)
+            result = run_skill(ws_root, slug, params)
 
         if result.exit_code == 0:
             console.print(f"[green]✓ Tool '{slug}' completed[/]")
@@ -356,29 +328,13 @@ def package(ctx: click.Context, slug: str, output: Optional[Path]) -> None:
     """Package SLUG as a distributable zip archive."""
     ws_root: Path = ctx.obj["workspace"]
 
-    tool_dir = ws_root / "tools" / "generated" / slug
-    if not tool_dir.exists():
-        err_console.print(f"[red]Tool directory not found for '{slug}'[/]")
-        sys.exit(1)
+    from skillforge_ai.commands.package import run_package
 
-    import zipfile
-    import datetime
-
-    out_dir = ws_root / "dist"
-    out_dir.mkdir(exist_ok=True)
-
-    if output is None:
-        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        output = out_dir / f"{slug}-{ts}.zip"
-
-    with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as zf:
-        for f in tool_dir.rglob("*"):
-            if f.is_file():
-                zf.write(f, f.relative_to(tool_dir))
-
-    from skillforge_ai.tool_registry import SkillForgeRegistry
-
-    SkillForgeRegistry(ws_root).mark_packaged(slug)
+    output = run_package(
+        workspace_root=ws_root,
+        slug=slug,
+        output=output,
+    )
 
     console.print(f"[green]✓ Packaged '{slug}' → {output}[/]")
 
@@ -396,17 +352,14 @@ def install(ctx: click.Context, skill_path: Path) -> None:
     ws_root: Path = ctx.obj["workspace"]
 
     import zipfile
+    from skillforge_ai.commands.install import run_install
 
     if not zipfile.is_zipfile(skill_path):
         err_console.print(f"[red]Not a valid zip file: {skill_path}[/]")
         sys.exit(1)
 
-    slug = skill_path.stem.split("-")[0]
-    dest = ws_root / "tools" / "generated" / slug
-
-    with console.status(f"[bold]Installing '{slug}'…[/]"):
-        with zipfile.ZipFile(skill_path) as zf:
-            zf.extractall(dest)
+    with console.status(f"[bold]Installing '{skill_path.stem}'…[/]"):
+        slug, dest = run_install(workspace_root=ws_root, archive_path=skill_path)
 
     console.print(f"[green]✓ Installed '{slug}' → {dest}[/]")
 
@@ -423,10 +376,9 @@ def list_skills(ctx: click.Context, output_json: bool) -> None:
     """List all registered skills."""
     ws_root: Path = ctx.obj["workspace"]
 
-    from skillforge_ai.tool_registry import SkillForgeRegistry
+    from skillforge_ai.commands.list import run_list
 
-    reg = SkillForgeRegistry(ws_root)
-    skills = reg.list_skills()
+    skills = run_list(workspace_root=ws_root)
 
     if output_json:
         import json
@@ -469,10 +421,9 @@ def inspect(ctx: click.Context, slug: str) -> None:
     """Show detailed information about SLUG."""
     ws_root: Path = ctx.obj["workspace"]
 
-    from skillforge_ai.tool_registry import SkillForgeRegistry
+    from skillforge_ai.commands.inspect import run_inspect
 
-    reg = SkillForgeRegistry(ws_root)
-    skill = reg.get_skill(slug)
+    skill = run_inspect(workspace_root=ws_root, skill_name=slug)
 
     if skill is None:
         err_console.print(f"[red]Skill '{slug}' not found.[/]")

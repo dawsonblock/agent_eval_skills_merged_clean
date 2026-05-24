@@ -90,3 +90,12 @@ class TestEvidenceLogger:
         record = json.loads(ev.log_path.read_text().splitlines()[0])
         assert record["event"] == "package"
         assert len(record.get("sha256", "")) == 64
+
+    def test_run_artifacts_created_for_build_and_validation(self, tmp_path: Path):
+        ev = self._make_logger(tmp_path)
+        ev.log_build("test-skill", files_created=["a.py", "b.py"], spec={"name": "x"})
+        ev.log_validation("test-skill", ValidationReport(slug="test-skill", passed=True))
+
+        assert (ev.run_dir / "run.json").exists()
+        assert (ev.run_dir / "files_changed.json").exists()
+        assert (ev.run_dir / "validation.json").exists()
