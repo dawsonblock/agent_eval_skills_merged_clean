@@ -6,9 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 
-from skillforge_ai.models import IntentResult, Mode, SkillManifest
+from skillforge_ai.models import Mode, SkillManifest
 from skillforge_ai.orchestrator import AIOrchestrator, _parse_skill_name, _derive_slug
 
 

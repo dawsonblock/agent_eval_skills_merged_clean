@@ -4,6 +4,7 @@ import asyncio
 import shutil
 import tempfile
 import unittest
+from pathlib import Path
 
 
 # Helper to print results in a simple table format
@@ -50,7 +51,10 @@ class TestCLIMCPServer(unittest.TestCase):
         # Debug print: show results in table form
         print_results_table("test_run_pwd", result)
         self.assertTrue(texts, "No output returned")
-        self.assertEqual(texts[0].strip(), self.tempdir.name)
+        self.assertEqual(
+            Path(texts[0].strip()).resolve(),
+            Path(self.tempdir.name).resolve(),
+        )
         self.assertTrue(any("return code: 0" in text for text in texts))
 
     def test_run_ls(self):

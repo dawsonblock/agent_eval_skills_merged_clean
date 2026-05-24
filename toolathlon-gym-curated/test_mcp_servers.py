@@ -11,6 +11,15 @@ Usage:
     python test_mcp_servers.py word snowflake     # test specific servers
     python test_mcp_servers.py --list-tools       # only list tools, no calls
 """
+
+# This file is a standalone smoke-test script with its own CLI entrypoint.
+# Pytest collects it because of the filename, but the core function below is
+# not a fixture-driven unit test. Mark the module skipped under pytest so
+# `pytest test_mcp_servers.py` does not fail on missing pseudo-fixtures.
+pytestmark = __import__("pytest").mark.skip(
+    reason="Standalone MCP smoke script; run directly with `python test_mcp_servers.py`."
+)
+
 import argparse
 import json
 import os

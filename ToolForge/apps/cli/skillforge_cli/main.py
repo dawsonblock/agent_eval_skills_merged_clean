@@ -185,7 +185,6 @@ def create(
     """Create a new skill from a natural-language PROMPT."""
     ws_root: Path = ctx.obj["workspace"]
     provider: str = ctx.obj["provider"]
-    yes: bool = ctx.obj["yes"]
 
     request = " ".join(prompt)
 
@@ -311,19 +310,27 @@ def run(ctx: click.Context, slug: str, inputs: tuple[str, ...]) -> None:
 
     try:
         from packages.runners.tool_runner import run_tool
+        from packages.validators.schema_validator import validate_yaml_file
+
+        spec_path = tool_dir / "toolforge.yaml"
+        if not spec_path.exists():
+            err_console.print(f"[red]Missing tool spec: {spec_path}[/]")
+            sys.exit(1)
+
+        spec = validate_yaml_file(spec_path)
 
         with console.status(f"[bold]Running '{slug}'…[/]"):
-            result = run_tool(tool_dir, params)
+            result = run_tool(spec, tool_dir, params)
 
-        if result.returncode == 0:
+        if result.exit_code == 0:
             console.print(f"[green]✓ Tool '{slug}' completed[/]")
             if result.output:
                 console.print(result.output)
         else:
-            err_console.print(f"[red]Tool exited with code {result.returncode}[/]")
-            if result.stderr:
-                err_console.print(result.stderr)
-            sys.exit(result.returncode)
+            err_console.print(f"[red]Tool exited with code {result.exit_code}[/]")
+            if result.error:
+                err_console.print(result.error)
+            sys.exit(result.exit_code)
     except Exception as exc:
         err_console.print(f"[red]Run failed: {exc}[/]")
         sys.exit(1)
@@ -347,7 +354,6 @@ def run(ctx: click.Context, slug: str, inputs: tuple[str, ...]) -> None:
 def package(ctx: click.Context, slug: str, output: Optional[Path]) -> None:
     """Package SLUG as a distributable zip archive."""
     ws_root: Path = ctx.obj["workspace"]
-    yes: bool = ctx.obj["yes"]
 
     tool_dir = ws_root / "tools" / "generated" / slug
     if not tool_dir.exists():
@@ -654,7 +660,6 @@ def doctor(ctx: click.Context) -> None:
 
 def _print_validation_report(report: Any) -> None:
     """Print a ValidationReport to the console."""
-    from skillforge_ai.models import ValidationReport
 
     status = "[green]PASSED[/]" if report.passed else "[red]FAILED[/]"
     console.print(f"\nValidation: {status} (attempt {report.attempt})")

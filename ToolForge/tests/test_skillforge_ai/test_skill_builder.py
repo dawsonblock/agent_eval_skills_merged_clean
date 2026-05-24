@@ -6,7 +6,6 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from skillforge_ai.models import SkillManifest
 from skillforge_ai.skill_builder import SkillBuilder
@@ -106,15 +105,7 @@ class TestSkillBuilderBuild:
         mock_ev.log_build.assert_called_once()
 
     def test_build_falls_back_on_aigen_failure(self, tmp_path: Path):
-        primary_spec = self._make_spec()
         fallback_spec = self._make_spec("fallback-skill")
-        call_count = [0]
-
-        def generate_spec_side_effect(request, skill_name):
-            call_count[0] += 1
-            if call_count[0] == 1:
-                raise RuntimeError("API error")
-            return fallback_spec
 
         builder = self._make_builder(tmp_path)
 

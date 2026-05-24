@@ -5,12 +5,9 @@ from __future__ import annotations
 
 import io
 import json
-import os
-import select
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
-import pytest
 
 from skillforge_ai.mcp_controller import MCPController, MCPError, MCPTimeoutError
 
@@ -81,7 +78,6 @@ class TestMCPControllerStart:
         with patch.object(ctrl, "_read_response", return_value=responses[0]):
             with patch.object(ctrl, "_send_jsonrpc", return_value=None):
                 ctrl._proc = mock_popen.return_value
-                ctrl._proc_running = True
 
     @patch("skillforge_ai.mcp_controller.subprocess.Popen")
     def test_stop_calls_terminate(self, mock_popen, tmp_path: Path):
@@ -92,7 +88,6 @@ class TestMCPControllerStart:
         fake_proc = MagicMock()
         fake_proc.poll.return_value = None
         ctrl._proc = fake_proc
-        ctrl._proc_running = True
 
         ctrl.stop()
 
@@ -107,7 +102,6 @@ class TestMCPControllerListTools:
         mock_proc = MagicMock()
         mock_proc.poll.return_value = None
         ctrl._proc = mock_proc
-        ctrl._proc_running = True
 
         with patch.object(ctrl, "_send_jsonrpc", return_value={"tools": [{"name": "clean_csv", "description": "Cleans a CSV file"}]}):
             tools = ctrl.list_tools()
@@ -123,7 +117,6 @@ class TestMCPControllerCallTool:
         mock_proc = MagicMock()
         mock_proc.poll.return_value = None
         ctrl._proc = mock_proc
-        ctrl._proc_running = True
 
         with patch.object(ctrl, "_send_jsonrpc", return_value={"content": [{"type": "text", "text": "done"}]}):
             result = ctrl.call_tool("clean_csv", {"path": "/tmp/a.csv"})
@@ -136,7 +129,6 @@ class TestMCPControllerContextManager:
         ctrl = MCPController()
         ctrl._proc = MagicMock()
         ctrl._proc.poll.return_value = None
-        ctrl._proc_running = True
 
         with patch.object(ctrl, "stop") as mock_stop:
             with ctrl:

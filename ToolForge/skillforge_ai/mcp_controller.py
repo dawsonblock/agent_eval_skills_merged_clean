@@ -266,7 +266,6 @@ class MCPController:
         Raises MCPTimeoutError on timeout, MCPError on server error.
         """
         import select
-        import os
 
         assert self._proc and self._proc.stdout
 

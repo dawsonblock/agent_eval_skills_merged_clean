@@ -16,10 +16,12 @@ Usage::
 from __future__ import annotations
 
 import logging
-import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from skillforge_ai.models import SkillManifest
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +74,7 @@ class SkillBuilder:
         self,
         request: str,
         skill_name: str | None = None,
-    ) -> tuple[Path, "SkillManifest"]:
+    ) -> tuple[Path, SkillManifest]:
         """
         Generate a complete skill from *request*.
 
@@ -81,7 +83,6 @@ class SkillBuilder:
         (tool_dir, manifest) where tool_dir is the generated tool directory
         and manifest is the SkillForge-layer SkillManifest.
         """
-        from skillforge_ai.models import SkillManifest, InputSpec, OutputSpec
 
         # 1. Generate ToolSpec from natural language
         spec = self._generate_spec(request, skill_name)
@@ -205,7 +206,7 @@ class SkillBuilder:
     # Manifest conversion
     # ------------------------------------------------------------------
 
-    def _spec_to_manifest(self, spec: Any) -> "SkillManifest":
+    def _spec_to_manifest(self, spec: Any) -> SkillManifest:
         from skillforge_ai.models import SkillManifest, InputSpec, OutputSpec
 
         inputs = [

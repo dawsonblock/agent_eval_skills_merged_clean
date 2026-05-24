@@ -108,8 +108,8 @@ class ValidationRunner:
 
         # 3. MCP (optional)
         mcp_dir = tool_dir / "mcp"
-        if mcp_dir.exists():
-            mcp_errs = self._run_mcp_validator(tool_dir)
+        if mcp_dir.exists() and spec is not None:
+            mcp_errs = self._run_mcp_validator(spec, tool_dir)
             if mcp_errs:
                 report.mcp_ok = False
                 report.passed = False
@@ -195,7 +195,6 @@ class ValidationRunner:
         try:
             from packages.validators.schema_validator import (
                 validate_yaml_file,
-                SchemaValidationError,
             )
             spec = validate_yaml_file(yaml_path)
             return spec, []
@@ -207,20 +206,21 @@ class ValidationRunner:
 
     def _run_security_validator(self, spec: Any) -> list[str]:
         try:
-            from packages.validators.security_validator import validate_security, SecurityViolation
-            violations = validate_security(spec)
-            return [f"Security: {v}" for v in (violations or [])]
+            from packages.validators.security_validator import validate_security
+            violations_raw = validate_security(spec)
+            violations = list(violations_raw or [])
+            return [f"Security: {v}" for v in violations]
         except Exception as exc:
-            violations = getattr(exc, "violations", None)
-            if violations:
-                return [f"Security: {v}" for v in violations]
+            violations_attr = getattr(exc, "violations", None)
+            if violations_attr:
+                return [f"Security: {v}" for v in violations_attr]
             return [f"Security validator error: {exc}"]
 
-    def _run_mcp_validator(self, tool_dir: Path) -> list[str]:
+    def _run_mcp_validator(self, spec: Any, tool_dir: Path) -> list[str]:
         try:
-            from packages.validators.mcp_validator import validate_mcp_server, MCPValidationError
-            validate_mcp_server(tool_dir)
-            return []
+            from packages.validators.mcp_validator import validate_mcp_server
+            mcp_dir = tool_dir / "mcp"
+            return validate_mcp_server(spec, mcp_dir)
         except Exception as exc:
             errs = getattr(exc, "errors", None)
             if errs:
@@ -229,7 +229,7 @@ class ValidationRunner:
 
     def _run_skill_validator(self, skill_md: Path) -> list[str]:
         try:
-            from packages.validators.skill_validator import validate_skill_file, SkillValidationError
+            from packages.validators.skill_validator import validate_skill_file
             validate_skill_file(skill_md)
             return []
         except Exception as exc:

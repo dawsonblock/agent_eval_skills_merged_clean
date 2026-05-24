@@ -80,6 +80,7 @@ ignore_missing_imports = true
 warn_unused_ignores = true
 explicit_package_bases = true
 plugins = ["pydantic.mypy"]
+exclude = "^(tests/|tools/(examples|generated)/.*/(tool\\.py|tests/.*\\.py)$)"
 
 [tool.ruff]
 line-length = 100

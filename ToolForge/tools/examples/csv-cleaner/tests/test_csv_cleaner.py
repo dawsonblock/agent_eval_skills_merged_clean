@@ -49,7 +49,7 @@ def test_strips_whitespace(tmp_path: Path) -> None:
     p = tmp_path / "padded.csv"
     p.write_text("  name  ,  age  \n  Alice  ,  30  \n", encoding="utf-8")
     out = tmp_path / "output.csv"
-    result = run(str(p), str(out))
+    run(str(p), str(out))
     with out.open(newline="") as f:
         rows = list(csv.reader(f))
     assert rows[0] == ["name", "age"], f"Header should be normalized, got {rows[0]}"

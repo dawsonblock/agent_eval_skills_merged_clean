@@ -3,10 +3,8 @@ Tests for skillforge_ai.tool_registry — SkillForgeRegistry CRUD operations.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-import pytest
 
 from skillforge_ai.models import SkillManifest
 from skillforge_ai.tool_registry import SkillForgeRegistry
@@ -73,6 +71,7 @@ class TestSkillForgeRegistryCRUD:
         reg.mark_validated("csv-cleaner")
 
         skill = reg.get_skill("csv-cleaner")
+        assert skill is not None
         assert skill["validated"] is True
 
     def test_mark_failed(self, tmp_path: Path):
@@ -85,6 +84,7 @@ class TestSkillForgeRegistryCRUD:
         reg.mark_failed("csv-cleaner", error="schema error")
 
         skill = reg.get_skill("csv-cleaner")
+        assert skill is not None
         assert skill["status"] in ("failed", "validation_failed")
 
     def test_mark_packaged(self, tmp_path: Path):
@@ -97,6 +97,7 @@ class TestSkillForgeRegistryCRUD:
         reg.mark_packaged("csv-cleaner")
 
         skill = reg.get_skill("csv-cleaner")
+        assert skill is not None
         assert skill["status"] == "packaged"
 
     def test_list_tools_returns_list(self, tmp_path: Path):
@@ -131,6 +132,7 @@ class TestSkillForgeRegistryCRUD:
         reg.register_skill(_make_manifest(), tool_dir)
 
         skill = reg.get_skill("csv-cleaner")
+        assert skill is not None
         required_keys = {"name", "type", "description", "entrypoint", "permissions",
                          "risk_level", "validated", "mcp_server", "status", "category"}
         assert required_keys.issubset(set(skill.keys()))

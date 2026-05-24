@@ -3,8 +3,6 @@ Tests for skillforge_ai.models — Pydantic models and enums.
 """
 from __future__ import annotations
 
-import pytest
-from pydantic import ValidationError
 
 from skillforge_ai.models import (
     InputSpec,

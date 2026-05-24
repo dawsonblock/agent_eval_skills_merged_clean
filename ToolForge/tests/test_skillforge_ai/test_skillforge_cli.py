@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -239,4 +239,5 @@ class TestChatCommand:
             main,
             ["--workspace", str(ws), "chat"],
         )
+        assert result.exit_code == 0
         mock_repl.assert_called_once()

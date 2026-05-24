@@ -4,10 +4,8 @@ Tests for skillforge_ai.evidence_logger — EvidenceLogger.
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
-import pytest
 
 from skillforge_ai.evidence_logger import EvidenceLogger
 from skillforge_ai.models import ValidationReport

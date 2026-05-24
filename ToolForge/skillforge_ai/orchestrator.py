@@ -29,7 +29,6 @@ from __future__ import annotations
 import logging
 import re
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -37,9 +36,6 @@ from skillforge_ai.models import (
     IntentResult,
     Mode,
     OrchestratorState,
-    Plan,
-    PlanStep,
-    RiskLevel,
 )
 
 logger = logging.getLogger(__name__)
@@ -279,7 +275,7 @@ class AIOrchestrator:
             self._permission_broker.check("scaffold_tool", None)
         except PermissionDeniedError as exc:
             return str(exc)
-        except ApprovalRequiredError as exc:
+        except ApprovalRequiredError:
             if not self._prompt_approval(f"Build skill from: '{message}'"):
                 return "Build cancelled by user."
 
@@ -326,7 +322,14 @@ class AIOrchestrator:
         try:
             _add_packages_to_path(self._root)
             from packages.runners.tool_runner import run_tool
-            result = run_tool(tool_dir, intent.parameters)
+            from packages.validators.schema_validator import validate_yaml_file
+
+            spec_path = tool_dir / "toolforge.yaml"
+            if not spec_path.exists():
+                return f"Run failed: missing tool spec at {spec_path}"
+
+            spec = validate_yaml_file(spec_path)
+            result = run_tool(spec, tool_dir, intent.parameters)
             return f"Tool '{slug}' completed.\n  Output: {result.output or '(none)'}"
         except Exception as exc:
             return f"Run failed: {exc}"
