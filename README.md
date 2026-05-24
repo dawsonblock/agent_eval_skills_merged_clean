@@ -80,12 +80,21 @@ Canonical artifact publication must pass attested-pair checks:
 
 1. Automatic required-check candidate: `Validate Workspace / Verify Canonical Attested Pair`
 2. Manual pre-publish gate: `Release Attested Pair Gate / Verify Canonical Attested Pair`
+3. Manual upload triage gate: `Release Upload Triage / Classify Uploaded Release Artifact`
 
 Repository maintainers should configure branch protection or repository rulesets so this check is required for release-path merges.
 
 Operational setup steps are documented in [RELEASE_GATE_RUNBOOK.md](RELEASE_GATE_RUNBOOK.md).
 
-If this check does not pass for the exact release/evidence pair being distributed, classify the upload as an unbound wrapper/source bundle.
+If the pair check does not pass for the exact release/evidence pair being distributed, classify the upload as an unbound wrapper/source bundle.
+
+Use upload triage to classify third-party wrapper/source uploads before any release claim:
+
+```bash
+make classify-release-upload RELEASE_ZIP=/path/to/uploaded-wrapper.zip
+```
+
+This command emits unbound wrapper/source bundle classification unless a matching attested evidence ZIP is also supplied and canonical pair verification passes.
 
 ### ⚠️ Dependency & Security Disclaimer
 

@@ -131,6 +131,28 @@ operator-release-gate-check: ## Run operator helper: verify canonical pair and p
 verify-release-gate-policy: ## Verify release gate naming consistency across workflows/docs
 	bash scripts/verify_release_gate_policy.sh
 
+.PHONY: classify-release-upload
+classify-release-upload: ## Classify uploaded release ZIP as attested pair or unbound wrapper/source bundle
+	@if [ -z "$(RELEASE_ZIP)" ]; then \
+		echo "Usage: make classify-release-upload RELEASE_ZIP=/path/to/release.zip [EVIDENCE_ZIP=/path/to/evidence.zip] [JSON_OUTPUT=/path/to/verdict.json]"; \
+		exit 1; \
+	fi
+	@args="--release $(RELEASE_ZIP)"; \
+	if [ -n "$(EVIDENCE_ZIP)" ]; then args="$$args --evidence $(EVIDENCE_ZIP)"; fi; \
+	if [ -n "$(JSON_OUTPUT)" ]; then args="$$args --json-output $(JSON_OUTPUT)"; fi; \
+	bash scripts/classify_release_upload.sh $$args
+
+.PHONY: operator-release-upload-triage
+operator-release-upload-triage: ## Run upload triage helper and print manual check name
+	@if [ -z "$(RELEASE_ZIP)" ]; then \
+		echo "Usage: make operator-release-upload-triage RELEASE_ZIP=/path/to/release.zip [EVIDENCE_ZIP=/path/to/evidence.zip] [JSON_OUTPUT=/path/to/verdict.json]"; \
+		exit 1; \
+	fi
+	@args="--release $(RELEASE_ZIP)"; \
+	if [ -n "$(EVIDENCE_ZIP)" ]; then args="$$args --evidence $(EVIDENCE_ZIP)"; fi; \
+	if [ -n "$(JSON_OUTPUT)" ]; then args="$$args --json-output $(JSON_OUTPUT)"; fi; \
+	bash scripts/operator_release_upload_triage.sh $$args
+
 # ── clean ────────────────────────────────────
 
 .PHONY: clean

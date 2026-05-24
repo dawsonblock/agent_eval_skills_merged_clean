@@ -23,6 +23,7 @@ required_strings=(
   "Validate Workspace / Unified Workspace Validation"
   "Validate Workspace / Verify Canonical Attested Pair"
   "Release Attested Pair Gate / Verify Canonical Attested Pair"
+  "Release Upload Triage / Classify Uploaded Release Artifact"
 )
 
 expected_release_zip="agent_eval_skills_merged_clean-pruned-smoke.zip"
@@ -31,10 +32,12 @@ expected_evidence_zip="agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.
 declare -a files=(
   "$REPO_ROOT/.github/workflows/validate.yml"
   "$REPO_ROOT/.github/workflows/release-attested-gate.yml"
+  "$REPO_ROOT/.github/workflows/release-upload-triage.yml"
   "$REPO_ROOT/README.md"
   "$REPO_ROOT/DEPLOYMENT.md"
   "$REPO_ROOT/RELEASE_GATE_RUNBOOK.md"
   "$REPO_ROOT/scripts/operator_release_gate_check.sh"
+  "$REPO_ROOT/scripts/operator_release_upload_triage.sh"
 )
 
 missing=0
@@ -54,7 +57,8 @@ for s in "${required_strings[@]}"; do
   if ! grep -Fq "$s" "$REPO_ROOT/README.md" \
       && ! grep -Fq "$s" "$REPO_ROOT/DEPLOYMENT.md" \
       && ! grep -Fq "$s" "$REPO_ROOT/RELEASE_GATE_RUNBOOK.md" \
-      && ! grep -Fq "$s" "$REPO_ROOT/scripts/operator_release_gate_check.sh"; then
+      && ! grep -Fq "$s" "$REPO_ROOT/scripts/operator_release_gate_check.sh" \
+      && ! grep -Fq "$s" "$REPO_ROOT/scripts/operator_release_upload_triage.sh"; then
     echo "Required check name missing from all docs/helpers: $s" >&2
     missing=1
   fi
@@ -77,6 +81,16 @@ fi
 
 if ! grep -Fq "name: Verify Canonical Attested Pair" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
   echo "release-attested-gate.yml missing expected job name." >&2
+  missing=1
+fi
+
+if ! grep -Fq "name: Release Upload Triage" "$REPO_ROOT/.github/workflows/release-upload-triage.yml"; then
+  echo "release-upload-triage.yml missing expected workflow name." >&2
+  missing=1
+fi
+
+if ! grep -Fq "name: Classify Uploaded Release Artifact" "$REPO_ROOT/.github/workflows/release-upload-triage.yml"; then
+  echo "release-upload-triage.yml missing expected job name." >&2
   missing=1
 fi
 

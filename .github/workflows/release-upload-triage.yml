@@ -1,0 +1,49 @@
+name: Release Upload Triage
+
+on:
+    workflow_dispatch:
+        inputs:
+            release_zip:
+                description: "Path to uploaded release ZIP relative to repo root"
+                required: true
+                type: string
+            evidence_zip:
+                description: "Optional path to evidence ZIP relative to repo root"
+                required: false
+                default: ""
+                type: string
+
+jobs:
+    classify-uploaded-release-artifact:
+        name: Classify Uploaded Release Artifact
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Verify release gate naming consistency
+              run: |
+                  bash scripts/verify_release_gate_policy.sh
+
+            - name: Classify uploaded artifact
+              env:
+                  RELEASE_ZIP_PATH: ${{ github.event.inputs.release_zip }}
+                  EVIDENCE_ZIP_PATH: ${{ github.event.inputs.evidence_zip }}
+              run: |
+                  if [ -n "$EVIDENCE_ZIP_PATH" ]; then
+                      bash scripts/classify_release_upload.sh \
+                        --release "$RELEASE_ZIP_PATH" \
+                        --evidence "$EVIDENCE_ZIP_PATH" \
+                        --json-output .validation_logs/release_upload_triage_verdict.json
+                  else
+                      bash scripts/classify_release_upload.sh \
+                        --release "$RELEASE_ZIP_PATH" \
+                        --json-output .validation_logs/release_upload_triage_verdict.json
+                  fi
+
+            - name: Upload triage verdict artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: release-upload-triage-verdict
+                  path: .validation_logs/release_upload_triage_verdict.json
+                  if-no-files-found: error
+                  retention-days: 14

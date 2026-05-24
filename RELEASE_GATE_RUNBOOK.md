@@ -27,6 +27,21 @@ bash scripts/operator_release_gate_check.sh \
    --evidence /path/to/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
 ```
 
+Use this command to triage third-party uploaded wrappers before any release label claim:
+
+```bash
+make operator-release-upload-triage RELEASE_ZIP=/path/to/uploaded-wrapper.zip
+```
+
+Optional pair-aware triage when evidence is also provided:
+
+```bash
+make operator-release-upload-triage \
+   RELEASE_ZIP=/path/to/uploaded-wrapper.zip \
+   EVIDENCE_ZIP=/path/to/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip \
+   JSON_OUTPUT=.validation_logs/release_upload_triage_verdict.json
+```
+
 ## Required Checks
 
 Configure these as required checks on the release path:
@@ -37,6 +52,10 @@ Configure these as required checks on the release path:
 Manual pre-publish gate for distribution events:
 
 1. `Release Attested Pair Gate / Verify Canonical Attested Pair`
+
+Manual upload triage record for wrapper/source uploads:
+
+1. `Release Upload Triage / Classify Uploaded Release Artifact`
 
 ## Option A: Branch Protection (main)
 
@@ -80,6 +99,17 @@ Before any release upload/distribution event:
 5. Publish only the verified pair from that run.
 
 If this workflow fails, classify the candidate as an unbound wrapper/source bundle and do not publish as release-candidate.
+
+## Manual Upload Triage Procedure
+
+Before acting on externally uploaded ZIP files:
+
+1. Run workflow `Release Upload Triage`.
+2. Supply `release_zip` for the uploaded artifact.
+3. Optionally supply `evidence_zip` when testing an exact attested pair.
+4. Confirm job `Classify Uploaded Release Artifact` completes.
+5. Treat any non-canonical result as unbound wrapper/source bundle.
+6. Use uploaded `release-upload-triage-verdict` JSON artifact for audit records.
 
 ## Release-Path Checklist
 

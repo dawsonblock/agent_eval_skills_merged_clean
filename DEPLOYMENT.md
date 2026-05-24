@@ -258,12 +258,30 @@ bash scripts/verify_release_pair.sh \
 
 If verification fails, classify the package as an unbound wrapper/source bundle and do not publish as release-candidate until a new matching manifest + attestation is issued.
 
+Uploaded wrapper/source triage before release claims:
+
+```bash
+make classify-release-upload RELEASE_ZIP=/path/to/uploaded-wrapper.zip
+```
+
+Optional pair-aware triage with evidence and JSON verdict output:
+
+```bash
+make classify-release-upload \
+   RELEASE_ZIP=/path/to/uploaded-wrapper.zip \
+   EVIDENCE_ZIP=/path/to/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip \
+   JSON_OUTPUT=.validation_logs/release_upload_triage_verdict.json
+```
+
+Without matching canonical release+evidence hash verification, classify as unbound wrapper/source bundle.
+
 ### CI Pre-Publish Gate (Recommended)
 
 Two CI checks are now available:
 
 1. Automatic check on `push`/`pull_request`: `Validate Workspace / Verify Canonical Attested Pair`
 2. Manual pre-publish gate: `Release Attested Pair Gate`
+3. Manual upload triage gate: `Release Upload Triage`
 
 Run the manual workflow before any release upload/distribution step.
 
@@ -275,6 +293,17 @@ Run the manual workflow before any release upload/distribution step.
    - Runs `scripts/verify_release_pair.sh`
    - Hard-fails on filename/hash mismatch or forbidden metadata entries
    - Uploads verified pair as run artifact only when checks pass
+
+Uploaded wrapper triage workflow:
+
+1. Workflow: `.github/workflows/release-upload-triage.yml`
+2. Inputs:
+   - `release_zip` (required)
+   - `evidence_zip` (optional)
+3. Behavior:
+   - Runs `scripts/classify_release_upload.sh`
+   - Emits human-readable release classification
+   - Uploads `.validation_logs/release_upload_triage_verdict.json` for audit
 
 Treat this workflow as a required pre-publish approval gate in repository policy.
 
