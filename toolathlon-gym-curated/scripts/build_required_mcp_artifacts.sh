@@ -284,13 +284,21 @@ python_runtime_ready() {
 }
 
 python_artifact_smoke_ready() {
-  local artifact="$1"
+  local target="$1"
+  local artifact="$2"
 
   if [ ! -x "$artifact" ]; then
     return 1
   fi
 
-  "$artifact" -c "import sys; raise SystemExit(0 if sys.executable else 1)" >/dev/null 2>&1
+  local smoke_command="import sys; raise SystemExit(0 if sys.executable else 1)"
+  case "$target" in
+    youtube_transcript)
+      smoke_command="import mcp_youtube_transcript"
+      ;;
+  esac
+
+  "$artifact" -c "$smoke_command" >/dev/null 2>&1
 }
 
 can_skip_existing_node() {
@@ -336,17 +344,17 @@ can_skip_existing_python() {
 
   PYTHON_SKIP_DIAGNOSTIC="not_evaluated"
 
-  if ! artifact_exists "$artifact"; then
-    PYTHON_SKIP_DIAGNOSTIC="artifact_missing"
-    return 1
-  fi
-
   if ! python_runtime_ready "$pkg_dir"; then
     PYTHON_SKIP_DIAGNOSTIC="venv_missing"
     return 1
   fi
 
-  if ! python_artifact_smoke_ready "$artifact"; then
+  if ! artifact_exists "$artifact"; then
+    PYTHON_SKIP_DIAGNOSTIC="artifact_missing"
+    return 1
+  fi
+
+  if ! python_artifact_smoke_ready "$target" "$artifact"; then
     PYTHON_SKIP_DIAGNOSTIC="python_runtime_unhealthy"
     return 1
   fi

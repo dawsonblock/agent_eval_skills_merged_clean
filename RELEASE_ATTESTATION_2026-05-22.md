@@ -18,6 +18,10 @@ Commit: cd757b1
 ## Source Of Truth
 
 - Manifest: `RELEASE_EVIDENCE_MANIFEST_2026-05-22.json`
+   - `release_zip`: `agent_eval_skills_merged_clean-pruned-smoke.zip`
+   - `release_zip_sha256`: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+   - `evidence_zip`: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
+   - `evidence_zip_sha256`: `5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c`
   - `archive.path`: `agent_eval_skills_merged_clean-pruned-smoke.zip`
   - `archive_sha256`: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
   - `status_policy.current_label`: `Pruned smoke release candidate for controlled testing`

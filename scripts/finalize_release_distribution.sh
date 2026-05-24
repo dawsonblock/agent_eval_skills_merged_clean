@@ -19,21 +19,24 @@ EXPECTED_EVIDENCE_SHA="5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e
 
 RELEASE_PATH="${RELEASE_ZIP_PATH:-$REPO_ROOT/$EXPECTED_RELEASE_NAME}"
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-$REPO_ROOT/$EXPECTED_EVIDENCE_NAME}"
+DIST_RELEASE_DIR="${DIST_RELEASE_DIR:-$REPO_ROOT/dist/release}"
 
 usage() {
   cat <<'USAGE'
-Usage: bash scripts/finalize_release_distribution.sh [--release PATH] [--evidence PATH]
+Usage: bash scripts/finalize_release_distribution.sh [--release PATH] [--evidence PATH] [--output-dir PATH]
 
 Runs final release distribution checks for the canonical smoke pair.
 
 Options:
   --release PATH   Path to release ZIP (default: canonical repo-root file)
   --evidence PATH  Path to evidence ZIP (default: canonical repo-root file)
+  --output-dir PATH  Destination folder for finalized release bundle (default: dist/release)
   -h, --help       Show this help
 
 Environment overrides:
   RELEASE_ZIP_PATH
   EVIDENCE_ZIP_PATH
+  DIST_RELEASE_DIR
 
 Exit codes:
   0 = publish-ready canonical pair
@@ -57,6 +60,14 @@ while [ "$#" -gt 0 ]; do
         exit 1
       fi
       EVIDENCE_PATH="$2"
+      shift 2
+      ;;
+    --output-dir)
+      if [ "$#" -lt 2 ]; then
+        echo "Missing value for --output-dir" >&2
+        exit 1
+      fi
+      DIST_RELEASE_DIR="$2"
       shift 2
       ;;
     -h|--help)
@@ -138,6 +149,20 @@ fi
 (cd "$REPO_ROOT" && bash scripts/verify_release_pair.sh --release "$RELEASE_PATH" --evidence "$EVIDENCE_PATH")
 (cd "$REPO_ROOT" && bash scripts/verify_release_gate_policy.sh)
 
+mkdir -p "$DIST_RELEASE_DIR"
+
+cp -f "$RELEASE_PATH" "$DIST_RELEASE_DIR/$EXPECTED_RELEASE_NAME"
+cp -f "$EVIDENCE_PATH" "$DIST_RELEASE_DIR/$EXPECTED_EVIDENCE_NAME"
+cp -f "$REPO_ROOT/RELEASE_ATTESTATION_2026-05-22.md" "$DIST_RELEASE_DIR/RELEASE_ATTESTATION_2026-05-22.md"
+
+(
+  cd "$DIST_RELEASE_DIR"
+  shasum -a 256 \
+    "$EXPECTED_RELEASE_NAME" \
+    "$EXPECTED_EVIDENCE_NAME" \
+    "RELEASE_ATTESTATION_2026-05-22.md" > SHA256SUMS.txt
+)
+
 cat <<EOF
 
 Publish-ready canonical pair verified.
@@ -164,4 +189,11 @@ This is not production-grade.
 This is not hostile-code-safe.
 Use disposable benchmark containers.
 Run dependency/security audit before broader deployment.
+
+Distribution bundle:
+$DIST_RELEASE_DIR
+- $EXPECTED_RELEASE_NAME
+- $EXPECTED_EVIDENCE_NAME
+- RELEASE_ATTESTATION_2026-05-22.md
+- SHA256SUMS.txt
 EOF

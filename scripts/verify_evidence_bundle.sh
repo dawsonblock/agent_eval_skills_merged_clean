@@ -72,6 +72,11 @@ import zipfile
 
 zip_path = sys.argv[1]
 
+EXPECTED_RELEASE_NAME = "agent_eval_skills_merged_clean-pruned-smoke.zip"
+EXPECTED_RELEASE_SHA = "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189"
+EXPECTED_EVIDENCE_NAME = "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip"
+EXPECTED_EVIDENCE_SHA = "5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c"
+
 required_files = [
     "release_artifacts/validation_summary.json",
     "release_artifacts/toolathlon_artifact_build_summary.json",
@@ -188,6 +193,57 @@ with zipfile.ZipFile(zip_path, "r") as zf:
         require(docker_preflight, ["profile"], "smoke", errors, "docker_preflight_summary")
         require(docker_preflight, ["status"], "passed", errors, "docker_preflight_summary")
         require(docker_preflight, ["missing_count"], 0, errors, "docker_preflight_summary")
+
+    manifest = read_json("release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json")
+    if manifest is not None:
+      release_name = manifest.get("release_zip") or get_in(manifest, ["archive", "path"])
+      if release_name != EXPECTED_RELEASE_NAME:
+        errors.append(
+          "release_evidence_manifest:release_zip/archive.path expected "
+          f"{EXPECTED_RELEASE_NAME!r}, got {release_name!r}"
+        )
+
+      release_sha = (
+        manifest.get("release_zip_sha256")
+        or manifest.get("archive_sha256")
+        or get_in(manifest, ["archive", "sha256"])
+      )
+      if release_sha != EXPECTED_RELEASE_SHA:
+        errors.append(
+          "release_evidence_manifest:release_zip_sha256/archive_sha256/archive.sha256 expected "
+          f"{EXPECTED_RELEASE_SHA!r}, got {release_sha!r}"
+        )
+
+      evidence_name = manifest.get("evidence_zip")
+      if evidence_name is not None and evidence_name != EXPECTED_EVIDENCE_NAME:
+        errors.append(
+          "release_evidence_manifest:evidence_zip expected "
+          f"{EXPECTED_EVIDENCE_NAME!r}, got {evidence_name!r}"
+        )
+
+      evidence_sha = manifest.get("evidence_zip_sha256")
+      if evidence_sha is not None and evidence_sha != EXPECTED_EVIDENCE_SHA:
+        errors.append(
+          "release_evidence_manifest:evidence_zip_sha256 expected "
+          f"{EXPECTED_EVIDENCE_SHA!r}, got {evidence_sha!r}"
+        )
+
+      validated_scope = manifest.get("validated_scope")
+      if validated_scope is not None and validated_scope != ["ToolForge", "Agent Skills", "Toolathlon smoke profile"]:
+        errors.append(
+          "release_evidence_manifest:validated_scope expected "
+          "['ToolForge', 'Agent Skills', 'Toolathlon smoke profile'], "
+          f"got {validated_scope!r}"
+        )
+
+      not_release_validated = manifest.get("not_release_validated")
+      if not_release_validated is not None and (
+        not isinstance(not_release_validated, list)
+        or "full mcp server set" not in [s.lower() for s in not_release_validated if isinstance(s, str)]
+      ):
+        errors.append(
+          "release_evidence_manifest:not_release_validated must be a list including 'full MCP server set'"
+        )
 
 if errors:
     print("Evidence bundle policy check failed.", file=sys.stderr)

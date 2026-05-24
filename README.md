@@ -16,6 +16,13 @@
 
 **Current status (May 23, 2026):** Pruned smoke release candidate for controlled testing (accepted release archive hash: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189` — see [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md)).
 
+Applies only to the canonical attested pair:
+
+- `agent_eval_skills_merged_clean-pruned-smoke.zip`
+    - SHA256: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
+    - SHA256: `5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c`
+
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
 Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion. If required machine-readable proof is missing from CI/release artifacts for a future build, classification reverts to release-candidate candidate.
@@ -30,6 +37,8 @@ Release identity is hash-bound to one canonical artifact pair:
 2. `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
 
 Only exact SHA256 matches to the attestation/manifest values are in scope for the current release classification. Wrapper/source uploads and independently regenerated ZIPs are treated as unbound artifacts unless a new manifest plus attestation is published for their exact hashes.
+
+Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 
 **Non-canonical artifacts present in this workspace** (not attested — do not use for release verification):
 

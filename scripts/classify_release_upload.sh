@@ -26,8 +26,11 @@ usage() {
 Usage: bash scripts/classify_release_upload.sh --release PATH [--evidence PATH] [--json-output PATH]
 
 Classifies uploaded artifacts for release governance:
-- Exact canonical attested release+evidence pair => release candidate classification
-- Any mismatch, wrapper metadata, or missing evidence pair verification => unbound wrapper/source bundle
+- canonical_release
+- clean_new_candidate
+- unbound_wrapper_source_bundle
+- dirty_archive
+- invalid
 
 Options:
   --release PATH      Path to uploaded release ZIP (required)
@@ -45,8 +48,8 @@ Environment overrides:
   EXPECTED_EVIDENCE_SHA
 
 Exit codes:
-  0 = canonical attested artifact pair
-  1 = unbound wrapper/source bundle
+  0 = canonical_release
+  1 = non-canonical (clean_new_candidate, unbound_wrapper_source_bundle, dirty_archive, invalid)
 USAGE
 }
 
@@ -129,9 +132,23 @@ zipinfo -1 "$RELEASE_PATH" > "$release_entries_tmp"
 grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$)' "$release_entries_tmp" > "$forbidden_tmp" || true
 release_forbidden_count="$(wc -l < "$forbidden_tmp" | tr -d ' ')"
 
+required_layout_missing=0
+if ! grep -Eq '^(README\.md|ToolForge/|agent-skills-curated/|toolathlon-gym-curated/)' "$release_entries_tmp"; then
+  required_layout_missing=1
+fi
+
+is_wrapper_name=0
+if [[ "$release_name" == *"-main"* ]] || [[ "$release_name" == main*_clean_test.zip ]] || [[ "$release_name" == repair*_clean_test.zip ]]; then
+  is_wrapper_name=1
+fi
+
 status=1
 pair_verification_run=0
 pair_verification_passed=0
+
+class_code="invalid"
+classification="invalid"
+result="Archive is invalid for release policy checks."
 
 if [ "$release_name" != "$EXPECTED_RELEASE_NAME" ]; then
   echo "release filename mismatch" >> "$reasons_tmp"
@@ -141,6 +158,10 @@ if [ "$release_sha" != "$EXPECTED_RELEASE_SHA" ]; then
 fi
 if [ "$release_forbidden_count" -gt 0 ]; then
   echo "release archive contains forbidden metadata entries" >> "$reasons_tmp"
+fi
+
+if [ "$required_layout_missing" -eq 1 ]; then
+  echo "missing expected project layout roots" >> "$reasons_tmp"
 fi
 
 if [ -z "$EVIDENCE_PATH" ]; then
@@ -155,11 +176,32 @@ else
   fi
 fi
 
-classification="Unbound wrapper/source bundle."
-result="Not the final attested release artifact."
 if [ "$status" -eq 0 ]; then
-  classification="agent_eval_skills_merged_clean - pruned smoke release candidate for controlled testing"
+  class_code="canonical_release"
+  classification="canonical_release"
   result="canonical attested artifact pair"
+elif [ "$required_layout_missing" -eq 1 ]; then
+  class_code="invalid"
+  classification="invalid"
+  result="archive missing expected project layout"
+elif [ "$release_forbidden_count" -gt 0 ]; then
+  if [ "$is_wrapper_name" -eq 1 ]; then
+    class_code="unbound_wrapper_source_bundle"
+    classification="unbound_wrapper_source_bundle"
+    result="wrapper/source bundle with sidecar metadata"
+  else
+    class_code="dirty_archive"
+    classification="dirty_archive"
+    result="forbidden metadata entries present"
+  fi
+elif [ "$is_wrapper_name" -eq 1 ]; then
+  class_code="unbound_wrapper_source_bundle"
+  classification="unbound_wrapper_source_bundle"
+  result="clean wrapper/source bundle but not attested release"
+else
+  class_code="clean_new_candidate"
+  classification="clean_new_candidate"
+  result="clean archive with non-canonical hash; requires fresh evidence"
 fi
 
 echo "Release ZIP:                $RELEASE_PATH"
@@ -237,6 +279,7 @@ payload = {
         "passed": pair_verification_passed == "1",
     },
     "classification": classification,
+    "class_code": classification,
     "result": result,
     "reasons": reasons,
 }

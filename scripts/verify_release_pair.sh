@@ -125,6 +125,66 @@ check_forbidden_entries() {
   return 0
 }
 
+check_manifest_hash_agreement() {
+  local evidence_zip="$1"
+  local expected_release_name="$2"
+  local expected_release_sha="$3"
+  local expected_evidence_name="$4"
+  local expected_evidence_sha="$5"
+
+  python3 - "$evidence_zip" "$expected_release_name" "$expected_release_sha" "$expected_evidence_name" "$expected_evidence_sha" <<'PYEOF'
+import json
+import sys
+import zipfile
+
+zip_path, exp_release_name, exp_release_sha, exp_evidence_name, exp_evidence_sha = sys.argv[1:]
+
+manifest_candidates = [
+    "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
+    "RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
+]
+
+with zipfile.ZipFile(zip_path, "r") as zf:
+    manifest_name = next((m for m in manifest_candidates if m in zf.namelist()), None)
+    if manifest_name is None:
+        raise SystemExit("manifest_missing")
+
+    try:
+        manifest = json.loads(zf.read(manifest_name).decode("utf-8"))
+    except Exception as exc:
+        raise SystemExit(f"manifest_parse_error:{exc}") from exc
+
+release_name = (
+    manifest.get("release_zip")
+    or manifest.get("archive", {}).get("path")
+)
+release_sha = (
+    manifest.get("release_zip_sha256")
+    or manifest.get("archive_sha256")
+    or manifest.get("archive", {}).get("sha256")
+)
+evidence_name = manifest.get("evidence_zip")
+evidence_sha = manifest.get("evidence_zip_sha256")
+
+errors = []
+if release_name != exp_release_name:
+    errors.append(f"release_name:{release_name!r}!=expected:{exp_release_name!r}")
+if release_sha != exp_release_sha:
+    errors.append(f"release_sha:{release_sha!r}!=expected:{exp_release_sha!r}")
+
+# Older manifests may not have evidence_* fields; only enforce when present.
+if evidence_name is not None and evidence_name != exp_evidence_name:
+    errors.append(f"evidence_name:{evidence_name!r}!=expected:{exp_evidence_name!r}")
+if evidence_sha is not None and evidence_sha != exp_evidence_sha:
+    errors.append(f"evidence_sha:{evidence_sha!r}!=expected:{exp_evidence_sha!r}")
+
+if errors:
+    raise SystemExit("manifest_mismatch:" + "; ".join(errors))
+
+raise SystemExit(0)
+PYEOF
+}
+
 status=0
 notes=()
 
@@ -156,6 +216,11 @@ fi
 if ! (cd "$REPO_ROOT" && bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_PATH"); then
   status=1
   notes+=("evidence bundle content/value verification failed")
+fi
+
+if ! check_manifest_hash_agreement "$EVIDENCE_PATH" "$EXPECTED_RELEASE_NAME" "$EXPECTED_RELEASE_SHA" "$EXPECTED_EVIDENCE_NAME" "$EXPECTED_EVIDENCE_SHA"; then
+  status=1
+  notes+=("manifest hash agreement failed")
 fi
 
 echo "Release ZIP:   $RELEASE_PATH"

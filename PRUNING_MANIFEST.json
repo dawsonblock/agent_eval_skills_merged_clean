@@ -6,6 +6,9 @@
     "agent-skills-main 3.zip"
   ],
   "output_archive": "agent_eval_skills_merged_clean-pruned-smoke.zip",
+  "output_archive_sha256": "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189",
+  "evidence_archive": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
+  "evidence_archive_sha256": "5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c",
   "status": "pruned_smoke_release_candidate_for_controlled_testing",
   "promotion_label": "pruned_smoke_release_candidate_for_controlled_testing",
   "default_profile": "smoke",
@@ -16,9 +19,9 @@
     "Toolathlon smoke profile"
   ],
   "retained_not_release_validated_scope": [
-    "Toolathlon full profile",
-    "all 503 Toolathlon tasks",
-    "full MCP server benchmark set"
+    "Full Toolathlon profile",
+    "all task material",
+    "full MCP server set"
   ],
   "retained_subsystems": [
     "ToolForge",

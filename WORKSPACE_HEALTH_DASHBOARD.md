@@ -5,6 +5,15 @@
 **Classification:** Pruned smoke release candidate for controlled testing.
 **Final clean archive SHA256:** `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
 
+Canonical attested pair:
+
+- `agent_eval_skills_merged_clean-pruned-smoke.zip`
+	- SHA256: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
+	- SHA256: `5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c`
+
+Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
+
 This dashboard is an evidence tracker. It is not a release declaration.
 All time-bound gate claims require fresh re-validation in the target environment before promotion.
 If this dashboard is viewed from a distributed ZIP without accompanying evidence artifacts, treat status as release-candidate candidate.
