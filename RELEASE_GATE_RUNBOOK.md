@@ -19,6 +19,14 @@ This command:
 1. Runs canonical attested-pair verification.
 2. Prints the exact required check names to copy into branch protection or rulesets.
 
+Final distribution gate command:
+
+```bash
+make finalize-release-distribution
+```
+
+This command enforces canonical hash matching, release ZIP hygiene, evidence bundle value checks, and emits the publish note text.
+
 If artifacts are stored outside the repository root:
 
 ```bash

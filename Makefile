@@ -135,6 +135,10 @@ verify-release-gate-policy: ## Verify release gate naming consistency across wor
 verify-skip-strictness: ## Verify strict SKIP_EXISTING_ARTIFACTS behavior for smoke MCP builds
 	bash scripts/verify_skip_existing_artifacts_strict.sh
 
+.PHONY: finalize-release-distribution
+finalize-release-distribution: ## Run final canonical release/evidence distribution gate and emit publish note
+	bash scripts/finalize_release_distribution.sh
+
 .PHONY: classify-release-upload
 classify-release-upload: ## Classify uploaded release ZIP as attested pair or unbound wrapper/source bundle
 	@if [ -z "$(RELEASE_ZIP)" ]; then \
