@@ -1,0 +1,76 @@
+# Release Gate Runbook
+
+This runbook defines the exact GitHub settings flow to enforce attested-pair release governance.
+
+## Goal
+
+Only allow release-path changes and release publication when the canonical attested-pair checks pass.
+
+## Required Checks
+
+Configure these as required checks on the release path:
+
+1. `Validate Workspace / Unified Workspace Validation`
+2. `Validate Workspace / Verify Canonical Attested Pair`
+
+Manual pre-publish gate for distribution events:
+
+1. `Release Attested Pair Gate / Verify Canonical Attested Pair`
+
+## Option A: Branch Protection (main)
+
+Use this when your repository uses branch protection rules directly.
+
+1. Open repository `Settings`.
+2. Select `Branches`.
+3. Under `Branch protection rules`, create or edit the rule for `main`.
+4. Enable `Require a pull request before merging`.
+5. Enable `Require approvals` and set required reviewer count.
+6. Enable `Require status checks to pass before merging`.
+7. In required checks, add:
+   - `Validate Workspace / Unified Workspace Validation`
+   - `Validate Workspace / Verify Canonical Attested Pair`
+8. Enable `Require branches to be up to date before merging`.
+9. Save the rule.
+
+## Option B: Repository Ruleset (recommended for org-scale governance)
+
+Use this when you manage protections through rulesets.
+
+1. Open repository `Settings`.
+2. Select `Rules` then `Rulesets`.
+3. Create ruleset and target branch pattern `main` (or your release branch pattern).
+4. Add rule: `Require a pull request before merging`.
+5. Add rule: `Require approvals`.
+6. Add rule: `Require status checks to pass`.
+7. Add required checks:
+   - `Validate Workspace / Unified Workspace Validation`
+   - `Validate Workspace / Verify Canonical Attested Pair`
+8. Save and enable the ruleset.
+
+## Manual Pre-Publish Procedure
+
+Before any release upload/distribution event:
+
+1. Run workflow `Release Attested Pair Gate`.
+2. Supply release and evidence ZIP paths.
+3. Confirm job `Verify Canonical Attested Pair` passes.
+4. Publish only the verified pair from that run.
+
+If this workflow fails, classify the candidate as an unbound wrapper/source bundle and do not publish as release-candidate.
+
+## Release-Path Checklist
+
+1. Required checks are configured and active.
+2. PR merge checks pass on the release branch.
+3. Manual pre-publish gate run is green for the exact files to be published.
+4. Published artifacts match attested filenames and hashes.
+
+## Recovery Path When Hashes Change
+
+If bytes differ from canonical attestation:
+
+1. Do not publish under existing release label.
+2. Regenerate evidence for the new artifact pair.
+3. Issue a new manifest and attestation.
+4. Publish only after the new pair is verified and approved.

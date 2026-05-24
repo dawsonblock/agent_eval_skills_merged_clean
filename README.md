@@ -83,6 +83,8 @@ Canonical artifact publication must pass attested-pair checks:
 
 Repository maintainers should configure branch protection or repository rulesets so this check is required for release-path merges.
 
+Operational setup steps are documented in [RELEASE_GATE_RUNBOOK.md](RELEASE_GATE_RUNBOOK.md).
+
 If this check does not pass for the exact release/evidence pair being distributed, classify the upload as an unbound wrapper/source bundle.
 
 ### ⚠️ Dependency & Security Disclaimer

@@ -278,6 +278,8 @@ Run the manual workflow before any release upload/distribution step.
 
 Treat this workflow as a required pre-publish approval gate in repository policy.
 
+For exact GitHub settings click-paths, follow [RELEASE_GATE_RUNBOOK.md](RELEASE_GATE_RUNBOOK.md).
+
 ### Repository Rule Configuration (Required)
 
 To prevent accidental wrapper/source bundle publication, enforce the following in GitHub branch protection or repository rulesets for `main`:
