@@ -1,9 +1,10 @@
-
-from freezegun import freeze_time
 from mcp.shared.exceptions import McpError
 import pytest
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
+
+freezegun = pytest.importorskip("freezegun")
+freeze_time = freezegun.freeze_time
 
 from mcp_server_time.server import TimeServer, get_local_tz
 
