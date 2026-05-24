@@ -260,7 +260,12 @@ If verification fails, classify the package as an unbound wrapper/source bundle 
 
 ### CI Pre-Publish Gate (Recommended)
 
-Run the GitHub Actions workflow `Release Attested Pair Gate` before any release upload/distribution step.
+Two CI checks are now available:
+
+1. Automatic check on `push`/`pull_request`: `Validate Workspace / Verify Canonical Attested Pair`
+2. Manual pre-publish gate: `Release Attested Pair Gate`
+
+Run the manual workflow before any release upload/distribution step.
 
 1. Workflow: `.github/workflows/release-attested-gate.yml`
 2. Inputs:
@@ -279,7 +284,7 @@ To prevent accidental wrapper/source bundle publication, enforce the following i
 
 1. Require status checks to pass before merging.
 2. Mark `Validate Workspace / Unified Workspace Validation` as required.
-3. Mark `Release Attested Pair Gate / Verify Canonical Attested Pair` as required for release PRs or release-branch promotion flow.
+3. Mark `Validate Workspace / Verify Canonical Attested Pair` as required for release PRs or release-branch promotion flow.
 4. Require pull request reviews before merging release workflow or attestation/manifest changes.
 
 Operational recommendation:

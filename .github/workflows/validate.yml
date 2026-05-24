@@ -179,6 +179,21 @@ jobs:
                   if-no-files-found: error
                   retention-days: 7
 
+    attested-pair-verification:
+        name: Verify Canonical Attested Pair
+        runs-on: ubuntu-latest
+        needs: [release-zip-hygiene]
+        if: success()
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Verify canonical release+evidence pair
+              env:
+                  RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
+                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
+              run: |
+                  bash scripts/verify_release_pair.sh
+
     full-profile-validation:
         name: Full MCP Profile Validation (Experimental)
         runs-on: ubuntu-latest
