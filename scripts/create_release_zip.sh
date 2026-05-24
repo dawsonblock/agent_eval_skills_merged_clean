@@ -12,6 +12,7 @@ DEFAULT_OUTPUT="$DIST_DIR/agent_eval_skills_merged_clean-$TIMESTAMP.zip"
 
 OUTPUT_PATH="${RELEASE_ZIP_OUTPUT:-$DEFAULT_OUTPUT}"
 VALIDATE_ARCHIVE=1
+EXPECTED_SHA256="${EXPECTED_RELEASE_SHA256:-}"
 
 usage() {
   cat <<'USAGE'
@@ -24,6 +25,7 @@ Options:
 
 Environment:
   RELEASE_ZIP_OUTPUT  Same as --output PATH
+  EXPECTED_RELEASE_SHA256  If set, fail when archive SHA256 differs
 USAGE
 }
 
@@ -114,6 +116,17 @@ fi
 
 if command -v du >/dev/null 2>&1; then
   du -h "$OUTPUT_PATH"
+fi
+
+if [ -n "$EXPECTED_SHA256" ]; then
+  actual_sha="$(shasum -a 256 "$OUTPUT_PATH" | awk '{print $1}')"
+  if [ "$actual_sha" != "$EXPECTED_SHA256" ]; then
+    echo "Archive hash mismatch." >&2
+    echo "Expected: $EXPECTED_SHA256" >&2
+    echo "Actual:   $actual_sha" >&2
+    exit 1
+  fi
+  echo "Archive hash matches expected SHA256: $EXPECTED_SHA256"
 fi
 
 echo "Created release archive: $OUTPUT_PATH"

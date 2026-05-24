@@ -116,6 +116,10 @@ release-zip:    ## Build and validate a metadata-clean distribution ZIP
 package-clean-zip: ## Build requested pruned-smoke clean ZIP name/location
 	bash scripts/package_clean_zip.sh
 
+.PHONY: verify-release-pair
+verify-release-pair: ## Verify release+evidence ZIPs match canonical attested filenames/hashes
+	bash scripts/verify_release_pair.sh
+
 # ── clean ────────────────────────────────────
 
 .PHONY: clean

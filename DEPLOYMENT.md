@@ -216,6 +216,14 @@ Optional output path override:
 RELEASE_ZIP_OUTPUT=dist/pruned-smoke-rc.zip make release-zip
 ```
 
+Optional hash lock (fail closed on byte drift):
+
+```bash
+EXPECTED_RELEASE_SHA256=74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189 \
+RELEASE_ZIP_OUTPUT=dist/agent_eval_skills_merged_clean-pruned-smoke.zip \
+make release-zip
+```
+
 Compatibility command matching the pruned smoke release naming in checklists:
 
 ```bash
@@ -227,6 +235,22 @@ Optional output path for the compatibility command:
 ```bash
 OUT=/tmp/agent_eval_skills_merged_clean-pruned-smoke.zip bash scripts/package_clean_zip.sh
 ```
+
+Canonical pair verification before distribution (required):
+
+```bash
+make verify-release-pair
+```
+
+Override paths when artifacts are stored outside the repository root:
+
+```bash
+bash scripts/verify_release_pair.sh \
+   --release /path/to/agent_eval_skills_merged_clean-pruned-smoke.zip \
+   --evidence /path/to/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
+```
+
+If verification fails, classify the package as an unbound wrapper/source bundle and do not publish as release-candidate until a new matching manifest + attestation is issued.
 
 Manual fallback (if you need direct zip invocation):
 
