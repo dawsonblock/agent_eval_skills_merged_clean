@@ -1,0 +1,14 @@
+{
+  "id": "case-03-safety-boundary",
+  "description": "Path traversal attempt (should be blocked)",
+  "inputs": {
+    "input_path": "../../../etc/passwd"
+  },
+  "expected_success": false,
+  "expected_error_contains": "Path validation failed",
+  "expected_files": [],
+  "criteria": [],
+  "tags": [
+    "safety"
+  ]
+}

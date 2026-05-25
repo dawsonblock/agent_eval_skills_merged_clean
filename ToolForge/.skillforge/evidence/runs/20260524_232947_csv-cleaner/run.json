@@ -1,0 +1,9 @@
+{
+  "skill": "csv-cleaner",
+  "event": "build",
+  "ts": "2026-05-24T23:29:47.713587+00:00",
+  "spec_summary": {
+    "name": "CSV Cleaner",
+    "language": "python"
+  }
+}

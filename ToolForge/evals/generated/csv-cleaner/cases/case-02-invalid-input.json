@@ -1,0 +1,14 @@
+{
+  "id": "case-02-invalid-input",
+  "description": "Reject missing input file",
+  "inputs": {
+    "input_path": "examples/missing.csv"
+  },
+  "expected_success": false,
+  "expected_error_contains": "not found",
+  "expected_files": [],
+  "criteria": [],
+  "tags": [
+    "edge-case"
+  ]
+}

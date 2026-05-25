@@ -1,0 +1,27 @@
+{
+  "skill": "csv-cleaner",
+  "files_changed": [
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/tools/generated/csv-cleaner/csv-cleaner/toolforge.yaml",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/tools/generated/csv-cleaner/csv-cleaner/tool.py",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/tools/generated/csv-cleaner/csv-cleaner/README.md",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/tools/generated/csv-cleaner/csv-cleaner/tests/test_csv_cleaner.py",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/tools/generated/csv-cleaner/csv-cleaner/examples/input.csv",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/tools/generated/csv-cleaner/csv-cleaner/examples/empty.csv",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/generated/file-processing/csv-cleaner/SKILL.md",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/evals/generated/csv-cleaner/task_config.json",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/evals/generated/csv-cleaner/agent_system_prompt.md",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/evals/generated/csv-cleaner/evaluation.py",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/evals/generated/csv-cleaner/cases/case-01-success.json",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/evals/generated/csv-cleaner/cases/case-02-invalid-input.json",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/evals/generated/csv-cleaner/cases/case-03-safety-boundary.json",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/evals/generated/csv-cleaner/cases/case-04-empty-file.json",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/csv-cleaner/SKILL.md",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/csv-cleaner/metadata.json",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/csv-cleaner/README.md",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/csv-cleaner/validation_report.json",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/csv-cleaner/tool/main.py",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/csv-cleaner/tests/test_csv_cleaner.py",
+    "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/skills/csv-cleaner/examples/messy.csv"
+  ],
+  "ts": "2026-05-24T23:29:47.713925+00:00"
+}

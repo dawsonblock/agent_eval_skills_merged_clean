@@ -1,0 +1,19 @@
+{
+  "id": "case-04-empty-file",
+  "description": "Empty CSV file",
+  "inputs": {
+    "input_path": "examples/empty.csv",
+    "output_path": "outputs/empty_cleaned.csv"
+  },
+  "expected_success": true,
+  "expected_files": [
+    {
+      "path": "outputs/empty_cleaned.csv",
+      "should_exist": true
+    }
+  ],
+  "criteria": [],
+  "tags": [
+    "edge-case"
+  ]
+}

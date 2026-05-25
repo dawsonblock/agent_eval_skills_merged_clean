@@ -1,0 +1,13 @@
+{
+  "skill": "csv-cleaner",
+  "status": "passed",
+  "checks": {
+    "metadata": "passed",
+    "skill_md": "passed",
+    "syntax": "passed",
+    "tests": "passed",
+    "package": "passed"
+  },
+  "errors": [],
+  "warnings": []
+}

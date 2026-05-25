@@ -1,0 +1,19 @@
+{
+  "id": "case-01-success",
+  "description": "Clean valid CSV file",
+  "inputs": {
+    "input_path": "examples/input.csv"
+  },
+  "expected_success": true,
+  "expected_output_contains": "cleaned_path",
+  "expected_files": [
+    {
+      "path": "outputs/cleaned.csv",
+      "should_exist": true
+    }
+  ],
+  "criteria": [],
+  "tags": [
+    "smoke"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "task_id": "csv-cleaner-eval",
+  "slug": "csv-cleaner",
+  "name": "CSV Cleaner",
+  "needed_mcp_servers": [
+    "csv-cleaner"
+  ],
+  "needed_local_tools": [],
+  "meta": {
+    "tool_name": "csv-cleaner",
+    "tool_version": "0.1.0",
+    "generated_by": "toolforge 0.1.0"
+  }
+}
