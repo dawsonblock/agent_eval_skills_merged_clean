@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import zipfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -74,3 +75,36 @@ def test_extract_skill_slug_uses_fallback_if_needed(tmp_path: Path):
     runtime = ChatRuntime(workspace_root=tmp_path)
     slug = runtime._extract_skill_slug("call tool", fallback="report-builder")
     assert slug == "report-builder"
+
+
+def test_handle_message_install_skill_success(tmp_path: Path):
+    runtime = ChatRuntime(workspace_root=tmp_path)
+    runtime._planner = MagicMock()
+
+    archive = tmp_path / "csv-cleaner-0.1.0.zip"
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("tool.py", "print('ok')\n")
+
+    runtime._planner.build_plan.return_value = _plan("install_skill")
+    result = runtime.handle_message(f"install {archive}")
+
+    assert result["mode"] == "install_skill"
+    assert "Installed 'csv-cleaner'" in result["response"]
+
+
+def test_handle_message_install_skill_missing_archive(tmp_path: Path):
+    runtime = ChatRuntime(workspace_root=tmp_path)
+    runtime._planner = MagicMock()
+
+    runtime._planner.build_plan.return_value = _plan("install_skill")
+    result = runtime.handle_message("install missing.zip")
+
+    assert result["mode"] == "install_skill"
+    assert "file not found" in result["response"]
+
+
+def test_extract_zip_path_from_quoted_message(tmp_path: Path):
+    runtime = ChatRuntime(workspace_root=tmp_path)
+    path = runtime._extract_zip_path("install \"/tmp/my skill.zip\"")
+    assert path is not None
+    assert path.as_posix().endswith("/tmp/my skill.zip")

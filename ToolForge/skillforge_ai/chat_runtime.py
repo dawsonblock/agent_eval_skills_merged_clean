@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import zipfile
 from pathlib import Path
 
 from skillforge_ai.orchestrator import AIOrchestrator
@@ -13,9 +14,10 @@ class ChatRuntime:
         workspace_root: Path,
         provider: str = "rule_based",
     ) -> None:
+        self._workspace_root = workspace_root.resolve()
         self._planner = SkillPlanner()
         self._orchestrator = AIOrchestrator(
-            workspace_root=workspace_root,
+            workspace_root=self._workspace_root,
             provider=provider,
         )
 
@@ -47,6 +49,29 @@ class ChatRuntime:
                 )
             return self._orchestrator.chat(f"run {slug}")
 
+        if plan.mode == "install_skill":
+            from skillforge_ai.commands.install import run_install
+
+            archive_path = self._extract_zip_path(message)
+            if archive_path is None:
+                return (
+                    "Please provide a .zip archive path, "
+                    "e.g. 'install /path/to/skill.zip'."
+                )
+            if not archive_path.exists() or not archive_path.is_file():
+                return f"Install failed: file not found: {archive_path}"
+            if not zipfile.is_zipfile(archive_path):
+                return f"Install failed: not a valid zip file: {archive_path}"
+
+            slug, dest, sha256 = run_install(
+                self._workspace_root,
+                archive_path,
+            )
+            return (
+                f"Installed '{slug}' to {dest}. "
+                f"Archive SHA256: {sha256}"
+            )
+
         return self._orchestrator.chat(message)
 
     @staticmethod
@@ -61,6 +86,21 @@ class ChatRuntime:
             return fallback
 
         return ""
+
+    @staticmethod
+    def _extract_zip_path(message: str) -> Path | None:
+        # Handle quoted paths first so spaces are preserved.
+        quoted = re.search(r"\"([^\"]+\.zip)\"|'([^']+\.zip)'", message)
+        if quoted:
+            value = quoted.group(1) or quoted.group(2)
+            return Path(value).expanduser()
+
+        # Fallback to unquoted path-like token ending in .zip
+        unquoted = re.search(r"(?P<path>[^\s]+\.zip)\b", message)
+        if unquoted:
+            return Path(unquoted.group("path")).expanduser()
+
+        return None
 
     def run_loop(self) -> None:
         while True:

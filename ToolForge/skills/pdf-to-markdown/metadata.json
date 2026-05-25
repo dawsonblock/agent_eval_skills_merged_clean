@@ -1,0 +1,43 @@
+{
+  "name": "pdf-to-markdown",
+  "description": "Extract text from PDF-like files and emit normalized Markdown output.",
+  "category": "documents",
+  "inputs": [
+    {
+      "name": "input_path",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "output_path",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "markdown_path",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "characters",
+      "type": "number",
+      "required": true
+    }
+  ],
+  "tools_required": [
+    "tool/main.py"
+  ],
+  "mcp_servers": [],
+  "permissions": [
+    "read_files",
+    "write_files"
+  ],
+  "risk_level": "low",
+  "validation": {
+    "syntax": "pending",
+    "tests": "pending",
+    "smoke": "pending"
+  }
+}

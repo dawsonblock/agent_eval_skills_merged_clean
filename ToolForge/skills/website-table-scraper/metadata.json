@@ -1,0 +1,43 @@
+{
+  "name": "website-table-scraper",
+  "description": "Parse HTML tables from local HTML and write structured JSON output.",
+  "category": "browser",
+  "inputs": [
+    {
+      "name": "input_path",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "output_path",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "json_path",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "table_count",
+      "type": "number",
+      "required": true
+    }
+  ],
+  "tools_required": [
+    "tool/main.py"
+  ],
+  "mcp_servers": [],
+  "permissions": [
+    "read_files",
+    "write_files"
+  ],
+  "risk_level": "low",
+  "validation": {
+    "syntax": "pending",
+    "tests": "pending",
+    "smoke": "pending"
+  }
+}
