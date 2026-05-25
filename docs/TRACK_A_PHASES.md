@@ -62,6 +62,7 @@ Primary scripts:
 
 - scripts/create_release_zip.sh
 - scripts/finalize_release_distribution.sh
+- .release-config/forbidden_entries.txt
 
 Forbidden entries include:
 

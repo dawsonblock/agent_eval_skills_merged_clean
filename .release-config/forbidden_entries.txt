@@ -1,0 +1,13 @@
+# Canonical forbidden entries for release/evidence ZIP hygiene.
+# Lines are token values consumed by scripts/release_forbidden_entries.sh.
+
+__MACOSX
+._*
+.DS_Store
+node_modules
+.validation_logs
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv

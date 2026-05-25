@@ -81,31 +81,18 @@ cd "$REPO_ROOT"
 
 rm -f "$OUTPUT_PATH"
 
-zip -rq "$OUTPUT_PATH" . \
-  -x ".git/*" \
-  -x "*/.git/*" \
-  -x "dist/*" \
-  -x "*/dist/*" \
-  -x "__MACOSX/*" \
-  -x "*/__MACOSX/*" \
-  -x "._*" \
-  -x "*/._*" \
-  -x ".DS_Store" \
-  -x "*/.DS_Store" \
-  -x "node_modules/*" \
-  -x "*/node_modules/*" \
-  -x ".validation_logs/*" \
-  -x "*/.validation_logs/*" \
-  -x "__pycache__/*" \
-  -x "*/__pycache__/*" \
-  -x ".pytest_cache/*" \
-  -x "*/.pytest_cache/*" \
-  -x ".mypy_cache/*" \
-  -x "*/.mypy_cache/*" \
-  -x ".ruff_cache/*" \
-  -x "*/.ruff_cache/*" \
-  -x ".venv/*" \
-  -x "*/.venv/*"
+zip_excludes=(
+  -x ".git/*"
+  -x "*/.git/*"
+  -x "dist/*"
+  -x "*/dist/*"
+)
+
+for exclude_glob in "${RELEASE_FORBIDDEN_ZIP_EXCLUDES[@]}"; do
+  zip_excludes+=(-x "$exclude_glob")
+done
+
+zip -rq "$OUTPUT_PATH" . "${zip_excludes[@]}"
 
 if [ "$VALIDATE_ARCHIVE" -eq 1 ]; then
   tmp_forbidden="$(mktemp)"
