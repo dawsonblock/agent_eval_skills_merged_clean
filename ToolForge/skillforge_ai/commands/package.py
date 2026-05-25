@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import shutil
 import zipfile
 from pathlib import Path
 
+from skillforge_ai.package_manager import PackageManager
 from skillforge_ai.skill_registry import SkillRegistry
 from skillforge_ai.tool_registry import SkillForgeRegistry
 
@@ -14,6 +16,34 @@ def run_package(
     slug: str,
     output: Path | None,
 ) -> tuple[Path, str]:
+    workspace_root = workspace_root.resolve()
+
+    skill_dir = workspace_root / "skills" / slug
+    if skill_dir.exists():
+        package_path, sha256 = PackageManager(workspace_root).package_skill(
+            slug
+        )
+
+        # Optional user-specified output path is treated as a copy target.
+        if output is not None:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(package_path, output)
+            package_path = output
+
+        reg = SkillRegistry(workspace_root)
+        entry = reg.get(slug) or {"name": slug}
+        entry.update(
+            {
+                "package_hash": sha256,
+                "package_path": str(package_path),
+                "status": "packaged",
+            }
+        )
+        reg.upsert(entry)
+
+        SkillForgeRegistry(workspace_root).mark_packaged(slug)
+        return package_path, sha256
+
     tool_dir = workspace_root / "tools" / "generated" / slug
     if not tool_dir.exists():
         raise FileNotFoundError(f"Tool directory not found for '{slug}'")

@@ -15,6 +15,22 @@ def _make_generated_tool(tmp_path: Path, slug: str) -> Path:
     return tool_dir
 
 
+def _make_skill_layout(tmp_path: Path, slug: str) -> Path:
+    skill_dir = tmp_path / "skills" / slug
+    (skill_dir / "tool").mkdir(parents=True, exist_ok=True)
+    (skill_dir / "tests").mkdir(parents=True, exist_ok=True)
+    (skill_dir / "examples").mkdir(parents=True, exist_ok=True)
+
+    (skill_dir / "SKILL.md").write_text("# Skill\n", encoding="utf-8")
+    (skill_dir / "README.md").write_text("# README\n", encoding="utf-8")
+    (skill_dir / "metadata.json").write_text("{}\n", encoding="utf-8")
+    (skill_dir / "validation_report.json").write_text("{}\n", encoding="utf-8")
+    (skill_dir / "tool" / "main.py").write_text("print('ok')\n", encoding="utf-8")
+    (skill_dir / "tests" / "test_basic.py").write_text("def test_basic():\n    assert True\n", encoding="utf-8")
+    (skill_dir / "examples" / "sample.csv").write_text("a,b\n1,2\n", encoding="utf-8")
+    return skill_dir
+
+
 def test_run_package_records_hash_in_skill_registry(tmp_path: Path):
     slug = "csv-cleaner"
     _make_generated_tool(tmp_path, slug)
@@ -27,6 +43,38 @@ def test_run_package_records_hash_in_skill_registry(tmp_path: Path):
     registry_path = tmp_path / ".skillforge" / "registry.json"
     payload = json.loads(registry_path.read_text(encoding="utf-8"))
     entry = next(item for item in payload if item["name"] == slug)
+    assert entry["package_hash"] == sha
+    assert entry["status"] == "packaged"
+
+
+def test_run_package_prefers_skill_layout_package_dir(tmp_path: Path):
+    slug = "csv-cleaner"
+    _make_generated_tool(tmp_path, slug)
+    _make_skill_layout(tmp_path, slug)
+
+    output, sha = run_package(tmp_path, slug, output=None)
+
+    assert output.exists()
+    assert len(sha) == 64
+    assert ".skillforge/packages/" in output.as_posix()
+
+
+def test_run_package_skill_layout_output_override_updates_registry(tmp_path: Path):
+    slug = "csv-cleaner"
+    _make_generated_tool(tmp_path, slug)
+    _make_skill_layout(tmp_path, slug)
+
+    output_target = tmp_path / "dist" / "custom-output.zip"
+    output, sha = run_package(tmp_path, slug, output=output_target)
+
+    assert output == output_target
+    assert output.exists()
+    assert len(sha) == 64
+
+    registry_path = tmp_path / ".skillforge" / "registry.json"
+    payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    entry = next(item for item in payload if item["name"] == slug)
+    assert entry["package_path"] == str(output_target)
     assert entry["package_hash"] == sha
     assert entry["status"] == "packaged"
 
