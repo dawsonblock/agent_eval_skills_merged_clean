@@ -1,9 +1,8 @@
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 import hashlib
-import json
 import zipfile
-from datetime import datetime
 from pathlib import Path
 
 from skillforge_ai.config import ensure_runtime_state
@@ -15,13 +14,16 @@ class PackageManager:
         self._paths = ensure_runtime_state(workspace_root)
         self._registry = SkillRegistry(workspace_root)
 
-    def package_skill(self, skill_name: str, version: str = "0.1.0") -> tuple[Path, str]:
+    def package_skill(
+        self, skill_name: str, version: str = "0.1.0"
+    ) -> tuple[Path, str]:
         skill_dir = self._paths.skills_dir / skill_name
         if not skill_dir.exists():
             raise FileNotFoundError(f"Skill not found: {skill_dir}")
 
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        zip_path = self._paths.packages_dir / f"{skill_name}-{version}-{ts}.zip"
+        zip_path = self._paths.packages_dir / f"{skill_name}-{version}.zip"
+        if zip_path.exists():
+            zip_path.unlink()
 
         include_names = {
             "SKILL.md",
@@ -34,7 +36,14 @@ class PackageManager:
                 if not file_path.is_file():
                     continue
                 rel = file_path.relative_to(skill_dir)
-                if rel.parts[0] in {"tool", "tests", "examples"} or rel.name in include_names:
+                if any(part == "__pycache__" for part in rel.parts):
+                    continue
+                if rel.suffix in {".pyc", ".pyo"}:
+                    continue
+                if (
+                    rel.parts[0] in {"tool", "tests", "examples"}
+                    or rel.name in include_names
+                ):
                     zf.write(file_path, rel)
 
         sha256 = self._sha256(zip_path)

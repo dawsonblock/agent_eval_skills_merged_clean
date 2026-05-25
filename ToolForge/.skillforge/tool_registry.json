@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "name": "csv_cleaner_tool",
+    "type": "python",
+    "entrypoint": "skills/csv-cleaner/tool/main.py",
+    "working_dir": "skills/csv-cleaner/tool",
+    "description": "Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, and exports JSON.",
+    "permissions": [
+      "read_files",
+      "write_files"
+    ],
+    "risk_level": "medium",
+    "validated": false,
+    "mcp_server": null
+  },
+  {
+    "name": "create_a_tool_named_tool",
+    "type": "python",
+    "entrypoint": "skills/create-a-tool-named/tool/main.py",
+    "working_dir": "skills/create-a-tool-named/tool",
+    "description": "Create a tool named 'pdf-to-markdown' that Local PDF to Markdown converter.",
+    "permissions": [
+      "read_files",
+      "write_files"
+    ],
+    "risk_level": "medium",
+    "validated": false,
+    "mcp_server": null
+  }
+]

@@ -1,8 +1,11 @@
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 import zipfile
 from pathlib import Path
 from unittest.mock import MagicMock
+import json
+from types import SimpleNamespace
 
 from skillforge_ai.chat_runtime import ChatRuntime
 from skillforge_ai.planner import PlannerResult
@@ -108,3 +111,73 @@ def test_extract_zip_path_from_quoted_message(tmp_path: Path):
     path = runtime._extract_zip_path("install \"/tmp/my skill.zip\"")
     assert path is not None
     assert path.as_posix().endswith("/tmp/my skill.zip")
+
+
+def test_phase12_mvp_chat_flow_with_pronouns(tmp_path: Path, monkeypatch):
+    runtime = ChatRuntime(workspace_root=tmp_path)
+
+    plans = [
+        _plan("build_skill", skill_name="csv-cleaner"),
+        _plan("validate_skill", skill_name="generated-skill"),
+        _plan("run_skill", skill_name="generated-skill"),
+        _plan("package_skill", skill_name="generated-skill"),
+        _plan("inspect_skill", skill_name="generated-skill"),
+    ]
+    runtime._planner = MagicMock()
+    runtime._planner.build_plan.side_effect = plans
+
+    monkeypatch.setattr(
+        "skillforge_ai.commands.create.run_create",
+        lambda workspace_root, prompt, provider, name=None: (
+            tmp_path / "tools" / "generated" / "csv-cleaner",
+            SimpleNamespace(name="csv-cleaner"),
+        ),
+    )
+    monkeypatch.setattr(
+        "skillforge_ai.commands.validate.run_validate",
+        lambda workspace_root, slug, repair, provider: SimpleNamespace(passed=True),
+    )
+    monkeypatch.setattr(
+        "skillforge_ai.commands.run.run_skill",
+        lambda workspace_root, slug, inputs: SimpleNamespace(
+            exit_code=0,
+            output=json.dumps({"status": "passed", "skill": slug}),
+            error="",
+        ),
+    )
+    monkeypatch.setattr(
+        "skillforge_ai.commands.package.run_package",
+        lambda workspace_root, slug, output=None: (
+            tmp_path / ".skillforge" / "packages" / f"{slug}-0.1.0.zip",
+            "abc123",
+        ),
+    )
+
+    class _SkillReg:
+        def __init__(self, _root: Path):
+            pass
+
+        def get(self, slug: str):
+            return {"name": slug, "tool_refs": ["csv_cleaner_tool"]}
+
+    class _ToolReg:
+        def __init__(self, _root: Path):
+            pass
+
+        def list_registered_tools(self):
+            return [{"name": "csv_cleaner_tool", "entrypoint": "skills/csv-cleaner/tool/main.py"}]
+
+    monkeypatch.setattr("skillforge_ai.chat_runtime.SkillRegistry", _SkillReg)
+    monkeypatch.setattr("skillforge_ai.chat_runtime.SkillForgeRegistry", _ToolReg)
+
+    build = runtime.handle_message("Build me a skill that cleans CSV files.")
+    validate = runtime.handle_message("Validate that skill.")
+    run = runtime.handle_message("Run it on this file sample.csv")
+    package = runtime.handle_message("Package it.")
+    inspect = runtime.handle_message("Show me what tools it controls.")
+
+    assert build["response"] == "Built skill 'csv-cleaner'."
+    assert "Validation passed" in validate["response"]
+    assert "Run passed for 'csv-cleaner'" in run["response"]
+    assert "Packaged 'csv-cleaner'" in package["response"]
+    assert "csv_cleaner_tool" in inspect["response"]

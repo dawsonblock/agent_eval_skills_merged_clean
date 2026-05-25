@@ -1,11 +1,12 @@
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 import json
 from pathlib import Path
 
 import pytest
 
-from skillforge_ai.config import ensure_runtime_state
+from skillforge_ai.config import ensure_runtime_state, resolve_within_workspace
 from skillforge_ai.skill_registry import SkillRegistry
 from skillforge_ai.tool_registry import SkillForgeRegistry
 
@@ -64,3 +65,24 @@ def test_tool_registry_rejects_invalid_tool_shape(tmp_path: Path) -> None:
     reg = SkillForgeRegistry(tmp_path)
     with pytest.raises(Exception):
         reg.register_tool({"name": "csv_cleaner_tool"})
+
+
+def test_config_detects_toolforge_root(tmp_path: Path) -> None:
+    paths = ensure_runtime_state(tmp_path)
+    assert paths.repo_root == tmp_path.resolve()
+    assert paths.toolforge_root == tmp_path.resolve()
+    assert paths.generated_tools_dir == tmp_path.resolve() / "tools" / "generated"
+
+
+def test_config_uses_explicit_workspace_root(tmp_path: Path) -> None:
+    explicit_root = tmp_path / "explicit"
+    paths = ensure_runtime_state(explicit_root)
+    assert paths.workspace_root == explicit_root.resolve()
+    assert paths.skillforge_state_dir == explicit_root.resolve() / ".skillforge"
+
+
+def test_paths_do_not_escape_workspace(tmp_path: Path) -> None:
+    resolved = resolve_within_workspace(tmp_path, "skills/csv-cleaner")
+    assert resolved == (tmp_path / "skills" / "csv-cleaner").resolve()
+    with pytest.raises(ValueError):
+        resolve_within_workspace(tmp_path, "../outside")

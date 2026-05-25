@@ -4,8 +4,10 @@
   "checks": {
     "metadata": "passed",
     "skill_md": "passed",
+    "readme": "passed",
     "syntax": "passed",
     "tests": "passed",
+    "examples": "passed",
     "package": "passed"
   },
   "errors": [],

@@ -21,6 +21,8 @@ Usage::
         if decision.approved:
             # proceed
 """
+# mypy: disable-error-code=import-untyped
+
 from __future__ import annotations
 
 import logging
@@ -45,7 +47,10 @@ class PermissionDeniedError(Exception):
     def __init__(self, action: str) -> None:
         self.action = action
         super().__init__(
-            f"Action '{action}' is permanently blocked by SkillForge security policy."
+            (
+                f"Action '{action}' is permanently blocked by "
+                "SkillForge security policy."
+            )
         )
 
 
@@ -71,72 +76,83 @@ class ApprovalRequiredError(Exception):
 # ---------------------------------------------------------------------------
 
 # Actions that are always safe to execute without confirmation.
-_SAFE_ACTIONS: frozenset[str] = frozenset({
-    "create_skill_files",
-    "write_skill_md",
-    "write_metadata",
-    "write_metadata_json",
-    "generate_tests",
-    "run_validators",
-    "read_registry",
-    "package_skills",
-    "read_local_files",
-    "parse_documents",
-    "list_tools",
-    "list_skills",
-    "inspect_skill",
-    "read_toolforge_yaml",
-    "generate_spec",
-    "scaffold_tool",
-    "generate_mcp_server",
-    "generate_skill_md",
-    "generate_eval",
-    "generate_docs",
-    "register_skill",
-    "run_pytest",
-    "run_schema_validator",
-    "run_security_validator",
-    "run_mcp_validator",
-    "run_skill_validator",
-    "run_safety_analyzer",
-    "mcp_list_tools",
-    "mcp_smoke_test",
-})
+_SAFE_ACTIONS: frozenset[str] = frozenset(
+    {
+        "create_skill_files",
+        "write_skill_md",
+        "write_metadata",
+        "write_metadata_json",
+        "generate_tests",
+        "run_validators",
+        "read_registry",
+        "package_skills",
+        "read_local_files",
+        "parse_documents",
+        "list_tools",
+        "list_skills",
+        "inspect_skill",
+        "read_toolforge_yaml",
+        "generate_spec",
+        "scaffold_tool",
+        "generate_mcp_server",
+        "generate_skill_md",
+        "generate_eval",
+        "generate_docs",
+        "register_skill",
+        "write_within_skills",
+        "write_within_skillforge",
+        "read_declared_input_files",
+        "write_declared_output_files",
+        "run_pytest",
+        "run_schema_validator",
+        "run_security_validator",
+        "run_mcp_validator",
+        "run_skill_validator",
+        "run_safety_analyzer",
+        "mcp_list_tools",
+        "mcp_smoke_test",
+    }
+)
 
 # Actions that require explicit y/n approval before execution.
-_APPROVAL_REQUIRED_ACTIONS: frozenset[str] = frozenset({
-    "install_npm_packages",
-    "install_python_packages",
-    "run_shell_commands",
-    "start_docker",
-    "stop_docker",
-    "access_network",
-    "write_outside_project",
-    "call_external_apis",
-    "use_secrets",
-    "use_api_keys",
-    "write_files",
-    "overwrite_files",
-    "mcp_call_tool",          # calling an installed MCP tool that may have side-effects
-    "run_tool_in_sandbox",
-    "run_eval_suite",
-    "package_and_sign",
-})
+_APPROVAL_REQUIRED_ACTIONS: frozenset[str] = frozenset(
+    {
+        "install_npm_packages",
+        "install_python_packages",
+        "run_shell_commands",
+        "start_docker",
+        "stop_docker",
+        "access_network",
+        "write_outside_project",
+        "call_external_apis",
+        "use_secrets",
+        "use_api_keys",
+        "write_files",
+        "overwrite_files",
+        "mcp_call_tool",  # calling an installed MCP tool with side-effects
+        "run_tool_in_sandbox",
+        "run_eval_suite",
+        "package_and_sign",
+    }
+)
 
 # Actions that are permanently blocked.
-_BLOCKED_ACTIONS: frozenset[str] = frozenset({
-    "delete_arbitrary_files",
-    "delete_workspace",
-    "run_unknown_binaries",
-    "modify_system_folders",
-    "exfiltrate_credentials",
-    "exfiltrate_secrets",
-    "execute_untrusted_code",
-    "bypass_sandbox",
-    "disable_safety_checks",
-    "modify_permission_policy",
-    "grant_elevated_permissions",
-})
+_BLOCKED_ACTIONS: frozenset[str] = frozenset(
+    {
+        "delete_arbitrary_files",
+        "delete_workspace",
+        "delete_outside_workspace",
+        "run_unknown_binaries",
+        "modify_system_folders",
+        "exfiltrate_credentials",
+        "exfiltrate_secrets",
+        "execute_untrusted_code",
+        "bypass_sandbox",
+        "disable_safety_checks",
+        "modify_permission_policy",
+        "grant_elevated_permissions",
+    }
+)
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +197,10 @@ class PermissionBroker:
         if normalised in _SAFE_ACTIONS:
             return RiskLevel.SAFE
         # Unknown actions default to APPROVAL_REQUIRED for safety.
-        logger.debug("Unknown action %r — defaulting to APPROVAL_REQUIRED", action)
+        logger.debug(
+            "Unknown action %r — defaulting to APPROVAL_REQUIRED",
+            action,
+        )
         return RiskLevel.APPROVAL_REQUIRED
 
     # ------------------------------------------------------------------
@@ -211,7 +230,7 @@ class PermissionBroker:
                 return
             if not self._interactive:
                 raise ApprovalRequiredError(action, step)
-            # Interactive: raise and let caller handle the prompt via request_approval()
+            # Interactive mode: caller handles the prompt via request_approval().
             raise ApprovalRequiredError(action, step)
 
         # RiskLevel.SAFE — no action needed

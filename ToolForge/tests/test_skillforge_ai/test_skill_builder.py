@@ -1,18 +1,22 @@
 """
 Tests for skillforge_ai.skill_builder — SkillBuilder with mocked generators.
 """
+# mypy: disable-error-code=import-untyped
+
 from __future__ import annotations
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 
+from skillforge_ai.errors import SkillForgeDependencyError
 from skillforge_ai.models import SkillManifest
 from skillforge_ai.skill_builder import SkillBuilder
 
 
 class TestSkillBuilderBuild:
-    """Unit tests for SkillBuilder.build() with all ToolForge generators mocked."""
+    """Unit tests for SkillBuilder with mocked ToolForge generators."""
 
     def _make_spec(self, slug: str = "csv-cleaner") -> MagicMock:
         spec = MagicMock()
@@ -38,18 +42,40 @@ class TestSkillBuilderBuild:
         return spec
 
     def _make_builder(self, tmp_path: Path, **kw) -> SkillBuilder:
-        return SkillBuilder(workspace_root=tmp_path, provider="rule_based", **kw)
+        return SkillBuilder(
+            workspace_root=tmp_path,
+            provider="rule_based",
+            **kw,
+        )
 
     def test_build_returns_tool_dir_and_manifest(self, tmp_path: Path):
         spec = self._make_spec()
         builder = self._make_builder(tmp_path)
 
-        with patch.object(builder, "_generate_spec", return_value=spec), \
-             patch.object(builder, "_scaffold", return_value=[]) as mock_scaffold, \
-             patch.object(builder, "_generate_mcp", return_value=[]) as mock_mcp, \
-             patch.object(builder, "_generate_skill", return_value=[]) as mock_skill, \
-             patch.object(builder, "_generate_eval", return_value=[]) as mock_eval, \
-             patch.object(builder, "_register") as mock_reg:
+        with (
+            patch.object(builder, "_generate_spec", return_value=spec),
+            patch.object(
+                builder,
+                "_scaffold",
+                return_value=[],
+            ) as mock_scaffold,
+            patch.object(
+                builder,
+                "_generate_mcp",
+                return_value=[],
+            ) as mock_mcp,
+            patch.object(
+                builder,
+                "_generate_skill",
+                return_value=[],
+            ) as mock_skill,
+            patch.object(
+                builder,
+                "_generate_eval",
+                return_value=[],
+            ) as mock_eval,
+            patch.object(builder, "_register") as mock_reg,
+        ):
             tool_dir, manifest = builder.build("Create a CSV cleaner")
 
         assert isinstance(manifest, SkillManifest)
@@ -71,12 +97,30 @@ class TestSkillBuilderBuild:
         spec.mcp.enabled = False
         builder = self._make_builder(tmp_path)
 
-        with patch.object(builder, "_generate_spec", return_value=spec), \
-             patch.object(builder, "_scaffold", return_value=[]), \
-             patch.object(builder, "_generate_mcp", return_value=[]) as mock_mcp, \
-             patch.object(builder, "_generate_skill", return_value=[]), \
-             patch.object(builder, "_generate_eval", return_value=[]), \
-             patch.object(builder, "_register"):
+        with (
+            patch.object(builder, "_generate_spec", return_value=spec),
+            patch.object(
+                builder,
+                "_scaffold",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_mcp",
+                return_value=[],
+            ) as mock_mcp,
+            patch.object(
+                builder,
+                "_generate_skill",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_eval",
+                return_value=[],
+            ),
+            patch.object(builder, "_register"),
+        ):
             builder.build("Create a CSV cleaner")
 
         mock_mcp.assert_not_called()
@@ -85,27 +129,99 @@ class TestSkillBuilderBuild:
         spec = self._make_spec("my-custom-skill")
         builder = self._make_builder(tmp_path)
 
-        with patch.object(builder, "_generate_spec", return_value=spec), \
-             patch.object(builder, "_scaffold", return_value=[]), \
-             patch.object(builder, "_generate_mcp", return_value=[]), \
-             patch.object(builder, "_generate_skill", return_value=[]), \
-             patch.object(builder, "_generate_eval", return_value=[]), \
-             patch.object(builder, "_register"):
-            _, manifest = builder.build("Build a cleaner", skill_name="my-custom-skill")
+        with (
+            patch.object(builder, "_generate_spec", return_value=spec),
+            patch.object(
+                builder,
+                "_scaffold",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_mcp",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_skill",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_eval",
+                return_value=[],
+            ),
+            patch.object(builder, "_register"),
+        ):
+            _, manifest = builder.build(
+                "Build a cleaner",
+                skill_name="my-custom-skill",
+            )
 
         assert manifest.name == "my-custom-skill"
+
+    def test_build_normalizes_disallowed_category(self, tmp_path: Path):
+        spec = self._make_spec("csv-cleaner")
+        spec.skill.category = "file-processing"
+        builder = self._make_builder(tmp_path)
+
+        with (
+            patch.object(builder, "_generate_spec", return_value=spec),
+            patch.object(
+                builder,
+                "_scaffold",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_mcp",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_skill",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_eval",
+                return_value=[],
+            ),
+            patch.object(builder, "_register"),
+        ):
+            _, manifest = builder.build("Create a CSV cleaner")
+
+        assert manifest.category == "data"
 
     def test_build_logs_evidence(self, tmp_path: Path):
         spec = self._make_spec()
         mock_ev = MagicMock()
         builder = self._make_builder(tmp_path, evidence_logger=mock_ev)
 
-        with patch.object(builder, "_generate_spec", return_value=spec), \
-             patch.object(builder, "_scaffold", return_value=[]), \
-             patch.object(builder, "_generate_mcp", return_value=[]), \
-             patch.object(builder, "_generate_skill", return_value=[]), \
-             patch.object(builder, "_generate_eval", return_value=[]), \
-             patch.object(builder, "_register"):
+        with (
+            patch.object(builder, "_generate_spec", return_value=spec),
+            patch.object(
+                builder,
+                "_scaffold",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_mcp",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_skill",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_eval",
+                return_value=[],
+            ),
+            patch.object(builder, "_register"),
+        ):
             builder.build("Build a CSV cleaner")
 
         mock_ev.log_build.assert_called_once()
@@ -118,13 +234,49 @@ class TestSkillBuilderBuild:
         # Patch _generate_spec to raise on first call; the real fallback logic
         # inside _generate_spec handles it internally. Instead simulate by
         # returning fallback_spec directly.
-        with patch.object(builder, "_generate_spec", return_value=fallback_spec), \
-             patch.object(builder, "_scaffold", return_value=[]), \
-             patch.object(builder, "_generate_mcp", return_value=[]), \
-             patch.object(builder, "_generate_skill", return_value=[]), \
-             patch.object(builder, "_generate_eval", return_value=[]), \
-             patch.object(builder, "_register"):
+        with (
+            patch.object(
+                builder,
+                "_generate_spec",
+                return_value=fallback_spec,
+            ),
+            patch.object(
+                builder,
+                "_scaffold",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_mcp",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_skill",
+                return_value=[],
+            ),
+            patch.object(
+                builder,
+                "_generate_eval",
+                return_value=[],
+            ),
+            patch.object(builder, "_register"),
+        ):
             _, manifest = builder.build("Build something")
 
         assert manifest.name == fallback_spec.slug
 
+    def test_ensure_toolforge_yaml_raises_clear_dependency_error(
+        self,
+        tmp_path: Path,
+    ):
+        spec = self._make_spec()
+        builder = self._make_builder(tmp_path)
+        tool_dir = tmp_path / "tools" / "generated" / spec.slug
+
+        with patch(
+            "skillforge_ai.skill_builder.dump_yaml",
+            side_effect=SkillForgeDependencyError("missing"),
+        ):
+            with pytest.raises(SkillForgeDependencyError):
+                builder._ensure_toolforge_yaml(spec, tool_dir)

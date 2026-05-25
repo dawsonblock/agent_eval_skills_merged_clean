@@ -1,0 +1,13 @@
+{
+  "id": "case-01-success",
+  "description": "Basic tool invocation",
+  "inputs": {
+    "input": "test_data"
+  },
+  "expected_success": true,
+  "expected_files": [],
+  "criteria": [],
+  "tags": [
+    "smoke"
+  ]
+}

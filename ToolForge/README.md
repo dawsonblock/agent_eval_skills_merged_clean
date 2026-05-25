@@ -137,8 +137,14 @@ ToolForge/
 ## Testing
 
 ```bash
+# Install dev dependencies first
+python -m pip install -e ".[dev]"
+
 # Run all package-level tests
 pytest tests/ -v
+
+# Run SkillForge AI tests explicitly
+PYTHONPATH=. pytest -q tests/test_skillforge_ai
 
 # Run a specific example tool's tests
 cd tools/examples/csv-cleaner && pytest tests/ -v

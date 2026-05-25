@@ -7,6 +7,7 @@
     "name",
     "type",
     "entrypoint",
+    "working_dir",
     "description",
     "permissions",
     "risk_level",
@@ -25,6 +26,10 @@
       "enum": ["python", "typescript", "mcp"]
     },
     "entrypoint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "working_dir": {
       "type": "string",
       "minLength": 1
     },

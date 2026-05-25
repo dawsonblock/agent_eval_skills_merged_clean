@@ -1,0 +1,48 @@
+{
+  "name": "create-a-tool-named",
+  "description": "Convert local PDF text streams into Markdown bullet points without OCR or network access.",
+  "category": "data",
+  "version": "0.1.0",
+  "inputs": [
+    {
+      "name": "input_path",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "output_path",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "output_path",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "lines_extracted",
+      "type": "integer",
+      "required": true
+    }
+  ],
+  "tools_required": [
+    "tool.py"
+  ],
+  "mcp_servers": [
+    "create-a-tool-named-mcp"
+  ],
+  "permissions": [
+    "read_files",
+    "write_files"
+  ],
+  "risk_level": "medium",
+  "validation": {
+    "metadata": "pending",
+    "syntax": "pending",
+    "tests": "pending",
+    "package": "pending",
+    "smoke": "pending"
+  }
+}

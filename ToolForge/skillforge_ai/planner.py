@@ -7,6 +7,7 @@ from typing import Any
 
 PLANNER_MODES = {
     "build_skill",
+    "validate_skill",
     "run_skill",
     "repair_skill",
     "inspect_skill",
@@ -49,9 +50,21 @@ class PlannerResult:
 class SkillPlanner:
     def classify_mode(self, request: str) -> str:
         text = request.lower()
-        if any(token in text for token in ("validate workspace", "check workspace", "validate all")):
+        if any(
+            token in text
+            for token in (
+                "validate workspace",
+                "check workspace",
+                "validate all",
+            )
+        ):
             return "validate_workspace"
-        if any(token in text for token in ("call tool", "tools call", "invoke tool")):
+        if "validate" in text:
+            return "validate_skill"
+        if any(
+            token in text
+            for token in ("call tool", "tools call", "invoke tool")
+        ):
             return "call_tool"
         if any(token in text for token in ("repair", "fix", "debug")):
             return "repair_skill"
@@ -61,7 +74,10 @@ class SkillPlanner:
             return "package_skill"
         if any(token in text for token in ("install", "import")):
             return "install_skill"
-        if any(token in text for token in ("list skills", "list skill", "list all skills")):
+        if any(
+            token in text
+            for token in ("list skills", "list skill", "list all skills")
+        ):
             return "list_skills"
         if any(token in text for token in ("run", "execute")):
             return "run_skill"
@@ -82,10 +98,19 @@ class SkillPlanner:
                     "risk": "low",
                     "validation": ["registry lookup", "runtime smoke"],
                 },
+                "validate_skill": {
+                    "permissions": ["read_files"],
+                    "risk": "low",
+                    "validation": ["skill validation"],
+                },
                 "repair_skill": {
                     "permissions": ["read_files", "write_files"],
                     "risk": "low",
-                    "validation": ["metadata validation", "syntax validation", "tests"],
+                    "validation": [
+                        "metadata validation",
+                        "syntax validation",
+                        "tests",
+                    ],
                 },
                 "inspect_skill": {
                     "permissions": ["read_files"],
@@ -95,7 +120,10 @@ class SkillPlanner:
                 "package_skill": {
                     "permissions": ["read_files", "write_files"],
                     "risk": "low",
-                    "validation": ["metadata validation", "package validation"],
+                    "validation": [
+                        "metadata validation",
+                        "package validation",
+                    ],
                 },
                 "install_skill": {
                     "permissions": ["read_files", "write_files"],
@@ -165,7 +193,7 @@ class SkillPlanner:
             "create-a-skill-that",
         ):
             if normalized.startswith(common):
-                normalized = normalized[len(common):].strip("-")
+                normalized = normalized[len(common) :].strip("-")
                 break
         if normalized in {
             "repair",
@@ -211,8 +239,7 @@ class SkillPlanner:
         ):
             return "automation"
         if any(
-            token in text
-            for token in ("audio", "video", "image", "media")
+            token in text for token in ("audio", "video", "image", "media")
         ):
             return "media"
         if any(

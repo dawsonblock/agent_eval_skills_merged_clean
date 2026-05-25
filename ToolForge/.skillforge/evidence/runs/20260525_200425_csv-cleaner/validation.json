@@ -1,0 +1,15 @@
+{
+  "skill": "csv-cleaner",
+  "attempt": 1,
+  "status": "passed",
+  "errors": [],
+  "warnings": [],
+  "validators": {
+    "schema": true,
+    "security": true,
+    "mcp": true,
+    "skill": true,
+    "tests": true,
+    "safety": true
+  }
+}

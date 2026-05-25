@@ -1,0 +1,14 @@
+{
+  "task_id": "create-a-tool-named-eval",
+  "slug": "create-a-tool-named",
+  "name": "Create A Tool Named",
+  "needed_mcp_servers": [
+    "create-a-tool-named"
+  ],
+  "needed_local_tools": [],
+  "meta": {
+    "tool_name": "create-a-tool-named",
+    "tool_version": "0.1.0",
+    "generated_by": "toolforge 0.1.0"
+  }
+}

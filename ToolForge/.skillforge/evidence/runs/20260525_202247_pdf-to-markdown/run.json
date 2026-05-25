@@ -1,0 +1,6 @@
+{
+  "event": "create",
+  "skill": "create-a-tool-named",
+  "status": "passed",
+  "prompt": "Build me a local skill that converts PDF text to Markdown without OCR or network access"
+}

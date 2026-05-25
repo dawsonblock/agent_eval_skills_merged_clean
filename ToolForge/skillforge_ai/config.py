@@ -1,4 +1,5 @@
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,6 +10,18 @@ from skillforge_ai.schema_utils import validate_with_schema
 @dataclass(frozen=True)
 class SkillForgePaths:
     workspace_root: Path
+
+    @property
+    def repo_root(self) -> Path:
+        return self.workspace_root
+
+    @property
+    def toolforge_root(self) -> Path:
+        return self.workspace_root
+
+    @property
+    def skillforge_state_dir(self) -> Path:
+        return self.runtime_root
 
     @property
     def runtime_root(self) -> Path:
@@ -42,6 +55,10 @@ class SkillForgePaths:
     def skills_dir(self) -> Path:
         return self.workspace_root / "skills"
 
+    @property
+    def generated_tools_dir(self) -> Path:
+        return self.workspace_root / "tools" / "generated"
+
 
 def ensure_runtime_state(workspace_root: Path) -> SkillForgePaths:
     paths = SkillForgePaths(workspace_root=workspace_root.resolve())
@@ -69,6 +86,24 @@ def ensure_runtime_state(workspace_root: Path) -> SkillForgePaths:
     _normalize_runtime_state(paths)
 
     return paths
+
+
+def resolve_within_workspace(
+    workspace_root: Path, path_value: Path | str
+) -> Path:
+    """Resolve a path and ensure it does not escape the provided workspace root."""
+    root = workspace_root.resolve()
+    candidate = Path(path_value)
+    resolved = (
+        candidate.resolve()
+        if candidate.is_absolute()
+        else (root / candidate).resolve()
+    )
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"Path escapes workspace root: {path_value}") from exc
+    return resolved
 
 
 def _normalize_runtime_state(paths: SkillForgePaths) -> None:

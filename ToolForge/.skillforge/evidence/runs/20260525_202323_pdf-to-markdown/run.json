@@ -1,0 +1,6 @@
+{
+  "event": "create",
+  "skill": "create-a-tool-named",
+  "status": "passed",
+  "prompt": "Local PDF to Markdown converter"
+}

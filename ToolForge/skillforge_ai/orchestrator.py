@@ -24,6 +24,8 @@ Usage::
     response = orch.chat("Build a tool that converts JSON to CSV")
     orch.run_chat_loop()  # Rich REPL
 """
+# mypy: disable-error-code=import-untyped
+
 from __future__ import annotations
 
 import logging
@@ -49,14 +51,57 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _INTENT_RULES: list[tuple[re.Pattern, Mode]] = [
-    (re.compile(r"\b(build|create|generate|scaffold|make|new|write)\b.*\b(tool|skill|function)\b", re.IGNORECASE), Mode.BUILD),
-    (re.compile(r"\b(create|build|generate|scaffold|make|new)\b", re.IGNORECASE), Mode.BUILD),
-    (re.compile(r"\b(repair|fix|debug|patch|heal|correct)\b", re.IGNORECASE), Mode.REPAIR),
-    (re.compile(r"\b(package|zip|export|bundle|release)\b", re.IGNORECASE), Mode.PACKAGE),
-    (re.compile(r"\b(benchmark|eval|evaluate|measure|perf|performance)\b", re.IGNORECASE), Mode.BENCHMARK),
-    (re.compile(r"\b(run|execute|invoke|use|call)\b", re.IGNORECASE), Mode.RUN),
-    (re.compile(r"\b(show|list|describe|inspect|info|status|what)\b", re.IGNORECASE), Mode.INSPECT),
-    (re.compile(r"\b(init|initialize|configure|install|setup|doctor)\b", re.IGNORECASE), Mode.ADMIN),
+    (
+        re.compile(
+            r"\b(build|create|generate|scaffold|make|new|write)\b"
+            r".*\b(tool|skill|function)\b",
+            re.IGNORECASE,
+        ),
+        Mode.BUILD,
+    ),
+    (
+        re.compile(
+            r"\b(create|build|generate|scaffold|make|new)\b",
+            re.IGNORECASE,
+        ),
+        Mode.BUILD,
+    ),
+    (
+        re.compile(
+            r"\b(repair|fix|debug|patch|heal|correct)\b",
+            re.IGNORECASE,
+        ),
+        Mode.REPAIR,
+    ),
+    (
+        re.compile(r"\b(package|zip|export|bundle|release)\b", re.IGNORECASE),
+        Mode.PACKAGE,
+    ),
+    (
+        re.compile(
+            r"\b(benchmark|eval|evaluate|measure|perf|performance)\b",
+            re.IGNORECASE,
+        ),
+        Mode.BENCHMARK,
+    ),
+    (
+        re.compile(r"\b(run|execute|invoke|use|call)\b", re.IGNORECASE),
+        Mode.RUN,
+    ),
+    (
+        re.compile(
+            r"\b(show|list|describe|inspect|info|status|what)\b",
+            re.IGNORECASE,
+        ),
+        Mode.INSPECT,
+    ),
+    (
+        re.compile(
+            r"\b(init|initialize|configure|install|setup|doctor)\b",
+            re.IGNORECASE,
+        ),
+        Mode.ADMIN,
+    ),
 ]
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
@@ -67,7 +112,11 @@ def _parse_skill_name(message: str) -> str | None:
     Try to extract an explicit skill/tool name from the message.
     Looks for patterns like: "for csv-cleaner", "the csv-cleaner tool", etc.
     """
-    m = re.search(r"(?:for|the|tool|skill)\s+['\"]?([a-z][a-z0-9-]{1,40})['\"]?", message, re.IGNORECASE)
+    m = re.search(
+        r"(?:for|the|tool|skill)\s+['\"]?([a-z][a-z0-9-]{1,40})['\"]?",
+        message,
+        re.IGNORECASE,
+    )
     if m:
         return m.group(1).lower()
     # Last word as slug candidate if it looks like a slug
@@ -172,7 +221,9 @@ class AIOrchestrator:
     def _mcp_controller(self) -> Any:
         if self._mcp_ctrl is None:
             from skillforge_ai.mcp_controller import MCPController
-            self._mcp_ctrl = MCPController(evidence_logger=self._evidence_logger)
+            self._mcp_ctrl = MCPController(
+                evidence_logger=self._evidence_logger,
+            )
         return self._mcp_ctrl
 
     @property
@@ -194,6 +245,7 @@ class AIOrchestrator:
 
         if plan.mode in {
             "build_skill",
+            "validate_skill",
             "run_skill",
             "repair_skill",
             "inspect_skill",
@@ -211,6 +263,9 @@ class AIOrchestrator:
                 if plan.mode == "build_skill":
                     self._state.mode = Mode.BUILD
                     return self._handle_build(intent, message)
+                if plan.mode == "validate_skill":
+                    self._state.mode = Mode.ADMIN
+                    return self._handle_validate_skill(intent)
                 if plan.mode == "run_skill":
                     self._state.mode = Mode.RUN
                     return self._handle_run(intent, message)
@@ -266,7 +321,8 @@ class AIOrchestrator:
 
         return (
             "I'm not sure what you'd like to do. Try: "
-            "\"create a tool that ...\", \"list tools\", \"validate <slug>\", \"run <slug>\""
+            "\"create a tool that ...\", \"list tools\", "
+            "\"validate <slug>\", \"run <slug>\""
         )
 
     def run_chat_loop(self) -> None:
@@ -357,7 +413,10 @@ class AIOrchestrator:
             )
             return str(exc)
         except ApprovalRequiredError as exc:
-            req = self._permission_broker.request_approval(exc.step, description)
+            req = self._permission_broker.request_approval(
+                exc.step,
+                description,
+            )
             self._evidence_logger.log_approval(req)
             if req.approved:
                 self._evidence_logger.log_message(
@@ -376,7 +435,10 @@ class AIOrchestrator:
     # ------------------------------------------------------------------
 
     def _handle_build(self, intent: IntentResult, message: str) -> str:
-        blocked = self._authorize_action("scaffold_tool", f"Build skill from '{message}'")
+        blocked = self._authorize_action(
+            "scaffold_tool",
+            f"Build skill from '{message}'",
+        )
         if blocked:
             return blocked
 
@@ -403,7 +465,10 @@ class AIOrchestrator:
         return "\n".join(lines)
 
     def _handle_run(self, intent: IntentResult, message: str) -> str:
-        blocked = self._authorize_action("run_tool_in_sandbox", f"Run tool '{intent.skill_name}'")
+        blocked = self._authorize_action(
+            "run_tool_in_sandbox",
+            f"Run tool '{intent.skill_name}'",
+        )
         if blocked:
             return blocked
 
@@ -426,7 +491,8 @@ class AIOrchestrator:
                 result={"exit_code": result.exit_code},
                 success=(result.exit_code == 0),
             )
-            return f"Tool '{slug}' completed.\n  Output: {result.output or '(none)'}"
+            output = result.output or "(none)"
+            return f"Tool '{slug}' completed.\n  Output: {output}"
         except Exception as exc:
             self._evidence_logger.log_tool_call(
                 ToolCallRequest(
@@ -442,19 +508,29 @@ class AIOrchestrator:
             return f"Run failed: {exc}"
 
     def _handle_repair(self, intent: IntentResult, message: str) -> str:
-        blocked = self._authorize_action("write_files", f"Repair tool '{intent.skill_name}'")
+        blocked = self._authorize_action(
+            "write_files",
+            f"Repair tool '{intent.skill_name}'",
+        )
         if blocked:
             return blocked
 
         slug = intent.skill_name
         if not slug:
-            return "Please specify which tool to repair, e.g. 'repair csv-cleaner'"
+            return (
+                "Please specify which tool to repair, "
+                "e.g. 'repair csv-cleaner'"
+            )
 
-        report = self._validation_runner.repair_loop(slug, provider=self._provider)
+        report = self._validation_runner.repair_loop(
+            slug,
+            provider=self._provider,
+        )
         if report.passed:
             return f"Repair complete — '{slug}' passes all validators."
+        max_repair = self._validation_runner._max_repair
         return (
-            f"Repair incomplete after {self._validation_runner._max_repair} attempt(s).\n"
+            f"Repair incomplete after {max_repair} attempt(s).\n"
             f"  Remaining errors:\n"
             + "\n".join(f"    - {e}" for e in report.errors[:5])
         )
@@ -462,15 +538,23 @@ class AIOrchestrator:
     def _handle_inspect(self, intent: IntentResult, message: str) -> str:
         # "list" vs "inspect one"
         lower = message.lower()
-        if any(w in lower for w in ("list", "all", "show all", "what skills", "what tools")):
+        if any(
+            w in lower
+            for w in ("list", "all", "show all", "what skills", "what tools")
+        ):
             skills = self._skill_registry.list_skills()
             if not skills:
                 return "No skills registered yet. Use 'create' to build one."
-            lines = [f"{'Name':<30} {'Status':<12} {'Validated':<10} {'Risk'}", "-" * 65]
+            lines = [
+                f"{'Name':<30} {'Status':<12} {'Validated':<10} {'Risk'}",
+                "-" * 65,
+            ]
             for s in skills:
-                lines.append(
-                    f"{s['name']:<30} {s['status']:<12} {str(s['validated']):<10} {s['risk_level']}"
+                row = (
+                    f"{s['name']:<30} {s['status']:<12} "
+                    f"{str(s['validated']):<10} {s['risk_level']}"
                 )
+                lines.append(row)
             return "\n".join(lines)
 
         slug = intent.skill_name
@@ -488,7 +572,10 @@ class AIOrchestrator:
         return "\n".join(lines)
 
     def _handle_package(self, intent: IntentResult, message: str) -> str:
-        blocked = self._authorize_action("package_skill", f"Package skill '{intent.skill_name}'")
+        blocked = self._authorize_action(
+            "package_skill",
+            f"Package skill '{intent.skill_name}'",
+        )
         if blocked:
             return blocked
 
@@ -504,7 +591,10 @@ class AIOrchestrator:
         return f"Packaged '{slug}' → {zip_path}"
 
     def _handle_install_skill(self, message: str) -> str:
-        blocked = self._authorize_action("write_files", "Install skill from archive")
+        blocked = self._authorize_action(
+            "write_files",
+            "Install skill from archive",
+        )
         if blocked:
             return blocked
 
@@ -537,21 +627,31 @@ class AIOrchestrator:
 
         lines = [f"{'Name':<30} {'Status':<16} {'Validation'}", "-" * 64]
         for item in skills:
+            status_text = item.get(
+                "validation_status",
+                item.get("status", "unknown"),
+            )
             lines.append(
                 f"{item.get('name', ''):<30} "
-                f"{item.get('validation_status', item.get('status', 'unknown')):<16} "
+                f"{status_text:<16} "
                 f"{item.get('risk_level', 'low')}"
             )
         return "\n".join(lines)
 
     def _handle_call_tool(self, intent: IntentResult, message: str) -> str:
-        blocked = self._authorize_action("mcp_call_tool", f"Call tool for '{intent.skill_name}'")
+        blocked = self._authorize_action(
+            "mcp_call_tool",
+            f"Call tool for '{intent.skill_name}'",
+        )
         if blocked:
             return blocked
 
         slug = intent.skill_name
         if not slug:
-            return "Please specify a skill/tool slug, e.g. 'call tool csv-cleaner'."
+            return (
+                "Please specify a skill/tool slug, "
+                "e.g. 'call tool csv-cleaner'."
+            )
 
         tool_name = self._extract_tool_name(message) or f"{slug}_tool"
         registered = self._skill_registry.get_registered_tool(tool_name)
@@ -609,6 +709,17 @@ class AIOrchestrator:
     def _handle_validate_workspace(self) -> str:
         return self._cmd_doctor()
 
+    def _handle_validate_skill(self, intent: IntentResult) -> str:
+        slug = intent.skill_name
+        if not slug:
+            return "Please specify a skill name, e.g. 'validate csv-cleaner'"
+        report = self._validation_runner.validate(slug)
+        return (
+            f"Validation {'passed' if report.passed else 'failed'} "
+            f"for '{slug}'. "
+            f"Errors: {len(report.errors)}"
+        )
+
     def _handle_benchmark(self, intent: IntentResult, message: str) -> str:
         slug = intent.skill_name
         if not slug:
@@ -640,7 +751,10 @@ class AIOrchestrator:
             return self._cmd_doctor()
 
         if "install" in lower:
-            return "Use `pip install -e '.[dev,llm]'` to install all dependencies."
+            return (
+                "Use `pip install -e '.[dev,llm]'` "
+                "to install all dependencies."
+            )
 
         return (
             "Admin commands:\n"
@@ -667,10 +781,18 @@ class AIOrchestrator:
         lines = ["Workspace health check:"]
         checks = {
             ".skillforge/":       (self._root / ".skillforge").exists(),
-            "toolforge_registry.json": (self._root / "toolforge_registry.json").exists(),
-            "tools/generated/":   (self._root / "tools" / "generated").exists(),
-            "skills/generated/":  (self._root / "skills" / "generated").exists(),
-            "evals/generated/":   (self._root / "evals" / "generated").exists(),
+            "toolforge_registry.json": (
+                self._root / "toolforge_registry.json"
+            ).exists(),
+            "tools/generated/": (
+                self._root / "tools" / "generated"
+            ).exists(),
+            "skills/generated/": (
+                self._root / "skills" / "generated"
+            ).exists(),
+            "evals/generated/": (
+                self._root / "evals" / "generated"
+            ).exists(),
         }
         all_ok = True
         for name, ok in checks.items():
@@ -731,7 +853,11 @@ def _print_banner() -> None:
     try:
         from rich.console import Console
         console = Console()
-        console.print("[bold cyan]SkillForge AI[/bold cyan] — AI-powered skill orchestration", highlight=False)
+        console.print(
+            "[bold cyan]SkillForge AI[/bold cyan] "
+            "— AI-powered skill orchestration",
+            highlight=False,
+        )
     except ImportError:
         print("SkillForge AI — AI-powered skill orchestration")
 

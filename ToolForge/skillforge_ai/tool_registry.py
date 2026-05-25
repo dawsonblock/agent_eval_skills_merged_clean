@@ -19,6 +19,8 @@ Usage::
     skills = reg.list_skills()
     reg.mark_validated("csv-cleaner")
 """
+# mypy: disable-error-code=import-untyped
+
 from __future__ import annotations
 
 import logging
@@ -33,7 +35,9 @@ from skillforge_ai.schema_utils import validate_with_schema
 
 logger = logging.getLogger(__name__)
 
-_VALIDATED_STATUSES = frozenset({"validated", "eval_passed", "packaged", "published"})
+_VALIDATED_STATUSES = frozenset(
+    {"validated", "eval_passed", "packaged", "published"}
+)
 
 
 def _add_packages_to_path(workspace_root: Path) -> None:
@@ -82,13 +86,17 @@ class SkillForgeRegistry:
                     registry.register(spec, status="generated")
                     return
                 except Exception as exc:
-                    logger.debug("registry.register(spec) failed: %s — using raw register", exc)
+                    logger.debug(
+                        "registry.register(spec) failed: %s "
+                        "— using raw register",
+                        exc,
+                    )
 
         # Synthetic fallback: patch the registry JSON directly
         self._register_raw(manifest, tool_dir)
 
     def get_skill(self, name: str) -> dict[str, Any] | None:
-        """Return the SkillForge-schema view of a skill, or None if not found."""
+        """Return the SkillForge-schema view of a skill, or None."""
         registry = self._get_registry()
         try:
             entry = registry.find(name)
@@ -140,10 +148,16 @@ class SkillForgeRegistry:
 
     def register_tool(self, tool_entry: dict[str, Any]) -> None:
         """Register a callable tool in the local SkillForge tool registry."""
+        entrypoint = str(tool_entry.get("entrypoint", "")).strip()
+        working_dir = str(tool_entry.get("working_dir", "")).strip()
+        if not working_dir and entrypoint:
+            working_dir = str(Path(entrypoint).parent)
+
         normalized_entry = {
             "name": str(tool_entry.get("name", "")).strip(),
             "type": str(tool_entry.get("type", "python")).strip() or "python",
-            "entrypoint": str(tool_entry.get("entrypoint", "")).strip(),
+            "entrypoint": entrypoint,
+            "working_dir": working_dir,
             "description": (
                 str(tool_entry.get("description", "Registered tool")).strip()
                 or "Registered tool"
@@ -173,7 +187,7 @@ class SkillForgeRegistry:
         self._write_tool_registry(out)
 
     def get_registered_tool(self, name: str) -> dict[str, Any] | None:
-        """Lookup a callable tool by name from local SkillForge tool registry."""
+        """Lookup a callable tool by name from local tool registry."""
         for item in self._read_tool_registry():
             if item.get("name") == name:
                 return item
@@ -189,11 +203,13 @@ class SkillForgeRegistry:
 
     def _get_registry(self) -> Any:
         from packages.core.registry import ToolRegistry
+
         return ToolRegistry(self._registry_path)
 
     def _load_spec(self, yaml_path: Path) -> Any | None:
         try:
             from packages.validators.schema_validator import validate_yaml_file
+
             return validate_yaml_file(yaml_path)
         except Exception as exc:
             logger.debug("Could not load spec from %s: %s", yaml_path, exc)
@@ -253,7 +269,9 @@ class SkillForgeRegistry:
 
     def _read_tool_registry(self) -> list[dict[str, Any]]:
         try:
-            payload = json.loads(self._tool_registry_path.read_text(encoding="utf-8"))
+            payload = json.loads(
+                self._tool_registry_path.read_text(encoding="utf-8")
+            )
         except Exception:
             return []
         if not isinstance(payload, list):
@@ -273,8 +291,12 @@ class SkillForgeRegistry:
             encoding="utf-8",
         )
 
-    def _to_skill_dict(self, entry: Any, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
-        """Convert a registry entry (ToolRegistry format) to SkillForge format."""
+    def _to_skill_dict(
+        self,
+        entry: Any,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Convert a ToolRegistry entry to SkillForge format."""
         # registry.list_all() can return dicts or objects
         if hasattr(entry, "__dict__"):
             d = entry.__dict__
@@ -299,7 +321,10 @@ class SkillForgeRegistry:
             "name": slug,
             "type": "skill",
             "description": d.get("description", ""),
-            "entrypoint": d.get("entry_point", d.get("entrypoint", f"tools/generated/{slug}/tool.py")),
+            "entrypoint": d.get(
+                "entry_point",
+                d.get("entrypoint", f"tools/generated/{slug}/tool.py"),
+            ),
             "permissions": meta.get("permissions", d.get("permissions", [])),
             "risk_level": meta.get("risk_level", d.get("risk_level", "low")),
             "validated": status in _VALIDATED_STATUSES,

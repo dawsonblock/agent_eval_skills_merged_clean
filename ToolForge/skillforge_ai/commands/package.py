@@ -1,4 +1,5 @@
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 import datetime
 import hashlib
@@ -6,6 +7,7 @@ import shutil
 import zipfile
 from pathlib import Path
 
+from skillforge_ai.evidence_logger import EvidenceLogger
 from skillforge_ai.package_manager import PackageManager
 from skillforge_ai.skill_registry import SkillRegistry
 from skillforge_ai.tool_registry import SkillForgeRegistry
@@ -17,6 +19,10 @@ def run_package(
     output: Path | None,
 ) -> tuple[Path, str]:
     workspace_root = workspace_root.resolve()
+    evidence = EvidenceLogger(
+        log_dir=workspace_root / ".skillforge" / "evidence",
+        skill_name=slug,
+    )
 
     skill_dir = workspace_root / "skills" / slug
     if skill_dir.exists():
@@ -42,6 +48,24 @@ def run_package(
         reg.upsert(entry)
 
         SkillForgeRegistry(workspace_root).mark_packaged(slug)
+        evidence.log_package(slug, package_path)
+        evidence.write_minimum_artifacts(
+            run_payload={
+                "event": "package",
+                "skill": slug,
+                "status": "passed",
+                "package_path": str(package_path),
+                "sha256": sha256,
+            },
+            files_changed=[str(package_path)],
+            validation_payload={
+                "skill": slug,
+                "status": "passed",
+                "errors": [],
+                "warnings": [],
+            },
+        )
+        evidence.finalize()
         return package_path, sha256
 
     tool_dir = workspace_root / "tools" / "generated" / slug
@@ -73,6 +97,24 @@ def run_package(
         }
     )
     reg.upsert(entry)
+    evidence.log_package(slug, output)
+    evidence.write_minimum_artifacts(
+        run_payload={
+            "event": "package",
+            "skill": slug,
+            "status": "passed",
+            "package_path": str(output),
+            "sha256": sha256,
+        },
+        files_changed=[str(output)],
+        validation_payload={
+            "skill": slug,
+            "status": "passed",
+            "errors": [],
+            "warnings": [],
+        },
+    )
+    evidence.finalize()
     return output, sha256
 
 

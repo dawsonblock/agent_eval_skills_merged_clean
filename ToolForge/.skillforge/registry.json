@@ -1,8 +1,37 @@
 [
   {
     "name": "csv-cleaner",
-    "package_hash": "2a046a963d02617efe283f642cfe80da2828f8acf60013878e75a9b7782dbcf0",
-    "package_path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/packages/csv-cleaner-0.1.0-20260524_173217.zip",
+    "path": "skills/csv-cleaner",
+    "category": "data",
+    "description": "Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, and exports JSON.",
+    "permissions": [],
+    "risk_level": "medium",
+    "validation_status": "created",
+    "tool_refs": [
+      "csv_cleaner_tool"
+    ],
+    "package_hash": "2508a5301bbb814ccbcb81963ecfbef12c19dde9c051a36d04499c31cbd7b1d2",
+    "last_run": "2026-05-25T20:22:24.861990+00:00",
+    "package_path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/packages/csv-cleaner-0.1.0.zip",
+    "status": "packaged"
+  },
+  {
+    "name": "create-a-tool-named",
+    "path": "skills/create-a-tool-named",
+    "category": "data",
+    "description": "Convert local PDF text streams into Markdown bullet points without OCR or network access.",
+    "permissions": [
+      "read_files",
+      "write_files"
+    ],
+    "risk_level": "medium",
+    "validation_status": "created",
+    "tool_refs": [
+      "create_a_tool_named_tool"
+    ],
+    "package_hash": "f9c5378374069f7cb09b060429b7b22f80f6a91ea88e048f3c3aea76e0869367",
+    "last_run": "2026-05-25T20:24:31.311713+00:00",
+    "package_path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/packages/create-a-tool-named-0.1.0.zip",
     "status": "packaged"
   }
 ]

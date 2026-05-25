@@ -1,0 +1,23 @@
+{
+  "ts": "2026-05-25T20:24:36.877475+00:00",
+  "log_file": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/evidence/20260525_202436_create-a-tool-named.jsonl",
+  "run_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/evidence/runs/20260525_202436_create-a-tool-named",
+  "counts": {
+    "builds": 0,
+    "validations": 0,
+    "repairs": 0,
+    "tool_calls": 0,
+    "commands": 0,
+    "approvals": 0,
+    "packages": 1
+  },
+  "total_errors": 0,
+  "unique_errors": [],
+  "packages": [
+    {
+      "skill": "create-a-tool-named",
+      "path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/packages/create-a-tool-named-0.1.0.zip",
+      "sha256": "f9c5378374069f7cb09b060429b7b22f80f6a91ea88e048f3c3aea76e0869367"
+    }
+  ]
+}

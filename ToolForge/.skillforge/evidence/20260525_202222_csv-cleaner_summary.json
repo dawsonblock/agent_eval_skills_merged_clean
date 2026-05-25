@@ -1,0 +1,17 @@
+{
+  "ts": "2026-05-25T20:22:22.641501+00:00",
+  "log_file": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/evidence/20260525_202222_csv-cleaner.jsonl",
+  "run_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/.skillforge/evidence/runs/20260525_202222_csv-cleaner",
+  "counts": {
+    "builds": 0,
+    "validations": 1,
+    "repairs": 0,
+    "tool_calls": 0,
+    "commands": 0,
+    "approvals": 0,
+    "packages": 0
+  },
+  "total_errors": 0,
+  "unique_errors": [],
+  "packages": []
+}

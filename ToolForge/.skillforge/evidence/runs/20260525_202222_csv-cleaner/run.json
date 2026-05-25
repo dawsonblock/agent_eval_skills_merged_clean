@@ -1,0 +1,6 @@
+{
+  "event": "validate",
+  "skill": "csv-cleaner",
+  "status": "passed",
+  "repair": false
+}

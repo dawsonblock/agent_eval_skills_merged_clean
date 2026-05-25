@@ -8,6 +8,8 @@ package hashes) are recorded as JSON objects in a per-session JSONL file:
 
 At session end, call finalize() to write a session_summary.json.
 """
+# mypy: disable-error-code=import-untyped
+
 from __future__ import annotations
 
 import hashlib
@@ -17,7 +19,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from skillforge_ai.models import ApprovalRequest, ToolCallRequest, ValidationReport
+from skillforge_ai.models import (
+    ApprovalRequest,
+    ToolCallRequest,
+    ValidationReport,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +33,7 @@ def _now_iso() -> str:
 
 
 def _sha256(path: Path) -> str | None:
-    """Return SHA-256 hex digest of a file, or None if the file doesn't exist."""
+    """Return SHA-256 digest, or None when the target file is missing."""
     if not path.exists():
         return None
     h = hashlib.sha256()
@@ -100,7 +106,11 @@ class EvidenceLogger:
             with self._log_path.open("a", encoding="utf-8") as fh:
                 fh.write(json.dumps(record, default=str) + "\n")
         except OSError as exc:
-            logger.warning("EvidenceLogger: could not write to %s: %s", self._log_path, exc)
+            logger.warning(
+                "EvidenceLogger: could not write to %s: %s",
+                self._log_path,
+                exc,
+            )
 
     def _write_artifact(self, path: Path, payload: dict[str, Any]) -> None:
         try:
@@ -109,7 +119,11 @@ class EvidenceLogger:
                 encoding="utf-8",
             )
         except OSError as exc:
-            logger.warning("EvidenceLogger: could not write artifact %s: %s", path, exc)
+            logger.warning(
+                "EvidenceLogger: could not write artifact %s: %s",
+                path,
+                exc,
+            )
 
     # ------------------------------------------------------------------
     # Public API
@@ -232,7 +246,9 @@ class EvidenceLogger:
             "permissions_required": request.permissions_required,
             "approval_required": request.approval_required,
             "success": success,
-            "result_summary": str(result)[:500] if result is not None else None,
+            "result_summary": (
+                str(result)[:500] if result is not None else None
+            ),
         })
 
     def log_command(
@@ -289,6 +305,32 @@ class EvidenceLogger:
         """Write an ad-hoc event record."""
         self._write({"event": event, **kwargs})
 
+    def write_minimum_artifacts(
+        self,
+        run_payload: dict[str, Any],
+        files_changed: list[str] | None = None,
+        validation_payload: dict[str, Any] | None = None,
+    ) -> None:
+        """Write minimum run artifact files required for command evidence."""
+        self._write_artifact(self._run_json, run_payload)
+        self._write_artifact(
+            self._files_changed_json,
+            {
+                "files_changed": files_changed or [],
+                "ts": _now_iso(),
+            },
+        )
+        self._write_artifact(
+            self._validation_json,
+            validation_payload
+            or {
+                "status": "not_applicable",
+                "errors": [],
+                "warnings": [],
+                "ts": _now_iso(),
+            },
+        )
+
     def finalize(self) -> Path:
         """
         Write a session_summary.json and return its path.
@@ -308,7 +350,10 @@ class EvidenceLogger:
                 json.dumps(summary, indent=2, default=str), encoding="utf-8"
             )
         except OSError as exc:
-            logger.warning("EvidenceLogger.finalize: could not write summary: %s", exc)
+            logger.warning(
+                "EvidenceLogger.finalize: could not write summary: %s",
+                exc,
+            )
         return self._summary_path
 
     @property

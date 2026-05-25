@@ -1,0 +1,9 @@
+{
+  "typeCheckingMode": "basic",
+  "reportMissingTypeStubs": "none",
+  "exclude": [
+    "tools/generated",
+    "skills/generated",
+    ".skillforge"
+  ]
+}

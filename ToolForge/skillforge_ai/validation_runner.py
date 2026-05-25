@@ -1,5 +1,5 @@
 """
-ValidationRunner — run all ToolForge validators and optionally attempt AI-driven repair.
+ValidationRunner for ToolForge with optional repair attempts.
 
 Runs 5 validators + SafetyAnalyzer in sequence:
   1. SchemaValidator  (toolforge.yaml structure)
@@ -21,15 +21,21 @@ Usage::
     # Or with repair:
     report = runner.repair_loop("csv-cleaner", provider="rule_based")
 """
+# mypy: disable-error-code=import-untyped
+
+# pyright: reportMissingTypeStubs=false
+
 from __future__ import annotations
 
 import logging
 import sys
 import json
+import py_compile
 from pathlib import Path
 from typing import Any
 
 from skillforge_ai.models import ValidationReport
+from skillforge_ai.yaml_utils import dump_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +128,84 @@ class ValidationRunner:
 
         # 4. Skill files and metadata schema
         canonical_skill_dir = self._root / "skills" / slug
-        skill_dir = canonical_skill_dir if canonical_skill_dir.exists() else self._root / "skills" / "generated"
+        check_results = {
+            "metadata": "failed",
+            "skill_md": "failed",
+            "readme": "failed",
+            "syntax": "failed",
+            "tests": "failed",
+            "examples": "failed",
+            "package": "failed",
+        }
+
+        metadata_path = canonical_skill_dir / "metadata.json"
+        if canonical_skill_dir.exists():
+            skill_md_path = canonical_skill_dir / "SKILL.md"
+            if skill_md_path.exists():
+                check_results["skill_md"] = "passed"
+            else:
+                report.passed = False
+                report.skill_ok = False
+                report.errors.append(f"Skill file missing: {skill_md_path}")
+
+            if metadata_path.exists():
+                check_results["metadata"] = "passed"
+            else:
+                report.passed = False
+                report.schema_ok = False
+                report.errors.append(f"Metadata file missing: {metadata_path}")
+
+            readme_path = canonical_skill_dir / "README.md"
+            if readme_path.exists():
+                check_results["readme"] = "passed"
+            else:
+                report.passed = False
+                report.errors.append(f"README missing: {readme_path}")
+
+            skill_tool_dir = canonical_skill_dir / "tool"
+            if skill_tool_dir.exists():
+                syntax_errors = self._run_python_syntax_check(skill_tool_dir)
+                if syntax_errors:
+                    report.passed = False
+                    report.errors.extend(syntax_errors)
+                else:
+                    check_results["syntax"] = "passed"
+
+            skill_tests_dir = canonical_skill_dir / "tests"
+            if (
+                skill_tests_dir.exists()
+                and any(skill_tests_dir.glob("test_*.py"))
+            ):
+                check_results["tests"] = "passed"
+            else:
+                report.passed = False
+                report.tests_ok = False
+                report.errors.append(f"Tests missing in {skill_tests_dir}")
+
+            examples_dir = canonical_skill_dir / "examples"
+            if examples_dir.exists() and any(examples_dir.iterdir()):
+                check_results["examples"] = "passed"
+            else:
+                report.passed = False
+                report.errors.append(f"Examples missing in {examples_dir}")
+
+            if all(
+                check_results[name] == "passed"
+                for name in (
+                    "metadata",
+                    "skill_md",
+                    "readme",
+                    "syntax",
+                    "tests",
+                    "examples",
+                )
+            ):
+                check_results["package"] = "passed"
+
+        if canonical_skill_dir.exists():
+            skill_dir = canonical_skill_dir
+        else:
+            skill_dir = self._root / "skills" / "generated"
         skill_md = self._find_skill_md(skill_dir, slug)
         if skill_md is not None:
             skill_errs = self._run_skill_validator(skill_md)
@@ -130,14 +213,17 @@ class ValidationRunner:
                 report.skill_ok = False
                 report.passed = False
                 report.errors.extend(skill_errs)
+            else:
+                check_results["skill_md"] = "passed"
 
-        metadata_path = canonical_skill_dir / "metadata.json"
         if canonical_skill_dir.exists():
             metadata_errs = self._run_skill_schema_validator(metadata_path)
             if metadata_errs:
                 report.schema_ok = False
                 report.passed = False
                 report.errors.extend(metadata_errs)
+            else:
+                check_results["metadata"] = "passed"
 
         # 5. Tests
         test_errs, test_warnings = self._run_test_validator(tool_dir)
@@ -145,11 +231,16 @@ class ValidationRunner:
             report.tests_ok = False
             report.passed = False
             report.errors.extend(test_errs)
+        else:
+            check_results["tests"] = "passed"
         report.warnings.extend(test_warnings)
 
         # 6. Safety analysis
         if spec is not None:
-            safety_errs, safety_warnings = self._run_safety_analyzer(spec, tool_dir)
+            safety_errs, safety_warnings = self._run_safety_analyzer(
+                spec,
+                tool_dir,
+            )
             if safety_errs:
                 report.safety_ok = False
                 report.passed = False
@@ -166,7 +257,7 @@ class ValidationRunner:
             except Exception as exc:
                 logger.debug("EvidenceLogger.log_validation failed: %s", exc)
 
-        self._write_skill_validation_report(slug, report)
+        self._write_skill_validation_report(slug, report, check_results)
 
         return report
 
@@ -186,7 +277,10 @@ class ValidationRunner:
             if report.passed:
                 break
             logger.info(
-                "Validation failed (%d error(s)) — attempting AI repair (attempt %d/%d)",
+                (
+                    "Validation failed (%d error(s)) — attempting "
+                    "AI repair (attempt %d/%d)"
+                ),
                 len(report.errors),
                 attempt - 1,
                 self._max_repair,
@@ -218,7 +312,9 @@ class ValidationRunner:
 
     def _run_security_validator(self, spec: Any) -> list[str]:
         try:
-            from packages.validators.security_validator import validate_security
+            from packages.validators.security_validator import (
+                validate_security,
+            )
             violations_raw = validate_security(spec)
             violations = list(violations_raw or [])
             return [f"Security: {v}" for v in violations]
@@ -250,7 +346,10 @@ class ValidationRunner:
                 return [f"Skill: {e}" for e in errs]
             return [f"Skill: {exc}"]
 
-    def _run_test_validator(self, tool_dir: Path) -> tuple[list[str], list[str]]:
+    def _run_test_validator(
+        self,
+        tool_dir: Path,
+    ) -> tuple[list[str], list[str]]:
         """Return (errors, warnings). Warnings when no tests found."""
         tests_dir = tool_dir / "tests"
         if not tests_dir.exists() or not any(tests_dir.glob("test_*.py")):
@@ -260,9 +359,17 @@ class ValidationRunner:
             report = run_tests(tool_dir)
             if not report.all_passed:
                 errors = [
-                    f"Tests: {f.get('nodeid', 'unknown')} — {f.get('message', '')}"
+                    (
+                        f"Tests: {f.get('nodeid', 'unknown')}"
+                        f" — {f.get('message', '')}"
+                    )
                     for f in report.failures
-                ] or [f"Tests: {report.failed} test(s) failed, {report.errors} error(s)"]
+                ] or [
+                    (
+                        f"Tests: {report.failed} test(s) failed, "
+                        f"{report.errors} error(s)"
+                    )
+                ]
                 return errors, []
             return [], []
         except Exception as exc:
@@ -294,7 +401,11 @@ class ValidationRunner:
         try:
             from jsonschema import ValidationError, validate
 
-            schema_path = Path(__file__).resolve().parent / "schemas" / "skill_schema.json"
+            schema_path = (
+                Path(__file__).resolve().parent
+                / "schemas"
+                / "skill_schema.json"
+            )
             schema = json.loads(schema_path.read_text(encoding="utf-8"))
             payload = json.loads(metadata_path.read_text(encoding="utf-8"))
             validate(instance=payload, schema=schema)
@@ -332,7 +443,13 @@ class ValidationRunner:
         # Test failures require manual intervention (for now we just log them).
         if any("Schema:" in e or "Security:" in e for e in report.errors):
             try:
-                self._repair_spec(slug, tool_dir, yaml_path, error_text, provider)
+                self._repair_spec(
+                    slug,
+                    tool_dir,
+                    yaml_path,
+                    error_text,
+                    provider,
+                )
             except Exception as exc:
                 logger.warning("Repair attempt %d failed: %s", attempt, exc)
 
@@ -356,12 +473,17 @@ class ValidationRunner:
         error_text: str,
         provider: str,
     ) -> None:
-        """Regenerate the toolforge.yaml using the original description + error context."""
+        """
+        Regenerate toolforge.yaml using original description and error context.
+        """
         from packages.ai.spec_generator import AISpecGenerator
         from packages.core.spec_from_prompt import RuleBasedSpecGenerator
 
         # Read original spec description if it exists
-        original_prompt = f"Fix the following tool spec errors for '{slug}': {error_text}"
+        original_prompt = (
+            f"Fix the following tool spec errors for '{slug}': "
+            f"{error_text}"
+        )
 
         generator = AISpecGenerator(
             provider=provider,
@@ -374,19 +496,16 @@ class ValidationRunner:
 
         # Force the original slug to avoid renaming
         try:
-            from ruamel.yaml import YAML
-            import json
-
-            yaml = YAML()
-            yaml.default_flow_style = False
             spec_dict = json.loads(new_spec.model_dump_json())
             spec_dict["slug"] = slug  # preserve identity
-
-            with yaml_path.open("w", encoding="utf-8") as fh:
-                yaml.dump(spec_dict, fh)
+            dump_yaml(spec_dict, yaml_path)
             logger.info("Repaired toolforge.yaml for %s", slug)
         except Exception as exc:
-            logger.warning("Could not write repaired YAML for %s: %s", slug, exc)
+            logger.warning(
+                "Could not write repaired YAML for %s: %s",
+                slug,
+                exc,
+            )
 
     # ------------------------------------------------------------------
     # Helpers
@@ -417,6 +536,7 @@ class ValidationRunner:
         self,
         slug: str,
         report: ValidationReport,
+        checks: dict[str, str] | None = None,
     ) -> None:
         skill_dir = self._root / "skills" / slug
         if not skill_dir.exists():
@@ -425,14 +545,29 @@ class ValidationRunner:
         payload = {
             "skill": slug,
             "status": "passed" if report.passed else "failed",
-            "checks": {
+            "checks": checks
+            or {
                 "metadata": "passed" if report.schema_ok else "failed",
                 "skill_md": "passed" if report.skill_ok else "failed",
+                "readme": "failed",
                 "syntax": "passed" if report.schema_ok else "failed",
                 "tests": "passed" if report.tests_ok else "failed",
+                "examples": "failed",
                 "package": "passed" if report.safety_ok else "failed",
             },
             "errors": report.errors,
             "warnings": report.warnings,
         }
-        out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        out_path.write_text(
+            json.dumps(payload, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def _run_python_syntax_check(self, tool_dir: Path) -> list[str]:
+        errors: list[str] = []
+        for source in tool_dir.rglob("*.py"):
+            try:
+                py_compile.compile(str(source), doraise=True)
+            except py_compile.PyCompileError as exc:
+                errors.append(f"Syntax: {source}: {exc.msg}")
+        return errors

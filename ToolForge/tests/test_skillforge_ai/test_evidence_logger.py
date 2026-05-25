@@ -1,6 +1,8 @@
 """
 Tests for skillforge_ai.evidence_logger — EvidenceLogger.
 """
+# mypy: disable-error-code=import-untyped
+
 from __future__ import annotations
 
 import json
@@ -21,7 +23,11 @@ class TestEvidenceLogger:
 
     def test_log_build_writes_jsonl(self, tmp_path: Path):
         ev = self._make_logger(tmp_path)
-        ev.log_build("test-skill", files_created=[], spec={"slug": "test-skill"})
+        ev.log_build(
+            "test-skill",
+            files_created=[],
+            spec={"slug": "test-skill"},
+        )
         lines = ev.log_path.read_text().splitlines()
         assert len(lines) >= 1
         record = json.loads(lines[0])
@@ -91,10 +97,39 @@ class TestEvidenceLogger:
         assert record["event"] == "package"
         assert len(record.get("sha256", "")) == 64
 
-    def test_run_artifacts_created_for_build_and_validation(self, tmp_path: Path):
+    def test_run_artifacts_created_for_build_and_validation(
+        self,
+        tmp_path: Path,
+    ):
         ev = self._make_logger(tmp_path)
-        ev.log_build("test-skill", files_created=["a.py", "b.py"], spec={"name": "x"})
-        ev.log_validation("test-skill", ValidationReport(slug="test-skill", passed=True))
+        ev.log_build(
+            "test-skill",
+            files_created=["a.py", "b.py"],
+            spec={"name": "x"},
+        )
+        ev.log_validation(
+            "test-skill",
+            ValidationReport(slug="test-skill", passed=True),
+        )
+
+        assert (ev.run_dir / "run.json").exists()
+        assert (ev.run_dir / "files_changed.json").exists()
+        assert (ev.run_dir / "validation.json").exists()
+
+    def test_write_minimum_artifacts_creates_required_files(
+        self,
+        tmp_path: Path,
+    ):
+        ev = self._make_logger(tmp_path)
+        ev.write_minimum_artifacts(
+            run_payload={
+                "event": "run",
+                "skill": "test-skill",
+                "status": "passed",
+            },
+            files_changed=["skills/test-skill/tool/main.py"],
+            validation_payload={"skill": "test-skill", "status": "passed"},
+        )
 
         assert (ev.run_dir / "run.json").exists()
         assert (ev.run_dir / "files_changed.json").exists()

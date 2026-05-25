@@ -1,4 +1,5 @@
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 from skillforge_ai.planner import SkillPlanner
 
@@ -36,6 +37,12 @@ def test_planner_validate_workspace_mode():
     result = planner.build_plan("validate workspace")
     assert result.mode == "validate_workspace"
     assert result.intent == "validate_workspace"
+
+
+def test_planner_validate_skill_mode():
+    planner = SkillPlanner()
+    result = planner.build_plan("validate that skill")
+    assert result.mode == "validate_skill"
 
 
 def test_planner_infers_browser_category():

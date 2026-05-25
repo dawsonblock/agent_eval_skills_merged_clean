@@ -1,0 +1,8 @@
+{
+  "skill": "create-a-tool-named",
+  "status": "passed",
+  "errors": [],
+  "warnings": [
+    "No test files found \u2014 skipping pytest"
+  ]
+}

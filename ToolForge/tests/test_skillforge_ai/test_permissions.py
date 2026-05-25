@@ -1,16 +1,18 @@
 """
 Tests for skillforge_ai.permissions — PermissionBroker, classify, check.
 """
+
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 import pytest
 
-from skillforge_ai.models import RiskLevel
+from skillforge_ai.models import RiskLevel  # type: ignore[import-untyped]
 from skillforge_ai.permissions import (
     ApprovalRequiredError,
     PermissionBroker,
     PermissionDeniedError,
-)
+)  # type: ignore[import-untyped]
 
 
 class TestClassify:
@@ -20,7 +22,10 @@ class TestClassify:
 
     def test_approval_required_action(self):
         broker = PermissionBroker(interactive=False)
-        assert broker.classify("run_shell_commands") == RiskLevel.APPROVAL_REQUIRED
+        assert (
+            broker.classify("run_shell_commands")
+            == RiskLevel.APPROVAL_REQUIRED
+        )
 
     def test_blocked_action(self):
         broker = PermissionBroker(interactive=False)
@@ -29,7 +34,10 @@ class TestClassify:
     def test_unknown_action_defaults_to_approval_required(self):
         broker = PermissionBroker(interactive=False)
         # Unknown actions default to APPROVAL_REQUIRED for safety
-        assert broker.classify("some_unknown_action") == RiskLevel.APPROVAL_REQUIRED
+        assert (
+            broker.classify("some_unknown_action")
+            == RiskLevel.APPROVAL_REQUIRED
+        )
 
 
 class TestCheck:
@@ -86,3 +94,33 @@ class TestSafeActionsList:
         approval = broker.approval_required_actions()
         assert isinstance(approval, frozenset)
         assert "run_shell_commands" in approval
+
+
+def test_safe_file_skill_allowed():
+    broker = PermissionBroker(interactive=False)
+    broker.check("write_within_skills", None)
+    broker.check("write_within_skillforge", None)
+
+
+def test_network_requires_approval():
+    broker = PermissionBroker(interactive=False, auto_approve=False)
+    with pytest.raises(ApprovalRequiredError):
+        broker.check("access_network", None)
+
+
+def test_shell_requires_approval():
+    broker = PermissionBroker(interactive=False, auto_approve=False)
+    with pytest.raises(ApprovalRequiredError):
+        broker.check("run_shell_commands", None)
+
+
+def test_delete_outside_workspace_blocked():
+    broker = PermissionBroker(interactive=False)
+    with pytest.raises(PermissionDeniedError):
+        broker.check("delete_outside_workspace", None)
+
+
+def test_unknown_permission_fails_closed():
+    broker = PermissionBroker(interactive=False, auto_approve=False)
+    with pytest.raises(ApprovalRequiredError):
+        broker.check("totally_new_permission", None)
