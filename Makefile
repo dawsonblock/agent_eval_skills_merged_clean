@@ -131,6 +131,10 @@ operator-release-gate-check: ## Run operator helper: verify canonical pair and p
 verify-release-gate-policy: ## Verify release gate naming consistency across workflows/docs
 	bash scripts/verify_release_gate_policy.sh
 
+.PHONY: verify-release-classification-matrix
+verify-release-classification-matrix: ## Verify classify_release_upload across canonical/new/wrapper/dirty/invalid cases
+	bash scripts/verify_release_classification_matrix.sh
+
 .PHONY: verify-skip-strictness
 verify-skip-strictness: ## Verify strict SKIP_EXISTING_ARTIFACTS behavior for smoke MCP builds
 	bash scripts/verify_skip_existing_artifacts_strict.sh

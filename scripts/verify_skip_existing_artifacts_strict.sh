@@ -305,6 +305,13 @@ run_build "skip_python" 1 0
 
 assert_summary_sane "skip_python" 1
 
+echo "== test_python_skip_accepts_fully_ready_target =="
+run_build "skip_python" 0 1
+
+assert_summary_sane "skip_python" 1
+assert_reason_equals "youtube_transcript" "runtime_ready_skip"
+assert_skipped_existing_equals "youtube_transcript" "true"
+
 python_restore_path="$TOOLATHLON_DIR/local_servers/mcp-youtube-transcript/.venv/bin/python3"
 if [ ! -x "$python_restore_path" ]; then
   echo "Error: expected python3 executable missing before perturbation: $python_restore_path" >&2
