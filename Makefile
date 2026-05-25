@@ -131,6 +131,14 @@ operator-release-gate-check: ## Run operator helper: verify canonical pair and p
 verify-release-gate-policy: ## Verify release gate naming consistency across workflows/docs
 	bash scripts/verify_release_gate_policy.sh
 
+.PHONY: verify-release-policy-drift
+verify-release-policy-drift: ## Verify canonical release-policy constants have not drifted across docs/manifests/logs
+	bash scripts/validate_release_policy_drift.sh
+
+.PHONY: verify-release-policy-drift-strict
+verify-release-policy-drift-strict: ## Verify release-policy drift and require current .validation_logs agreement
+	bash scripts/validate_release_policy_drift.sh --require-validation-logs
+
 .PHONY: verify-release-classification-matrix
 verify-release-classification-matrix: ## Verify classify_release_upload across canonical/new/wrapper/dirty/invalid cases
 	bash scripts/verify_release_classification_matrix.sh

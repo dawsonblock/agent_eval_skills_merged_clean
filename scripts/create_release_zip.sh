@@ -6,6 +6,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 DIST_DIR="$REPO_ROOT/dist"
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 DEFAULT_OUTPUT="$DIST_DIR/agent_eval_skills_merged_clean-$TIMESTAMP.zip"
@@ -105,9 +113,9 @@ if [ "$VALIDATE_ARCHIVE" -eq 1 ]; then
 
   zipinfo -1 "$OUTPUT_PATH" > "$tmp_forbidden"
 
-  if grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.venv/)' "$tmp_forbidden" >/dev/null; then
+  if grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_forbidden" >/dev/null; then
     echo "Forbidden entries found in archive:" >&2
-    grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.venv/)' "$tmp_forbidden" >&2
+    grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_forbidden" >&2
     exit 1
   fi
 

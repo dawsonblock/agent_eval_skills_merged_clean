@@ -7,6 +7,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -143,7 +151,6 @@ release_sha="$(shasum -a 256 "$RELEASE_PATH" | awk '{print $1}')"
 release_entries_tmp="$(mktemp)"
 forbidden_tmp="$(mktemp)"
 reasons_tmp="$(mktemp)"
-forbidden_pattern='__MACOSX|/\._|\.DS_Store|node_modules|\.validation_logs|__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.venv'
 
 cleanup() {
   rm -f "$release_entries_tmp" "$forbidden_tmp" "$reasons_tmp"
@@ -151,7 +158,7 @@ cleanup() {
 trap cleanup EXIT
 
 zipinfo -1 "$RELEASE_PATH" > "$release_entries_tmp"
-grep -E "$forbidden_pattern" "$release_entries_tmp" > "$forbidden_tmp" || true
+grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$release_entries_tmp" > "$forbidden_tmp" || true
 release_forbidden_count="$(wc -l < "$forbidden_tmp" | tr -d ' ')"
 
 required_layout_missing=0

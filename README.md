@@ -19,9 +19,9 @@
 Applies only to the canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-    - SHA256: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+  - SHA256: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-    - SHA256: `5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c`
+  - SHA256: `5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c`
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
@@ -108,6 +108,7 @@ Canonical artifact publication must pass attested-pair checks:
 Repository maintainers should configure branch protection or repository rulesets so this check is required for release-path merges.
 
 Operational setup steps are documented in [RELEASE_GATE_RUNBOOK.md](RELEASE_GATE_RUNBOOK.md).
+Track A release-discipline phases are documented in [docs/TRACK_A_PHASES.md](docs/TRACK_A_PHASES.md).
 
 If the pair check does not pass for the exact release/evidence pair being distributed, classify the upload as an unbound wrapper/source bundle.
 

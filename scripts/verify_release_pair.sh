@@ -6,6 +6,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -137,11 +145,10 @@ check_forbidden_entries() {
   local zip_path="$1"
   local tmp_entries
   tmp_entries="$(mktemp)"
-  local forbidden_pattern='__MACOSX|/\._|\.DS_Store|node_modules|\.validation_logs|__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.venv'
   zipinfo -1 "$zip_path" > "$tmp_entries"
-  if grep -E "$forbidden_pattern" "$tmp_entries" >/dev/null; then
+  if grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_entries" >/dev/null; then
     echo "Forbidden metadata entries found in: $zip_path" >&2
-    grep -E "$forbidden_pattern" "$tmp_entries" >&2
+    grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_entries" >&2
     rm -f "$tmp_entries"
     return 1
   fi

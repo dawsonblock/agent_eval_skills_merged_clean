@@ -16,6 +16,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 DATE_TAG="${EVIDENCE_DATE_TAG:-2026-05-22}"
 OUTPUT_PATH=""
 VALIDATE_BUNDLE=1
@@ -155,9 +163,9 @@ if [ "$VALIDATE_BUNDLE" -eq 1 ]; then
 
   zipinfo -1 "$OUTPUT_PATH" > "$tmp_entries"
 
-  if grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.venv/)' "$tmp_entries" >/dev/null; then
+  if grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_entries" >/dev/null; then
     echo "Forbidden entries found in evidence bundle:" >&2
-    grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$|node_modules/|\.validation_logs/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.venv/)' "$tmp_entries" >&2
+    grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_entries" >&2
     exit 1
   fi
 

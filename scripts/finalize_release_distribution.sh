@@ -12,6 +12,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -113,8 +121,8 @@ if ! command -v shasum >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v unzip >/dev/null 2>&1; then
-  echo "Error: unzip is required." >&2
+if ! command -v zipinfo >/dev/null 2>&1; then
+  echo "Error: zipinfo is required." >&2
   exit 1
 fi
 
@@ -164,9 +172,19 @@ EOF
 fi
 
 # Phase: release ZIP hygiene gate.
-if unzip -l "$RELEASE_PATH" | grep -E "__MACOSX|/\._|\.DS_Store|node_modules|\.validation_logs|__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.venv" >/dev/null; then
+release_entries_tmp="$(mktemp)"
+release_forbidden_tmp="$(mktemp)"
+cleanup_release_hygiene() {
+  rm -f "$release_entries_tmp" "$release_forbidden_tmp"
+}
+trap cleanup_release_hygiene EXIT
+
+zipinfo -1 "$RELEASE_PATH" > "$release_entries_tmp"
+grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$release_entries_tmp" > "$release_forbidden_tmp" || true
+
+if [ -s "$release_forbidden_tmp" ]; then
   echo "Release ZIP hygiene check failed: forbidden entries found." >&2
-  unzip -l "$RELEASE_PATH" | grep -E "__MACOSX|/\._|\.DS_Store|node_modules|\.validation_logs|__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.venv" >&2
+  cat "$release_forbidden_tmp" >&2
   exit 1
 fi
 

@@ -172,10 +172,22 @@ jobs:
                   print('Smoke evidence assertion passed.')
                   PY
 
+    release-policy-drift:
+        name: Validate Release Policy Drift
+        runs-on: ubuntu-latest
+        needs: [unified-validation]
+        if: success()
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Verify release policy constants and evidence drift
+              run: |
+                  bash scripts/validate_release_policy_drift.sh --require-validation-logs
+
     release-zip-hygiene:
         name: Release ZIP Hygiene
         runs-on: ubuntu-latest
-        needs: [unified-validation]
+        needs: [unified-validation, release-policy-drift]
         if: success()
         steps:
             - uses: actions/checkout@v4
