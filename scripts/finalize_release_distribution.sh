@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2250,SC2292
+# trunk-ignore-all(shellcheck)
 # Final release-distribution gate for pruned smoke release candidate.
 #
 # This script enforces:

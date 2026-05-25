@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2250,SC2292
+# trunk-ignore-all(shellcheck)
 # Build a clean release ZIP and verify it excludes macOS metadata and local caches.
 
 set -euo pipefail

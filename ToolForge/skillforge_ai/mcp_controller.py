@@ -20,6 +20,7 @@ Usage::
         ...
 """
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 import json
 import logging
@@ -128,8 +129,8 @@ class MCPController:
             logger.debug("Error stopping MCP server: %s", exc)
             try:
                 self._proc.kill()
-            except Exception:
-                pass
+            except Exception as kill_exc:
+                logger.debug("Error force-killing MCP server: %s", kill_exc)
         finally:
             self._proc = None
             self._request_id = 0
@@ -172,15 +173,23 @@ class MCPController:
             if self._ev:
                 try:
                     self._ev.log_tool_call(request, str(exc), success=False)
-                except Exception:
-                    pass
+                except Exception as log_exc:
+                    logger.debug(
+                        "Failed logging MCP tool error for %s: %s",
+                        name,
+                        log_exc,
+                    )
             raise
 
         if self._ev:
             try:
                 self._ev.log_tool_call(request, result, success=success)
-            except Exception:
-                pass
+            except Exception as log_exc:
+                logger.debug(
+                    "Failed logging MCP tool result for %s: %s",
+                    name,
+                    log_exc,
+                )
 
         return result
 
@@ -255,7 +264,8 @@ class MCPController:
 
     def _write_message(self, message: dict[str, Any]) -> None:
         """Write a newline-delimited JSON message to stdin."""
-        assert self._proc and self._proc.stdin
+        if self._proc is None or self._proc.stdin is None:
+            raise RuntimeError("MCP server stdin is not available")
         payload = (json.dumps(message) + "\n").encode("utf-8")
         self._proc.stdin.write(payload)
         self._proc.stdin.flush()
@@ -267,7 +277,8 @@ class MCPController:
         """
         import select
 
-        assert self._proc and self._proc.stdout
+        if self._proc is None or self._proc.stdout is None:
+            raise RuntimeError("MCP server stdout is not available")
 
         deadline_remaining = self._timeout
         accumulated = b""
@@ -275,7 +286,9 @@ class MCPController:
         while deadline_remaining > 0:
             # Use select for non-blocking check with timeout
             try:
-                ready, _, _ = select.select([self._proc.stdout], [], [], min(1.0, deadline_remaining))
+                ready, _, _ = select.select(
+                    [self._proc.stdout], [], [], min(1.0, deadline_remaining)
+                )
             except (ValueError, OSError):
                 break
 
@@ -286,9 +299,18 @@ class MCPController:
                     stderr_data = b""
                     try:
                         stderr_data = self._proc.stderr.read(1024)  # type: ignore[union-attr]
-                    except Exception:
-                        pass
-                    raise MCPError(-32603, f"Server process exited early. stderr: {stderr_data.decode('utf-8', errors='replace')}")
+                    except Exception as stderr_exc:
+                        logger.debug(
+                            "Could not read MCP stderr during failure handling: %s",
+                            stderr_exc,
+                        )
+                    stderr_text = stderr_data.decode(
+                        "utf-8", errors="replace"
+                    )
+                    raise MCPError(
+                        -32603,
+                        f"Server process exited early. stderr: {stderr_text}",
+                    )
                 continue
 
             chunk = self._proc.stdout.read1(4096)  # type: ignore[attr-defined]

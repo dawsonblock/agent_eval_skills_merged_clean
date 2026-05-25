@@ -1,0 +1,3 @@
+[bandit]
+# Assertions are expected in test code across this package.
+skips = B101

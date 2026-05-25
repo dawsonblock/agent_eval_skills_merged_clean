@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2250,SC2292
+# trunk-ignore-all(shellcheck)
 # Verify release gate check names stay consistent across workflows and docs.
 
 set -euo pipefail

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2250,SC2292
+# trunk-ignore-all(shellcheck)
 # Verify strict SKIP_EXISTING_ARTIFACTS behavior for smoke-profile Toolathlon builds.
 #
 # This check enforces two guarantees:

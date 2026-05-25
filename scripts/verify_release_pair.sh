@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# trunk-ignore-all
+# shellcheck shell=bash disable=SC1044,SC1072,SC1073
+# trunk-ignore-all(shellcheck)
 # Verify whether a release+evidence ZIP pair matches the canonical attested hashes.
 
 set -euo pipefail

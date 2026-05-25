@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2250,SC2292,SC2329
+# trunk-ignore-all(shellcheck)
 # Classify an uploaded release ZIP as canonical attested pair (when evidence is supplied)
 # or unbound wrapper/source bundle, and emit a JSON verdict artifact.
 

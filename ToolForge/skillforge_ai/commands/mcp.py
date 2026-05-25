@@ -1,9 +1,10 @@
 from __future__ import annotations
+# mypy: disable-error-code=import-untyped
 
 import json
 import os
 import signal
-import subprocess
+import subprocess  # nosec B404
 import sys
 import time
 from datetime import datetime, timezone
@@ -11,6 +12,17 @@ from pathlib import Path
 
 from skillforge_ai.config import ensure_runtime_state
 from skillforge_ai.mcp_controller import MCPController
+
+
+def _to_int(value: object, default: int = -1) -> int:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            return default
+    return default
 
 
 def smoke_skill_server(server_path: Path) -> bool:
@@ -41,7 +53,7 @@ def list_running_servers(workspace_root: Path) -> list[dict[str, object]]:
     state = _read_state(workspace_root)
     out: list[dict[str, object]] = []
     for slug, data in state.items():
-        pid = int(data.get("pid", -1))
+        pid = _to_int(data.get("pid", -1))
         running = _process_matches_entry(pid, data)
         out.append(
             {
@@ -65,7 +77,7 @@ def start_managed_server(
     state = _read_state(workspace_root)
     current = state.get(slug)
     if current is not None:
-        current_pid = int(current.get("pid", -1))
+        current_pid = _to_int(current.get("pid", -1))
         if _process_matches_entry(current_pid, current):
             return {
                 "slug": slug,
@@ -92,7 +104,7 @@ def start_managed_server(
             stdout=stdout_fh,
             stderr=stderr_fh,
             start_new_session=True,
-        )
+        )  # nosec B603
     finally:
         stdout_fh.close()
         stderr_fh.close()
@@ -133,7 +145,7 @@ def stop_managed_server(workspace_root: Path, slug: str) -> bool:
     if entry is None:
         return False
 
-    pid = int(entry.get("pid", -1))
+    pid = _to_int(entry.get("pid", -1))
     if pid > 0 and _is_pid_running(pid):
         if not _process_matches_entry(pid, entry):
             raise RuntimeError(

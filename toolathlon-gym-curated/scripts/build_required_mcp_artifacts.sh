@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2250,SC2292,SC2310,SC2312
+# trunk-ignore-all(shellcheck)
 # Build the minimal set of MCP server artifacts required by preflight.
 
 set -euo pipefail

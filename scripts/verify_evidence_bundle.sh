@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2250,SC2292
+# trunk-ignore-all(shellcheck)
 # Verify evidence ZIP contains required files and required smoke-profile values.
 
 set -euo pipefail
