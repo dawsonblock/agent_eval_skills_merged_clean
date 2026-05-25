@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from skillforge_ai.schema_utils import validate_with_schema
+
 
 @dataclass(frozen=True)
 class SkillForgePaths:
@@ -53,6 +55,55 @@ def ensure_runtime_state(workspace_root: Path) -> SkillForgePaths:
     if not paths.tool_registry_path.exists():
         paths.tool_registry_path.write_text("[]\n", encoding="utf-8")
     if not paths.permissions_path.exists():
-        paths.permissions_path.write_text("{}\n", encoding="utf-8")
+        paths.permissions_path.write_text(
+            (
+                "{\n"
+                '  "version": "0.1.0",\n'
+                '  "default_mode": "interactive",\n'
+                '  "rules": []\n'
+                "}\n"
+            ),
+            encoding="utf-8",
+        )
+
+    _normalize_runtime_state(paths)
 
     return paths
+
+
+def _normalize_runtime_state(paths: SkillForgePaths) -> None:
+    import json
+
+    registry_text = paths.registry_path.read_text(encoding="utf-8")
+    tool_registry_text = paths.tool_registry_path.read_text(encoding="utf-8")
+    permissions_text = paths.permissions_path.read_text(encoding="utf-8")
+
+    try:
+        registry_payload = json.loads(registry_text)
+        validate_with_schema(registry_payload, "registry_schema.json")
+    except Exception:
+        paths.registry_path.write_text("[]\n", encoding="utf-8")
+
+    try:
+        tool_registry_payload = json.loads(tool_registry_text)
+        if not isinstance(tool_registry_payload, list):
+            raise ValueError("tool_registry.json must be a list")
+        for item in tool_registry_payload:
+            validate_with_schema(item, "tool_schema.json")
+    except Exception:
+        paths.tool_registry_path.write_text("[]\n", encoding="utf-8")
+
+    try:
+        permissions_payload = json.loads(permissions_text)
+        validate_with_schema(permissions_payload, "permission_schema.json")
+    except Exception:
+        paths.permissions_path.write_text(
+            (
+                "{\n"
+                '  "version": "0.1.0",\n'
+                '  "default_mode": "interactive",\n'
+                '  "rules": []\n'
+                "}\n"
+            ),
+            encoding="utf-8",
+        )

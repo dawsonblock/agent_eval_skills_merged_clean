@@ -2,6 +2,7 @@
   "name": "website-table-scraper",
   "description": "Parse HTML tables from local HTML and write structured JSON output.",
   "category": "browser",
+  "version": "0.1.0",
   "inputs": [
     {
       "name": "input_path",
@@ -36,8 +37,10 @@
   ],
   "risk_level": "low",
   "validation": {
+    "metadata": "pending",
     "syntax": "pending",
     "tests": "pending",
+    "package": "pending",
     "smoke": "pending"
   }
 }

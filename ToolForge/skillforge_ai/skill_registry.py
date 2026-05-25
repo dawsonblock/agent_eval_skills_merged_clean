@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 from skillforge_ai.config import ensure_runtime_state
+from skillforge_ai.schema_utils import validate_with_schema
 
 
 class SkillRegistry:
@@ -12,7 +13,7 @@ class SkillRegistry:
         self._paths = ensure_runtime_state(workspace_root)
         self._path = self._paths.registry_path
 
-    def list(self) -> list[dict[str, Any]]:
+    def list(self) -> List[dict[str, Any]]:
         return self._read()
 
     def get(self, name: str) -> dict[str, Any] | None:
@@ -35,12 +36,22 @@ class SkillRegistry:
             out.append(entry)
         self._write(out)
 
-    def _read(self) -> list[dict[str, Any]]:
+    def _read(self) -> List[dict[str, Any]]:
         try:
             payload = json.loads(self._path.read_text(encoding="utf-8"))
         except Exception:
             return []
-        return payload if isinstance(payload, list) else []
+        if not isinstance(payload, list):
+            return []
+        try:
+            validate_with_schema(payload, "registry_schema.json")
+        except Exception:
+            return []
+        return payload
 
-    def _write(self, data: list[dict[str, Any]]) -> None:
-        self._path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    def _write(self, data: List[dict[str, Any]]) -> None:
+        validate_with_schema(data, "registry_schema.json")
+        self._path.write_text(
+            json.dumps(data, indent=2) + "\n",
+            encoding="utf-8",
+        )

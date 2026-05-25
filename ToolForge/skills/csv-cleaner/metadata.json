@@ -1,7 +1,8 @@
 {
   "name": "csv-cleaner",
   "description": "Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, normalizes column names.",
-  "category": "file-processing",
+  "category": "data",
+  "version": "0.1.0",
   "inputs": [
     {
       "name": "input_path",
@@ -30,8 +31,10 @@
   "permissions": [],
   "risk_level": "medium",
   "validation": {
+    "metadata": "pending",
     "syntax": "pending",
     "tests": "pending",
+    "package": "pending",
     "smoke": "pending"
   }
 }

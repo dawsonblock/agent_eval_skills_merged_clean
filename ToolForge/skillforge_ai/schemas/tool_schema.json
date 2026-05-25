@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skillforge.local/schemas/tool_schema.json",
+  "title": "SkillForge Tool Metadata",
+  "type": "object",
+  "required": [
+    "name",
+    "type",
+    "entrypoint",
+    "description",
+    "permissions",
+    "risk_level",
+    "validated",
+    "mcp_server"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-zA-Z0-9_\\-]+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["python", "typescript", "mcp"]
+    },
+    "entrypoint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "read_files",
+          "write_files",
+          "run_validators",
+          "run_tests",
+          "package_skills",
+          "network_access",
+          "shell_commands",
+          "docker_access",
+          "external_api",
+          "hardware_access",
+          "read_secrets"
+        ]
+      }
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "validated": {
+      "type": "boolean"
+    },
+    "mcp_server": {
+      "type": ["string", "null"]
+    }
+  }
+}

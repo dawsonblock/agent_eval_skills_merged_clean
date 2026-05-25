@@ -172,6 +172,7 @@ class SkillBuilder:
             "name": manifest.name,
             "description": manifest.description,
             "category": manifest.category,
+            "version": "0.1.0",
             "inputs": [
                 {"name": i.name, "type": i.type, "required": i.required}
                 for i in manifest.inputs
@@ -185,8 +186,10 @@ class SkillBuilder:
             "permissions": manifest.permissions,
             "risk_level": manifest.risk_level,
             "validation": {
+                "metadata": "pending",
                 "syntax": "pending",
                 "tests": "pending",
+                "package": "pending",
                 "smoke": "pending",
             },
         }

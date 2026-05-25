@@ -29,6 +29,7 @@ from typing import Any
 
 from skillforge_ai.config import ensure_runtime_state
 from skillforge_ai.models import SkillManifest
+from skillforge_ai.schema_utils import validate_with_schema
 
 logger = logging.getLogger(__name__)
 
@@ -139,18 +140,36 @@ class SkillForgeRegistry:
 
     def register_tool(self, tool_entry: dict[str, Any]) -> None:
         """Register a callable tool in the local SkillForge tool registry."""
+        normalized_entry = {
+            "name": str(tool_entry.get("name", "")).strip(),
+            "type": str(tool_entry.get("type", "python")).strip() or "python",
+            "entrypoint": str(tool_entry.get("entrypoint", "")).strip(),
+            "description": (
+                str(tool_entry.get("description", "Registered tool")).strip()
+                or "Registered tool"
+            ),
+            "permissions": tool_entry.get("permissions", []),
+            "risk_level": (
+                str(tool_entry.get("risk_level", "low")).strip() or "low"
+            ),
+            "validated": bool(tool_entry.get("validated", False)),
+            "mcp_server": tool_entry.get("mcp_server"),
+        }
+
+        validate_with_schema(normalized_entry, "tool_schema.json")
+
         data = self._read_tool_registry()
         out: list[dict[str, Any]] = []
         replaced = False
-        name = str(tool_entry.get("name", "")).strip()
+        name = normalized_entry["name"]
         for item in data:
             if item.get("name") == name:
-                out.append(tool_entry)
+                out.append(normalized_entry)
                 replaced = True
             else:
                 out.append(item)
         if not replaced:
-            out.append(tool_entry)
+            out.append(normalized_entry)
         self._write_tool_registry(out)
 
     def get_registered_tool(self, name: str) -> dict[str, Any] | None:
@@ -237,9 +256,18 @@ class SkillForgeRegistry:
             payload = json.loads(self._tool_registry_path.read_text(encoding="utf-8"))
         except Exception:
             return []
-        return payload if isinstance(payload, list) else []
+        if not isinstance(payload, list):
+            return []
+        try:
+            for item in payload:
+                validate_with_schema(item, "tool_schema.json")
+        except Exception:
+            return []
+        return payload
 
     def _write_tool_registry(self, data: list[dict[str, Any]]) -> None:
+        for item in data:
+            validate_with_schema(item, "tool_schema.json")
         self._tool_registry_path.write_text(
             json.dumps(data, indent=2) + "\n",
             encoding="utf-8",

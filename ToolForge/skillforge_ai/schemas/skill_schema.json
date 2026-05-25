@@ -7,6 +7,7 @@
     "name",
     "description",
     "category",
+    "version",
     "inputs",
     "outputs",
     "tools_required",
@@ -44,6 +45,10 @@
         "custom"
       ]
     },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
     "inputs": {
       "type": "array",
       "items": {
@@ -80,7 +85,22 @@
     },
     "permissions": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string",
+        "enum": [
+          "read_files",
+          "write_files",
+          "run_validators",
+          "run_tests",
+          "package_skills",
+          "network_access",
+          "shell_commands",
+          "docker_access",
+          "external_api",
+          "hardware_access",
+          "read_secrets"
+        ]
+      }
     },
     "risk_level": {
       "type": "string",
@@ -88,12 +108,14 @@
     },
     "validation": {
       "type": "object",
-      "required": ["syntax", "tests", "smoke"],
+      "required": ["metadata", "syntax", "tests", "package", "smoke"],
       "additionalProperties": false,
       "properties": {
-        "syntax": {"type": "string"},
-        "tests": {"type": "string"},
-        "smoke": {"type": "string"}
+        "metadata": {"type": "string", "enum": ["pending", "passed", "failed", "skipped"]},
+        "syntax": {"type": "string", "enum": ["pending", "passed", "failed", "skipped"]},
+        "tests": {"type": "string", "enum": ["pending", "passed", "failed", "skipped"]},
+        "package": {"type": "string", "enum": ["pending", "passed", "failed", "skipped"]},
+        "smoke": {"type": "string", "enum": ["pending", "passed", "failed", "skipped"]}
       }
     }
   }

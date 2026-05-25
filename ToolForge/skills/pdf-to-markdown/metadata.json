@@ -2,6 +2,7 @@
   "name": "pdf-to-markdown",
   "description": "Extract text from PDF-like files and emit normalized Markdown output.",
   "category": "documents",
+  "version": "0.1.0",
   "inputs": [
     {
       "name": "input_path",
@@ -36,8 +37,10 @@
   ],
   "risk_level": "low",
   "validation": {
+    "metadata": "pending",
     "syntax": "pending",
     "tests": "pending",
+    "package": "pending",
     "smoke": "pending"
   }
 }

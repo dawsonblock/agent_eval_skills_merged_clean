@@ -32,3 +32,12 @@ dist/._*
 
 # Root-level release bundles (upload artifacts)
 agent_eval_skills_merged_clean-pruned-smoke*.zip
+
+# SkillForge runtime state and generated artifacts
+.skillforge/runs/
+.skillforge/evidence/
+.skillforge/packages/*.zip
+
+# Skill-local Python caches
+skills/*/__pycache__/
+skills/*/.pytest_cache/

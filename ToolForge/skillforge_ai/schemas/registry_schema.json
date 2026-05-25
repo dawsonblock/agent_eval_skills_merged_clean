@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skillforge.local/schemas/registry_schema.json",
+  "title": "SkillForge Runtime Registry",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name"],
+    "additionalProperties": true,
+    "properties": {
+      "name": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      },
+      "path": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "permissions": {
+        "type": "array",
+        "items": {"type": "string"}
+      },
+      "risk_level": {
+        "type": "string",
+        "enum": ["low", "medium", "high"]
+      },
+      "validation_status": {
+        "type": "string"
+      },
+      "package_hash": {
+        "type": ["string", "null"]
+      },
+      "package_path": {
+        "type": "string"
+      },
+      "installed_hash": {
+        "type": "string"
+      },
+      "installed_from": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "last_run": {
+        "type": ["string", "null"]
+      }
+    }
+  }
+}
