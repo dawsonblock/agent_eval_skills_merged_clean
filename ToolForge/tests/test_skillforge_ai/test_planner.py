@@ -24,6 +24,20 @@ def test_planner_repair_mode():
     assert result.requires_tool_code is False
 
 
+def test_planner_call_tool_mode():
+    planner = SkillPlanner()
+    result = planner.build_plan("tools call csv-cleaner csv_cleaner_tool")
+    assert result.mode == "call_tool"
+    assert "tool registry lookup" in result.validation_plan
+
+
+def test_planner_validate_workspace_mode():
+    planner = SkillPlanner()
+    result = planner.build_plan("validate workspace")
+    assert result.mode == "validate_workspace"
+    assert result.intent == "validate_workspace"
+
+
 def test_planner_infers_browser_category():
     planner = SkillPlanner()
     result = planner.build_plan(

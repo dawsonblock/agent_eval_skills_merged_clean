@@ -318,6 +318,66 @@ class TestToolsCommands:
         assert result.exit_code == 0
         assert "csv_cleaner_tool" in result.output
 
+    def test_tools_call_rejects_unregistered_tool(self, runner: CliRunner, ws: Path):
+        server = ws / "tools" / "generated" / "csv-cleaner" / "mcp" / "server.py"
+        server.parent.mkdir(parents=True, exist_ok=True)
+        server.write_text("# stub", encoding="utf-8")
+
+        result = runner.invoke(
+            main,
+            [
+                "--workspace", str(ws),
+                "tools", "call", "csv-cleaner", "csv_cleaner_tool",
+                "--server-path", str(server),
+            ],
+        )
+        assert result.exit_code != 0
+        stderr_text = getattr(result, "stderr", "")
+        assert (
+            "not in the SkillForge tool registry" in stderr_text
+            or "mcp call failed" in stderr_text.lower()
+        )
+
+    @patch("skillforge_ai.mcp_controller.MCPController.start")
+    @patch("skillforge_ai.mcp_controller.MCPController.call_tool")
+    @patch("skillforge_ai.mcp_controller.MCPController.stop")
+    def test_tools_call_uses_registered_tool(
+        self,
+        mock_stop,
+        mock_call_tool,
+        mock_start,
+        runner: CliRunner,
+        ws: Path,
+    ):
+        server = ws / "tools" / "generated" / "csv-cleaner" / "mcp" / "server.py"
+        server.parent.mkdir(parents=True, exist_ok=True)
+        server.write_text("# stub", encoding="utf-8")
+
+        from skillforge_ai.tool_registry import SkillForgeRegistry
+
+        SkillForgeRegistry(ws).register_tool(
+            {
+                "name": "csv_cleaner_tool",
+                "type": "python",
+                "entrypoint": "skills/csv-cleaner/tool/main.py",
+                "validated": True,
+                "mcp_server": str(server),
+            }
+        )
+
+        mock_call_tool.return_value = {"ok": True}
+
+        result = runner.invoke(
+            main,
+            [
+                "--workspace", str(ws),
+                "tools", "call", "csv-cleaner", "csv_cleaner_tool",
+                "--server-path", str(server),
+            ],
+        )
+        assert result.exit_code == 0
+        assert '"ok": true' in result.output.lower()
+
 
 class TestRepairCommand:
     @patch("skillforge_ai.validation_runner.ValidationRunner.repair_loop")

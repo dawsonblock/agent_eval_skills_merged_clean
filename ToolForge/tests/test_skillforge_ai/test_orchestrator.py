@@ -149,6 +149,39 @@ class TestAIOrchestratorChatDispatch:
             response = orch.chat("create a tool")
         assert "Error" in response or "boom" in response
 
+    def test_chat_list_skills_planner_mode(self, tmp_path: Path):
+        orch = self._orch(tmp_path)
+        response = orch.chat("list skills")
+        assert isinstance(response, str)
+        assert "No skills" in response or "Name" in response
+
+    @patch("skillforge_ai.commands.tools.call_mcp_tool")
+    def test_chat_call_tool_uses_registry(self, mock_call_tool, tmp_path: Path):
+        orch = self._orch(tmp_path)
+
+        server = tmp_path / "tools" / "generated" / "csv-cleaner" / "mcp" / "server.py"
+        server.parent.mkdir(parents=True, exist_ok=True)
+        server.write_text("# stub", encoding="utf-8")
+
+        orch._skill_registry.register_tool(
+            {
+                "name": "csv-cleaner_tool",
+                "type": "python",
+                "entrypoint": "skills/csv-cleaner/tool/main.py",
+                "validated": True,
+                "mcp_server": str(server),
+            }
+        )
+
+        mock_call_tool.return_value = {"ok": True}
+        response = orch.chat("call tool csv-cleaner")
+        assert "succeeded" in response.lower() or "ok" in response.lower()
+
+    def test_chat_call_tool_rejects_missing_registry_entry(self, tmp_path: Path):
+        orch = self._orch(tmp_path)
+        response = orch.chat("call tool csv-cleaner")
+        assert "not registered" in response.lower() or "register" in response.lower()
+
 
 class TestAIOrchestratorApproval:
     def test_auto_approve_returns_true(self, tmp_path: Path):

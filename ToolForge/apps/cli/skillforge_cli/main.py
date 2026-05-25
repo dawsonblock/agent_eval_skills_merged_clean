@@ -564,7 +564,13 @@ def tools_call(
     from skillforge_ai.commands.tools import call_mcp_tool
 
     try:
-        result = call_mcp_tool(server_path, tool_name, arguments)
+        result = call_mcp_tool(
+            ws_root,
+            slug,
+            server_path,
+            tool_name,
+            arguments,
+        )
     except Exception as exc:
         err_console.print(f"[red]MCP call failed: {exc}[/]")
         sys.exit(1)

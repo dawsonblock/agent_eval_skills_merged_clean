@@ -29,6 +29,7 @@ from __future__ import annotations
 import logging
 import re
 import sys
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -36,7 +37,10 @@ from skillforge_ai.models import (
     IntentResult,
     Mode,
     OrchestratorState,
+    PlanStep,
+    ToolCallRequest,
 )
+from skillforge_ai.planner import SkillPlanner
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +121,8 @@ class AIOrchestrator:
         self._auto_approve = auto_approve
 
         self._state = OrchestratorState(mode=Mode.UNKNOWN)
+        self._planner = SkillPlanner()
+        self._step_counter = 0
 
     # ------------------------------------------------------------------
     # Sub-component accessors (lazy initialisation)
@@ -184,6 +190,56 @@ class AIOrchestrator:
         """
         Process a single natural-language *message* and return a text response.
         """
+        plan = self._planner.build_plan(message)
+
+        if plan.mode in {
+            "build_skill",
+            "run_skill",
+            "repair_skill",
+            "inspect_skill",
+            "package_skill",
+            "install_skill",
+            "list_skills",
+            "call_tool",
+            "validate_workspace",
+        }:
+            intent = self._parse_intent(message)
+            if plan.skill_name and plan.skill_name != "generated-skill":
+                intent.skill_name = plan.skill_name
+            self._state.current_skill = intent.skill_name
+            try:
+                if plan.mode == "build_skill":
+                    self._state.mode = Mode.BUILD
+                    return self._handle_build(intent, message)
+                if plan.mode == "run_skill":
+                    self._state.mode = Mode.RUN
+                    return self._handle_run(intent, message)
+                if plan.mode == "repair_skill":
+                    self._state.mode = Mode.REPAIR
+                    return self._handle_repair(intent, message)
+                if plan.mode == "inspect_skill":
+                    self._state.mode = Mode.INSPECT
+                    return self._handle_inspect(intent, message)
+                if plan.mode == "package_skill":
+                    self._state.mode = Mode.PACKAGE
+                    return self._handle_package(intent, message)
+                if plan.mode == "install_skill":
+                    self._state.mode = Mode.ADMIN
+                    return self._handle_install_skill(message)
+                if plan.mode == "list_skills":
+                    self._state.mode = Mode.INSPECT
+                    return self._handle_list_skills()
+                if plan.mode == "call_tool":
+                    self._state.mode = Mode.RUN
+                    return self._handle_call_tool(intent, message)
+                if plan.mode == "validate_workspace":
+                    self._state.mode = Mode.ADMIN
+                    return self._handle_validate_workspace()
+            except Exception as exc:
+                self._state.last_error = str(exc)
+                logger.error("Orchestrator planner-dispatch error: %s", exc)
+                return f"Error: {exc}"
+
         intent = self._parse_intent(message)
         self._state.mode = intent.mode
         self._state.current_skill = intent.skill_name
@@ -264,20 +320,65 @@ class AIOrchestrator:
             raw_message=message,
         )
 
+    def _authorize_action(self, action: str, description: str) -> str | None:
+        from skillforge_ai.permissions import (
+            ApprovalRequiredError,
+            PermissionDeniedError,
+        )
+
+        self._step_counter += 1
+        risk = self._permission_broker.classify(action)
+        step = PlanStep(
+            step_id=self._step_counter,
+            action=action,
+            description=description,
+            risk_level=risk,
+            approval_required=(risk.value == "approval_required"),
+        )
+
+        try:
+            self._permission_broker.check(action, step)
+            self._evidence_logger.log_message(
+                "permission_check",
+                action=action,
+                risk_level=risk.value,
+                allowed=True,
+                description=description,
+            )
+            return None
+        except PermissionDeniedError as exc:
+            self._evidence_logger.log_message(
+                "permission_check",
+                action=action,
+                risk_level=risk.value,
+                allowed=False,
+                description=description,
+                reason=str(exc),
+            )
+            return str(exc)
+        except ApprovalRequiredError as exc:
+            req = self._permission_broker.request_approval(exc.step, description)
+            self._evidence_logger.log_approval(req)
+            if req.approved:
+                self._evidence_logger.log_message(
+                    "permission_check",
+                    action=action,
+                    risk_level=risk.value,
+                    allowed=True,
+                    description=description,
+                    reason="approved",
+                )
+                return None
+            return f"Action '{action}' denied by approval policy."
+
     # ------------------------------------------------------------------
     # Mode handlers
     # ------------------------------------------------------------------
 
     def _handle_build(self, intent: IntentResult, message: str) -> str:
-        # Check permission
-        from skillforge_ai.permissions import PermissionDeniedError, ApprovalRequiredError
-        try:
-            self._permission_broker.check("scaffold_tool", None)
-        except PermissionDeniedError as exc:
-            return str(exc)
-        except ApprovalRequiredError:
-            if not self._prompt_approval(f"Build skill from: '{message}'"):
-                return "Build cancelled by user."
+        blocked = self._authorize_action("scaffold_tool", f"Build skill from '{message}'")
+        if blocked:
+            return blocked
 
         tool_dir, manifest = self._skill_builder.build(
             request=message,
@@ -302,39 +403,49 @@ class AIOrchestrator:
         return "\n".join(lines)
 
     def _handle_run(self, intent: IntentResult, message: str) -> str:
-        from skillforge_ai.permissions import PermissionDeniedError, ApprovalRequiredError
-        try:
-            self._permission_broker.check("run_tool", None)
-        except PermissionDeniedError as exc:
-            return str(exc)
-        except ApprovalRequiredError:
-            if not self._prompt_approval(f"Run tool: {intent.skill_name}"):
-                return "Run cancelled by user."
+        blocked = self._authorize_action("run_tool_in_sandbox", f"Run tool '{intent.skill_name}'")
+        if blocked:
+            return blocked
 
         slug = intent.skill_name
         if not slug:
             return "Please specify a tool name, e.g. 'run csv-cleaner'"
 
-        tool_dir = self._root / "tools" / "generated" / slug
-        if not tool_dir.exists():
-            return f"Tool '{slug}' not found. Use 'create' to build it first."
-
         try:
-            _add_packages_to_path(self._root)
-            from packages.runners.tool_runner import run_tool
-            from packages.validators.schema_validator import validate_yaml_file
+            from skillforge_ai.commands.run import run_skill
 
-            spec_path = tool_dir / "toolforge.yaml"
-            if not spec_path.exists():
-                return f"Run failed: missing tool spec at {spec_path}"
-
-            spec = validate_yaml_file(spec_path)
-            result = run_tool(spec, tool_dir, intent.parameters)
+            result = run_skill(self._root, slug, intent.parameters)
+            self._evidence_logger.log_tool_call(
+                ToolCallRequest(
+                    tool=slug,
+                    action="run_skill",
+                    arguments=intent.parameters,
+                    permissions_required=["run_tool_in_sandbox"],
+                    approval_required=False,
+                ),
+                result={"exit_code": result.exit_code},
+                success=(result.exit_code == 0),
+            )
             return f"Tool '{slug}' completed.\n  Output: {result.output or '(none)'}"
         except Exception as exc:
+            self._evidence_logger.log_tool_call(
+                ToolCallRequest(
+                    tool=slug,
+                    action="run_skill",
+                    arguments=intent.parameters,
+                    permissions_required=["run_tool_in_sandbox"],
+                    approval_required=False,
+                ),
+                result={"error": str(exc)},
+                success=False,
+            )
             return f"Run failed: {exc}"
 
     def _handle_repair(self, intent: IntentResult, message: str) -> str:
+        blocked = self._authorize_action("write_files", f"Repair tool '{intent.skill_name}'")
+        if blocked:
+            return blocked
+
         slug = intent.skill_name
         if not slug:
             return "Please specify which tool to repair, e.g. 'repair csv-cleaner'"
@@ -377,45 +488,126 @@ class AIOrchestrator:
         return "\n".join(lines)
 
     def _handle_package(self, intent: IntentResult, message: str) -> str:
-        from skillforge_ai.permissions import PermissionDeniedError, ApprovalRequiredError
-        try:
-            self._permission_broker.check("package_skill", None)
-        except PermissionDeniedError as exc:
-            return str(exc)
-        except ApprovalRequiredError:
-            if not self._prompt_approval(f"Package: {intent.skill_name}"):
-                return "Package cancelled by user."
+        blocked = self._authorize_action("package_skill", f"Package skill '{intent.skill_name}'")
+        if blocked:
+            return blocked
 
         slug = intent.skill_name
         if not slug:
             return "Please specify a skill name, e.g. 'package csv-cleaner'"
 
-        tool_dir = self._root / "tools" / "generated" / slug
-        if not tool_dir.exists():
-            return f"Tool directory not found for '{slug}'."
+        from skillforge_ai.commands.package import run_package
 
-        import zipfile
-        import datetime
-
-        out_dir = self._root / "dist"
-        out_dir.mkdir(exist_ok=True)
-        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        zip_path = out_dir / f"{slug}-{ts}.zip"
-
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            for f in tool_dir.rglob("*"):
-                if f.is_file():
-                    zf.write(f, f.relative_to(tool_dir))
-
-        self._skill_registry.mark_packaged(slug)
-
-        if self._ev:
-            try:
-                self._evidence_logger.log_package(slug, zip_path)
-            except Exception:
-                pass
+        zip_path, _sha = run_package(self._root, slug, output=None)
+        self._evidence_logger.log_package(slug, zip_path)
 
         return f"Packaged '{slug}' → {zip_path}"
+
+    def _handle_install_skill(self, message: str) -> str:
+        blocked = self._authorize_action("write_files", "Install skill from archive")
+        if blocked:
+            return blocked
+
+        archive_path = self._extract_zip_path(message)
+        if archive_path is None:
+            return "Please provide a .zip archive path for install."
+        if not archive_path.exists() or not archive_path.is_file():
+            return f"Install failed: file not found: {archive_path}"
+        if not zipfile.is_zipfile(archive_path):
+            return f"Install failed: not a valid zip file: {archive_path}"
+
+        from skillforge_ai.commands.install import run_install
+
+        slug, dest, sha = run_install(self._root, archive_path)
+        self._evidence_logger.log_message(
+            "install",
+            skill=slug,
+            archive_path=str(archive_path),
+            destination=str(dest),
+            sha256=sha,
+        )
+        return f"Installed '{slug}' to {dest}. Archive SHA256: {sha}"
+
+    def _handle_list_skills(self) -> str:
+        from skillforge_ai.commands.list import run_list
+
+        skills = run_list(self._root)
+        if not skills:
+            return "No skills registered yet. Use 'create' to build one."
+
+        lines = [f"{'Name':<30} {'Status':<16} {'Validation'}", "-" * 64]
+        for item in skills:
+            lines.append(
+                f"{item.get('name', ''):<30} "
+                f"{item.get('validation_status', item.get('status', 'unknown')):<16} "
+                f"{item.get('risk_level', 'low')}"
+            )
+        return "\n".join(lines)
+
+    def _handle_call_tool(self, intent: IntentResult, message: str) -> str:
+        blocked = self._authorize_action("mcp_call_tool", f"Call tool for '{intent.skill_name}'")
+        if blocked:
+            return blocked
+
+        slug = intent.skill_name
+        if not slug:
+            return "Please specify a skill/tool slug, e.g. 'call tool csv-cleaner'."
+
+        tool_name = self._extract_tool_name(message) or f"{slug}_tool"
+        registered = self._skill_registry.get_registered_tool(tool_name)
+        if registered is None and tool_name != f"{slug}_tool":
+            tool_name = f"{slug}_tool"
+            registered = self._skill_registry.get_registered_tool(tool_name)
+
+        if registered is None:
+            return (
+                f"Tool '{tool_name}' is not registered for '{slug}'. "
+                "Use install/create to register tools first."
+            )
+
+        mcp_path = registered.get("mcp_server")
+        if not isinstance(mcp_path, str) or not mcp_path.strip():
+            return f"Tool '{tool_name}' has no MCP server entry in registry."
+
+        from skillforge_ai.commands.tools import call_mcp_tool
+
+        args = intent.parameters if isinstance(intent.parameters, dict) else {}
+        try:
+            result = call_mcp_tool(
+                self._root,
+                slug,
+                Path(mcp_path),
+                tool_name,
+                args,
+            )
+            self._evidence_logger.log_tool_call(
+                ToolCallRequest(
+                    tool=tool_name,
+                    action="mcp_call_tool",
+                    arguments=args,
+                    permissions_required=["mcp_call_tool"],
+                    approval_required=True,
+                ),
+                result=result,
+                success=True,
+            )
+            return f"Tool call '{tool_name}' succeeded: {result}"
+        except Exception as exc:
+            self._evidence_logger.log_tool_call(
+                ToolCallRequest(
+                    tool=tool_name,
+                    action="mcp_call_tool",
+                    arguments=args,
+                    permissions_required=["mcp_call_tool"],
+                    approval_required=True,
+                ),
+                result={"error": str(exc)},
+                success=False,
+            )
+            return f"Tool call '{tool_name}' failed: {exc}"
+
+    def _handle_validate_workspace(self) -> str:
+        return self._cmd_doctor()
 
     def _handle_benchmark(self, intent: IntentResult, message: str) -> str:
         slug = intent.skill_name
@@ -501,6 +693,28 @@ class AIOrchestrator:
             return False
         resp = input(f"Approve: {description}? [y/N] ").strip().lower()
         return resp in ("y", "yes")
+
+    @staticmethod
+    def _extract_zip_path(message: str) -> Path | None:
+        quoted = re.search(r'"([^\"]+\.zip)"|\'([^\']+\.zip)\'', message)
+        if quoted:
+            value = quoted.group(1) or quoted.group(2)
+            return Path(value).expanduser()
+
+        unquoted = re.search(r"(?P<path>[^\s]+\.zip)\b", message)
+        if unquoted:
+            return Path(unquoted.group("path")).expanduser()
+        return None
+
+    @staticmethod
+    def _extract_tool_name(message: str) -> str | None:
+        match = re.search(
+            r"(?:call\s+tool|tools\s+call)\s+([a-z][a-z0-9_-]{1,80})",
+            message.lower(),
+        )
+        if match:
+            return match.group(1)
+        return None
 
 
 # ---------------------------------------------------------------------------

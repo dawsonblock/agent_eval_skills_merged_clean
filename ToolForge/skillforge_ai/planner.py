@@ -49,8 +49,10 @@ class PlannerResult:
 class SkillPlanner:
     def classify_mode(self, request: str) -> str:
         text = request.lower()
-        if any(token in text for token in ("validate", "check workspace")):
+        if any(token in text for token in ("validate workspace", "check workspace", "validate all")):
             return "validate_workspace"
+        if any(token in text for token in ("call tool", "tools call", "invoke tool")):
+            return "call_tool"
         if any(token in text for token in ("repair", "fix", "debug")):
             return "repair_skill"
         if any(token in text for token in ("inspect", "details", "show info")):
@@ -59,10 +61,8 @@ class SkillPlanner:
             return "package_skill"
         if any(token in text for token in ("install", "import")):
             return "install_skill"
-        if any(token in text for token in ("list skills", "list")):
+        if any(token in text for token in ("list skills", "list skill", "list all skills")):
             return "list_skills"
-        if any(token in text for token in ("call tool", "tool call")):
-            return "call_tool"
         if any(token in text for token in ("run", "execute")):
             return "run_skill"
         return "build_skill"
@@ -76,16 +76,59 @@ class SkillPlanner:
         )
 
         if mode != "build_skill":
+            intent_specs: dict[str, dict[str, Any]] = {
+                "run_skill": {
+                    "permissions": ["read_files"],
+                    "risk": "low",
+                    "validation": ["registry lookup", "runtime smoke"],
+                },
+                "repair_skill": {
+                    "permissions": ["read_files", "write_files"],
+                    "risk": "low",
+                    "validation": ["metadata validation", "syntax validation", "tests"],
+                },
+                "inspect_skill": {
+                    "permissions": ["read_files"],
+                    "risk": "low",
+                    "validation": ["registry lookup"],
+                },
+                "package_skill": {
+                    "permissions": ["read_files", "write_files"],
+                    "risk": "low",
+                    "validation": ["metadata validation", "package validation"],
+                },
+                "install_skill": {
+                    "permissions": ["read_files", "write_files"],
+                    "risk": "medium",
+                    "validation": ["archive validation", "registry update"],
+                },
+                "list_skills": {
+                    "permissions": ["read_files"],
+                    "risk": "low",
+                    "validation": ["registry lookup"],
+                },
+                "call_tool": {
+                    "permissions": ["read_files"],
+                    "risk": "medium",
+                    "validation": ["tool registry lookup", "mcp smoke"],
+                },
+                "validate_workspace": {
+                    "permissions": ["read_files"],
+                    "risk": "low",
+                    "validation": ["workspace validation"],
+                },
+            }
+            spec = intent_specs.get(mode, intent_specs["validate_workspace"])
             return PlannerResult(
                 intent=mode,
                 skill_name=skill_name,
                 category="generated",
                 requires_tool_code=False,
                 requires_mcp=requires_mcp,
-                permissions=["read_files"],
-                risk_level="low",
+                permissions=spec["permissions"],
+                risk_level=spec["risk"],
                 files_to_create=[],
-                validation_plan=["workspace validation"],
+                validation_plan=spec["validation"],
                 mode=mode,
             )
 
@@ -105,9 +148,9 @@ class SkillPlanner:
                 f"tests/test_{skill_name.replace('-', '_')}.py",
             ],
             validation_plan=[
+                "metadata validation",
                 "python syntax",
                 "unit tests",
-                "skill schema validation",
                 "package validation",
             ],
             mode=mode,
@@ -124,6 +167,19 @@ class SkillPlanner:
             if normalized.startswith(common):
                 normalized = normalized[len(common):].strip("-")
                 break
+        if normalized in {
+            "repair",
+            "run",
+            "execute",
+            "list",
+            "inspect",
+            "validate",
+            "package",
+            "install",
+            "call-tool",
+            "call",
+        }:
+            return "generated-skill"
         if "csv" in normalized and "clean" in normalized:
             return "csv-cleaner"
         if not normalized:

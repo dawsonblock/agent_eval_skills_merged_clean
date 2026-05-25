@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from packages.runners.tool_runner import ToolRunResult
 from skillforge_ai.commands import run as run_module
 
@@ -30,3 +32,8 @@ def test_run_skill_resolves_workspace_root(monkeypatch):
     assert result.exit_code == 0
     assert isinstance(captured["tool_dir"], Path)
     assert captured["tool_dir"].is_absolute()
+
+
+def test_run_skill_requires_registered_skill(tmp_path: Path):
+    with pytest.raises(ValueError):
+        run_module.run_skill(tmp_path, "csv-cleaner", {})

@@ -6,11 +6,6 @@ set -euo pipefail
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-USER_EXPECTED_RELEASE_NAME="${EXPECTED_RELEASE_NAME:-}"
-USER_EXPECTED_RELEASE_SHA="${EXPECTED_RELEASE_SHA:-}"
-USER_EXPECTED_EVIDENCE_NAME="${EXPECTED_EVIDENCE_NAME:-}"
-USER_EXPECTED_EVIDENCE_SHA="${EXPECTED_EVIDENCE_SHA:-}"
-
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -19,17 +14,31 @@ fi
 # shellcheck disable=SC1090
 source "$ATTESTATION_ENV_FILE"
 
+require_attestation_value() {
+  local var_name="$1"
+  local var_value="${!var_name:-}"
+  if [ -z "$var_value" ]; then
+    echo "Error: required attestation value is missing: $var_name" >&2
+    exit 1
+  fi
+}
+
+for required_var in EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA EXPECTED_TOOLATHLON_PROFILE EXPECTED_MCP_PACKAGE_COUNT EXPECTED_PYTHON_VERSION MAX_EVIDENCE_AGE_DAYS; do
+  require_attestation_value "$required_var"
+done
+
 CANONICAL_RELEASE_NAME="$EXPECTED_RELEASE_NAME"
 CANONICAL_RELEASE_SHA="$EXPECTED_RELEASE_SHA"
 CANONICAL_EVIDENCE_NAME="$EXPECTED_EVIDENCE_NAME"
 CANONICAL_EVIDENCE_SHA="$EXPECTED_EVIDENCE_SHA"
 
-EXPECTED_RELEASE_NAME="${USER_EXPECTED_RELEASE_NAME:-$CANONICAL_RELEASE_NAME}"
-EXPECTED_RELEASE_SHA="${USER_EXPECTED_RELEASE_SHA:-$CANONICAL_RELEASE_SHA}"
-EXPECTED_EVIDENCE_NAME="${USER_EXPECTED_EVIDENCE_NAME:-$CANONICAL_EVIDENCE_NAME}"
-EXPECTED_EVIDENCE_SHA="${USER_EXPECTED_EVIDENCE_SHA:-$CANONICAL_EVIDENCE_SHA}"
+EXPECTED_RELEASE_NAME="$CANONICAL_RELEASE_NAME"
+EXPECTED_RELEASE_SHA="$CANONICAL_RELEASE_SHA"
+EXPECTED_EVIDENCE_NAME="$CANONICAL_EVIDENCE_NAME"
+EXPECTED_EVIDENCE_SHA="$CANONICAL_EVIDENCE_SHA"
 
 export EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA
+export EXPECTED_TOOLATHLON_PROFILE EXPECTED_MCP_PACKAGE_COUNT EXPECTED_PYTHON_VERSION MAX_EVIDENCE_AGE_DAYS
 
 usage() {
   cat <<'USAGE'
@@ -102,21 +111,36 @@ zip_path = sys.argv[1]
 
 EXPECTED_RELEASE_NAME = os.environ.get(
   "EXPECTED_RELEASE_NAME",
-  "agent_eval_skills_merged_clean-pruned-smoke.zip",
 )
 EXPECTED_RELEASE_SHA = os.environ.get(
   "EXPECTED_RELEASE_SHA",
-  "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189",
 )
 EXPECTED_EVIDENCE_NAME = os.environ.get(
   "EXPECTED_EVIDENCE_NAME",
-  "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
 )
 EXPECTED_EVIDENCE_SHA = os.environ.get(
   "EXPECTED_EVIDENCE_SHA",
-  "5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c",
 )
-MAX_EVIDENCE_AGE_DAYS = int(os.environ.get("MAX_EVIDENCE_AGE_DAYS", "30"))
+EXPECTED_TOOLATHLON_PROFILE = os.environ.get("EXPECTED_TOOLATHLON_PROFILE")
+EXPECTED_MCP_PACKAGE_COUNT = int(os.environ.get("EXPECTED_MCP_PACKAGE_COUNT", "0"))
+EXPECTED_PYTHON_VERSION = os.environ.get("EXPECTED_PYTHON_VERSION")
+MAX_EVIDENCE_AGE_DAYS = int(os.environ.get("MAX_EVIDENCE_AGE_DAYS", "0"))
+
+required_env_values = {
+    "EXPECTED_RELEASE_NAME": EXPECTED_RELEASE_NAME,
+    "EXPECTED_RELEASE_SHA": EXPECTED_RELEASE_SHA,
+    "EXPECTED_EVIDENCE_NAME": EXPECTED_EVIDENCE_NAME,
+    "EXPECTED_EVIDENCE_SHA": EXPECTED_EVIDENCE_SHA,
+    "EXPECTED_TOOLATHLON_PROFILE": EXPECTED_TOOLATHLON_PROFILE,
+    "EXPECTED_PYTHON_VERSION": EXPECTED_PYTHON_VERSION,
+}
+missing_env = [k for k, v in required_env_values.items() if not isinstance(v, str) or not v.strip()]
+if EXPECTED_MCP_PACKAGE_COUNT <= 0:
+    missing_env.append("EXPECTED_MCP_PACKAGE_COUNT")
+if MAX_EVIDENCE_AGE_DAYS <= 0:
+    missing_env.append("MAX_EVIDENCE_AGE_DAYS")
+if missing_env:
+    raise SystemExit("missing_required_env:" + ",".join(sorted(set(missing_env))))
 
 required_files = [
     "release_artifacts/validation_summary.json",
@@ -221,44 +245,44 @@ with zipfile.ZipFile(zip_path, "r") as zf:
     if validation_summary is not None:
         require(validation_summary, ["overall_status"], "passed", errors, "validation_summary")
         require(validation_summary, ["failed_phase_count"], 0, errors, "validation_summary")
-        require(validation_summary, ["python_version"], "3.12.9", errors, "validation_summary")
-        require(validation_summary, ["capabilities", "toolathlon_profile"], "smoke", errors, "validation_summary")
+        require(validation_summary, ["python_version"], EXPECTED_PYTHON_VERSION, errors, "validation_summary")
+        require(validation_summary, ["capabilities", "toolathlon_profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "validation_summary")
 
     artifact_summary = read_json("release_artifacts/toolathlon_artifact_build_summary.json")
     if artifact_summary is not None:
-        require(artifact_summary, ["profile"], "smoke", errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_artifact_build_summary")
         require(artifact_summary, ["overall_status"], "passed", errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["expected_package_count"], 3, errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["package_count"], 3, errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["passed_count"], 3, errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["expected_package_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["package_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
+        require(artifact_summary, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
         require(artifact_summary, ["failed_count"], 0, errors, "toolathlon_artifact_build_summary")
 
     smoke_summary = read_json("release_artifacts/toolathlon_mcp_smoke_summary.json")
     if smoke_summary is not None:
-        require(smoke_summary, ["profile"], "smoke", errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_mcp_smoke_summary")
         require(smoke_summary, ["overall_status"], "passed", errors, "toolathlon_mcp_smoke_summary")
-        require(smoke_summary, ["target_count"], 3, errors, "toolathlon_mcp_smoke_summary")
-        require(smoke_summary, ["passed_count"], 3, errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["target_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_mcp_smoke_summary")
         require(smoke_summary, ["failed_count"], 0, errors, "toolathlon_mcp_smoke_summary")
 
     preflight_summary = read_json("release_artifacts/toolathlon_preflight_summary.json")
     if preflight_summary is not None:
-        require(preflight_summary, ["profile"], "smoke", errors, "toolathlon_preflight_summary")
+        require(preflight_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_preflight_summary")
         require(preflight_summary, ["status"], "passed", errors, "toolathlon_preflight_summary")
-        require(preflight_summary, ["found_count"], 3, errors, "toolathlon_preflight_summary")
+        require(preflight_summary, ["found_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_preflight_summary")
         require(preflight_summary, ["missing_count"], 0, errors, "toolathlon_preflight_summary")
 
     docker_smoke = read_json("release_artifacts/docker_mcp_smoke_summary.json")
     if docker_smoke is not None:
-        require(docker_smoke, ["profile"], "smoke", errors, "docker_mcp_smoke_summary")
+        require(docker_smoke, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "docker_mcp_smoke_summary")
         require(docker_smoke, ["overall_status"], "passed", errors, "docker_mcp_smoke_summary")
-        require(docker_smoke, ["target_count"], 3, errors, "docker_mcp_smoke_summary")
-        require(docker_smoke, ["passed_count"], 3, errors, "docker_mcp_smoke_summary")
+        require(docker_smoke, ["target_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "docker_mcp_smoke_summary")
+        require(docker_smoke, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "docker_mcp_smoke_summary")
         require(docker_smoke, ["failed_count"], 0, errors, "docker_mcp_smoke_summary")
 
     docker_preflight = read_json("release_artifacts/docker_preflight_summary.json")
     if docker_preflight is not None:
-        require(docker_preflight, ["profile"], "smoke", errors, "docker_preflight_summary")
+        require(docker_preflight, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "docker_preflight_summary")
         require(docker_preflight, ["status"], "passed", errors, "docker_preflight_summary")
         require(docker_preflight, ["missing_count"], 0, errors, "docker_preflight_summary")
 
@@ -297,10 +321,11 @@ with zipfile.ZipFile(zip_path, "r") as zf:
         )
 
       validated_scope = manifest.get("validated_scope")
-      if validated_scope is not None and validated_scope != ["ToolForge", "Agent Skills", "Toolathlon smoke profile"]:
+      expected_scope = ["ToolForge", "Agent Skills", f"Toolathlon {EXPECTED_TOOLATHLON_PROFILE} profile"]
+      if validated_scope is not None and validated_scope != expected_scope:
         errors.append(
           "release_evidence_manifest:validated_scope expected "
-          "['ToolForge', 'Agent Skills', 'Toolathlon smoke profile'], "
+          f"{expected_scope!r}, "
           f"got {validated_scope!r}"
         )
 
@@ -351,7 +376,7 @@ with zipfile.ZipFile(zip_path, "r") as zf:
           "docker_mcp_smoke_summary.profile": get_in(docker_smoke, ["profile"]),
           "docker_preflight_summary.profile": get_in(docker_preflight, ["profile"]),
         }
-        if any(v != "smoke" for v in profile_values.values()):
+        if any(v != EXPECTED_TOOLATHLON_PROFILE for v in profile_values.values()):
           errors.append(
             "cross_summary_profile_mismatch: "
             + ", ".join(f"{k}={v!r}" for k, v in profile_values.items())

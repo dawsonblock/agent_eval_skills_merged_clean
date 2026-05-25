@@ -7,11 +7,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-USER_EXPECTED_RELEASE_NAME="${EXPECTED_RELEASE_NAME:-}"
-USER_EXPECTED_RELEASE_SHA="${EXPECTED_RELEASE_SHA:-}"
-USER_EXPECTED_EVIDENCE_NAME="${EXPECTED_EVIDENCE_NAME:-}"
-USER_EXPECTED_EVIDENCE_SHA="${EXPECTED_EVIDENCE_SHA:-}"
-
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -20,15 +15,28 @@ fi
 # shellcheck disable=SC1090
 source "$ATTESTATION_ENV_FILE"
 
+require_attestation_value() {
+  local var_name="$1"
+  local var_value="${!var_name:-}"
+  if [ -z "$var_value" ]; then
+    echo "Error: required attestation value is missing: $var_name" >&2
+    exit 1
+  fi
+}
+
+for required_var in EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA; do
+  require_attestation_value "$required_var"
+done
+
 CANONICAL_RELEASE_NAME="$EXPECTED_RELEASE_NAME"
 CANONICAL_RELEASE_SHA="$EXPECTED_RELEASE_SHA"
 CANONICAL_EVIDENCE_NAME="$EXPECTED_EVIDENCE_NAME"
 CANONICAL_EVIDENCE_SHA="$EXPECTED_EVIDENCE_SHA"
 
-EXPECTED_RELEASE_NAME="${USER_EXPECTED_RELEASE_NAME:-$CANONICAL_RELEASE_NAME}"
-EXPECTED_RELEASE_SHA="${USER_EXPECTED_RELEASE_SHA:-$CANONICAL_RELEASE_SHA}"
-EXPECTED_EVIDENCE_NAME="${USER_EXPECTED_EVIDENCE_NAME:-$CANONICAL_EVIDENCE_NAME}"
-EXPECTED_EVIDENCE_SHA="${USER_EXPECTED_EVIDENCE_SHA:-$CANONICAL_EVIDENCE_SHA}"
+EXPECTED_RELEASE_NAME="$CANONICAL_RELEASE_NAME"
+EXPECTED_RELEASE_SHA="$CANONICAL_RELEASE_SHA"
+EXPECTED_EVIDENCE_NAME="$CANONICAL_EVIDENCE_NAME"
+EXPECTED_EVIDENCE_SHA="$CANONICAL_EVIDENCE_SHA"
 
 RELEASE_PATH="${RELEASE_ZIP_PATH:-}"
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
@@ -135,6 +143,7 @@ release_sha="$(shasum -a 256 "$RELEASE_PATH" | awk '{print $1}')"
 release_entries_tmp="$(mktemp)"
 forbidden_tmp="$(mktemp)"
 reasons_tmp="$(mktemp)"
+forbidden_pattern='__MACOSX|/\._|\.DS_Store|node_modules|\.validation_logs|__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.venv'
 
 cleanup() {
   rm -f "$release_entries_tmp" "$forbidden_tmp" "$reasons_tmp"
@@ -142,7 +151,7 @@ cleanup() {
 trap cleanup EXIT
 
 zipinfo -1 "$RELEASE_PATH" > "$release_entries_tmp"
-grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$)' "$release_entries_tmp" > "$forbidden_tmp" || true
+grep -E "$forbidden_pattern" "$release_entries_tmp" > "$forbidden_tmp" || true
 release_forbidden_count="$(wc -l < "$forbidden_tmp" | tr -d ' ')"
 
 required_layout_missing=0

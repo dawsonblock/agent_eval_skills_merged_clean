@@ -6,11 +6,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-USER_EXPECTED_RELEASE_NAME="${EXPECTED_RELEASE_NAME:-}"
-USER_EXPECTED_RELEASE_SHA="${EXPECTED_RELEASE_SHA:-}"
-USER_EXPECTED_EVIDENCE_NAME="${EXPECTED_EVIDENCE_NAME:-}"
-USER_EXPECTED_EVIDENCE_SHA="${EXPECTED_EVIDENCE_SHA:-}"
-
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -19,16 +14,29 @@ fi
 # shellcheck disable=SC1090
 source "$ATTESTATION_ENV_FILE"
 
+require_attestation_value() {
+  local var_name="$1"
+  local var_value="${!var_name:-}"
+  if [ -z "$var_value" ]; then
+    echo "Error: required attestation value is missing: $var_name" >&2
+    exit 1
+  fi
+}
+
+for required_var in EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA MAX_EVIDENCE_AGE_DAYS; do
+  require_attestation_value "$required_var"
+done
+
 CANONICAL_RELEASE_NAME="$EXPECTED_RELEASE_NAME"
 CANONICAL_RELEASE_SHA="$EXPECTED_RELEASE_SHA"
 CANONICAL_EVIDENCE_NAME="$EXPECTED_EVIDENCE_NAME"
 CANONICAL_EVIDENCE_SHA="$EXPECTED_EVIDENCE_SHA"
 
-EXPECTED_RELEASE_NAME="${USER_EXPECTED_RELEASE_NAME:-$CANONICAL_RELEASE_NAME}"
-EXPECTED_RELEASE_SHA="${USER_EXPECTED_RELEASE_SHA:-$CANONICAL_RELEASE_SHA}"
-EXPECTED_EVIDENCE_NAME="${USER_EXPECTED_EVIDENCE_NAME:-$CANONICAL_EVIDENCE_NAME}"
-EXPECTED_EVIDENCE_SHA="${USER_EXPECTED_EVIDENCE_SHA:-$CANONICAL_EVIDENCE_SHA}"
-MAX_MANIFEST_AGE_DAYS="${MAX_MANIFEST_AGE_DAYS:-30}"
+EXPECTED_RELEASE_NAME="$CANONICAL_RELEASE_NAME"
+EXPECTED_RELEASE_SHA="$CANONICAL_RELEASE_SHA"
+EXPECTED_EVIDENCE_NAME="$CANONICAL_EVIDENCE_NAME"
+EXPECTED_EVIDENCE_SHA="$CANONICAL_EVIDENCE_SHA"
+MAX_MANIFEST_AGE_DAYS="$MAX_EVIDENCE_AGE_DAYS"
 
 DEFAULT_RELEASE_PATH="$REPO_ROOT/$EXPECTED_RELEASE_NAME"
 DEFAULT_EVIDENCE_PATH="$REPO_ROOT/$EXPECTED_EVIDENCE_NAME"
@@ -129,10 +137,11 @@ check_forbidden_entries() {
   local zip_path="$1"
   local tmp_entries
   tmp_entries="$(mktemp)"
+  local forbidden_pattern='__MACOSX|/\._|\.DS_Store|node_modules|\.validation_logs|__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.venv'
   zipinfo -1 "$zip_path" > "$tmp_entries"
-  if grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$)' "$tmp_entries" >/dev/null; then
+  if grep -E "$forbidden_pattern" "$tmp_entries" >/dev/null; then
     echo "Forbidden metadata entries found in: $zip_path" >&2
-    grep -E '(^|/)(__MACOSX/|\._|\.DS_Store$)' "$tmp_entries" >&2
+    grep -E "$forbidden_pattern" "$tmp_entries" >&2
     rm -f "$tmp_entries"
     return 1
   fi

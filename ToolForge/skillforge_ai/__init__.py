@@ -2,14 +2,18 @@
 SkillForge AI — AI-controlled skill factory built on top of ToolForge.
 
 Modules:
-  models           — core data structures (RiskLevel, Mode, Plan, SkillManifest, …)
-  evidence_logger  — structured JSONL evidence logger (per-session audit trail)
-  permissions      — three-tier permission broker (safe / approval-required / blocked)
-  skill_builder    — AI-driven skill scaffolding (wraps ToolForge generators)
-  validation_runner— validate + auto-repair loop (generate → test → fail → patch → retest)
-  mcp_controller   — MCP server lifecycle + JSON-RPC 2.0 tool calls over subprocess stdio
-  tool_registry    — SkillForge-schema adapter over ToolRegistry
-  orchestrator     — intent parser + mode dispatcher + AI control loop
+  models           — core data structures and enums
+  evidence_logger  — structured JSONL evidence logging
+  permissions      — permission broker and approval checks
+  skill_builder    — AI-driven skill scaffolding
+  validation_runner — validation and auto-repair loop
+  mcp_controller   — MCP lifecycle and JSON-RPC tool calls
+  tool_registry    — SkillForge adapter over ToolRegistry
+  orchestrator     — intent parsing and mode dispatch
 """
 
+from .cli import main as cli_main
+
 __version__ = "0.1.0"
+
+__all__ = ["__version__", "cli_main"]
