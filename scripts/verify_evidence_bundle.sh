@@ -4,6 +4,32 @@
 set -euo pipefail
 
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+USER_EXPECTED_RELEASE_NAME="${EXPECTED_RELEASE_NAME:-}"
+USER_EXPECTED_RELEASE_SHA="${EXPECTED_RELEASE_SHA:-}"
+USER_EXPECTED_EVIDENCE_NAME="${EXPECTED_EVIDENCE_NAME:-}"
+USER_EXPECTED_EVIDENCE_SHA="${EXPECTED_EVIDENCE_SHA:-}"
+
+ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
+if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
+  echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$ATTESTATION_ENV_FILE"
+
+CANONICAL_RELEASE_NAME="$EXPECTED_RELEASE_NAME"
+CANONICAL_RELEASE_SHA="$EXPECTED_RELEASE_SHA"
+CANONICAL_EVIDENCE_NAME="$EXPECTED_EVIDENCE_NAME"
+CANONICAL_EVIDENCE_SHA="$EXPECTED_EVIDENCE_SHA"
+
+EXPECTED_RELEASE_NAME="${USER_EXPECTED_RELEASE_NAME:-$CANONICAL_RELEASE_NAME}"
+EXPECTED_RELEASE_SHA="${USER_EXPECTED_RELEASE_SHA:-$CANONICAL_RELEASE_SHA}"
+EXPECTED_EVIDENCE_NAME="${USER_EXPECTED_EVIDENCE_NAME:-$CANONICAL_EVIDENCE_NAME}"
+EXPECTED_EVIDENCE_SHA="${USER_EXPECTED_EVIDENCE_SHA:-$CANONICAL_EVIDENCE_SHA}"
+
+export EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA
 
 usage() {
   cat <<'USAGE'
@@ -67,15 +93,30 @@ fi
 
 python3 - "$EVIDENCE_PATH" <<'PYEOF'
 import json
+import os
 import sys
 import zipfile
+from datetime import datetime, timezone
 
 zip_path = sys.argv[1]
 
-EXPECTED_RELEASE_NAME = "agent_eval_skills_merged_clean-pruned-smoke.zip"
-EXPECTED_RELEASE_SHA = "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189"
-EXPECTED_EVIDENCE_NAME = "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip"
-EXPECTED_EVIDENCE_SHA = "5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c"
+EXPECTED_RELEASE_NAME = os.environ.get(
+  "EXPECTED_RELEASE_NAME",
+  "agent_eval_skills_merged_clean-pruned-smoke.zip",
+)
+EXPECTED_RELEASE_SHA = os.environ.get(
+  "EXPECTED_RELEASE_SHA",
+  "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189",
+)
+EXPECTED_EVIDENCE_NAME = os.environ.get(
+  "EXPECTED_EVIDENCE_NAME",
+  "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
+)
+EXPECTED_EVIDENCE_SHA = os.environ.get(
+  "EXPECTED_EVIDENCE_SHA",
+  "5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c",
+)
+MAX_EVIDENCE_AGE_DAYS = int(os.environ.get("MAX_EVIDENCE_AGE_DAYS", "30"))
 
 required_files = [
     "release_artifacts/validation_summary.json",
@@ -115,6 +156,33 @@ def require(data, path, expected, errors, label):
     if actual != expected:
         dotted = ".".join(path)
         errors.append(f"{label}:{dotted} expected {expected!r}, got {actual!r}")
+
+
+def parse_iso8601(value):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    raw = value.strip()
+    if raw.endswith("Z"):
+        raw = raw[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(raw)
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def require_recent_iso8601(value, errors, label):
+    dt = parse_iso8601(value)
+    if dt is None:
+        errors.append(f"{label} must be a valid ISO8601 timestamp, got {value!r}")
+        return
+    age_days = (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0
+    if age_days > MAX_EVIDENCE_AGE_DAYS:
+        errors.append(
+            f"{label} is too old ({age_days:.2f} days > {MAX_EVIDENCE_AGE_DAYS} days)"
+        )
 
 errors = []
 
@@ -243,6 +311,76 @@ with zipfile.ZipFile(zip_path, "r") as zf:
       ):
         errors.append(
           "release_evidence_manifest:not_release_validated must be a list including 'full MCP server set'"
+        )
+
+      # Cross-file consistency checks (only when all relevant summaries parsed successfully).
+      if (
+        validation_summary is not None
+        and artifact_summary is not None
+        and smoke_summary is not None
+        and preflight_summary is not None
+        and docker_smoke is not None
+        and docker_preflight is not None
+      ):
+        expected_packages = get_in(artifact_summary, ["expected_package_count"])
+        found_toolathlon = get_in(preflight_summary, ["found_count"])
+        target_toolathlon = get_in(smoke_summary, ["target_count"])
+        found_docker = get_in(docker_preflight, ["found_count"])
+        target_docker = get_in(docker_smoke, ["target_count"])
+
+        counts = {
+          "artifact.expected_package_count": expected_packages,
+          "toolathlon_preflight.found_count": found_toolathlon,
+          "toolathlon_smoke.target_count": target_toolathlon,
+          "docker_preflight.found_count": found_docker,
+          "docker_smoke.target_count": target_docker,
+        }
+        unique_counts = {v for v in counts.values() if isinstance(v, int)}
+        if len(unique_counts) != 1:
+          errors.append(
+            "cross_summary_count_mismatch: "
+            + ", ".join(f"{k}={v!r}" for k, v in counts.items())
+          )
+
+        cap_profile = get_in(validation_summary, ["capabilities", "toolathlon_profile"])
+        profile_values = {
+          "validation_summary.capabilities.toolathlon_profile": cap_profile,
+          "toolathlon_artifact_build_summary.profile": get_in(artifact_summary, ["profile"]),
+          "toolathlon_mcp_smoke_summary.profile": get_in(smoke_summary, ["profile"]),
+          "toolathlon_preflight_summary.profile": get_in(preflight_summary, ["profile"]),
+          "docker_mcp_smoke_summary.profile": get_in(docker_smoke, ["profile"]),
+          "docker_preflight_summary.profile": get_in(docker_preflight, ["profile"]),
+        }
+        if any(v != "smoke" for v in profile_values.values()):
+          errors.append(
+            "cross_summary_profile_mismatch: "
+            + ", ".join(f"{k}={v!r}" for k, v in profile_values.items())
+          )
+
+        require_recent_iso8601(
+          get_in(manifest or {}, ["generated_at_utc"]),
+          errors,
+          "release_evidence_manifest:generated_at_utc",
+        )
+        require_recent_iso8601(
+          get_in(smoke_summary, ["checked_at"]),
+          errors,
+          "toolathlon_mcp_smoke_summary:checked_at",
+        )
+        require_recent_iso8601(
+          get_in(preflight_summary, ["checked_at"]),
+          errors,
+          "toolathlon_preflight_summary:checked_at",
+        )
+        require_recent_iso8601(
+          get_in(docker_smoke, ["checked_at"]),
+          errors,
+          "docker_mcp_smoke_summary:checked_at",
+        )
+        require_recent_iso8601(
+          get_in(docker_preflight, ["checked_at"]),
+          errors,
+          "docker_preflight_summary:checked_at",
         )
 
 if errors:

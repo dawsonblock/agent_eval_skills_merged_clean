@@ -28,7 +28,21 @@
     },
     "category": {
       "type": "string",
-      "minLength": 1
+      "enum": [
+        "data",
+        "documents",
+        "coding",
+        "browser",
+        "automation",
+        "media",
+        "3d",
+        "game-dev",
+        "robotics",
+        "hardware",
+        "research",
+        "productivity",
+        "custom"
+      ]
     },
     "inputs": {
       "type": "array",

@@ -6,15 +6,29 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-EXPECTED_RELEASE_NAME_DEFAULT="agent_eval_skills_merged_clean-pruned-smoke.zip"
-EXPECTED_RELEASE_SHA_DEFAULT="74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189"
-EXPECTED_EVIDENCE_NAME_DEFAULT="agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip"
-EXPECTED_EVIDENCE_SHA_DEFAULT="5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c"
+USER_EXPECTED_RELEASE_NAME="${EXPECTED_RELEASE_NAME:-}"
+USER_EXPECTED_RELEASE_SHA="${EXPECTED_RELEASE_SHA:-}"
+USER_EXPECTED_EVIDENCE_NAME="${EXPECTED_EVIDENCE_NAME:-}"
+USER_EXPECTED_EVIDENCE_SHA="${EXPECTED_EVIDENCE_SHA:-}"
 
-EXPECTED_RELEASE_NAME="${EXPECTED_RELEASE_NAME:-$EXPECTED_RELEASE_NAME_DEFAULT}"
-EXPECTED_RELEASE_SHA="${EXPECTED_RELEASE_SHA:-$EXPECTED_RELEASE_SHA_DEFAULT}"
-EXPECTED_EVIDENCE_NAME="${EXPECTED_EVIDENCE_NAME:-$EXPECTED_EVIDENCE_NAME_DEFAULT}"
-EXPECTED_EVIDENCE_SHA="${EXPECTED_EVIDENCE_SHA:-$EXPECTED_EVIDENCE_SHA_DEFAULT}"
+ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
+if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
+  echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$ATTESTATION_ENV_FILE"
+
+CANONICAL_RELEASE_NAME="$EXPECTED_RELEASE_NAME"
+CANONICAL_RELEASE_SHA="$EXPECTED_RELEASE_SHA"
+CANONICAL_EVIDENCE_NAME="$EXPECTED_EVIDENCE_NAME"
+CANONICAL_EVIDENCE_SHA="$EXPECTED_EVIDENCE_SHA"
+
+EXPECTED_RELEASE_NAME="${USER_EXPECTED_RELEASE_NAME:-$CANONICAL_RELEASE_NAME}"
+EXPECTED_RELEASE_SHA="${USER_EXPECTED_RELEASE_SHA:-$CANONICAL_RELEASE_SHA}"
+EXPECTED_EVIDENCE_NAME="${USER_EXPECTED_EVIDENCE_NAME:-$CANONICAL_EVIDENCE_NAME}"
+EXPECTED_EVIDENCE_SHA="${USER_EXPECTED_EVIDENCE_SHA:-$CANONICAL_EVIDENCE_SHA}"
+MAX_MANIFEST_AGE_DAYS="${MAX_MANIFEST_AGE_DAYS:-30}"
 
 DEFAULT_RELEASE_PATH="$REPO_ROOT/$EXPECTED_RELEASE_NAME"
 DEFAULT_EVIDENCE_PATH="$REPO_ROOT/$EXPECTED_EVIDENCE_NAME"
@@ -46,6 +60,7 @@ Environment overrides:
   EXPECTED_RELEASE_SHA
   EXPECTED_EVIDENCE_NAME
   EXPECTED_EVIDENCE_SHA
+  MAX_MANIFEST_AGE_DAYS
 
 Exit codes:
   0 = canonical attested pair
@@ -132,12 +147,14 @@ check_manifest_hash_agreement() {
   local expected_evidence_name="$4"
   local expected_evidence_sha="$5"
 
-  python3 - "$evidence_zip" "$expected_release_name" "$expected_release_sha" "$expected_evidence_name" "$expected_evidence_sha" <<'PYEOF'
+  python3 - "$evidence_zip" "$expected_release_name" "$expected_release_sha" "$expected_evidence_name" "$expected_evidence_sha" "$MAX_MANIFEST_AGE_DAYS" <<'PYEOF'
 import json
 import sys
 import zipfile
+from datetime import datetime, timezone
 
-zip_path, exp_release_name, exp_release_sha, exp_evidence_name, exp_evidence_sha = sys.argv[1:]
+zip_path, exp_release_name, exp_release_sha, exp_evidence_name, exp_evidence_sha, max_age_days = sys.argv[1:]
+max_age_days = int(max_age_days)
 
 manifest_candidates = [
     "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
@@ -167,6 +184,36 @@ evidence_name = manifest.get("evidence_zip")
 evidence_sha = manifest.get("evidence_zip_sha256")
 
 errors = []
+
+generated_at = manifest.get("generated_at_utc")
+if not isinstance(generated_at, str) or not generated_at.strip():
+  errors.append("generated_at_utc missing or empty")
+else:
+  raw = generated_at.strip()
+  if raw.endswith("Z"):
+    raw = raw[:-1] + "+00:00"
+  try:
+    dt = datetime.fromisoformat(raw)
+    if dt.tzinfo is None:
+      dt = dt.replace(tzinfo=timezone.utc)
+    else:
+      dt = dt.astimezone(timezone.utc)
+    age_days = (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0
+    if age_days > max_age_days:
+      errors.append(
+        f"generated_at_utc too old ({age_days:.2f} days > {max_age_days} days)"
+      )
+  except ValueError:
+    errors.append(f"generated_at_utc invalid ISO8601: {generated_at!r}")
+
+status_policy = manifest.get("status_policy")
+if not isinstance(status_policy, dict):
+  errors.append("status_policy missing or invalid")
+else:
+  current_label = status_policy.get("current_label")
+  if not isinstance(current_label, str) or not current_label.strip():
+    errors.append("status_policy.current_label missing or empty")
+
 if release_name != exp_release_name:
     errors.append(f"release_name:{release_name!r}!=expected:{exp_release_name!r}")
 if release_sha != exp_release_sha:

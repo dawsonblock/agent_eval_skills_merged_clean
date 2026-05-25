@@ -70,7 +70,10 @@ class SkillPlanner:
     def build_plan(self, request: str) -> PlannerResult:
         mode = self.classify_mode(request)
         skill_name = self._derive_skill_name(request)
-        requires_mcp = any(token in request.lower() for token in ("mcp", "server", "toolathon", "browser"))
+        requires_mcp = any(
+            token in request.lower()
+            for token in ("mcp", "server", "toolathon", "browser")
+        )
 
         if mode != "build_skill":
             return PlannerResult(
@@ -113,7 +116,11 @@ class SkillPlanner:
     @staticmethod
     def _derive_skill_name(request: str) -> str:
         normalized = re.sub(r"[^a-z0-9]+", "-", request.lower()).strip("-")
-        for common in ("build-me-a-skill-that", "make-a-skill-that", "create-a-skill-that"):
+        for common in (
+            "build-me-a-skill-that",
+            "make-a-skill-that",
+            "create-a-skill-that",
+        ):
             if normalized.startswith(common):
                 normalized = normalized[len(common):].strip("-")
                 break
@@ -126,10 +133,35 @@ class SkillPlanner:
     @staticmethod
     def _infer_category(request: str) -> str:
         text = request.lower()
+        if any(token in text for token in ("web", "url", "scrape", "browser")):
+            return "browser"
         if any(token in text for token in ("pdf", "doc", "document")):
             return "documents"
         if any(token in text for token in ("csv", "json", "table", "data")):
             return "data"
-        if any(token in text for token in ("web", "url", "scrape", "browser")):
-            return "web"
-        return "general"
+        if any(
+            token in text
+            for token in ("code", "python", "typescript", "lint", "compile")
+        ):
+            return "coding"
+        if any(
+            token in text
+            for token in ("calendar", "email", "todo", "task", "productivity")
+        ):
+            return "productivity"
+        if any(
+            token in text
+            for token in ("automation", "workflow", "pipeline", "batch")
+        ):
+            return "automation"
+        if any(
+            token in text
+            for token in ("audio", "video", "image", "media")
+        ):
+            return "media"
+        if any(
+            token in text
+            for token in ("research", "search", "summarize", "analysis")
+        ):
+            return "research"
+        return "custom"
