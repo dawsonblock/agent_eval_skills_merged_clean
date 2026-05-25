@@ -6,6 +6,14 @@ set -euo pipefail
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -100,6 +108,25 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! command -v zipinfo >/dev/null 2>&1; then
+  echo "Error: zipinfo is required for evidence ZIP validation." >&2
+  exit 1
+fi
+
+entries_tmp="$(mktemp)"
+forbidden_tmp="$(mktemp)"
+cleanup_entries() {
+  rm -f "$entries_tmp" "$forbidden_tmp"
+}
+trap cleanup_entries EXIT
+
+zipinfo -1 "$EVIDENCE_PATH" > "$entries_tmp"
+grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$entries_tmp" > "$forbidden_tmp" || true
+if [ -s "$forbidden_tmp" ]; then
+  echo "forbidden entries found: $(paste -sd ', ' "$forbidden_tmp")" >&2
+  exit 1
+fi
+
 python3 - "$EVIDENCE_PATH" <<'PYEOF'
 import json
 import os
@@ -154,19 +181,6 @@ required_files = [
     "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md",
 ]
 
-forbidden_markers = [
-    "__MACOSX/",
-    "/._",
-    ".DS_Store",
-    "node_modules/",
-    ".validation_logs/",
-    "__pycache__/",
-    ".pytest_cache/",
-    ".mypy_cache/",
-    ".ruff_cache/",
-    ".venv/",
-]
-
 def get_in(data, path):
     current = data
     for key in path:
@@ -216,20 +230,6 @@ with zipfile.ZipFile(zip_path, "r") as zf:
     missing = [name for name in required_files if name not in entries]
     if missing:
         errors.append("missing required evidence files: " + ", ".join(missing))
-
-    forbidden = []
-    for entry in entries:
-        for marker in forbidden_markers:
-            if marker.startswith("/"):
-                if marker in entry:
-                    forbidden.append(entry)
-                    break
-            elif marker in entry:
-                forbidden.append(entry)
-                break
-
-    if forbidden:
-        errors.append("forbidden entries found: " + ", ".join(sorted(set(forbidden))))
 
     def read_json(path):
         try:

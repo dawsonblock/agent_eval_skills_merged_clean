@@ -6,6 +6,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
   echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
@@ -146,7 +154,19 @@ run_case \
 
 # Case: dirty_archive
 DIRTY_ZIP="$TMP_DIR/agent_eval_skills_merged_clean-dirty.zip"
-create_zip "$DIRTY_ZIP" '{"README.md":"dirty\n","__MACOSX/._junk":"meta"}'
+dirty_entry="${RELEASE_FORBIDDEN_TOKENS[0]:-__MACOSX}"
+case "$dirty_entry" in
+  "._*")
+    dirty_entry="folder/._junk"
+    ;;
+  ".DS_Store")
+    dirty_entry=".DS_Store"
+    ;;
+  *)
+    dirty_entry="$dirty_entry/._junk"
+    ;;
+esac
+create_zip "$DIRTY_ZIP" "{\"README.md\":\"dirty\\n\",\"$dirty_entry\":\"meta\"}"
 run_case \
   "dirty_archive" \
   "dirty_archive" \
