@@ -14,6 +14,10 @@ Commands:
   skillforge inspect SLUG           — show detailed skill info
   skillforge tools list             — list tools via MCP server
   skillforge tools call SLUG NAME   — call an MCP tool
+    skillforge mcp list              — list managed MCP processes
+                                                                        or profile servers
+    skillforge mcp start SLUG        — start MCP server process for a skill
+    skillforge mcp stop SLUG         — stop MCP server process for a skill
   skillforge mcp smoke SLUG         — MCP smoke test
   skillforge doctor                 — workspace health check
 """
@@ -580,6 +584,139 @@ def mcp_group() -> None:
     """MCP server management commands."""
 
 
+@mcp_group.command(name="list")
+@click.option(
+    "--profile",
+    default=None,
+    help=(
+        "List Toolathlon profile server targets (e.g. smoke) "
+        "instead of managed processes."
+    ),
+)
+@click.pass_context
+def mcp_list(ctx: click.Context, profile: Optional[str]) -> None:
+    """List managed MCP processes or Toolathlon profile targets."""
+    ws_root: Path = ctx.obj["workspace"]
+
+    from skillforge_ai.commands.mcp import (
+        list_profile_servers,
+        list_running_servers,
+    )
+
+    if profile:
+        try:
+            servers = list_profile_servers(ws_root, profile)
+        except FileNotFoundError as exc:
+            err_console.print(f"[red]{exc}[/]")
+            sys.exit(1)
+        except ValueError as exc:
+            err_console.print(f"[red]{exc}[/]")
+            sys.exit(1)
+
+        if not servers:
+            console.print(
+                f"[yellow]No servers configured in profile '{profile}'.[/]"
+            )
+            return
+
+        table = Table(title=f"Toolathlon MCP Profile — {profile}")
+        table.add_column("Server", style="cyan")
+        for server in servers:
+            table.add_row(server)
+        console.print(table)
+        return
+
+    rows = list_running_servers(ws_root)
+    if not rows:
+        console.print(
+            "[yellow]No managed MCP servers are currently recorded.[/]"
+        )
+        return
+
+    table = Table(title="Managed MCP Servers")
+    table.add_column("Slug", style="cyan")
+    table.add_column("PID")
+    table.add_column("Running")
+    table.add_column("Server Path")
+
+    for row in rows:
+        table.add_row(
+            str(row["slug"]),
+            str(row["pid"]),
+            "✓" if bool(row["running"]) else "✗",
+            str(row["server_path"]),
+        )
+    console.print(table)
+
+
+@mcp_group.command(name="start")
+@click.argument("slug")
+@click.option(
+    "--server-path",
+    default=None,
+    type=click.Path(path_type=Path),
+    help="Path to MCP server file (auto-detected if omitted).",
+)
+@click.pass_context
+def mcp_start(
+    ctx: click.Context,
+    slug: str,
+    server_path: Optional[Path],
+) -> None:
+    """Start MCP server process for SLUG and track it in .skillforge/runs."""
+    ws_root: Path = ctx.obj["workspace"]
+
+    if server_path is None:
+        server_path = ws_root / "tools" / "generated" / slug / "mcp" / "server.py"
+
+    if not server_path.exists():
+        err_console.print(f"[red]MCP server not found: {server_path}[/]")
+        sys.exit(1)
+
+    from skillforge_ai.commands.mcp import start_managed_server
+
+    try:
+        info = start_managed_server(ws_root, slug, server_path)
+    except Exception as exc:
+        err_console.print(f"[red]Unable to start MCP server: {exc}[/]")
+        sys.exit(1)
+
+    if bool(info.get("already_running")):
+        console.print(
+            f"[yellow]MCP server '{slug}' already running "
+            f"(pid={info.get('pid')}).[/]"
+        )
+    else:
+        console.print(
+            f"[green]✓ MCP server '{slug}' started "
+            f"(pid={info.get('pid')}).[/]"
+        )
+    console.print(f"stdout log: {info.get('stdout_log')}")
+    console.print(f"stderr log: {info.get('stderr_log')}")
+
+
+@mcp_group.command(name="stop")
+@click.argument("slug")
+@click.pass_context
+def mcp_stop(ctx: click.Context, slug: str) -> None:
+    """Stop a managed MCP server process for SLUG."""
+    ws_root: Path = ctx.obj["workspace"]
+
+    from skillforge_ai.commands.mcp import stop_managed_server
+
+    try:
+        stopped = stop_managed_server(ws_root, slug)
+    except Exception as exc:
+        err_console.print(f"[red]Unable to stop MCP server: {exc}[/]")
+        sys.exit(1)
+
+    if not stopped:
+        err_console.print(f"[red]No managed MCP server found for '{slug}'.[/]")
+        sys.exit(1)
+
+    console.print(f"[green]✓ MCP server '{slug}' stopped.[/]")
+
+
 @mcp_group.command(name="smoke")
 @click.argument("slug", required=False)
 @click.option(
@@ -697,3 +834,7 @@ def _print_validation_report(report: Any) -> None:
 
 # This is referenced in the type hint on _print_validation_report above
 from typing import Any  # noqa: E402 (needed after function def)
+
+
+if __name__ == "__main__":
+    main()

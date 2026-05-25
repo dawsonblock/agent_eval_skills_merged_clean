@@ -229,6 +229,74 @@ class TestMCPSmokeCommand:
         assert "profile 'smoke'" in result.output.lower()
 
 
+class TestMCPLifecycleCommands:
+    @patch("skillforge_ai.commands.mcp.list_running_servers")
+    def test_mcp_list_running(self, mock_list_running, runner: CliRunner, ws: Path):
+        mock_list_running.return_value = [
+            {
+                "slug": "csv-cleaner",
+                "pid": 12345,
+                "server_path": str(ws / "tools" / "generated" / "csv-cleaner" / "mcp" / "server.py"),
+                "running": True,
+            }
+        ]
+
+        result = runner.invoke(
+            main,
+            ["--workspace", str(ws), "mcp", "list"],
+        )
+
+        assert result.exit_code == 0
+        assert "csv-cleaner" in result.output
+
+    @patch("skillforge_ai.commands.mcp.list_profile_servers")
+    def test_mcp_list_profile(self, mock_list_profile, runner: CliRunner, ws: Path):
+        mock_list_profile.return_value = ["rail_12306", "filesystem", "google_calendar"]
+
+        result = runner.invoke(
+            main,
+            ["--workspace", str(ws), "mcp", "list", "--profile", "smoke"],
+        )
+
+        assert result.exit_code == 0
+        assert "rail_12306" in result.output
+        assert "filesystem" in result.output
+
+    @patch("skillforge_ai.commands.mcp.start_managed_server")
+    def test_mcp_start(self, mock_start, runner: CliRunner, ws: Path):
+        server = ws / "tools" / "generated" / "csv-cleaner" / "mcp" / "server.py"
+        server.parent.mkdir(parents=True, exist_ok=True)
+        server.write_text("# stub", encoding="utf-8")
+
+        mock_start.return_value = {
+            "slug": "csv-cleaner",
+            "pid": 23456,
+            "already_running": False,
+            "stdout_log": str(ws / ".skillforge" / "runs" / "mcp" / "csv-cleaner.out.log"),
+            "stderr_log": str(ws / ".skillforge" / "runs" / "mcp" / "csv-cleaner.err.log"),
+        }
+
+        result = runner.invoke(
+            main,
+            ["--workspace", str(ws), "mcp", "start", "csv-cleaner", "--server-path", str(server)],
+        )
+
+        assert result.exit_code == 0
+        assert "started" in result.output.lower()
+
+    @patch("skillforge_ai.commands.mcp.stop_managed_server")
+    def test_mcp_stop(self, mock_stop, runner: CliRunner, ws: Path):
+        mock_stop.return_value = True
+
+        result = runner.invoke(
+            main,
+            ["--workspace", str(ws), "mcp", "stop", "csv-cleaner"],
+        )
+
+        assert result.exit_code == 0
+        assert "stopped" in result.output.lower()
+
+
 class TestToolsCommands:
     def test_tools_list_registry_mode(self, runner: CliRunner, ws: Path):
         from skillforge_ai.tool_registry import SkillForgeRegistry
