@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-26T22:43:33.929494+00:00",
+  "created_at_utc": "2026-05-26T22:45:09.929273+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,7 +9,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "358f7d1935a7d51c659a6af1fc6bb4f50b3d4aaee4df16f2c3af57d0bf9125c4"
+      "sha256": "4ad550a74624f9c80c14d128dc3d162eea35a82b33c53864f965a06d96230317"
     },
     {
       "path": "RELEASE_STATUS.json",
@@ -2409,7 +2409,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "9243c7d3ed74cac1a2c9447c3d7b769f474110cb810368f1bea504891d2e2ec7"
+      "sha256": "dcfd811953726611afab89aa0e197a8f30713849885882f659a08d9856d365c3"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
@@ -2485,7 +2485,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "a363becb4b4124846bd40e036911e0d53a66e45d5695598e8c8a44a33a0d350e"
+      "sha256": "90601934119788f39b62f6e046dbd1fab00379e09c6f67e62605d8fc0e0693ae"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
