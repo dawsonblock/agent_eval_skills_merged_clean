@@ -70,3 +70,38 @@ Deliver:
 
 - Preserve established design language, component patterns, and token naming.
 - Introduce boldness through composition and detail, not by breaking system conventions.
+
+## Validation Checklist
+
+Before delivering frontend design output:
+- [ ] Creative direction is stated (visual tone and differentiator).
+- [ ] CSS variables or theme tokens are used for colors and spacing (no inline ad-hoc values).
+- [ ] Markup is semantic (landmark elements, heading hierarchy).
+- [ ] Responsive behavior is tested at ≥ 2 breakpoints.
+- [ ] All interactive elements have visible focus states.
+- [ ] Touch targets are ≥ 44×44 px.
+- [ ] Accessibility target (WCAG AA minimum) is met for color contrast.
+
+## Failure Modes
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| Layout breaks on mobile | Fixed pixel widths without responsive breakpoints | Replace with `max-width`, `clamp()`, or flex/grid fractions |
+| Typography inconsistent across components | Ad-hoc `font-size` per element | Define and apply a type scale via CSS variables or Tailwind config |
+| Interactive states missing | Hover/focus not defined | Add `:hover`, `:focus-visible`, `:active` to all interactive elements |
+| Colors clash or feel random | No color role hierarchy | Define semantic roles (primary/surface/text/border) and reference only those |
+| Animation feels jarring | No `prefers-reduced-motion` guard | Wrap all motion in `@media (prefers-reduced-motion: no-preference)` |
+
+## Anti-Patterns
+
+- **Template cloning without differentiation**: Delivering a generic hero + card layout without applying the stated creative direction wastes the skill's purpose.
+- **Inline styles for theming**: Inline styles can't be overridden by CSS variables; use class-level or variable-based styling.
+- **Div soup**: Non-semantic markup breaks screen readers and SEO; use `<nav>`, `<main>`, `<section>`, `<article>`, `<header>`, `<footer>`.
+- **Motion without purpose**: Gratuitous transitions on every element reduce performance and distract; each animation should serve the UX intent.
+- **Ignoring the existing system**: When working inside an existing codebase, introducing new design tokens or components not already in the system creates divergence; extend, don't replace.
+
+## Examples
+
+**Good trigger**: "Design a modern SaaS landing page with a dark editorial feel and a bold typographic hero."
+**Good trigger**: "Polish this dashboard — the metrics cards look too flat and generic."
+**Poor trigger (too vague)**: "Make it look nicer." — Ask for clarifying intent before proceeding.

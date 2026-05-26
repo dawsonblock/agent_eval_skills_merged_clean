@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-26T19:34:44.560595+00:00",
+  "created_at_utc": "2026-05-26T20:06:57.277904+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "4ef54b2e4800eab4fbf4dca7ade9e25a3fe06cddcc4ca39b65c23396ba8a1417"
+      "sha256": "99210a4472254539cfbe61ac6a05bf6ea22f96b9aabdccca3f4ad03fcbe3dabd"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "dfce810609dc1b30c263227a67f5dab9f575c0fafc5144c705a95908dce06121"
+      "sha256": "d6dbec37db557a7dd671f03776558ea99279519cbdd89c43d7cad491bf6d21ae"
     },
     {
       "path": "ToolForge/.bandit",
@@ -1461,7 +1461,7 @@
     },
     {
       "path": "agent-skills-curated/skills/coding-agents-and-ides/skill-creator/SKILL.md",
-      "sha256": "435c8d7d1ad73793c3dbc1c7d757302180c67402b9a8921893153c1c40b87417"
+      "sha256": "f542151310abcbed33aadbb9e9eebde658ad3f87d93f9017517fc2f16411d74a"
     },
     {
       "path": "agent-skills-curated/skills/coding-agents-and-ides/skill-creator/references/output-patterns.md",
@@ -1485,7 +1485,7 @@
     },
     {
       "path": "agent-skills-curated/skills/communication/internal-comms/SKILL.md",
-      "sha256": "b6d9168146bac42f673e29043572c44f4edb2d73fba0644428e67c411d6401be"
+      "sha256": "de3088f3c95c152734e06b40f7e806fda1a3e058743ee8f5a91d847aac1732f1"
     },
     {
       "path": "agent-skills-curated/skills/image-and-video-generation/algorithmic-art/SKILL.md",
@@ -1497,7 +1497,7 @@
     },
     {
       "path": "agent-skills-curated/skills/image-and-video-generation/canvas-design/SKILL.md",
-      "sha256": "1fe4b51907df4fb795daf3d16e584baf5c463d12cd229f4834cff795d16e5121"
+      "sha256": "0430c21a2a4707808813c49e39ac0bd78d80681bb5b2748e12b389bc5ef65a0a"
     },
     {
       "path": "agent-skills-curated/skills/image-and-video-generation/instagram-reel-editor/SKILL.md",
@@ -2277,7 +2277,7 @@
     },
     {
       "path": "agent-skills-curated/skills/web-and-frontend-development/brand-guidelines/SKILL.md",
-      "sha256": "1af27488812e62b2e617ee841d4b438fdb376c2135a7117a408f609dbc7f202e"
+      "sha256": "2b16cfc6acc098d8b77024cab50d5cfd89f2a8ad5ac124a09e269aedccf8214c"
     },
     {
       "path": "agent-skills-curated/skills/web-and-frontend-development/excalidraw/SKILL.md",
@@ -2309,11 +2309,11 @@
     },
     {
       "path": "agent-skills-curated/skills/web-and-frontend-development/frontend-design/SKILL.md",
-      "sha256": "a86958254dae7cbf220bb38370506fe4c3cfb7d744ba2b3178fa35618a2c8288"
+      "sha256": "f7820880ef359782158039552ae07317a4dd609bea24aa9980e8c98d63a2e070"
     },
     {
       "path": "agent-skills-curated/skills/web-and-frontend-development/theme-factory/SKILL.md",
-      "sha256": "dc10d9358e42ec217a6f0cb4b7289074ad0ec59afd377226d3c4042f72fb7f1d"
+      "sha256": "311baf5d658a9d7c565816fd08ed7e627af33efb47fb1e53e6a6ce949c386514"
     },
     {
       "path": "agent-skills-curated/skills/web-and-frontend-development/theme-factory/themes/dusk.css",
@@ -2353,15 +2353,15 @@
     },
     {
       "path": "release_artifacts/PUBLISH_MANIFEST_CANONICAL_PAIR.md",
-      "sha256": "a8714bb838de64e1d5b3501ce23a0c232521270cc4b2676cb5c1c001c3508985"
+      "sha256": "6437c27fe99395b5e771d24bf8ca2082855da3b1fdc8e50484d0933c130d266e"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md",
-      "sha256": "0ee292d837af67448cfeea01ae4e66d11b5b62dd77f8e7f308a78e94d46ce64b"
+      "sha256": "d069723e18c7cf833e5e992a9795342b58c8aae87f0e55ca221050ed725e1406"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "ceb416f7eb02024a15aa45980918f6b483a4ec87aea19719224d23bfca34a6fe"
+      "sha256": "697f7c34453237334d52ce55dfa4331881dc35588123f88fe7cdc5638a37950e"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
@@ -2369,7 +2369,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
-      "sha256": "34baba82a4891267baa7a0bb4c83c7602650d83b3a8e85de27b53fef520ce9a8"
+      "sha256": "a8f0aa7702e3afa906546787565086b2dd52fea7d5f0f8068c622e62b02a4b33"
     },
     {
       "path": "release_artifacts/SKILLFORGE_CANDIDATE_MANIFEST_2026-05-25.json",
@@ -2393,7 +2393,7 @@
     },
     {
       "path": "release_artifacts/skillforge_ai_candidate_build_summary.json",
-      "sha256": "d443fb96b619cb1d9c2027756b58b8733fa50c80e6dd5f7b3ae73f8f4aaa1765"
+      "sha256": "247933478bb02bfa8a8bec75e177676c93a0e4ccacc738b87bcb6b6cc734600f"
     },
     {
       "path": "release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json",
@@ -2425,7 +2425,7 @@
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "0fb62ed53c14e474e7e38b259820f3c17ed15e74e30e32fed3cb83e310f8c639"
+      "sha256": "200a728aef717921de4ac824be7453c520f46160779320f22ba6d9a61c2e9b8a"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2437,7 +2437,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "95afbe54e76f668ef8904b640849606ab2077a3ca9cae97b06b8996b98fab1ae"
+      "sha256": "2d4a5861a51580d06671f1db875bec28b33bb466a041b024348f38d174d6d2e4"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
@@ -2536,6 +2536,10 @@
       "sha256": "948949c6f3204fd3ca5b61469c34bee4a85c5de455473a896358acc340a4fc3f"
     },
     {
+      "path": "scripts/verify_canonical_release_pair.sh",
+      "sha256": "20ceea16e156ac6bc6eacde27d9c8c7d1c905ba734d0b824bc8ae2f34becf977"
+    },
+    {
       "path": "scripts/verify_evidence_bundle.sh",
       "sha256": "953b5834f191b115bbfef73afc8e57d5238488a67ef450fb5f6a1261385b6c9e"
     },
@@ -2562,6 +2566,10 @@
     {
       "path": "scripts/verify_skip_existing_artifacts_strict.sh",
       "sha256": "fcf9712f3d645fd70b871bc105dc7384bfef70ca726201cd9c5d8e461a6c6a8d"
+    },
+    {
+      "path": "scripts/verify_source_bundle_hygiene.sh",
+      "sha256": "bbe283e6b87dbaec3d3d136bba47cb813b0bf7335a61a364527f30f6ec14e96a"
     },
     {
       "path": "toolathlon-gym-curated/.dockerignore",

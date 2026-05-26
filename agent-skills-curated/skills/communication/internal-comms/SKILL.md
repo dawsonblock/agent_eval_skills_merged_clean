@@ -196,3 +196,40 @@ Include in every draft:
 `examples/general-announcement.md` — product launch announcement
 `examples/incident-resolved.md` — service incident resolution notice
 `examples/org-change.md` — team restructure message
+
+## Validation Checklist
+
+Before delivering internal comms output:
+- [ ] Subject line is clear and specific (no clickbait).
+- [ ] Audience is identified and tone matches the message type table.
+- [ ] Timeline is explicit: effective date, deadline, next update time.
+- [ ] Owner is named for any required action item.
+- [ ] Escalation / contact channel is provided.
+- [ ] No jargon-heavy corp-speak or passive accountability language.
+- [ ] Incident messages include: status, impact, started time, next update cadence.
+- [ ] Org change messages lead with the person, include "what's changing" and "what isn't".
+
+## Failure Modes
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| Readers don't know what to do | Missing action items or owner | Add explicit "By [date]: [action]" bullet with named owner |
+| Incident message causes panic | Vague impact statement | Quantify impact: "X% of users in Region Y cannot access Feature Z" |
+| Org change message feels cold | Led with structure, not people | Rewrite: open with the person's name and what they bring to the new role |
+| Policy change ignored | No deadline or consequence stated | Add "Effective [date]" and what the expectation is after that date |
+| Message is too long | No length discipline applied | Trim to the word count range in the message type table; move detail to a linked doc |
+
+## Anti-Patterns
+
+- **Vague reassurances without facts**: "Everything is fine and we're working on it" without status/impact data erodes trust. State what you know and when the next update arrives.
+- **Passive accountability**: "Mistakes were made" or "it was discovered that" — always attribute clearly or use active voice.
+- **Corp-speak**: Phrases like "leverage our synergies" or "circle back on this" reduce clarity. Write plainly.
+- **Burying the action item**: Required actions must appear visually distinct (bullet list) near the top or in a clearly labeled section — never hidden in paragraph prose.
+- **No next-steps for unresolved situations**: If the situation is ongoing, always close with a next update time and contact channel.
+
+## Examples
+
+**Good incident opener**: "We're currently investigating an issue affecting checkout for customers in the EU. Approximately 15% of orders are failing. Started: 14:32 UTC. Next update: 15:00 UTC."
+**Bad incident opener**: "Hi team, we are aware of some issues and are looking into it."
+**Good org change opener**: "I want to share that Maria Chen will be leading our Platform team starting June 1st."
+**Bad org change opener**: "Effective June 1st, structural reporting changes will be implemented."

@@ -160,3 +160,33 @@ When responding, include:
 - complete runnable code block
 - explicit dependency notes (if any)
 - export command or write path
+
+## Validation Checklist
+
+Before delivering canvas output:
+- [ ] Width and height set via `canvas.width` / `canvas.height`, not CSS alone.
+- [ ] Layer order is explicit: background → shapes → images → typography → overlays.
+- [ ] Text contrast is verified against its background layer.
+- [ ] Font is loaded (registered) before `ctx.fillText` calls.
+- [ ] Export path and format are documented in the response.
+- [ ] All async operations (`loadImage`, font loading) are awaited before draw calls.
+- [ ] Output dimensions match the target platform spec.
+
+## Failure Modes
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| Canvas renders blank | `ctx` operations before `canvas.width/height` set | Set dimensions before any draw calls |
+| Text appears pixelated | CSS size used instead of JS canvas dimensions | `canvas.width = W; canvas.height = H` in JS before drawing |
+| Font fallback renders | Font not loaded/registered before `fillText` | Await `font.load()` and `document.fonts.add(font)` or `registerFont()` |
+| Async image not drawn | `loadImage` not awaited | Always `await loadImage(...)` before `drawImage` |
+| PNG appears transparent on some viewers | Background layer omitted | Always fill a background rect before compositing layers |
+| Node-canvas SIGSEGV | Native binary mismatch | `npm rebuild canvas` after Node version change |
+
+## Anti-Patterns
+
+- **CSS-only sizing**: Setting dimensions only via CSS scales the rendering context but keeps the internal resolution at default (300×150), producing blurry output.
+- **Hardcoded coordinates without constants**: Magic numbers spread throughout draw calls make composition changes fragile; define `W`, `H`, `MARGIN`, `SAFE_X` constants.
+- **Skipping safe zones**: Content near canvas edges clips on some platforms; apply a consistent inset (e.g., 60px for social formats).
+- **Blocking the main thread with synchronous image I/O**: All image operations must be async in both browser and Node environments.
+- **Omitting format in the response**: Always state the output path, format (PNG/JPEG/WebP), and quality setting so the user can reproduce results.

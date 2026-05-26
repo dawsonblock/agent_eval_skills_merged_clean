@@ -2,7 +2,7 @@
   "package_name": "agent_eval_skills_merged_clean",
   "release_classification": "SOURCE_BUNDLE",
   "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "canonical_release_sha256": "2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231",
+  "canonical_release_sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
   "uploaded_archive_sha256": "eb1186c9812d0a211cbc81e065e98584c7592ac8e11dc610e222d97108d740e2",
   "toolathlon_profile": "smoke",
   "full_profile_validated": false,

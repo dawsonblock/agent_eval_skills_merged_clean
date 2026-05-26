@@ -107,3 +107,32 @@ Produce JSON compatible with token pipelines:
 - Color roles are semantic and non-overlapping.
 - At least one contrast check is documented.
 - BRAND.md remains the authoritative source for the session.
+
+## Validation Checklist
+
+Before delivering brand output:
+- [ ] All color values are sourced from the input material, not invented.
+- [ ] Typography hierarchy is explicit (at minimum: display, body).
+- [ ] Color roles are semantic (primary/secondary/accent/neutral/status) with no overlaps.
+- [ ] At least one contrast ratio is documented (foreground/background ≥ 4.5:1 AA).
+- [ ] BRAND.md is produced and treated as the session's single source of truth.
+- [ ] Token export (if requested) is valid JSON and pipeline-compatible.
+- [ ] Voice/tone rules include at least one "avoid" pattern.
+
+## Failure Modes
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| Colors look inconsistent across surfaces | Skipped semantic role normalization | Re-run step 2: resolve conflicts into one role per color |
+| Typography feels generic | Used system-ui fallback without checking source material | Extract actual font declarations from source URL or files |
+| Contrast check absent | Skipped accessibility validation | Compute ratios for foreground/background and primary/primary-fg pairs |
+| Brand BRAND.md drifts mid-session | Edited values without updating source of truth | Recreate BRAND.md and announce the update |
+| Token export causes pipeline errors | Embedded metadata or non-standard nesting | Use flat `{ "key": { "value": "..." } }` structure; strip comments |
+
+## Anti-Patterns
+
+- **Inventing brand values**: Never fabricate colors, fonts, or tone without source material. If no source exists, make assumptions explicit.
+- **Overly complex token hierarchies**: More than 4 color roles (primary/secondary/accent/neutral) adds confusion without value for most projects.
+- **Skipping contrast for secondary/muted pairs**: Low-contrast muted text is a common accessibility failure; always check.
+- **Treating screenshots as canonical**: Screenshot colors shift due to compression. Extract from CSS or design files when possible.
+- **Per-output ad hoc values**: Using raw hex values directly in component code instead of token references makes the brand ungovernable.

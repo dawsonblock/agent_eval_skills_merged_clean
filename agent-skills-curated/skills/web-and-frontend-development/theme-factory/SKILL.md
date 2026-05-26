@@ -1,6 +1,6 @@
 ---
 name: theme-factory
-description: Generate production-ready UI themes and token systems for CSS, Tailwind, and shadcn/ui. Use when users ask for a palette, design tokens, dark/light mode mapping, or visual re-theming of an existing app. Trigger phrases include "create a theme", "generate palette", "tailwind theme", "shadcn theme", "design tokens", "dark mode", "light mode", and "re-theme this UI".
+description: Generate production-ready UI themes and token systems for CSS, Tailwind, and shadcn/ui. Use when users ask to apply a theme, theme an existing app, change colors and fonts, map dark/light mode tokens, or turn a palette into semantic variables. Trigger phrases include "apply a theme", "theme this app", "change the colors", and "re-theme this UI". Do not use for brand identity extraction, logo work, or full UI redesigns; use brand-guidelines or frontend-design instead.
 ---
 
 # Theme Factory
@@ -102,3 +102,37 @@ If a pair fails, adjust and re-report corrected values.
 - Prefer semantic tokens over raw color references in component code.
 - Preserve existing project conventions when extending a live codebase.
 - Use the `themes/` directory presets only as starting points, not hard constraints.
+
+## Validation Checklist
+
+Before delivering a theme:
+- [ ] All anchor colors are defined (primary, secondary, accent, neutral, destructive).
+- [ ] Semantic token mapping is provided for both light and dark modes.
+- [ ] At minimum three contrast pairs are checked (fg/bg, primary/primary-fg, muted/card).
+- [ ] At least one export snippet is included in the requested format.
+- [ ] Hue count is justified if more than 2 anchors are used.
+- [ ] Auto-corrected values include before/after ratios.
+
+## Failure Modes
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| Dark mode looks washed out | Neutral scale not inverted properly | Swap luminance poles: light bg (neutral-50) → dark bg (neutral-950) |
+| Primary button text unreadable | Insufficient primary/primary-fg contrast | Adjust primary-foreground to nearest value with ≥ 4.5:1 |
+| Theme feels incoherent | Too many anchor hues (>3) | Consolidate: one primary, one accent, neutral scale |
+| Tailwind class names not resolving | Colors not registered under `extend.colors` | Add entries inside `theme.extend.colors`, not `theme.colors` |
+| shadcn/ui component overrides ignored | Variables missing HSL format | shadcn expects `H S% L%` format without `hsl()` wrapper |
+
+## Anti-Patterns
+
+- **Raw hex in semantic tokens**: Semantic tokens must reference the scale, not direct hex values; otherwise dark-mode toggle breaks.
+- **Skipping scale steps**: Jumping from 100 to 900 without intermediate stops limits UI depth; produce at minimum 100/200/300/500/700/900.
+- **Copying palette without checking contrast**: A palette that looks good in design tools often fails WCAG at actual font sizes.
+- **Over-animating theme transitions**: CSS variable transitions on every element tank performance; scope transitions to `background-color` and `color` only.
+- **Ignoring input mode**: Applying a "calm fintech" palette to a user-supplied brand palette silently overrides their intent.
+
+## Examples
+
+- "Apply a theme to this dashboard and give me matching Tailwind tokens."
+- "Theme this app for dark mode and export shadcn/ui variables."
+- "Change the colors and fonts, but keep the existing layout."

@@ -10,11 +10,11 @@ agent_eval_skills_merged_clean - pruned smoke release candidate for controlled t
 
 Release ZIP:
 - Name: agent_eval_skills_merged_clean-pruned-smoke.zip
-- SHA256: 2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231
+- SHA256: 9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251
 
 Evidence ZIP:
 - Name: agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
-- SHA256: 933725a1775ad4ab50564f12cdbf0e4c6372e98b30f84fba66004000d610f661
+- SHA256: f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3
 
 ## Scope Boundary
 

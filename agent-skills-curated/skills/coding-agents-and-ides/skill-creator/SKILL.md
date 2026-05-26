@@ -98,3 +98,37 @@ When asked to create or update a skill, return:
 - summary of reusable resources added
 - packaging result and any validation findings
 
+
+## Validation Checklist
+
+Before delivering a skill package:
+- [ ] Frontmatter includes `name` and `description`.
+- [ ] Description contains: what the skill does, when to use it, and trigger phrases.
+- [ ] SKILL.md body includes: workflow steps, decision rules, and scope boundaries.
+- [ ] No unnecessary files added (no README.md, CHANGELOG.md, QUICK_REFERENCE.md).
+- [ ] Scripts are executable and deterministic (no side effects requiring human intervention).
+- [ ] References are linked from SKILL.md, not duplicated inline.
+- [ ] Trigger phrases are concrete and distinct from other skills in the package.
+
+## Failure Modes
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| Skill never invoked | Trigger description too vague or missing key phrases | Expand description with 5–10 specific trigger phrases |
+| Skill invoked for wrong tasks | Overlap with another skill's trigger domain | Add explicit "DO NOT USE FOR" list in description |
+| SKILL.md too long to read in context | Deep examples embedded in body | Move examples to `references/` and link from SKILL.md |
+| Scripts fail on different machines | Hardcoded absolute paths in scripts | Use `$(dirname "$0")` or `__file__` relative paths |
+| Packaging fails silently | Missing `scripts/package_skill.py` or wrong entry point | Run `python scripts/package_skill.py --validate` before delivering |
+
+## Anti-Patterns
+
+- **Over-documenting SKILL.md**: Embedding long reference tables, full API docs, or exhaustive examples in SKILL.md inflates context cost. Put depth in `references/`.
+- **Ambiguous trigger phrases**: "help me" or "do this" are too broad; triggers must map to a specific domain or action pattern.
+- **Missing scope boundaries**: Without an explicit "out of scope" section, the skill is invoked for adjacent tasks it can't handle well.
+- **Non-deterministic scripts**: Scripts that require interactive prompts or depend on session state break automated packaging; make all inputs explicit arguments.
+- **Duplicate content across files**: If a decision rule exists in SKILL.md, it must not also appear verbatim in `references/`; a single source of truth prevents drift.
+
+## Examples
+
+**Good description excerpt**: "Use when users ask to build a new skill, improve an existing skill, fix trigger behavior, or prepare a distributable package. Trigger phrases include 'create a skill', 'new agent skill', 'write a SKILL.md', 'package this skill', 'fix skill triggers'."
+**Bad description excerpt**: "Helps with skill-related tasks and creating things." (too vague, no trigger phrases)

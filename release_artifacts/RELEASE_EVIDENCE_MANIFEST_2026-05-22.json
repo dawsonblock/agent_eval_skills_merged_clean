@@ -10,9 +10,9 @@
     "promotion_requires_attached_evidence": true
   },
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_zip_sha256": "2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231",
+  "release_zip_sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
-  "evidence_zip_sha256": "933725a1775ad4ab50564f12cdbf0e4c6372e98b30f84fba66004000d610f661",
+  "evidence_zip_sha256": "f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3",
   "validated_scope": [
     "ToolForge",
     "Agent Skills",
@@ -27,7 +27,7 @@
   ],
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231",
+    "sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -42,7 +42,7 @@
       ".venv"
     ]
   },
-  "archive_sha256": "2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231",
+  "archive_sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",

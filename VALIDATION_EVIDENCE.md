@@ -5,13 +5,13 @@ This document defines the minimum evidence required to claim release candidate s
 Canonical attested pair (2026-05-22):
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231`
+  - SHA256: `9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `933725a1775ad4ab50564f12cdbf0e4c6372e98b30f84fba66004000d610f661`
+  - SHA256: `f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 
-Current status (May 23, 2026): pruned smoke release candidate for controlled testing. Release status applies only to the exact archive hash listed in [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md): `2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231`.
+Current status (May 23, 2026): pruned smoke release candidate for controlled testing. Release status applies only to the exact archive hash listed in [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md): `9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251`.
 
 Scope warning: status and promotion rules apply to `TOOLATHLON_PROFILE=smoke` only. Full profile remains optional/experimental unless separate full-profile evidence is presented.
 

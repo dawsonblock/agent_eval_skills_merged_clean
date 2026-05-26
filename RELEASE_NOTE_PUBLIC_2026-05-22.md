@@ -10,11 +10,11 @@ The release is defined by this exact artifact pair:
 
 1. Release archive
    - Filename: agent_eval_skills_merged_clean-pruned-smoke.zip
-   - SHA256: 2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231
+   - SHA256: 9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251
 
 2. Evidence bundle
    - Filename: agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
-   - SHA256: 959cb033495fa5c04575743bfc6d262a72a6275b3f2dafadace216f80acfb526
+   - SHA256: f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3
 
 These values are hash-bound in the release attestation and evidence manifest.
 
