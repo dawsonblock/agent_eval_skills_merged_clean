@@ -4,14 +4,14 @@ Prerequisite: run smoke validation and ensure required evidence artifacts pass b
 
 Status claims in packaged ZIPs are advisory unless the matching evidence artifact bundle is published for the same archive hash.
 
-Current smoke release-candidate archive SHA256: `9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251` (see [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md)).
+Current smoke release-candidate archive SHA256: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe` (see [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md)).
 
 Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251`
+   - SHA256: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3`
+   - SHA256: `51ca3e39159337646546a215e7babf3507cab207ae2b947679aabe685380c20b`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 
@@ -228,7 +228,7 @@ RELEASE_ZIP_OUTPUT=dist/pruned-smoke-rc.zip make release-zip
 Optional hash lock (fail closed on byte drift):
 
 ```bash
-EXPECTED_RELEASE_SHA256=9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251 \
+EXPECTED_RELEASE_SHA256=a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe \
 RELEASE_ZIP_OUTPUT=dist/agent_eval_skills_merged_clean-pruned-smoke.zip \
 make release-zip
 ```

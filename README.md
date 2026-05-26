@@ -14,14 +14,14 @@
 
 ## Overview
 
-**Current status (May 23, 2026):** Pruned smoke release candidate for controlled testing (accepted release archive hash: `9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251` — see [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md)).
+**Current status (May 23, 2026):** Pruned smoke release candidate for controlled testing (accepted release archive hash: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe` — see [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md)).
 
 Applies only to the canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251`
+  - SHA256: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3`
+  - SHA256: `51ca3e39159337646546a215e7babf3507cab207ae2b947679aabe685380c20b`
 
 Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 

@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-26T21:16:25.089887+00:00",
+  "created_at_utc": "2026-05-26T22:40:21.936497+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "99210a4472254539cfbe61ac6a05bf6ea22f96b9aabdccca3f4ad03fcbe3dabd"
+      "sha256": "46f7e03e51bbd34bdbf90394e018365325e9928da962914a7bd02209197191e9"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "ea0d3159b4c3e8567389faadbd3defe83ff69af5a6339d0c64f1eb78d33aeadd"
+      "sha256": "31596534f42fcd4261e1694ed0a439e385f0d943c92156074d86f49ee2f3e7ea"
     },
     {
       "path": "ToolForge/.bandit",
@@ -21,7 +21,7 @@
     },
     {
       "path": "ToolForge/.env.example",
-      "sha256": "699eea0e260dc672e4f1a9de779030caffa4f8aa13fa20b7339e082557a92e65"
+      "sha256": "fc31a7e24198aa27dc2bebee21a6117f1e43e49a1fbea86ab446814bdcd08e58"
     },
     {
       "path": "ToolForge/CONTRIBUTING.md",
@@ -41,7 +41,7 @@
     },
     {
       "path": "ToolForge/README.md",
-      "sha256": "f9eeb263262a2493a11a412448c155babc754d846359643882ef0ccb57cb9372"
+      "sha256": "47df3f1c8ae5c06e0107c3ba79895412709f275963a89f7054cc86020025b2d8"
     },
     {
       "path": "ToolForge/apps/__init__.py",
@@ -70,6 +70,34 @@
     {
       "path": "ToolForge/apps/cli/toolforge_cli/test_helpers.py",
       "sha256": "b624450c3cc015782b080eb63772c7c1fa47252f27d3265c51ff357442665a31"
+    },
+    {
+      "path": "ToolForge/apps/local_deepseek_demo/README.md",
+      "sha256": "beea4cefa33fa0a9f69306f6affb0720e4216a88a9da63c28e76b15b85f58bb9"
+    },
+    {
+      "path": "ToolForge/apps/local_deepseek_demo/__init__.py",
+      "sha256": "0244468140c53b8804759f7c9cbd1355da96ebd85edf9b45f5a9f03c1199514a"
+    },
+    {
+      "path": "ToolForge/apps/local_deepseek_demo/server.py",
+      "sha256": "704c4c727b5746f8abb89312608871f70020c39e562b6dedf479ce000d575dca"
+    },
+    {
+      "path": "ToolForge/apps/local_deepseek_demo/static/app.js",
+      "sha256": "2d457bc2e7cd537fa25fb3a1b0475b7d0f3cec8ca515c81d765b62d86a24d266"
+    },
+    {
+      "path": "ToolForge/apps/local_deepseek_demo/static/index.html",
+      "sha256": "36200a912befe5b1a87ed169d19c6719434f0bf3b5ad27d3bdad1b6ff7393187"
+    },
+    {
+      "path": "ToolForge/apps/local_deepseek_demo/static/styles.css",
+      "sha256": "65247817b5ffdadab204a6c00056f5a40120297ea5f42d3a1a297690bebf0085"
+    },
+    {
+      "path": "ToolForge/apps/local_deepseek_demo/toolforge_adapter.py",
+      "sha256": "2ab1abd8206fd5bcaf4ab0f54f7931cdd4dbda391192a8dc53f58c329984b1b8"
     },
     {
       "path": "ToolForge/apps/web/index.html",
@@ -324,6 +352,14 @@
       "sha256": "82e839aa76f58c917de8d6e3a613f488b5621f6d005f3f170890aa8033445029"
     },
     {
+      "path": "ToolForge/packages/providers/__init__.py",
+      "sha256": "8befc142f5658558a4a4d9bfa8e69fc1375765506a3a547a63fdd076d47407c3"
+    },
+    {
+      "path": "ToolForge/packages/providers/deepseek_client.py",
+      "sha256": "6b0f2da85c9000d020c37452ee79c660ca1c4a3cff0d0485ee0c651ccadb045f"
+    },
+    {
       "path": "ToolForge/packages/runners/__init__.py",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
@@ -409,11 +445,15 @@
     },
     {
       "path": "ToolForge/pyproject.toml",
-      "sha256": "e0b0a3f030ed0bcbadc7a8c02024b6e67bb00b4444479ed7c08f55e72e87802c"
+      "sha256": "ba18867fff92efbe54dbc829cac3fb142e20d61997793b2e0e188198f0519e0e"
     },
     {
       "path": "ToolForge/pyrightconfig.json",
       "sha256": "5ef41d8fd4ededf088a6ccca368f98521d7ff896813f4f99d6f521c8a6f9bd4d"
+    },
+    {
+      "path": "ToolForge/run_local_deepseek_demo.sh",
+      "sha256": "c752450a6fc5e5f1bfb1f33a76952a0976881795a5b1acf41caf3296eac85ec3"
     },
     {
       "path": "ToolForge/sample_phase14.csv",
@@ -802,6 +842,14 @@
     {
       "path": "ToolForge/tests/test_example_specs.py",
       "sha256": "462ef9ee08d3bcb45037c4e9b61ec541151cba619d0f0665f8c63348681e89c0"
+    },
+    {
+      "path": "ToolForge/tests/test_local_deepseek_demo_adapter.py",
+      "sha256": "5cacfe7cb8f8439cbe0aa677bb6ecd52145fa590000a6a173587914e340934b1"
+    },
+    {
+      "path": "ToolForge/tests/test_local_deepseek_demo_api.py",
+      "sha256": "64a6ff59d6f974b72a76824b4aa8bb186ee463e92fca93122af687345a2d30ee"
     },
     {
       "path": "ToolForge/tests/test_logger.py",
@@ -2361,7 +2409,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "697f7c34453237334d52ce55dfa4331881dc35588123f88fe7cdc5638a37950e"
+      "sha256": "972147ac863abb08ee4a78201c9d8bd9e449f3f45b51bd2ec663688810f47189"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
@@ -2413,19 +2461,19 @@
     },
     {
       "path": "release_artifacts/toolathlon_artifact_build_summary.json",
-      "sha256": "85a5e115f72a0ffa7d79a13a975f16e64c33032ef4d1466350635d7e3be8f7b8"
+      "sha256": "ead05781c90c6e915d720bebcbbfe124b1fc227a26e7de48cd712b18db6eadd4"
     },
     {
       "path": "release_artifacts/toolathlon_mcp_smoke_summary.json",
-      "sha256": "bd3107b3de760bbc30aabb49842e2b6a9f97d34c1a3afe4c9c90e808314e2eaa"
+      "sha256": "4f822255393ac885a19bd3225033cb9fbcceab6f43f4a1c98c87a60975cfd8bb"
     },
     {
       "path": "release_artifacts/toolathlon_preflight_summary.json",
-      "sha256": "543c0d7d70d4c4837566a3bec714d812262354d7cbf6eb119751f201586cbf66"
+      "sha256": "b00f0d6a2b22ca46f85a0c05a2884a728acb5737fc7fc812f41c420d25db157e"
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "72f0369fca8fc670c035cb1152b7b4ff1d1e7cd298790a615362a1224a1e4272"
+      "sha256": "d0803b3108562ff08a417f4b02d222ea7154f485d47318d8567ee69999169633"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2437,7 +2485,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "2d4a5861a51580d06671f1db875bec28b33bb466a041b024348f38d174d6d2e4"
+      "sha256": "4fac15ba1315740300f29f486622fa71baa89c8004297d37b0b88b27694de509"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
@@ -2512,6 +2560,10 @@
       "sha256": "aaf1da38ead4ab138536f2480c20e19640e96336beff769ed3bbc1606fb404b5"
     },
     {
+      "path": "scripts/run_deepseek_tool_ui.sh",
+      "sha256": "6927fba799245998bf5b5b00fd38f239b882cc058416244841be7fdbe8d42d6c"
+    },
+    {
       "path": "scripts/run_with_timeout.py",
       "sha256": "fda430453f13ecd75ed74a35e5d15ac7a05cd103a2f6fb10643445171a849833"
     },
@@ -2525,7 +2577,7 @@
     },
     {
       "path": "scripts/validate_release_policy_drift.sh",
-      "sha256": "160b2476b298dce36df72d74170fc1bda6620e3f44067748f72b228cb6452f6d"
+      "sha256": "64a7d2f900ba9f42ce677eee808e3088fa276444489a88e68dfe2fb1288ea899"
     },
     {
       "path": "scripts/validate_smoke_workspace.sh",
@@ -2569,7 +2621,7 @@
     },
     {
       "path": "scripts/verify_source_bundle_hygiene.sh",
-      "sha256": "fbdba036b65c0c8d67abef93ef43712dc43537ddc62f69212737c14af62b2934"
+      "sha256": "a95c31e859ae53013af1d01db980ba90f3a5953e13496da77feec7819339e41e"
     },
     {
       "path": "toolathlon-gym-curated/.dockerignore",

@@ -1,8 +1,8 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "main",
-  "commit": "cd757b1",
-  "generated_at_utc": "2026-05-22T20:54:49Z",
+  "commit": "a27e299",
+  "generated_at_utc": "2026-05-26T22:38:43Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
     "promotion_label": "Pruned smoke release candidate for controlled testing",
@@ -10,9 +10,8 @@
     "promotion_requires_attached_evidence": true
   },
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_zip_sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
+  "release_zip_sha256": "a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
-  "evidence_zip_sha256": "f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3",
   "validated_scope": [
     "ToolForge",
     "Agent Skills",
@@ -27,7 +26,7 @@
   ],
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
+    "sha256": "a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -42,7 +41,7 @@
       ".venv"
     ]
   },
-  "archive_sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
+  "archive_sha256": "a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",
@@ -54,7 +53,7 @@
   "validation_summary": {
     "overall_status": "passed",
     "failed_phase_count": 0,
-    "python_version": "3.12.9",
+    "python_version": "3.12.12",
     "capabilities": {
       "docker_available": true,
       "docker_requested": false,
@@ -70,36 +69,165 @@
     "expected_package_count": 3,
     "package_count": 3,
     "passed_count": 3,
-    "failed_count": 0
+    "failed_count": 0,
+    "packages": [
+      {
+        "package": "rail_12306",
+        "status": "passed",
+        "duration_seconds": 18,
+        "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+        "skipped_existing": false
+      },
+      {
+        "package": "filesystem",
+        "status": "passed",
+        "duration_seconds": 7,
+        "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+        "skipped_existing": false
+      },
+      {
+        "package": "google_calendar",
+        "status": "passed",
+        "duration_seconds": 7,
+        "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+        "skipped_existing": false
+      }
+    ]
   },
   "toolathlon_mcp_smoke_summary": {
+    "checked_at": "2026-05-26T22:35:40Z",
     "profile": "smoke",
-    "overall_status": "passed",
+    "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T08:50:02Z"
+    "overall_status": "passed",
+    "results": [
+      {
+        "target": "rail_12306",
+        "status": "passed",
+        "reason": "started_or_imported",
+        "duration_seconds": 2.419,
+        "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+        "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "target": "filesystem",
+        "status": "passed",
+        "reason": "started_or_imported",
+        "duration_seconds": 0.362,
+        "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+        "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem",
+        "stdout": "",
+        "stderr": "Usage: mcp-server-filesystem [allowed-directory] [additional-directories...]\nNote: Allowed directories can be provided via:\n  1. Command-line arguments (shown above)\n  2. MCP roots protocol (if client supports it)\nAt least one directory must be provided by EITHER method for the server to operate.\nSecure MCP Filesystem Server running on stdio\nStarted without allowed directories - waiting for client to provide roots via MCP protocol\n"
+      },
+      {
+        "target": "google_calendar",
+        "status": "passed",
+        "reason": "started_or_imported",
+        "duration_seconds": 0.092,
+        "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+        "cwd": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/mcp-smoke-8uviwo6d",
+        "stdout": "",
+        "stderr": "Google Calendar MCP Server running on stdio\n"
+      }
+    ]
   },
   "toolathlon_preflight_summary": {
-    "profile": "smoke",
-    "status": "passed",
+    "checked_at": "2026-05-26T22:35:40.742688+00:00",
+    "config_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/configs/mcp_servers",
+    "found": [
+      {
+        "config": "12306.yaml",
+        "path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+        "server": "rail_12306"
+      },
+      {
+        "config": "filesystem.yaml",
+        "path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+        "server": "filesystem"
+      },
+      {
+        "config": "google_calendar.yaml",
+        "path": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+        "server": "google_calendar"
+      }
+    ],
     "found_count": 3,
+    "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
+    "missing": [],
     "missing_count": 0,
-    "checked_at": "2026-05-22T08:50:02.167768+00:00"
+    "profile": "smoke",
+    "status": "passed"
   },
   "docker_mcp_smoke_summary": {
+    "checked_at": "2026-05-23T20:49:14Z",
     "profile": "smoke",
-    "overall_status": "passed",
+    "local_servers_dir": "/opt/local_servers",
     "target_count": 3,
     "passed_count": 3,
     "failed_count": 0,
-    "checked_at": "2026-05-22T08:50:15Z"
+    "overall_status": "passed",
+    "results": [
+      {
+        "target": "rail_12306",
+        "status": "passed",
+        "reason": "startup_timeout",
+        "duration_seconds": 5.061,
+        "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /opt/local_servers/12306-mcp/build/index.js",
+        "cwd": "/opt/local_servers/12306-mcp",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "target": "filesystem",
+        "status": "passed",
+        "reason": "started_or_imported",
+        "duration_seconds": 0.65,
+        "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /opt/local_servers/filesystem/dist/index.js",
+        "cwd": "/opt/local_servers/filesystem",
+        "stdout": "",
+        "stderr": "Usage: mcp-server-filesystem [allowed-directory] [additional-directories...]\nNote: Allowed directories can be provided via:\n  1. Command-line arguments (shown above)\n  2. MCP roots protocol (if client supports it)\nAt least one directory must be provided by EITHER method for the server to operate.\nSecure MCP Filesystem Server running on stdio\nStarted without allowed directories - waiting for client to provide roots via MCP protocol\n"
+      },
+      {
+        "target": "google_calendar",
+        "status": "passed",
+        "reason": "started_or_imported",
+        "duration_seconds": 0.204,
+        "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /opt/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+        "cwd": "/tmp/mcp-smoke-tk34pebj",
+        "stdout": "",
+        "stderr": "Google Calendar MCP Server running on stdio\n"
+      }
+    ]
   },
   "docker_preflight_summary": {
-    "profile": "smoke",
-    "status": "passed",
+    "checked_at": "2026-05-23T20:49:15.399678+00:00",
+    "config_dir": "/workspace/configs/mcp_servers",
+    "found": [
+      {
+        "config": "12306.yaml",
+        "path": "/opt/local_servers/12306-mcp/build/index.js",
+        "server": "rail_12306"
+      },
+      {
+        "config": "filesystem.yaml",
+        "path": "/opt/local_servers/filesystem/dist/index.js",
+        "server": "filesystem"
+      },
+      {
+        "config": "google_calendar.yaml",
+        "path": "/opt/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
+        "server": "google_calendar"
+      }
+    ],
     "found_count": 3,
+    "local_servers_dir": "/opt/local_servers",
+    "missing": [],
     "missing_count": 0,
-    "checked_at": "2026-05-22T08:50:16.579941+00:00"
+    "profile": "smoke",
+    "status": "passed"
   }
 }

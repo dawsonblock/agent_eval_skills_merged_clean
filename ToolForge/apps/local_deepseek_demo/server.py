@@ -27,9 +27,19 @@ WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 STATIC_DIR = APP_ROOT / "static"
 
 app = FastAPI(title="Local DeepSeek Tool UI Demo", version="0.1.0")
+cors_origins = [
+    "http://127.0.0.1:8787",
+    "http://localhost:8787",
+]
+extra_cors = os.getenv("TOOLFORGE_DEMO_CORS_ORIGINS", "").strip()
+if extra_cors:
+    cors_origins.extend(
+        [origin.strip() for origin in extra_cors.split(",") if origin.strip()]
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -309,7 +319,7 @@ def tools_validate(request: ToolValidateRequest) -> dict[str, Any]:
 def output_view(path: str) -> JSONResponse:
     candidate = (WORKSPACE_ROOT / path).resolve()
     allowed_roots = [adapter.outputs_root.resolve(), adapter.generated_root.resolve()]
-    if not any(str(candidate).startswith(str(root)) for root in allowed_roots):
+    if not _is_within_allowed_roots(candidate, allowed_roots):
         raise HTTPException(status_code=400, detail="Path is outside allowed output roots")
     if not candidate.exists() or not candidate.is_file():
         raise HTTPException(status_code=404, detail="Output file not found")
@@ -357,3 +367,13 @@ def _parse_json_object(content: str) -> dict[str, Any] | None:
         except Exception:
             return None
     return None
+
+
+def _is_within_allowed_roots(candidate: Path, allowed_roots: list[Path]) -> bool:
+    for root in allowed_roots:
+        try:
+            candidate.relative_to(root)
+            return True
+        except ValueError:
+            continue
+    return False

@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-HOST="127.0.0.1"
-PORT="8080"
+HOST="${TOOLFORGE_DEMO_HOST:-127.0.0.1}"
+PORT="${TOOLFORGE_DEMO_PORT:-8787}"
 RELOAD="true"
 DRY_RUN="false"
 
@@ -15,8 +15,8 @@ Usage: ./run_local_deepseek_demo.sh [options]
 
 Options:
   --lan              Bind to 0.0.0.0 so other devices on your LAN can connect
-  --host <host>      Bind host (default: 127.0.0.1)
-  --port <port>      Bind port (default: 8080)
+  --host <host>      Bind host (default: TOOLFORGE_DEMO_HOST or 127.0.0.1)
+  --port <port>      Bind port (default: TOOLFORGE_DEMO_PORT or 8787)
   --no-reload        Disable uvicorn autoreload
   --dry-run          Print launch settings and exit
   -h, --help         Show this help

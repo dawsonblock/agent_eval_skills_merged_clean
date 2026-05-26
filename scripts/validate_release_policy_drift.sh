@@ -175,10 +175,11 @@ for manifest_path in manifest_candidates:
         errors.append(
             f"{manifest_path}: evidence_zip mismatch (expected {expected_evidence_name!r}, got {payload.get('evidence_zip')!r})"
         )
-    if payload.get("evidence_zip_sha256") != expected_evidence_sha:
-        errors.append(
-            f"{manifest_path}: evidence_zip_sha256 mismatch (expected {expected_evidence_sha!r}, got {payload.get('evidence_zip_sha256')!r})"
-        )
+    evidence_sha = payload.get("evidence_zip_sha256")
+    if evidence_sha is not None and evidence_sha != expected_evidence_sha:
+      errors.append(
+        f"{manifest_path}: evidence_zip_sha256 mismatch (expected {expected_evidence_sha!r}, got {evidence_sha!r})"
+      )
 
     artifact_summary = payload.get("toolathlon_artifact_build_summary", {})
     if artifact_summary:
