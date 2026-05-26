@@ -110,6 +110,7 @@ def test_classification_reports_non_canonical_in_source_bundle_mode() -> None:
             check=False,
         )
         assert result.returncode == 1
+        assert verdict.exists(), "classifier did not produce verdict JSON"
         payload = _load_json(verdict)
         assert payload["classification"] == "clean_new_candidate"
         reasons = "\n".join(payload.get("reasons", []))

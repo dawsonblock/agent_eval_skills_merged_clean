@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import fnmatch
 import hashlib
 import json
 from datetime import datetime, timezone
@@ -10,17 +9,25 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "RELEASE_MANIFEST.json"
 
-EXCLUDED_PATTERNS = [
-    "*/__pycache__/*",
-    "*.pyc",
-    "*.pyo",
-    "*/node_modules/*",
-    "*/.venv/*",
-    "*/.git/*",
-    "*/.DS_Store",
-    "*/dist/*",
-    "*/withdrawn/*",
-]
+EXCLUDED_PARTS = {
+    ".git",
+    ".venv",
+    "node_modules",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".skillforge",
+    ".validation_logs",
+    "dist",
+    "withdrawn",
+    "__MACOSX",
+    "outputs",
+}
+
+EXCLUDED_PREFIXES = ("._",)
+EXCLUDED_NAMES = {".DS_Store"}
+EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
 
 INCLUDED_TOP_LEVEL = {
     "ToolForge",
@@ -44,15 +51,26 @@ def sha256(path: Path) -> str:
 
 def should_include(path: Path) -> bool:
     rel = path.relative_to(ROOT)
-    rel_s = rel.as_posix()
 
     top = rel.parts[0]
     if top not in INCLUDED_TOP_LEVEL:
         return False
 
-    for pattern in EXCLUDED_PATTERNS:
-        if fnmatch.fnmatch(rel_s, pattern) or fnmatch.fnmatch(f"{rel_s}/", pattern):
-            return False
+    if any(part in EXCLUDED_PARTS for part in rel.parts):
+        return False
+
+    if path.name in EXCLUDED_NAMES:
+        return False
+
+    if path.suffix in EXCLUDED_SUFFIXES:
+        return False
+
+    if any(path.name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
+        return False
+
+    # Treat runtime tool outputs as forbidden release-manifest entries.
+    if "tool" in rel.parts and "outputs" in rel.parts:
+        return False
 
     return path.is_file()
 
@@ -67,7 +85,10 @@ manifest = {
     "created_at_utc": datetime.now(timezone.utc).isoformat(),
     "profile": "smoke",
     "files": files,
-    "excluded_patterns": EXCLUDED_PATTERNS,
+    "excluded_parts": sorted(EXCLUDED_PARTS),
+    "excluded_prefixes": list(EXCLUDED_PREFIXES),
+    "excluded_names": sorted(EXCLUDED_NAMES),
+    "excluded_suffixes": sorted(EXCLUDED_SUFFIXES),
 }
 
 OUT.write_text(json.dumps(manifest, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")

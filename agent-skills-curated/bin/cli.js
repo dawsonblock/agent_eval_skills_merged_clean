@@ -233,6 +233,26 @@ function loadQualityPolicy() {
         const cfgObj = cfg && typeof cfg === "object" ? cfg : {};
         const eMin = Number(cfgObj.min_quality_score);
         const eWarn = Number(cfgObj.warning_quality_score);
+        const expires = typeof cfgObj.expires === "string" ? cfgObj.expires : null;
+        const owner = typeof cfgObj.owner === "string" ? cfgObj.owner : null;
+        const repairTarget = Number(cfgObj.repair_target_score);
+        const isTemporary = cfgObj.temporary_exception === true;
+
+        const expiresAt = expires ? new Date(`${expires}T23:59:59Z`) : null;
+        const hasValidExpiry = expiresAt instanceof Date && !Number.isNaN(expiresAt.valueOf());
+        const missingFields = [];
+        if (!isTemporary) missingFields.push("temporary_exception=true");
+        if (typeof cfgObj.reason !== "string" || cfgObj.reason.trim().length === 0) {
+          missingFields.push("reason");
+        }
+        if (!expires || !hasValidExpiry) missingFields.push("expires");
+        if (!owner || owner.trim().length === 0) missingFields.push("owner");
+        if (!Number.isFinite(repairTarget)) missingFields.push("repair_target_score");
+
+        const policyError = missingFields.length > 0
+          ? `Missing/invalid required exception fields: ${missingFields.join(", ")}`
+          : null;
+
         policy.exceptions[skillKey] = {
           minQualityScore: Number.isFinite(eMin)
             ? eMin
@@ -241,6 +261,12 @@ function loadQualityPolicy() {
             ? eWarn
             : policy.defaults.warningQualityScore,
           reason: typeof cfgObj.reason === "string" ? cfgObj.reason : null,
+          temporaryException: isTemporary,
+          expires,
+          expiresAt: hasValidExpiry ? expiresAt.toISOString() : null,
+          owner,
+          repairTargetScore: Number.isFinite(repairTarget) ? repairTarget : null,
+          policyError,
         };
       }
     }
@@ -254,15 +280,41 @@ function loadQualityPolicy() {
 function resolveQualityThresholds(policy, category, skill) {
   const key = `${category}/${skill}`;
   const exception = policy.exceptions[key] || null;
+  const now = new Date();
+  const expiresAt = exception?.expiresAt ? new Date(exception.expiresAt) : null;
+  const exceptionExpired = expiresAt instanceof Date
+    && !Number.isNaN(expiresAt.valueOf())
+    && now > expiresAt;
   return {
     minQualityScore: exception?.minQualityScore ?? policy.defaults.minQualityScore,
     warningQualityScore: exception?.warningQualityScore ?? policy.defaults.warningQualityScore,
     exceptionReason: exception?.reason ?? null,
     exceptionKey: exception ? key : null,
+    exceptionTemporary: exception?.temporaryException ?? null,
+    exceptionExpires: exception?.expires ?? null,
+    exceptionExpiresAt: exception?.expiresAt ?? null,
+    exceptionOwner: exception?.owner ?? null,
+    exceptionRepairTargetScore: exception?.repairTargetScore ?? null,
+    exceptionPolicyError: exception?.policyError ?? null,
+    exceptionExpired,
   };
 }
 
 function evaluateQualityGate(score, thresholds) {
+  if (thresholds.exceptionKey && thresholds.exceptionPolicyError) {
+    return {
+      status: "fail",
+      message: `Quality exception policy error for ${thresholds.exceptionKey}: ${thresholds.exceptionPolicyError}`,
+    };
+  }
+
+  if (thresholds.exceptionKey && thresholds.exceptionExpired) {
+    return {
+      status: "fail",
+      message: `Quality exception expired for ${thresholds.exceptionKey} on ${thresholds.exceptionExpires}`,
+    };
+  }
+
   if (score == null || !Number.isFinite(score)) {
     return {
       status: "unscored",
@@ -773,6 +825,11 @@ function runEval(skillsRoot, args) {
           console.log(
             `         [INF] Exception applied: ${thresholds.exceptionKey} -> min ${thresholds.minQualityScore}, warn ${thresholds.warningQualityScore}${reasonSuffix}`
           );
+          if (thresholds.exceptionExpires) {
+            console.log(
+              `         [INF] Exception metadata: owner=${thresholds.exceptionOwner || "unknown"}, expires=${thresholds.exceptionExpires}, repair_target=${thresholds.exceptionRepairTargetScore ?? "n/a"}`
+            );
+          }
         }
       }
     }
