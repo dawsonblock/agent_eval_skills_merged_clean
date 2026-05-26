@@ -27,7 +27,7 @@ echo "[2/9] ToolForge core tests"
     tests/test_tool_spec.py \
     tests/test_path_safety.py \
     tests/test_safety_analyzer.py \
-    tests/test_security_validator.py \
+    tests/test_validators.py \
     tests/test_registry.py \
     -q
 )

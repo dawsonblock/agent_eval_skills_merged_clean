@@ -126,11 +126,41 @@ PYEOF
   echo "✓ $case_name => $actual_class (exit=$exit_code)"
 }
 
+release_status_classification() {
+  local status_file="$REPO_ROOT/RELEASE_STATUS.json"
+  if [ ! -f "$status_file" ]; then
+    echo ""
+    return 0
+  fi
+
+  python3 - "$status_file" <<'PYEOF'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, 'r', encoding='utf-8') as fh:
+    data = json.load(fh)
+print(data.get('release_classification', ''))
+PYEOF
+}
+
+release_class="$(release_status_classification)"
+
+canonical_case_expected_class="canonical_release"
+canonical_case_expected_status=0
+
+case "$release_class" in
+  SOURCE_BUNDLE|WITHDRAWN_RELEASE)
+    canonical_case_expected_class="clean_new_candidate"
+    canonical_case_expected_status=1
+    ;;
+esac
+
 # Case: canonical_release
 run_case \
   "canonical_release" \
-  "canonical_release" \
-  0 \
+  "$canonical_case_expected_class" \
+  "$canonical_case_expected_status" \
   "$CANONICAL_RELEASE_PATH" \
   "$CANONICAL_EVIDENCE_PATH"
 

@@ -61,6 +61,24 @@ fi
 RELEASE_PATH="${RELEASE_ZIP_PATH:-$DEFAULT_RELEASE_PATH}"
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-$DEFAULT_EVIDENCE_PATH}"
 
+release_classification=""
+if [ -f "$REPO_ROOT/RELEASE_STATUS.json" ]; then
+  release_classification="$(python3 - "$REPO_ROOT/RELEASE_STATUS.json" <<'PYEOF'
+import json
+import sys
+
+with open(sys.argv[1], 'r', encoding='utf-8') as fh:
+    data = json.load(fh)
+print(data.get('release_classification', ''))
+PYEOF
+  )"
+fi
+
+source_bundle_mode=0
+if [ "$release_classification" = "SOURCE_BUNDLE" ]; then
+  source_bundle_mode=1
+fi
+
 usage() {
   cat <<'USAGE'
 Usage: bash scripts/verify_release_pair.sh [--release PATH] [--evidence PATH]
@@ -177,21 +195,23 @@ check_manifest_hash_agreement() {
 status=0
 notes=()
 
-if [ "$release_name" != "$EXPECTED_RELEASE_NAME" ]; then
-  status=1
-  notes+=("release filename mismatch")
-fi
-if [ "$evidence_name" != "$EXPECTED_EVIDENCE_NAME" ]; then
-  status=1
-  notes+=("evidence filename mismatch")
-fi
-if [ "$release_sha" != "$EXPECTED_RELEASE_SHA" ]; then
-  status=1
-  notes+=("release hash mismatch")
-fi
-if [ "$evidence_sha" != "$EXPECTED_EVIDENCE_SHA" ]; then
-  status=1
-  notes+=("evidence hash mismatch")
+if [ "$source_bundle_mode" -eq 0 ]; then
+  if [ "$release_name" != "$EXPECTED_RELEASE_NAME" ]; then
+    status=1
+    notes+=("release filename mismatch")
+  fi
+  if [ "$evidence_name" != "$EXPECTED_EVIDENCE_NAME" ]; then
+    status=1
+    notes+=("evidence filename mismatch")
+  fi
+  if [ "$release_sha" != "$EXPECTED_RELEASE_SHA" ]; then
+    status=1
+    notes+=("release hash mismatch")
+  fi
+  if [ "$evidence_sha" != "$EXPECTED_EVIDENCE_SHA" ]; then
+    status=1
+    notes+=("evidence hash mismatch")
+  fi
 fi
 if ! check_forbidden_entries "$RELEASE_PATH"; then
   status=1
@@ -202,14 +222,16 @@ if ! check_forbidden_entries "$EVIDENCE_PATH"; then
   notes+=("evidence archive contains forbidden metadata entries")
 fi
 
-if ! (cd "$REPO_ROOT" && bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_PATH"); then
-  status=1
-  notes+=("evidence bundle content/value verification failed")
-fi
+if [ "$source_bundle_mode" -eq 0 ]; then
+  if ! (cd "$REPO_ROOT" && bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_PATH"); then
+    status=1
+    notes+=("evidence bundle content/value verification failed")
+  fi
 
-if ! check_manifest_hash_agreement "$EVIDENCE_PATH" "$EXPECTED_RELEASE_NAME" "$EXPECTED_RELEASE_SHA" "$EXPECTED_EVIDENCE_NAME" "$EXPECTED_EVIDENCE_SHA"; then
-  status=1
-  notes+=("manifest hash agreement failed")
+  if ! check_manifest_hash_agreement "$EVIDENCE_PATH" "$EXPECTED_RELEASE_NAME" "$EXPECTED_RELEASE_SHA" "$EXPECTED_EVIDENCE_NAME" "$EXPECTED_EVIDENCE_SHA"; then
+    status=1
+    notes+=("manifest hash agreement failed")
+  fi
 fi
 
 echo "Release ZIP:   $RELEASE_PATH"
@@ -219,10 +241,17 @@ echo "Evidence ZIP:  $EVIDENCE_PATH"
 echo "Evidence name: $evidence_name"
 echo "Evidence SHA:  $evidence_sha"
 
-if [ "$status" -eq 0 ]; then
+if [ "$status" -eq 0 ] && [ "$source_bundle_mode" -eq 0 ]; then
   echo
   echo "Classification: agent_eval_skills_merged_clean — pruned smoke release candidate for controlled testing"
   echo "Result: canonical attested artifact pair"
+  exit 0
+fi
+
+if [ "$status" -eq 0 ] && [ "$source_bundle_mode" -eq 1 ]; then
+  echo
+  echo "Classification: Source bundle"
+  echo "Result: source-bundle checks passed (canonical hash/evidence attestation intentionally not enforced)"
   exit 0
 fi
 

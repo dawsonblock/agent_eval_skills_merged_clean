@@ -40,6 +40,11 @@ def has_pytest_timeout() -> bool:
     return importlib.util.find_spec("pytest_timeout") is not None
 
 
+def _has_module(module_name: str) -> bool:
+    """Return True when *module_name* can be imported in current env."""
+    return importlib.util.find_spec(module_name) is not None
+
+
 def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     """
     Run pytest in *tool_dir/tests/* and return a TestReport.
@@ -58,18 +63,23 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     if has_pytest_timeout():
         timeout_args = ["-p", "pytest_timeout", "--timeout=30"]
 
+    pytest_plugins: list[str] = []
+    cov_args: list[str] = []
+    if _has_module("pytest_jsonreport"):
+        pytest_plugins.extend(["-p", "pytest_jsonreport.plugin"])
+    if _has_module("pytest_cov"):
+        pytest_plugins.extend(["-p", "pytest_cov.plugin"])
+        cov_args = ["--no-cov"]
+
     cmd = [
         sys.executable,
         "-m",
         "pytest",
-        "-p",
-        "pytest_jsonreport.plugin",
-        "-p",
-        "pytest_cov.plugin",
+        *pytest_plugins,
         str(tests_dir),
         "-o",
         "addopts=",
-        "--no-cov",
+        *cov_args,
         "--tb=short",
         "-q",
         "--json-report",
@@ -81,12 +91,11 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
         sys.executable,
         "-m",
         "pytest",
-        "-p",
-        "pytest_cov.plugin",
+        *(["-p", "pytest_cov.plugin"] if _has_module("pytest_cov") else []),
         str(tests_dir),
         "-o",
         "addopts=",
-        "--no-cov",
+        *cov_args,
         "--tb=short",
         "-q",
     ]

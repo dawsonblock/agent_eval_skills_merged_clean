@@ -52,6 +52,24 @@ RELEASE_PATH="${RELEASE_ZIP_PATH:-}"
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
 JSON_OUTPUT_PATH="${JSON_OUTPUT_PATH:-}"
 
+release_classification=""
+if [ -f "$REPO_ROOT/RELEASE_STATUS.json" ]; then
+  release_classification="$(python3 - "$REPO_ROOT/RELEASE_STATUS.json" <<'PYEOF'
+import json
+import sys
+
+with open(sys.argv[1], 'r', encoding='utf-8') as fh:
+    data = json.load(fh)
+print(data.get('release_classification', ''))
+PYEOF
+  )"
+fi
+
+source_bundle_mode=0
+if [ "$release_classification" = "SOURCE_BUNDLE" ]; then
+  source_bundle_mode=1
+fi
+
 usage() {
   cat <<'USAGE'
 Usage: bash scripts/classify_release_upload.sh --release PATH [--evidence PATH] [--json-output PATH]
@@ -201,7 +219,11 @@ else
   pair_verification_run=1
   if (cd "$REPO_ROOT" && bash scripts/verify_release_pair.sh --release "$RELEASE_PATH" --evidence "$EVIDENCE_PATH"); then
     pair_verification_passed=1
-    status=0
+    if [ "$source_bundle_mode" -eq 0 ]; then
+      status=0
+    else
+      echo "release status is SOURCE_BUNDLE; canonical classification disabled" >> "$reasons_tmp"
+    fi
   else
     echo "release+evidence pair failed canonical attested verification" >> "$reasons_tmp"
   fi
