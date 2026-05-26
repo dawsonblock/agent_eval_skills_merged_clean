@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-26T09:06:28.211482+00:00",
+  "created_at_utc": "2026-05-26T19:34:44.560595+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "a011eafc4e28cc2c57147e08c3e171eec8d682744b02d9773ad825e14bf8778a"
+      "sha256": "dfce810609dc1b30c263227a67f5dab9f575c0fafc5144c705a95908dce06121"
     },
     {
       "path": "ToolForge/.bandit",
@@ -2437,7 +2437,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "5c9943ac0951cec392690bdc8eb1bd137e42f23711a2dba4dfbad1ad6f963af8"
+      "sha256": "95afbe54e76f668ef8904b640849606ab2077a3ca9cae97b06b8996b98fab1ae"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
@@ -2837,7 +2837,7 @@
     },
     {
       "path": "toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/tsconfig.json",
-      "sha256": "f4c33b7d595dde75123e807cbe10724ecb9a6f8e7e62b6104d49c498469515ae"
+      "sha256": "6c11633bdf835e28bfa79407d1de00ea11f8f9480f711cb75621a0766ce87a3a"
     },
     {
       "path": "toolathlon-gym-curated/local_servers/HowToCook-mcp/.gitignore",

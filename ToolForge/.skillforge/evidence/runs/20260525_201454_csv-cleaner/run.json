@@ -1,6 +1,0 @@
-{
-  "event": "create",
-  "skill": "csv-cleaner",
-  "status": "passed",
-  "prompt": "make a skill that cleans CSV files"
-}

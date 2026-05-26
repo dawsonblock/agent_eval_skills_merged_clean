@@ -1,1 +1,0 @@
-{"event": "validation", "skill": "create-a-tool-named", "attempt": 1, "passed": true, "errors": [], "warnings": ["No test files found \u2014 skipping pytest"], "validators": {"schema": true, "security": true, "mcp": true, "skill": true, "tests": true, "safety": true}, "ts": "2026-05-25T20:24:29.099053+00:00"}
