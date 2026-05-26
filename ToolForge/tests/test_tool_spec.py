@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -105,3 +106,12 @@ def test_yaml_round_trip(tmp_path: Path) -> None:
 def test_from_yaml_missing_file() -> None:
     with pytest.raises(FileNotFoundError):
         ToolSpec.from_yaml(Path("/nonexistent/toolforge.yaml"))
+
+
+def test_from_yaml_missing_file_skips_yaml_loader() -> None:
+    with patch(
+        "packages.core.tool_spec.load_yaml",
+        side_effect=AssertionError("yaml loader should not run"),
+    ):
+        with pytest.raises(FileNotFoundError):
+            ToolSpec.from_yaml(Path("/nonexistent/toolforge.yaml"))

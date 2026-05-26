@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -61,3 +62,22 @@ def test_duplicate_headers(tmp_path: Path) -> None:
     _write(input_csv, "Name,Name,Name\nAlice,A,A2\n")
     result = run(input_path=str(input_csv), output_path=str(output_csv))
     assert result["headers"] == ["name", "name_2", "name_3"]
+
+
+def test_write_json_output(tmp_path: Path) -> None:
+    input_csv = tmp_path / "input.csv"
+    output_json = tmp_path / "cleaned.json"
+    _write(input_csv, "Name, Age\n Alice , 30 \n Bob , 41 \n")
+
+    result = run(input_path=str(input_csv), output_path=str(output_json))
+
+    assert output_json.exists()
+    assert result["cleaned_path"] == str(output_json)
+
+    payload = json.loads(output_json.read_text(encoding="utf-8"))
+    assert payload["cleaned_path"] == str(output_json)
+    assert payload["headers"] == ["name", "age"]
+    assert payload["rows"] == [
+        {"name": "Alice", "age": "30"},
+        {"name": "Bob", "age": "41"},
+    ]

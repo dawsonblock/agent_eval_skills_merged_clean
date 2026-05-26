@@ -1,7 +1,7 @@
 ---
 name: csv-cleaner
 description: >
-  Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, normalizes column names.
+  Clean CSV files by trimming whitespace and normalizing column names.
   WHEN: .
   
 ---
@@ -10,7 +10,7 @@ description: >
 
 ## Purpose
 
-Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, normalizes column names, removes blank rows, and exports JSON.
+Clean CSV files by trimming whitespace, normalizing column names, removing blank rows, and exporting JSON output.
 
 ## Use When
 

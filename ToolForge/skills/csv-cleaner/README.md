@@ -1,6 +1,6 @@
 # csv-cleaner
 
-Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, and exports JSON.
+Clean CSV files by trimming whitespace and exporting normalized JSON output.
 
 ## Run
 skillforge run csv-cleaner --input key=value

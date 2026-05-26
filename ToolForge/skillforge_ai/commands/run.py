@@ -174,6 +174,12 @@ def _normalize_inputs_for_workspace(
     for key, value in inputs.items():
         raw = str(value)
         path_candidate = Path(raw)
+        if not path_candidate.is_absolute() and _looks_like_workspace_path(
+            key,
+            raw,
+        ):
+            normalized[key] = str((root / path_candidate).resolve())
+            continue
         if not path_candidate.is_absolute():
             workspace_candidate = (root / path_candidate).resolve()
             if workspace_candidate.exists():
@@ -181,6 +187,31 @@ def _normalize_inputs_for_workspace(
                 continue
         normalized[key] = raw
     return normalized
+
+
+def _looks_like_workspace_path(key: str, value: str) -> bool:
+    lowered_key = key.lower()
+    if any(token in lowered_key for token in ("path", "file", "dir")):
+        return True
+
+    raw = value.strip()
+    if not raw:
+        return False
+
+    if "/" in raw or raw.startswith("./") or raw.startswith("../"):
+        return True
+
+    suffix = Path(raw).suffix.lower()
+    return suffix in {
+        ".csv",
+        ".json",
+        ".md",
+        ".txt",
+        ".pdf",
+        ".html",
+        ".yaml",
+        ".yml",
+    }
 
 
 def _run_python_entrypoint(

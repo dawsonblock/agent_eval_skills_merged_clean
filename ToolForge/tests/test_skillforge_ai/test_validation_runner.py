@@ -11,6 +11,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from skillforge_ai.models import ValidationReport
+from skillforge_ai.skill_registry import SkillRegistry
+from skillforge_ai.tool_registry import SkillForgeRegistry
 
 
 def _make_tool_dir(tmp_path: Path, slug: str = "csv-cleaner") -> Path:
@@ -30,6 +32,59 @@ def _make_registry_json(tmp_path: Path) -> None:
 
 
 class TestValidationRunnerValidate:
+    def test_update_registry_updates_skillforge_runtime_state(
+        self,
+        tmp_path: Path,
+    ):
+        slug = "csv-cleaner"
+        _make_tool_dir(tmp_path, slug)
+        _make_registry_json(tmp_path)
+
+        SkillRegistry(tmp_path).upsert(
+            {
+                "name": slug,
+                "path": f"skills/{slug}",
+                "category": "data",
+                "description": "Cleans CSV files.",
+                "permissions": ["read_files", "write_files"],
+                "risk_level": "low",
+                "validation_status": "pending",
+                "tool_refs": ["csv_cleaner_tool"],
+                "package_hash": None,
+                "last_run": None,
+            }
+        )
+        tool_registry = SkillForgeRegistry(tmp_path)
+        tool_registry.register_tool(
+            {
+                "name": "csv_cleaner_tool",
+                "type": "python",
+                "entrypoint": "skills/csv-cleaner/tool/main.py",
+                "working_dir": "skills/csv-cleaner/tool",
+                "description": "Cleans CSV files.",
+                "permissions": ["read_files", "write_files"],
+                "risk_level": "low",
+                "validated": False,
+                "mcp_server": None,
+            }
+        )
+
+        from skillforge_ai.validation_runner import ValidationRunner
+
+        runner = ValidationRunner(workspace_root=tmp_path)
+        runner._update_registry(slug, ValidationReport(slug=slug, passed=True))
+
+        skill_entry = SkillRegistry(tmp_path).get(slug)
+        assert skill_entry is not None
+        assert skill_entry["validation_status"] == "passed"
+        assert skill_entry["status"] == "validated"
+
+        tool_entry = SkillForgeRegistry(tmp_path).get_registered_tool(
+            "csv_cleaner_tool"
+        )
+        assert tool_entry is not None
+        assert tool_entry["validated"] is True
+
     def test_validate_all_pass(self, tmp_path: Path):
         slug = "csv-cleaner"
         _make_tool_dir(tmp_path, slug)

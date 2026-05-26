@@ -111,6 +111,33 @@ def test_run_skill_falls_back_to_tools_generated(monkeypatch, ws: Path):
     assert captured["yaml_path"] == tool_dir / "toolforge.yaml"
 
 
+def test_run_skill_normalizes_relative_output_path(monkeypatch, ws: Path):
+    captured: dict[str, object] = {}
+    tool_dir = _write_generated_tool(ws, "csv-cleaner")
+
+    def fake_validate_yaml_file(path: Path):
+        captured["yaml_path"] = path
+        return _DummySpec()
+
+    def fake_run_tool(spec, resolved_tool_dir: Path, inputs: dict[str, str]):
+        captured["inputs"] = inputs
+        return ToolRunResult(output="ok", error="", elapsed_ms=1.0, exit_code=0)
+
+    monkeypatch.setattr(run_module, "validate_yaml_file", fake_validate_yaml_file)
+    monkeypatch.setattr(run_module, "run_tool", fake_run_tool)
+
+    result = run_module.run_skill(
+        ws,
+        "csv-cleaner",
+        {"output_path": "outputs/csv-cleaner-output.json"},
+    )
+
+    assert result.exit_code == 0
+    assert captured["inputs"] == {
+        "output_path": str((ws / "outputs" / "csv-cleaner-output.json").resolve())
+    }
+
+
 def test_run_skill_error_lists_checked_paths(ws: Path):
     with pytest.raises(FileNotFoundError) as exc_info:
         run_module.run_skill(ws, "csv-cleaner", {})

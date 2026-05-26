@@ -4,7 +4,7 @@
     "type": "python",
     "entrypoint": "skills/csv-cleaner/tool/main.py",
     "working_dir": "skills/csv-cleaner/tool",
-    "description": "Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, and exports JSON.",
+    "description": "Clean CSV files by trimming whitespace and exporting normalized JSON output.",
     "permissions": [
       "read_files",
       "write_files"

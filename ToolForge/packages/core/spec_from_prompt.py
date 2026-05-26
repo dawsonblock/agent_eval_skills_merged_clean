@@ -51,6 +51,27 @@ def _to_slug(text: str) -> str:
     return slug or "generated-tool"
 
 
+def _normalize_source_prompt(prompt: str) -> str:
+    text = " ".join(prompt.split())
+    text = re.sub(
+        r"^Create a tool named ['\"][^'\"]+['\"] that\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"^(build|make|create) me a skill that\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if text:
+        text = text[0].upper() + text[1:]
+    if text and not text.endswith("."):
+        text += "."
+    return text or prompt
+
+
 _PYTHON_KEYWORDS = {"python", "py", ".py", "script", "pandas", "numpy", "csv"}
 _TS_KEYWORDS = {"typescript", "ts", "node", "javascript", "js", "npm", "react"}
 _FILE_KEYWORDS = {"file", "csv", "json", "pdf", "excel", "xlsx", "read", "write", "parse"}
@@ -480,7 +501,8 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
             mcp=MCPSpec(enabled=True),
             skill=SkillSpec(enabled=True, category=category),
             eval=eval_spec,
-            source_prompt=prompt,
+            source_prompt=_normalize_source_prompt(prompt),
+            source_prompt_raw=prompt,
             created_at=datetime.now(timezone.utc).isoformat(),
         )
 

@@ -146,6 +146,22 @@ class SkillForgeRegistry:
         """Promote a skill to *packaged* status."""
         self._set_status(name, "packaged")
 
+    def mark_tool_validated(self, name: str, validated: bool) -> None:
+        """Update the validated flag for a registered callable tool."""
+        data = self._read_tool_registry()
+        out: list[dict[str, Any]] = []
+        updated = False
+        for item in data:
+            if item.get("name") == name:
+                normalized = dict(item)
+                normalized["validated"] = validated
+                out.append(normalized)
+                updated = True
+            else:
+                out.append(item)
+        if updated:
+            self._write_tool_registry(out)
+
     def register_tool(self, tool_entry: dict[str, Any]) -> None:
         """Register a callable tool in the local SkillForge tool registry."""
         entrypoint = str(tool_entry.get("entrypoint", "")).strip()

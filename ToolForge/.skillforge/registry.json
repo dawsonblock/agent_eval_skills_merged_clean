@@ -3,7 +3,7 @@
     "name": "csv-cleaner",
     "path": "skills/csv-cleaner",
     "category": "data",
-    "description": "Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, and exports JSON.",
+    "description": "Clean CSV files by trimming whitespace and exporting normalized JSON output.",
     "permissions": [],
     "risk_level": "medium",
     "validation_status": "created",

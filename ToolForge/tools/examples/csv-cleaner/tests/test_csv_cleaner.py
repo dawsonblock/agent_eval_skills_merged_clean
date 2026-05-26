@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -62,6 +63,16 @@ def test_write_to_output_path(sample_csv: Path, tmp_path: Path) -> None:
     assert out.exists(), "Output file should exist"
     assert "cleaned_path" in result, "Result should contain cleaned_path"
     assert str(out) == result["cleaned_path"], "cleaned_path should match output_path"
+
+
+def test_write_json_output(sample_csv: Path, tmp_path: Path) -> None:
+    out = tmp_path / "out.json"
+    result = run(str(sample_csv), str(out))
+    assert out.exists(), "JSON output file should exist"
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["cleaned_path"] == str(out)
+    assert payload["output_rows"] == result["output_rows"]
+    assert isinstance(payload["rows"], list)
 
 
 def test_missing_input_raises() -> None:

@@ -1,0 +1,25 @@
+{
+  "summary_version": "2026-05-25",
+  "component": "skillforge_ai",
+  "artifact_type": "candidate_zip",
+  "overall_status": "passed",
+  "output": {
+    "path": "dist/skillforge_ai_candidate_2026-05-25.zip",
+    "sha256": "35dfc445b6b589efd20fa081f0a4fc64c1363a5c2b98d3b65109b2edb32aa446"
+  },
+  "contents": [
+    "ToolForge/**",
+    "release_artifacts/skillforge_ai_local_factory_summary.json",
+    "release_artifacts/skillforge_ai_candidate_build_summary.json"
+  ],
+  "hygiene": {
+    "forbidden_entries_found": false,
+    "forbidden_patterns_checked": [
+      ".DS_Store",
+      "._*",
+      "__pycache__/",
+      ".pytest_cache/"
+    ]
+  },
+  "build_command": "zip -rq dist/skillforge_ai_candidate_2026-05-25.zip ToolForge release_artifacts/skillforge_ai_local_factory_summary.json release_artifacts/skillforge_ai_candidate_build_summary.json [forbidden excludes]"
+}

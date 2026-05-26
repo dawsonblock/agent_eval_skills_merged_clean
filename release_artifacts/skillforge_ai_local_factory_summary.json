@@ -1,0 +1,54 @@
+{
+  "summary_version": "2026-05-25",
+  "component": "skillforge_ai",
+  "objective": "Local-first skill/tool factory lifecycle for Python file-processing skills",
+  "overall_status": "passed",
+  "workspace_mode": "isolated_temp_workspace",
+  "proof": {
+    "tmp_workspace": "/private/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/tmp.L8cXFVPiVw",
+    "skill": "csv-cleaner",
+    "steps": [
+      {"name": "init", "status": "passed"},
+      {"name": "create", "status": "passed"},
+      {"name": "validate", "status": "passed"},
+      {"name": "run", "status": "passed"},
+      {"name": "package", "status": "passed"},
+      {"name": "inspect", "status": "passed"},
+      {"name": "tools_list", "status": "passed"}
+    ],
+    "validation_warnings": [],
+    "run_output": {
+      "artifact_path": "outputs/csv-cleaner-output.json",
+      "output_rows": 2,
+      "removed_empty_rows": 1,
+      "headers": ["name", "value"]
+    },
+    "registry_state": {
+      "validation_status": "passed",
+      "risk_level": "low",
+      "permissions": ["read_files", "write_files"],
+      "tool_validated": true
+    },
+    "package": {
+      "filename": "csv-cleaner-0.1.0.zip",
+      "sha256": "e64835e428ef4d0b61111ffb912ca200463d813b52f3416f4a7605b6f84a4af3"
+    },
+    "evidence_files": {
+      "run_json": ".skillforge/evidence/runs/20260526_002828_csv-cleaner/run.json",
+      "validation_json": ".skillforge/evidence/runs/20260526_002828_csv-cleaner/validation.json",
+      "files_changed_json": ".skillforge/evidence/runs/20260526_002828_csv-cleaner/files_changed.json"
+    }
+  },
+  "regression_tests": {
+    "command": "PYTHONPATH=. pytest -q tests/test_skillforge_ai/test_skill_builder.py tests/test_skillforge_ai/test_validation_runner.py tests/test_skillforge_ai/test_run_command.py tests/test_skillforge_ai/test_mvp_skill_bundles.py tests/test_tool_spec.py",
+    "result": "passed",
+    "passed": 38
+  },
+  "notes": [
+    "CSV cleaner now writes JSON artifacts when output_path uses .json and preserves CSV behavior otherwise.",
+    "SkillBuilder now discovers nested generated tool.py and tests directories when materializing canonical skills.",
+    "ValidationRunner now runs pytest against canonical skill tests when available.",
+    "Canonical skill tool package now includes tool/__init__.py exporting run for copied test compatibility.",
+    "Tool spec provenance now stores readable source_prompt and unmodified source_prompt_raw."
+  ]
+}

@@ -226,7 +226,10 @@ class ValidationRunner:
                 check_results["metadata"] = "passed"
 
         # 5. Tests
-        test_errs, test_warnings = self._run_test_validator(tool_dir)
+        test_errs, test_warnings = self._run_test_validator(
+            tool_dir,
+            canonical_skill_dir,
+        )
         if test_errs:
             report.tests_ok = False
             report.passed = False
@@ -349,14 +352,22 @@ class ValidationRunner:
     def _run_test_validator(
         self,
         tool_dir: Path,
+        canonical_skill_dir: Path,
     ) -> tuple[list[str], list[str]]:
         """Return (errors, warnings). Warnings when no tests found."""
+        candidate_root = tool_dir
         tests_dir = tool_dir / "tests"
+
+        skill_tests_dir = canonical_skill_dir / "tests"
+        if skill_tests_dir.exists() and any(skill_tests_dir.glob("test_*.py")):
+            candidate_root = canonical_skill_dir
+            tests_dir = skill_tests_dir
+
         if not tests_dir.exists() or not any(tests_dir.glob("test_*.py")):
             return [], ["No test files found — skipping pytest"]
         try:
             from packages.validators.test_validator import run_tests
-            report = run_tests(tool_dir)
+            report = run_tests(candidate_root)
             if not report.all_passed:
                 errors = [
                     (
@@ -521,6 +532,8 @@ class ValidationRunner:
     def _update_registry(self, slug: str, report: ValidationReport) -> None:
         try:
             from packages.core.registry import ToolRegistry
+            from skillforge_ai.skill_registry import SkillRegistry
+            from skillforge_ai.tool_registry import SkillForgeRegistry
 
             registry_path = self._root / "toolforge_registry.json"
             registry = ToolRegistry(registry_path)
@@ -529,6 +542,32 @@ class ValidationRunner:
                 registry.set_status(slug, "validated")
             else:
                 registry.set_status(slug, "failed")
+
+            skill_registry = SkillRegistry(self._root)
+            skill_entry = skill_registry.get(slug)
+            if skill_entry is not None:
+                skill_entry["validation_status"] = (
+                    "passed" if report.passed else "failed"
+                )
+                skill_entry["status"] = (
+                    "validated" if report.passed else "failed"
+                )
+                skill_registry.upsert(skill_entry)
+
+                tool_registry = SkillForgeRegistry(self._root)
+                tool_refs = skill_entry.get("tool_refs", [])
+                if isinstance(tool_refs, list):
+                    for tool_name in tool_refs:
+                        if isinstance(tool_name, str):
+                            tool_registry.mark_tool_validated(
+                                tool_name,
+                                report.passed,
+                            )
+
+                tool_registry.mark_tool_validated(
+                    f"{slug.replace('-', '_')}_tool",
+                    report.passed,
+                )
         except Exception as exc:
             logger.debug("Registry update failed: %s", exc)
 

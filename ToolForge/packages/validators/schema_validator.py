@@ -7,6 +7,7 @@ from pathlib import Path
 
 from packages.core.tool_schema import validate_spec_dict
 from packages.core.tool_spec import ToolSpec
+from skillforge_ai.yaml_utils import load_yaml
 
 
 class SchemaValidationError(Exception):
@@ -22,11 +23,7 @@ def validate_yaml_file(yaml_path: Path) -> ToolSpec:
     Returns the validated ToolSpec on success.
     Raises SchemaValidationError listing all field errors on failure.
     """
-    from ruamel.yaml import YAML
-
-    yaml = YAML(typ="safe")
-    with open(yaml_path, "r") as fh:
-        data = yaml.load(fh) or {}
+    data = load_yaml(yaml_path) or {}
 
     try:
         errors = validate_spec_dict(data)

@@ -32,6 +32,7 @@ entry_point: tool.py
 | `capabilities` | list[string] | | From: `file_read`, `file_write`, `network`, `shell`, `database`, `llm` |
 | `dependencies` | list[string] | | Package dependencies (pip/npm format) |
 | `source_prompt` | string | | The original prompt used to generate the spec |
+| `source_prompt_raw` | string | | Unmodified source prompt for provenance/audit |
 
 ---
 

@@ -1,6 +1,6 @@
 You are evaluating the csv-cleaner tool.
 
-Tool description: Create a tool named 'csv-cleaner' that Build me a skill that cleans CSV files, trims whitespace, normalizes column names.
+Tool description: Clean CSV files by trimming whitespace and normalizing column names.
 
 Your task is to use the csv-cleaner MCP tool to complete the following task:
 

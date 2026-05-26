@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from skillforge_ai.yaml_utils import dump_yaml, load_yaml
 
 
 # ---------------------------------------------------------------------------
@@ -368,6 +369,10 @@ class ToolSpec(BaseModel):
         None,
         description="The original natural-language prompt used to generate this spec (spec-from-prompt only)",
     )
+    source_prompt_raw: str | None = Field(
+        None,
+        description="Unmodified source prompt preserved for provenance/audit",
+    )
 
     # ------------------------------------------------------------------
     # Validators
@@ -458,20 +463,12 @@ class ToolSpec(BaseModel):
     @classmethod
     def from_yaml(cls, path: Path) -> "ToolSpec":
         """Load a ToolSpec from a toolforge.yaml file."""
-        from ruamel.yaml import YAML  # local import to keep top-level lean
-
-        yaml = YAML(typ="safe")
-        with open(path, "r") as fh:
-            data = yaml.load(fh)
+        if not path.exists():
+            raise FileNotFoundError(path)
+        data = load_yaml(path)
         return cls.model_validate(data or {})
 
     def to_yaml(self, path: Path) -> None:
         """Persist this ToolSpec as toolforge.yaml (round-trip safe)."""
-        from ruamel.yaml import YAML
-
-        yaml = YAML()
-        yaml.default_flow_style = False
-        yaml.width = 10_000
         data = json.loads(self.model_dump_json(exclude_none=True))
-        with open(path, "w") as fh:
-            yaml.dump(data, fh)
+        dump_yaml(data, path)

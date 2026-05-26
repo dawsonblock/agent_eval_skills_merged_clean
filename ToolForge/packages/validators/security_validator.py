@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from packages.core.tool_spec import ToolSpec, PrivacyLevel
+from skillforge_ai.yaml_utils import load_yaml
 
 
 class SecurityViolation(Exception):
@@ -21,10 +22,7 @@ def _load_policy(policy_path: Path | None = None) -> dict[str, Any]:
         policy_path = Path(__file__).parent.parent.parent / "configs" / "security_policy.yaml"
     if not policy_path.exists():
         return {}
-    from ruamel.yaml import YAML
-    yaml = YAML(typ="safe")
-    with open(policy_path) as fh:
-        return yaml.load(fh) or {}
+    return load_yaml(policy_path) or {}
 
 
 def validate_security(spec: ToolSpec, policy_path: Path | None = None) -> list[str]:

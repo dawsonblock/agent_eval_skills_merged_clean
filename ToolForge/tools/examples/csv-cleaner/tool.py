@@ -30,9 +30,30 @@ def dedupe_headers(headers: list[str]) -> list[str]:
     return output
 
 
+def _result_payload(
+    output_file: Path,
+    headers: list[str],
+    cleaned_rows: list[list[str]],
+    removed: int,
+    input_columns: int,
+    input_rows: int,
+) -> dict:
+    return {
+        "cleaned_path": str(output_file),
+        "input_rows": input_rows,
+        "output_rows": len(cleaned_rows),
+        "removed_empty_rows": removed,
+        "input_columns": input_columns,
+        "output_columns": len(headers),
+        "headers": headers,
+        "rows": [dict(zip(headers, row)) for row in cleaned_rows],
+    }
+
+
 def run(input_path: str, output_path: str | None = None) -> dict:
     input_file = Path(input_path)
     output_file = Path(output_path) if output_path else Path("outputs") / "cleaned.csv"
+    output_format = "json" if output_file.suffix.lower() == ".json" else "csv"
 
     if input_file.suffix.lower() != ".csv":
         raise ValueError("input_path must point to a .csv file")
@@ -45,16 +66,12 @@ def run(input_path: str, output_path: str | None = None) -> dict:
         rows = list(csv.reader(fh))
 
     if not rows:
-        output_file.write_text("", encoding="utf-8")
-        return {
-            "cleaned_path": str(output_file),
-            "input_rows": 0,
-            "output_rows": 0,
-            "removed_empty_rows": 0,
-            "input_columns": 0,
-            "output_columns": 0,
-            "headers": [],
-        }
+        payload = _result_payload(output_file, [], [], 0, 0, 0)
+        if output_format == "json":
+            output_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        else:
+            output_file.write_text("", encoding="utf-8")
+        return payload
 
     raw_headers = rows[0]
     headers = dedupe_headers([normalize_header(h) for h in raw_headers])
@@ -73,20 +90,24 @@ def run(input_path: str, output_path: str | None = None) -> dict:
             continue
         cleaned_rows.append(normalized)
 
-    with output_file.open("w", encoding="utf-8", newline="") as fh:
-        writer = csv.writer(fh)
-        writer.writerow(headers)
-        writer.writerows(cleaned_rows)
+    payload = _result_payload(
+        output_file,
+        headers,
+        cleaned_rows,
+        removed,
+        input_columns,
+        max(len(rows) - 1, 0),
+    )
 
-    return {
-        "cleaned_path": str(output_file),
-        "input_rows": max(len(rows) - 1, 0),
-        "output_rows": len(cleaned_rows),
-        "removed_empty_rows": removed,
-        "input_columns": input_columns,
-        "output_columns": len(headers),
-        "headers": headers,
-    }
+    if output_format == "json":
+        output_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    else:
+        with output_file.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.writer(fh)
+            writer.writerow(headers)
+            writer.writerows(cleaned_rows)
+
+    return payload
 
 
 if __name__ == "__main__":
