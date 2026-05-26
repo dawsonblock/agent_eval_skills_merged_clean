@@ -75,6 +75,12 @@ if [ "$verify_release" -eq 1 ]; then
   else
     (cd "$REPO_ROOT" && bash scripts/verify_release_pair.sh)
   fi
+
+  if [ -f "$REPO_ROOT/scripts/check_no_absolute_local_paths.py" ]; then
+    echo "Running absolute local path leak check..."
+    (cd "$REPO_ROOT" && python scripts/check_no_absolute_local_paths.py)
+  fi
+
   echo
 fi
 

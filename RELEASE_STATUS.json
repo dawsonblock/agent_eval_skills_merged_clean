@@ -1,0 +1,15 @@
+{
+  "package_name": "agent_eval_skills_merged_clean",
+  "release_classification": "SOURCE_BUNDLE",
+  "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
+  "canonical_release_sha256": "74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189",
+  "uploaded_archive_sha256": "5c5f217b0d20307cf4f1cdf7f3e470e930aabe27ef9088f2d50070ec397e9c69",
+  "toolathlon_profile": "smoke",
+  "full_profile_validated": false,
+  "production_claim_allowed": false,
+  "notes": [
+    "This source bundle is not the canonical release archive.",
+    "Only smoke-profile validation may be claimed unless full-profile logs are present.",
+    "Release claims require matching archive hash, evidence hash, and fresh validation logs."
+  ]
+}

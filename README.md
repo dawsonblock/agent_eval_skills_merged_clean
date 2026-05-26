@@ -112,6 +112,12 @@ Track A release-discipline phases are documented in [docs/TRACK_A_PHASES.md](doc
 
 If the pair check does not pass for the exact release/evidence pair being distributed, classify the upload as an unbound wrapper/source bundle.
 
+Release truth files:
+
+- [RELEASE_STATUS.json](RELEASE_STATUS.json) defines current release classification and canonical pair linkage.
+- [CLAIMS_MATRIX.md](CLAIMS_MATRIX.md) defines allowed claims and required evidence.
+- [RELEASE_MANIFEST.json](RELEASE_MANIFEST.json) is generated for release-file hash traceability.
+
 Use upload triage to classify third-party wrapper/source uploads before any release claim:
 
 ```bash

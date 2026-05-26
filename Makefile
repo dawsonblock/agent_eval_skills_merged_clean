@@ -143,6 +143,26 @@ verify-release-policy-drift-strict: ## Verify release-policy drift and require c
 verify-release-classification-matrix: ## Verify classify_release_upload across canonical/new/wrapper/dirty/invalid cases
 	bash scripts/verify_release_classification_matrix.sh
 
+.PHONY: build-pruned-smoke-release
+build-pruned-smoke-release: ## Rebuild canonical pruned-smoke release ZIP using repository packaging policy
+	bash scripts/build_pruned_smoke_release.sh
+
+.PHONY: prove-smoke-release
+prove-smoke-release: ## Run end-to-end smoke release proof workflow
+	bash scripts/prove_smoke_release.sh
+
+.PHONY: prove-full-toolathlon-profile
+prove-full-toolathlon-profile: ## Run optional full Toolathlon profile proof workflow
+	bash scripts/prove_full_toolathlon_profile.sh
+
+.PHONY: check-no-absolute-local-paths
+check-no-absolute-local-paths: ## Fail if release-facing artifacts leak workstation absolute paths
+	python scripts/check_no_absolute_local_paths.py
+
+.PHONY: generate-release-manifest
+generate-release-manifest: ## Generate machine-readable release manifest with file hashes
+	python scripts/generate_release_manifest.py
+
 .PHONY: verify-skillforge-baseline
 verify-skillforge-baseline: ## Verify SkillForge baseline gates (structure, parity, candidate hash/hygiene, regression tests)
 	bash scripts/verify_skillforge_baseline_gate.sh

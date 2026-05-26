@@ -780,7 +780,7 @@ def doctor() -> None:
     from packages.core.repo_hygiene import scan_repo_hygiene
 
     checks: list[tuple[str, str]] = [
-        ("Python ≥ 3.9", ""),
+        ("Python >= 3.9 and < 3.13", ""),
         ("pydantic", "pydantic"),
         ("click", "click"),
         ("jinja2", "jinja2"),
@@ -792,7 +792,7 @@ def doctor() -> None:
     all_ok = True
     for label, module in checks:
         if not module:
-            ok = sys.version_info >= (3, 9)
+            ok = (3, 9) <= sys.version_info[:2] < (3, 13)
         else:
             try:
                 importlib.import_module(module)
@@ -821,6 +821,8 @@ def doctor() -> None:
         console.print("\n[bold green]ToolForge environment OK.[/]")
     else:
         console.print("\n[bold red]Some checks failed.[/]")
+        if not ((3, 9) <= sys.version_info[:2] < (3, 13)):
+            console.print("[yellow]Use Python 3.9 through 3.12 for ToolForge validation.[/]")
         sys.exit(1)
 
 
