@@ -133,6 +133,27 @@ def test_chat_with_mocked_deepseek(client: TestClient, monkeypatch: pytest.Monke
     assert body["assistant"] == "mocked response"
 
 
+def test_set_api_key_endpoint(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+
+    save = client.post(
+        "/api/config/api-key",
+        json={"api_key": "sk-test123456"},
+    )
+    assert save.status_code == 200
+    save_payload = save.json()
+    assert save_payload["configured"] is True
+    assert save_payload["masked_key"]
+
+    clear = client.post(
+        "/api/config/api-key",
+        json={"api_key": ""},
+    )
+    assert clear.status_code == 200
+    clear_payload = clear.json()
+    assert clear_payload["configured"] is False
+
+
 def test_tool_run_preview_then_approve(client: TestClient, tmp_path: Path) -> None:
     slug = _register_demo_tool(tmp_path)
 

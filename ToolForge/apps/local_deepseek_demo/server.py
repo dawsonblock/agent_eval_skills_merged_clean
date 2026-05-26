@@ -75,6 +75,10 @@ class ToolValidateRequest(BaseModel):
     path: str
 
 
+class ApiKeyRequest(BaseModel):
+    api_key: str = ""
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
@@ -103,6 +107,29 @@ def models() -> dict[str, Any]:
         "configured_model": current,
         "presets": presets,
         "editable": True,
+    }
+
+
+@app.post("/api/config/api-key")
+def set_api_key(request: ApiKeyRequest) -> dict[str, Any]:
+    value = request.api_key.strip()
+    if value:
+        os.environ["DEEPSEEK_API_KEY"] = value
+    else:
+        os.environ.pop("DEEPSEEK_API_KEY", None)
+
+    configured = bool(os.getenv("DEEPSEEK_API_KEY"))
+    masked = ""
+    if configured:
+        raw = os.getenv("DEEPSEEK_API_KEY", "")
+        if len(raw) > 8:
+            masked = raw[:5] + "..." + raw[-3:]
+        else:
+            masked = "***"
+
+    return {
+        "configured": configured,
+        "masked_key": masked,
     }
 
 

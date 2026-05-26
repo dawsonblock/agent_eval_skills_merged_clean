@@ -15,6 +15,7 @@ const customModel = document.getElementById("customModel");
 const chatMode = document.getElementById("chatMode");
 const chatInput = document.getElementById("chatInput");
 const apiKeyStatus = document.getElementById("apiKeyStatus");
+const apiKeyInput = document.getElementById("apiKeyInput");
 
 async function request(path, options = {}) {
   const response = await fetch(path, {
@@ -55,6 +56,24 @@ async function loadHealth() {
     ? "API key configured"
     : "API key missing";
   apiKeyStatus.style.background = health.deepseek_key_configured ? "#daf4e5" : "#fde7e7";
+}
+
+async function saveApiKey() {
+  const apiKey = apiKeyInput.value.trim();
+  try {
+    const result = await request("/api/config/api-key", {
+      method: "POST",
+      body: JSON.stringify({ api_key: apiKey }),
+    });
+    if (result.configured) {
+      addMessage("tool_result", `API key saved (${result.masked_key})`);
+    } else {
+      addMessage("tool_result", "API key cleared");
+    }
+    await loadHealth();
+  } catch (error) {
+    addMessage("validation_error", error.message);
+  }
 }
 
 async function loadModels() {
@@ -275,6 +294,7 @@ document.getElementById("createTool").addEventListener("click", createTool);
 document.getElementById("validateTool").addEventListener("click", validateTool);
 document.getElementById("runTool").addEventListener("click", runTool);
 document.getElementById("openOutput").addEventListener("click", openOutputFolder);
+document.getElementById("saveApiKey").addEventListener("click", saveApiKey);
 
 chatMode.addEventListener("change", () => {
   if (chatMode.value === "tool_builder") {

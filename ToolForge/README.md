@@ -95,6 +95,14 @@ cp .env.example .env
 
 Demo URL: `http://127.0.0.1:8080`
 
+iPhone Safari option (same Wi-Fi network):
+
+```bash
+./run_local_deepseek_demo.sh --lan
+```
+
+Then open the printed `http://<mac-lan-ip>:8080` URL in Safari on your iPhone.
+
 The demo provides:
 
 - Local chat UI with configurable DeepSeek model string
