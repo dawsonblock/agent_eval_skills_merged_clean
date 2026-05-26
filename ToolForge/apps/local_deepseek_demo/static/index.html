@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local DeepSeek Tool UI Demo</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Local DeepSeek Tool UI Demo</h1>
+      <span id="apiKeyStatus" class="badge">Checking API key...</span>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar left">
+        <h2>Settings</h2>
+
+        <label for="modelSelect">Model</label>
+        <select id="modelSelect"></select>
+        <input id="customModel" placeholder="custom model string" />
+
+        <label for="chatMode">Mode</label>
+        <select id="chatMode">
+          <option value="normal">Normal Chat</option>
+          <option value="tool_use">Tool Use</option>
+          <option value="tool_builder">Tool Builder</option>
+        </select>
+
+        <div class="actions">
+          <button id="refreshTools">Refresh Tools</button>
+          <button id="clearChat">Clear</button>
+          <button id="openOutput">Open Output Folder</button>
+        </div>
+      </aside>
+
+      <section class="chat-panel">
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input">
+          <textarea id="chatInput" placeholder="Ask DeepSeek to chat, use tools, or design a new tool..."></textarea>
+          <button id="sendBtn">Send</button>
+        </div>
+      </section>
+
+      <aside class="sidebar right">
+        <h2>Tool Registry</h2>
+        <div id="toolList" class="tool-list"></div>
+
+        <h2>Permission Preview</h2>
+        <pre id="permissionPreview" class="pre"></pre>
+
+        <div class="actions">
+          <button id="useTool">Use Tool</button>
+          <button id="createTool">Create Tool</button>
+          <button id="validateTool">Validate Tool</button>
+          <button id="runTool">Run Tool</button>
+        </div>
+
+        <h2>Execution Logs</h2>
+        <pre id="execLogs" class="pre"></pre>
+      </aside>
+    </main>
+
+    <section class="bottom-drawer">
+      <h2>Output Viewer</h2>
+      <pre id="outputViewer" class="pre"></pre>
+    </section>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

@@ -83,6 +83,26 @@ toolforge package local-file-hasher
 # → dist/local-file-hasher-0.1.0.zip
 ```
 
+### Local DeepSeek Tool UI Demo
+
+```bash
+cd ToolForge
+python -m pip install -e ".[demo]"
+cp .env.example .env
+# Set DEEPSEEK_API_KEY in .env for live model responses
+./run_local_deepseek_demo.sh
+```
+
+Demo URL: `http://127.0.0.1:8080`
+
+The demo provides:
+
+- Local chat UI with configurable DeepSeek model string
+- Tool registry browsing and permission preview
+- Two-step tool run flow (`preview` then explicit `approve`)
+- Tool planning/creation/validation under `generated_tools/`
+- Local output viewer for generated artifacts
+
 ---
 
 ## Example Tools
