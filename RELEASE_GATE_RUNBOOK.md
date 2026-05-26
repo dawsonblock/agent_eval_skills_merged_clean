@@ -14,6 +14,14 @@ Use this command before configuring rules or preparing a release upload:
 make operator-release-gate-check
 ```
 
+For local SkillForge baseline integrity checks (structure + candidate artifact + focused regression suite):
+
+```bash
+make verify-skillforge-baseline
+```
+
+Use `bash scripts/verify_skillforge_baseline_gate.sh --allow-dirty` when running during in-progress local edits.
+
 This command:
 
 1. Runs canonical attested-pair verification.

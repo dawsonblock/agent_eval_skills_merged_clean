@@ -143,6 +143,10 @@ verify-release-policy-drift-strict: ## Verify release-policy drift and require c
 verify-release-classification-matrix: ## Verify classify_release_upload across canonical/new/wrapper/dirty/invalid cases
 	bash scripts/verify_release_classification_matrix.sh
 
+.PHONY: verify-skillforge-baseline
+verify-skillforge-baseline: ## Verify SkillForge baseline gates (structure, parity, candidate hash/hygiene, regression tests)
+	bash scripts/verify_skillforge_baseline_gate.sh
+
 .PHONY: verify-skip-strictness
 verify-skip-strictness: ## Verify strict SKIP_EXISTING_ARTIFACTS behavior for smoke MCP builds
 	bash scripts/verify_skip_existing_artifacts_strict.sh
