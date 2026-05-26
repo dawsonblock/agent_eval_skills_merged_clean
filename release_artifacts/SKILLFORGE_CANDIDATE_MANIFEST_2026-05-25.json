@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "manifest_type": "skillforge_candidate",
+  "status": "candidate",
+  "release_date": "2026-05-25",
+  "generated_at_utc": "2026-05-26T04:13:00Z",
+  "repository": "agent_eval_skills_merged_clean",
+  "branch": "main",
+  "commit": "cc77d87ca59d2f664a8103f9f2859bccb0b23325",
+  "candidate_archive": {
+    "path": "dist/skillforge_ai_candidate_2026-05-25.zip",
+    "sha256": "de03fbf3bdfdf1c02485b35586a05fe8c3ea61a42109d9e696bf2a2e4a53ae83"
+  },
+  "candidate_evidence_bundle": {
+    "path": "dist/agent_eval_skills_merged_clean-skillforge-evidence-2026-05-25.zip",
+    "sha256": "3449b8d252198c6565e34bd77cdc0fbce3a847765eb960cbb5d47b366247d34f"
+  },
+  "skillforge_evidence_files": [
+    "release_artifacts/skillforge_ai_test_summary.json",
+    "release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json",
+    "release_artifacts/skillforge_ai_validation_summary.json",
+    "release_artifacts/skillforge_ai_candidate_build_summary.json",
+    "release_artifacts/skillforge_ai_baseline_gate_summary.json",
+    "release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log"
+  ],
+  "validation": {
+    "targeted_tests": {
+      "passed": 181,
+      "failed": 0,
+      "status": "passed"
+    },
+    "csv_cleaner_e2e": {
+      "status": "passed",
+      "workspace_mode": "isolated_temp_workspace"
+    },
+    "skill_validation": {
+      "status": "passed",
+      "attempt": 1,
+      "workspace_mode": "isolated_workspace"
+    },
+    "baseline_gate": {
+      "status": "passed",
+      "command": "bash scripts/verify_skillforge_baseline_gate.sh --allow-dirty"
+    }
+  },
+  "classification": {
+    "intent": "clean_new_candidate",
+    "canonical_attested_pair": false,
+    "note": "This manifest must not supersede the canonical 2026-05-22 foundation attestation pair."
+  },
+  "scope_statement": {
+    "validated": [
+      "SkillForge AI targeted tests",
+      "csv-cleaner e2e lifecycle",
+      "csv-cleaner skill validation",
+      "SkillForge baseline gate"
+    ],
+    "not_claimed": [
+      "production-grade",
+      "hostile-code-safe",
+      "full Toolathlon profile validation",
+      "public marketplace readiness"
+    ]
+  }
+}

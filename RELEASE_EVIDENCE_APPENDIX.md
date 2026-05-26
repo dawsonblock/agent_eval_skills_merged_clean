@@ -150,12 +150,33 @@ Hygiene checks:
 
 The following artifacts support SkillForge AI candidate claims and are separate from the canonical 2026-05-22 release/evidence pair:
 
+- Candidate archive:
+	- `dist/skillforge_ai_candidate_2026-05-25.zip`
+	- SHA256: `de03fbf3bdfdf1c02485b35586a05fe8c3ea61a42109d9e696bf2a2e4a53ae83`
+- Candidate evidence bundle:
+	- `dist/agent_eval_skills_merged_clean-skillforge-evidence-2026-05-25.zip`
+	- SHA256: `3449b8d252198c6565e34bd77cdc0fbce3a847765eb960cbb5d47b366247d34f`
 - [release_artifacts/skillforge_ai_test_summary.json](release_artifacts/skillforge_ai_test_summary.json)
 - [release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json](release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json)
 - [release_artifacts/skillforge_ai_validation_summary.json](release_artifacts/skillforge_ai_validation_summary.json)
+- [release_artifacts/skillforge_ai_candidate_build_summary.json](release_artifacts/skillforge_ai_candidate_build_summary.json)
+- [release_artifacts/skillforge_ai_baseline_gate_summary.json](release_artifacts/skillforge_ai_baseline_gate_summary.json)
+- [release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log](release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log)
+- [release_artifacts/SKILLFORGE_CANDIDATE_MANIFEST_2026-05-25.json](release_artifacts/SKILLFORGE_CANDIDATE_MANIFEST_2026-05-25.json)
+- [SKILLFORGE_CANDIDATE_ATTESTATION_2026-05-25.md](SKILLFORGE_CANDIDATE_ATTESTATION_2026-05-25.md)
 
 Generate or refresh these artifacts with:
 
 ```bash
 bash scripts/generate_skillforge_ai_summaries.sh
+bash scripts/build_skillforge_ai_candidate_zip.sh
+bash scripts/create_skillforge_evidence_bundle.sh --date 20260525 --output dist/agent_eval_skills_merged_clean-skillforge-evidence-2026-05-25.zip
 ```
+
+Current run status (2026-05-26 UTC):
+
+- SkillForge targeted tests: 181 passed, 0 failed
+- csv-cleaner e2e lifecycle: passed in isolated temp workspace
+- csv-cleaner validation summary: passed
+- baseline gate: passed (path/git parity/hash/hygiene/regression tests)
+- Candidate and evidence ZIP hygiene validation: passed (no forbidden entries)

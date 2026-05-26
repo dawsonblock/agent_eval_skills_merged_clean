@@ -93,6 +93,10 @@ required_files=(
   "release_artifacts/skillforge_ai_test_summary.json"
   "release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json"
   "release_artifacts/skillforge_ai_validation_summary.json"
+  "release_artifacts/skillforge_ai_baseline_gate_summary.json"
+  "release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log"
+  "release_artifacts/SKILLFORGE_CANDIDATE_MANIFEST_2026-05-25.json"
+  "SKILLFORGE_CANDIDATE_ATTESTATION_2026-05-25.md"
   "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md"
   "RELEASE_EVIDENCE_APPENDIX.md"
 )

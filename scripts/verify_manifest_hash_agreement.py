@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 
 def main() -> int:
-    if len(sys.argv) != 7 + 1:
+    if len(sys.argv) != 6 + 1:
         raise SystemExit(
             "usage: verify_manifest_hash_agreement.py "
             "<zip_path> <release_name> <release_sha> "

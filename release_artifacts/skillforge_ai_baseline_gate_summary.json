@@ -1,0 +1,20 @@
+{
+  "summary_version": "2026-05-25",
+  "component": "skillforge_ai",
+  "artifact_type": "baseline_gate_summary",
+  "generated_at": "2026-05-26T04:13:00Z",
+  "overall_status": "passed",
+  "command": "bash scripts/verify_skillforge_baseline_gate.sh --allow-dirty",
+  "log_path": "release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log",
+  "checks": {
+    "path_gate": "passed",
+    "git_parity_gate": "passed",
+    "candidate_hash_gate": "passed",
+    "candidate_hygiene_gate": "passed",
+    "regression_test_gate": "passed"
+  },
+  "regression_tests": {
+    "passed": 40,
+    "failed": 0
+  }
+}

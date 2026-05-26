@@ -9,11 +9,13 @@ ARTIFACTS_DIR="$REPO_ROOT/release_artifacts"
 mkdir -p "$ARTIFACTS_DIR"
 
 RAW_PYTEST_JSON="$(mktemp)"
-trap 'rm -f "$RAW_PYTEST_JSON"' EXIT
+VALIDATION_WORKSPACE_DIR=""
+trap 'rm -f "$RAW_PYTEST_JSON"; if [ -n "$VALIDATION_WORKSPACE_DIR" ]; then rm -rf "$VALIDATION_WORKSPACE_DIR"; fi' EXIT
 
 GEN_TESTS=1
 GEN_E2E=1
 GEN_VALIDATION=1
+ISOLATE_VALIDATION_WORKSPACE=1
 
 usage() {
   cat <<'USAGE'
@@ -23,6 +25,7 @@ Options:
   --tests-only       Generate only release_artifacts/skillforge_ai_test_summary.json
   --e2e-only         Generate only release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json
   --validation-only  Generate only release_artifacts/skillforge_ai_validation_summary.json
+  --no-isolation     Run validation against ToolForge workspace directly
   -h, --help         Show this help message
 USAGE
 }
@@ -45,6 +48,10 @@ while [ "$#" -gt 0 ]; do
       GEN_TESTS=0
       GEN_E2E=0
       GEN_VALIDATION=1
+      shift
+      ;;
+    --no-isolation)
+      ISOLATE_VALIDATION_WORKSPACE=0
       shift
       ;;
     -h|--help)
@@ -127,9 +134,27 @@ fi
 
 if [ "$GEN_VALIDATION" -eq 1 ]; then
   echo "Generating SkillForge validation summary..."
+
+  validation_workspace="$TOOLFORGE_DIR"
+  if [ "$ISOLATE_VALIDATION_WORKSPACE" -eq 1 ]; then
+    VALIDATION_WORKSPACE_DIR="$(mktemp -d)"
+    validation_workspace="$VALIDATION_WORKSPACE_DIR"
+    mkdir -p "$validation_workspace/skills" "$validation_workspace/tools/generated"
+    cp -R "$TOOLFORGE_DIR/skills/csv-cleaner" "$validation_workspace/skills/csv-cleaner"
+    if [ -d "$TOOLFORGE_DIR/tools/generated/csv-cleaner" ]; then
+      cp -R "$TOOLFORGE_DIR/tools/generated/csv-cleaner" "$validation_workspace/tools/generated/csv-cleaner"
+    elif [ -d "$TOOLFORGE_DIR/skills/csv-cleaner/tool" ]; then
+      cp -R "$TOOLFORGE_DIR/skills/csv-cleaner/tool" "$validation_workspace/tools/generated/csv-cleaner"
+    fi
+    if [ -f "$TOOLFORGE_DIR/toolforge_registry.json" ]; then
+      cp "$TOOLFORGE_DIR/toolforge_registry.json" "$validation_workspace/toolforge_registry.json"
+    fi
+    echo "Using isolated validation workspace: $validation_workspace"
+  fi
+
   (
     cd "$TOOLFORGE_DIR"
-    PYTHONPATH=. python -m apps.cli.skillforge_cli.main validate csv-cleaner \
+    PYTHONPATH=. python -m apps.cli.skillforge_cli.main --workspace "$validation_workspace" validate csv-cleaner \
       --summary-json "$ARTIFACTS_DIR/skillforge_ai_validation_summary.json"
   )
 fi
