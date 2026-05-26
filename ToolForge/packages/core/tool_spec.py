@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from skillforge_ai.errors import SkillForgeDependencyError
 from skillforge_ai.yaml_utils import dump_yaml, load_yaml
 
 
@@ -465,10 +466,20 @@ class ToolSpec(BaseModel):
         """Load a ToolSpec from a toolforge.yaml file."""
         if not path.exists():
             raise FileNotFoundError(path)
-        data = load_yaml(path)
+        try:
+            data = load_yaml(path)
+        except SkillForgeDependencyError as exc:
+            raise SkillForgeDependencyError(
+                f"Unable to load ToolSpec YAML at {path}: {exc}"
+            ) from exc
         return cls.model_validate(data or {})
 
     def to_yaml(self, path: Path) -> None:
         """Persist this ToolSpec as toolforge.yaml (round-trip safe)."""
         data = json.loads(self.model_dump_json(exclude_none=True))
-        dump_yaml(data, path)
+        try:
+            dump_yaml(data, path)
+        except SkillForgeDependencyError as exc:
+            raise SkillForgeDependencyError(
+                f"Unable to write ToolSpec YAML at {path}: {exc}"
+            ) from exc

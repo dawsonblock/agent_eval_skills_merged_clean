@@ -13,6 +13,7 @@ from packages.core.tool_spec import (
     ToolLanguage,
     ToolSpec,
 )
+from skillforge_ai.errors import SkillForgeDependencyError
 
 
 def _minimal_spec(**kwargs) -> ToolSpec:
@@ -115,3 +116,37 @@ def test_from_yaml_missing_file_skips_yaml_loader() -> None:
     ):
         with pytest.raises(FileNotFoundError):
             ToolSpec.from_yaml(Path("/nonexistent/toolforge.yaml"))
+
+
+def test_from_yaml_dependency_error_includes_path_context(
+    tmp_path: Path,
+) -> None:
+    yaml_path = tmp_path / "toolforge.yaml"
+    yaml_path.write_text("slug: my-tool\n", encoding="utf-8")
+    with patch(
+        "packages.core.tool_spec.load_yaml",
+        side_effect=SkillForgeDependencyError("Missing dependency: ruamel.yaml"),
+    ):
+        with pytest.raises(SkillForgeDependencyError) as exc_info:
+            ToolSpec.from_yaml(yaml_path)
+
+    message = str(exc_info.value)
+    assert "Unable to load ToolSpec YAML at" in message
+    assert str(yaml_path) in message
+
+
+def test_to_yaml_dependency_error_includes_path_context(
+    tmp_path: Path,
+) -> None:
+    yaml_path = tmp_path / "toolforge.yaml"
+    spec = _minimal_spec(tags=["x"])
+    with patch(
+        "packages.core.tool_spec.dump_yaml",
+        side_effect=SkillForgeDependencyError("Missing dependency: ruamel.yaml"),
+    ):
+        with pytest.raises(SkillForgeDependencyError) as exc_info:
+            spec.to_yaml(yaml_path)
+
+    message = str(exc_info.value)
+    assert "Unable to write ToolSpec YAML at" in message
+    assert str(yaml_path) in message
