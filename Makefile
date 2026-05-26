@@ -147,6 +147,30 @@ verify-release-classification-matrix: ## Verify classify_release_upload across c
 verify-skillforge-baseline: ## Verify SkillForge baseline gates (structure, parity, candidate hash/hygiene, regression tests)
 	bash scripts/verify_skillforge_baseline_gate.sh
 
+.PHONY: skillforge-ai-summary-tests
+skillforge-ai-summary-tests: ## Generate release_artifacts/skillforge_ai_test_summary.json
+	bash scripts/generate_skillforge_ai_summaries.sh --tests-only
+
+.PHONY: skillforge-ai-summary-e2e
+skillforge-ai-summary-e2e: ## Generate release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json
+	bash scripts/generate_skillforge_ai_summaries.sh --e2e-only
+
+.PHONY: skillforge-ai-summary-validation
+skillforge-ai-summary-validation: ## Generate release_artifacts/skillforge_ai_validation_summary.json
+	bash scripts/generate_skillforge_ai_summaries.sh --validation-only
+
+.PHONY: skillforge-ai-summaries
+skillforge-ai-summaries: ## Generate all SkillForge AI summary artifacts
+	bash scripts/generate_skillforge_ai_summaries.sh
+
+.PHONY: build-skillforge-ai-candidate
+build-skillforge-ai-candidate: ## Build clean SkillForge AI candidate ZIP and refresh candidate summary
+	bash scripts/build_skillforge_ai_candidate_zip.sh
+
+.PHONY: skillforge-evidence-bundle
+skillforge-evidence-bundle: ## Build SkillForge-specific evidence bundle from release_artifacts summaries
+	bash scripts/create_skillforge_evidence_bundle.sh
+
 .PHONY: verify-skip-strictness
 verify-skip-strictness: ## Verify strict SKIP_EXISTING_ARTIFACTS behavior for smoke MCP builds
 	bash scripts/verify_skip_existing_artifacts_strict.sh

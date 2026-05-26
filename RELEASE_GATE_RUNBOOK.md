@@ -20,6 +20,24 @@ For local SkillForge baseline integrity checks (structure + candidate artifact +
 make verify-skillforge-baseline
 ```
 
+For SkillForge candidate evidence regeneration (test + e2e + validation summaries):
+
+```bash
+make skillforge-ai-summaries
+```
+
+For building the SkillForge candidate ZIP + summary hash binding:
+
+```bash
+make build-skillforge-ai-candidate
+```
+
+For building a dedicated SkillForge evidence bundle:
+
+```bash
+make skillforge-evidence-bundle
+```
+
 Use `bash scripts/verify_skillforge_baseline_gate.sh --allow-dirty` when running during in-progress local edits.
 
 This command:

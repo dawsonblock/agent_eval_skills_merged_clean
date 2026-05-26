@@ -145,3 +145,17 @@ Hygiene checks:
 - Not hostile-code-safe.
 - Use disposable benchmark containers.
 - Dependency/security audit required before broader deployment.
+
+## SkillForge Candidate Evidence (Non-Canonical)
+
+The following artifacts support SkillForge AI candidate claims and are separate from the canonical 2026-05-22 release/evidence pair:
+
+- [release_artifacts/skillforge_ai_test_summary.json](release_artifacts/skillforge_ai_test_summary.json)
+- [release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json](release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json)
+- [release_artifacts/skillforge_ai_validation_summary.json](release_artifacts/skillforge_ai_validation_summary.json)
+
+Generate or refresh these artifacts with:
+
+```bash
+bash scripts/generate_skillforge_ai_summaries.sh
+```

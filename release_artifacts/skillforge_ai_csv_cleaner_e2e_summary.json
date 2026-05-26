@@ -1,0 +1,51 @@
+{
+  "summary_version": "2026-05-25",
+  "component": "skillforge_ai",
+  "artifact_type": "csv_cleaner_e2e_summary",
+  "generated_at": "2026-05-26T03:04:10.465474+00:00",
+  "overall_status": "passed",
+  "workspace_mode": "isolated_temp_workspace",
+  "proof": {
+    "tool_slug": "csv-cleaner",
+    "tmp_workspace": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/tmpw8pyqg3h/toolforge_workspace",
+    "package_path": "/var/folders/xt/jh84t2kj6hl26tk5qx3m_28h0000gn/T/tmpw8pyqg3h/toolforge_workspace/dist/csv-cleaner-0.1.0.zip",
+    "steps": [
+      {
+        "name": "init",
+        "status": "passed"
+      },
+      {
+        "name": "create",
+        "status": "passed"
+      },
+      {
+        "name": "generate_mcp",
+        "status": "passed"
+      },
+      {
+        "name": "generate_skill",
+        "status": "passed"
+      },
+      {
+        "name": "generate_eval",
+        "status": "passed"
+      },
+      {
+        "name": "validate",
+        "status": "passed"
+      },
+      {
+        "name": "package",
+        "status": "passed"
+      },
+      {
+        "name": "registry",
+        "status": "passed"
+      },
+      {
+        "name": "process_hygiene",
+        "status": "passed"
+      }
+    ]
+  }
+}

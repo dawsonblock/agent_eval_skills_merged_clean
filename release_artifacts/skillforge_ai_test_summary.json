@@ -1,0 +1,17 @@
+{
+  "summary_version": "2026-05-25",
+  "component": "skillforge_ai",
+  "artifact_type": "test_summary",
+  "generated_at": "2026-05-26T03:04:20.434066+00:00",
+  "overall_status": "passed",
+  "command": "PYTHONPATH=. PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -p pytest_jsonreport.plugin -o addopts= tests/test_skillforge_ai tests/test_test_validator.py tests/integration/test_test_validator_subprocess.py --json-report -q",
+  "test_counts": {
+    "total": 181,
+    "passed": 181,
+    "failed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "errors": 0
+  }
+}

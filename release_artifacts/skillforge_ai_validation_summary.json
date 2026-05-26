@@ -1,0 +1,22 @@
+{
+  "summary_version": "2026-05-25",
+  "component": "skillforge_ai",
+  "artifact_type": "validation_summary",
+  "generated_at": "2026-05-26T03:03:47.604524+00:00",
+  "workspace": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge",
+  "skill": "csv-cleaner",
+  "repair": false,
+  "provider": "rule_based",
+  "overall_status": "passed",
+  "checks": {
+    "schema": "passed",
+    "security": "passed",
+    "mcp": "passed",
+    "skill": "passed",
+    "tests": "passed",
+    "safety": "passed"
+  },
+  "attempt": 1,
+  "errors": [],
+  "warnings": []
+}

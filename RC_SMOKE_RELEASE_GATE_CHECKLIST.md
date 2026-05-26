@@ -16,6 +16,21 @@ Evidence publication rule:
   - `.validation_logs/docker_mcp_smoke_summary.json` (when Docker proof is claimed)
   - `.validation_logs/docker_preflight_summary.json` (when Docker proof is claimed)
 
+For SkillForge candidate claims, also attach:
+
+- `release_artifacts/skillforge_ai_test_summary.json`
+- `release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json`
+- `release_artifacts/skillforge_ai_validation_summary.json`
+- `release_artifacts/skillforge_ai_candidate_build_summary.json`
+
+SkillForge candidate command sequence:
+
+```bash
+make skillforge-ai-summaries
+make build-skillforge-ai-candidate
+make skillforge-evidence-bundle
+```
+
 ## 1) Profile Policy
 
 - Default gate: `TOOLATHLON_PROFILE=smoke`

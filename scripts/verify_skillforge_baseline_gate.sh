@@ -4,6 +4,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
+if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
+  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$FORBIDDEN_POLICY_FILE"
+
 SKIP_TESTS=0
 SKIP_REMOTE=0
 ALLOW_DIRTY=0
@@ -141,7 +149,7 @@ fi
 
 echo "Candidate hash gate: passed"
 
-forbidden="$(zipinfo -1 "$zip_path" | grep -E '(^|/)(\.DS_Store$|\._|__pycache__/|\.pytest_cache/)' || true)"
+forbidden="$(zipinfo -1 "$zip_path" | grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" || true)"
 if [ -n "$forbidden" ]; then
   echo "Gate failed: forbidden entries found in candidate zip." >&2
   echo "$forbidden" >&2

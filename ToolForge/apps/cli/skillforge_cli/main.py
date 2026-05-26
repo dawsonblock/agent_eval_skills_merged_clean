@@ -215,8 +215,19 @@ def create(
 @main.command()
 @click.argument("slug")
 @click.option("--repair", is_flag=True, default=False, help="Attempt AI-driven repair on failure.")
+@click.option(
+    "--summary-json",
+    default=None,
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="Write validation summary JSON to PATH.",
+)
 @click.pass_context
-def validate(ctx: click.Context, slug: str, repair: bool) -> None:
+def validate(
+    ctx: click.Context,
+    slug: str,
+    repair: bool,
+    summary_json: Optional[Path],
+) -> None:
     """Validate SLUG — run schema, security, MCP, skill, test, and safety checks."""
     ws_root: Path = ctx.obj["workspace"]
     provider: str = ctx.obj["provider"]
@@ -229,6 +240,7 @@ def validate(ctx: click.Context, slug: str, repair: bool) -> None:
             slug=slug,
             repair=repair,
             provider=provider,
+            summary_json=summary_json,
         )
 
     _print_validation_report(report)
