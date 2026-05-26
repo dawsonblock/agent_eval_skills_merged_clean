@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean",
-      "program": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/build/Debug/outDebug"
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/build/Debug/outDebug"
     }
   ]
 }

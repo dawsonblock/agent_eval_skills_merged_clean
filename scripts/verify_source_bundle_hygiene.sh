@@ -144,9 +144,11 @@ hits = []
 with zipfile.ZipFile(sys.argv[1]) as z:
     for info in z.infolist():
         name = info.filename
-        if any(name.startswith(p) for p in SKIP_PATH_PREFIX):
+        # Handle both flat archives and wrapper-root archives.
+        normalized = name.split('/', 1)[1] if '/' in name else name
+        if any(name.startswith(p) for p in SKIP_PATH_PREFIX) or any(normalized.startswith(p) for p in SKIP_PATH_PREFIX):
             continue
-        if any(d in ('/' + name) for d in SKIP_DIR_CONTAINS):
+        if any(d in ('/' + name) for d in SKIP_DIR_CONTAINS) or any(d in ('/' + normalized) for d in SKIP_DIR_CONTAINS):
             continue
         base = name.rsplit('/', 1)[-1]
         if base in SKIP_BASENAME:

@@ -182,7 +182,8 @@ grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$release_entries_tmp" > "$forbidden_tm
 release_forbidden_count="$(wc -l < "$forbidden_tmp" | tr -d ' ')"
 
 required_layout_missing=0
-if ! grep -Eq '^(README\.md|ToolForge/|agent-skills-curated/|toolathlon-gym-curated/)' "$release_entries_tmp"; then
+# Accept both flat archives and wrapper-root archives (e.g. repo-main/ToolForge/...).
+if ! grep -Eq '^(README\.md|ToolForge/|agent-skills-curated/|toolathlon-gym-curated/)|^[^/]+/(README\.md|ToolForge/|agent-skills-curated/|toolathlon-gym-curated/)' "$release_entries_tmp"; then
   required_layout_missing=1
 fi
 

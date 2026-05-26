@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-26T20:06:57.277904+00:00",
+  "created_at_utc": "2026-05-26T21:16:25.089887+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "d6dbec37db557a7dd671f03776558ea99279519cbdd89c43d7cad491bf6d21ae"
+      "sha256": "ea0d3159b4c3e8567389faadbd3defe83ff69af5a6339d0c64f1eb78d33aeadd"
     },
     {
       "path": "ToolForge/.bandit",
@@ -1373,7 +1373,7 @@
     },
     {
       "path": "agent-skills-curated/packages/web-and-frontend-development/theme-factory.zip",
-      "sha256": "e207f9b952ff7626eff78e32f952978d586d6cf6ebfa43a51ce593789a91c1b7"
+      "sha256": "caa03a050e9f3a1c676655bcfe2e3fbfa0c8e17fbad7ee4fb05aea6cba30575e"
     },
     {
       "path": "agent-skills-curated/packages/web-and-frontend-development/web-artifacts-builder.zip",
@@ -2313,7 +2313,7 @@
     },
     {
       "path": "agent-skills-curated/skills/web-and-frontend-development/theme-factory/SKILL.md",
-      "sha256": "311baf5d658a9d7c565816fd08ed7e627af33efb47fb1e53e6a6ce949c386514"
+      "sha256": "790b5e88bc2b0f8399cf10f58abfe4c76befe87ef283ad830cedcb55e451ab5c"
     },
     {
       "path": "agent-skills-curated/skills/web-and-frontend-development/theme-factory/themes/dusk.css",
@@ -2425,7 +2425,7 @@
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "200a728aef717921de4ac824be7453c520f46160779320f22ba6d9a61c2e9b8a"
+      "sha256": "72f0369fca8fc670c035cb1152b7b4ff1d1e7cd298790a615362a1224a1e4272"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2449,7 +2449,7 @@
     },
     {
       "path": "scripts/classify_release_upload.sh",
-      "sha256": "a10ccdafa56cea5bf573b4dab710245a3ba6a7eaea5320a71c663066782607b9"
+      "sha256": "baefafd6ee8a21226c7e1a76d5b9ff967f2f3539dd784b5e821ea89ae30919f6"
     },
     {
       "path": "scripts/clean_workspace.sh",
@@ -2569,7 +2569,7 @@
     },
     {
       "path": "scripts/verify_source_bundle_hygiene.sh",
-      "sha256": "bbe283e6b87dbaec3d3d136bba47cb813b0bf7335a61a364527f30f6ec14e96a"
+      "sha256": "fbdba036b65c0c8d67abef93ef43712dc43537ddc62f69212737c14af62b2934"
     },
     {
       "path": "toolathlon-gym-curated/.dockerignore",
