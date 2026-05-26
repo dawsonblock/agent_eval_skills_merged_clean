@@ -1,11 +1,16 @@
 ---
 name: internal-comms
-description: Write internal company communications such as announcements, incident updates, all-hands notes, team newsletters, and leadership messages. Use when the user asks for internal announcement copy, incident communication, staff updates, organization changes, or company-news messaging. Trigger phrases include "internal announcement", "team update", "all-hands", "incident communication", "internal comms", "staff update", and "leadership message".
+description: Draft high-clarity internal communication for announcements, incident updates, org changes, all-hands notes, policy rollouts, and leadership messages. Use when users request internal copy for teams or company-wide audiences. Trigger phrases include "internal announcement", "team update", "all-hands", "incident update", "staff update", "org change", and "leadership message".
 ---
 
 # Internal Comms
 
-Write clear, effective internal communications for teams and organizations.
+Write clear, accountable internal messages that are easy to act on.
+
+## Scope
+
+- In scope: internal announcements, incident/status updates, recaps, policy changes, organization changes.
+- Out of scope: external PR statements, legal counsel, or investor communications unless explicitly requested.
 
 ## Message Types
 
@@ -17,6 +22,13 @@ Write clear, effective internal communications for teams and organizations.
 | All-hands recap | All company | Energetic, inclusive | 300–500 words |
 | Team newsletter | Team | Casual, conversational | 400–700 words |
 | Policy change | All company | Direct, professional | 200–400 words |
+
+## Decision Rules
+
+- If urgency is high: lead with status, impact, and next update time.
+- If change is sensitive: lead with empathy, then specifics.
+- If action is required: include explicit owner, deadline, and channel.
+- If uncertainty exists: state what is known, unknown, and when next update arrives.
 
 ## Announcement Template
 
@@ -58,6 +70,28 @@ We're currently investigating an issue affecting [what/who].
 We'll post updates every [15/30/60] minutes.
 
 — [Team Name]
+```
+
+## Policy Or Process Change Template
+
+```markdown
+Subject: [Policy/Process] update effective [Date]
+
+Hi team,
+
+We're updating [policy/process] effective [date].
+
+**What's changing**
+- [change 1]
+- [change 2]
+
+**Why now**
+[1-2 lines of rationale]
+
+**What you need to do**
+- By [date]: [action]
+
+Questions: [channel or owner]
 ```
 
 ### Resolution Update
@@ -143,7 +177,19 @@ The most common questions were around [topic]. [Answer or pointer to more info.]
 | Policy/process change | Clear, respectful, factual |
 | Routine update | Efficient, friendly |
 
-**Always avoid**: jargon-heavy "corp-speak", vague reassurances, passive voice for accountability ("mistakes were made" → "we got this wrong").
+Always avoid:
+- jargon-heavy corp-speak
+- vague reassurances without facts
+- passive accountability language ("mistakes were made")
+
+## Output Contract
+
+Include in every draft:
+- clear subject line
+- audience-appropriate body
+- explicit timeline and ownership
+- call to action (or explicit no-action-needed)
+- escalation/contact channel
 
 ## Examples
 

@@ -1,11 +1,46 @@
 ---
 name: canvas-design
-description: Generate and edit visual designs using HTML5 Canvas. Use when the user wants to create banners, graphics, image compositions, charts, or visual assets using Canvas API or canvas-based libraries. Trigger phrases include "canvas design", "html canvas", "create a banner", "generate image", "draw on canvas", "canvas animation", "generate a graphic", "create visual asset".
+description: Design and render visual assets using HTML5 Canvas or node-canvas. Use when users request banners, posters, social graphics, composited images, or canvas-based visuals with explicit dimensions and export formats. Trigger phrases include "canvas design", "html canvas", "draw on canvas", "create banner", "generate graphic", "social image", and "canvas animation".
 ---
 
 # Canvas Design
 
-Create visual designs, graphics, and image compositions using HTML5 Canvas.
+Produce high-quality raster visuals with deterministic, reproducible canvas code.
+
+## Scope
+
+- In scope: static compositions, typography layouts, image compositing, simple animation frames, server-side rendering.
+- Out of scope: vector authoring pipelines, 3D engines, and full interactive design tools.
+
+## Workflow
+
+### 1. Lock Output Spec
+
+Define before coding:
+- width x height
+- target platform (OG, Instagram, YouTube, print)
+- output format (PNG/JPEG/WebP/PDF via downstream tool)
+- text hierarchy and brand constraints
+
+### 2. Build Composition Layers
+
+Order layers explicitly:
+- background (solid, gradient, texture)
+- structural shapes
+- imagery
+- typography
+- overlays/effects
+
+### 3. Validate Readability
+
+Confirm:
+- text remains legible at target display size
+- key content stays inside safe margins
+- contrast is acceptable for body and headline text
+
+### 4. Export With Deterministic Naming
+
+Include output path and format decisions in the final response.
 
 ## Canvas Fundamentals
 
@@ -18,9 +53,9 @@ canvas.width = 1200;
 canvas.height = 630;   // Open Graph / Twitter card size
 ```
 
-## Common Design Tasks
+## Reusable Building Blocks
 
-### Social Media Banner (1200×630 / OG)
+### Social Banner (1200x630)
 
 ```javascript
 // Background gradient
@@ -42,7 +77,7 @@ ctx.fillStyle = 'rgba(255,255,255,0.8)';
 ctx.fillText('Your subtitle here', 600, 360);
 ```
 
-### Rounded Rectangle (Card)
+### Rounded Card Primitive
 
 ```javascript
 function roundRect(ctx, x, y, w, h, r) {
@@ -60,7 +95,7 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 ```
 
-### Draw Image from URL (Node.js with canvas package)
+### Image Compositing (Node.js)
 
 ```javascript
 const { createCanvas, loadImage } = require('canvas');
@@ -70,9 +105,9 @@ const img = await loadImage('https://example.com/photo.jpg');
 ctx.drawImage(img, 0, 0, 1200, 630);
 ```
 
-## Canvas Fonts
+## Typography And Fonts
 
-Bundled web-safe fonts for canvas rendering are in `canvas-fonts/`. Load custom fonts:
+Load custom fonts explicitly to avoid fallback drift:
 
 ```javascript
 // Browser
@@ -85,7 +120,7 @@ const { registerFont } = require('canvas');
 registerFont('./canvas-fonts/Inter-Regular.ttf', { family: 'Inter' });
 ```
 
-## Export
+## Export Patterns
 
 ```javascript
 // Browser — PNG download
@@ -100,7 +135,7 @@ const out = fs.createWriteStream('design.png');
 canvas.createPNGStream().pipe(out);
 ```
 
-## Common Canvas Sizes
+## Standard Sizes
 
 | Format | Dimensions |
 |--------|------------|
@@ -111,9 +146,17 @@ canvas.createPNGStream().pipe(out);
 | YouTube thumbnail | 1280 × 720 |
 | A4 @ 96dpi | 794 × 1123 |
 
-## Libraries
+## Library Selection
 
-- **Fabric.js** — object-oriented canvas (draggable/selectable objects)
-- **Konva.js** — layers, groups, events
-- **node-canvas** — server-side Canvas for Node.js
-- **OffscreenCanvas** — Web Worker canvas rendering
+- Fabric.js -> interactive object editing.
+- Konva.js -> staged layers and event-heavy canvases.
+- node-canvas -> server-side deterministic rendering.
+- OffscreenCanvas -> worker-based rendering for performance.
+
+## Output Contract
+
+When responding, include:
+- final dimensions and rationale
+- complete runnable code block
+- explicit dependency notes (if any)
+- export command or write path

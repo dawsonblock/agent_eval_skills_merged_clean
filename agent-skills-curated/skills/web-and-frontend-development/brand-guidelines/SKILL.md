@@ -1,30 +1,47 @@
 ---
 name: brand-guidelines
-description: Extract, document, and apply brand guidelines from existing assets. Use when a user wants to create a brand guidelines document, extract brand colors/fonts/tone from a website or design files, enforce consistent brand identity across components, or generate brand-compliant UI. Trigger phrases include "brand guidelines", "brand identity", "brand colors", "brand consistency", "brand kit", "style guide".
+description: Extract, normalize, and apply a brand system across UI, docs, and assets. Use when users ask for a brand kit, style guide, design tokens, tone rules, or brand-consistent output. Trigger phrases include "brand guidelines", "brand identity", "brand kit", "style guide", "brand colors", "brand fonts", "design tokens", and "make this on-brand".
 ---
 
 # Brand Guidelines
 
-Capture and apply a brand's visual and tonal identity across all outputs.
+Build a reliable brand system from source material, then enforce it in generated output.
+
+## Scope
+
+- In scope: colors, typography, spacing, icon/logo usage, voice/tone, token export, compliance checks.
+- Out of scope: legal trademark advice, original logo design, or fabricated brand values without source material.
+
+## Inputs To Request If Missing
+
+- Primary source: website URL, design files, or existing docs.
+- Target surface: web app, slide deck, docs, emails, or full cross-channel kit.
+- Accessibility target: WCAG AA or AAA.
 
 ## Workflow
 
-### 1. Extract Brand Identity
+### 1. Extract Signals
 
-**From a URL** — scrape and analyze:
-- CSS custom properties (`--color-*`, `--font-*`)
-- Fonts loaded via `<link>` or `@font-face`
-- Dominant colors via screenshot color sampling
-- Logo, favicon, and icon assets
+From URL:
+- collect CSS variables and typography declarations
+- capture dominant palette and accent usage
+- identify logo treatment and icon style
 
-**From uploaded files** (Figma exports, PDFs, images):
-- Identify hex colors from visual samples
-- Note font families and weights used
-- Capture spacing and layout patterns
+From files (Figma/PDF/images):
+- sample canonical hex values
+- record font family, weight, and hierarchy
+- infer spacing rhythm and corner radius patterns
 
-### 2. Document the Brand Kit
+### 2. Normalize Into Canonical Rules
 
-Produce a concise `BRAND.md` or inline summary with:
+Resolve conflicts into one standard:
+- choose one primary and one secondary family
+- limit color roles (primary, secondary, accent, neutral, status)
+- define spacing scale and component density
+
+### 3. Publish A Single Source Of Truth
+
+Write a concise BRAND.md:
 
 ```markdown
 ## Colors
@@ -50,17 +67,25 @@ Produce a concise `BRAND.md` or inline summary with:
 - Base unit, grid, breakpoints
 ```
 
-### 3. Apply to Output
+### 4. Apply And Enforce
 
-When generating UI or copy:
-- Pull exact hex values — never approximate brand colors
-- Use only documented font families
-- Match the documented voice/tone
-- Flag deviations: if a brand color is inaccessible (contrast < 4.5:1 for body text), note it and suggest an accessible alternative
+- Use exact token names and values, not approximations.
+- Reject ad-hoc colors and undeclared fonts.
+- Match documented tone in copy outputs.
+- If contrast fails, propose corrected alternatives and explain the delta.
 
-## Design Token Export
+## Output Contract
 
-Generate a design-token-compatible JSON when requested:
+Return these sections in order:
+- Brand Summary (3-5 lines)
+- Token Table (colors, type, spacing)
+- Usage Rules (do/don't)
+- Accessibility Notes
+- Optional machine-readable tokens (if requested)
+
+## Token Export (When Requested)
+
+Produce JSON compatible with token pipelines:
 
 ```json
 {
@@ -75,9 +100,10 @@ Generate a design-token-compatible JSON when requested:
 }
 ```
 
-## Best Practices
+## Quality Checklist
 
-- Never invent brand colors — derive or ask
-- Preserve existing brand decisions even if opinionated
-- Accessibility trumps brand only when legal risk exists; otherwise document the tension
-- Keep `BRAND.md` the single source of truth for the session
+- No invented brand values without an explicit assumption block.
+- Typography hierarchy is explicit (display/body/mono or display/body only).
+- Color roles are semantic and non-overlapping.
+- At least one contrast check is documented.
+- BRAND.md remains the authoritative source for the session.

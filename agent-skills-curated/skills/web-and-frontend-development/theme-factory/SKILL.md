@@ -1,39 +1,40 @@
 ---
 name: theme-factory
-description: Generate complete, cohesive UI themes (CSS custom properties, Tailwind config, shadcn/ui theme tokens) from a description, reference image, or brand kit. Use when the user asks to create a theme, generate a color palette, customize Tailwind colors, style shadcn components, or produce a dark/light mode pair. Trigger phrases include "create a theme", "generate a color palette", "tailwind theme", "shadcn theme", "design tokens", "dark mode", "light mode".
+description: Generate production-ready UI themes and token systems for CSS, Tailwind, and shadcn/ui. Use when users ask for a palette, design tokens, dark/light mode mapping, or visual re-theming of an existing app. Trigger phrases include "create a theme", "generate palette", "tailwind theme", "shadcn theme", "design tokens", "dark mode", "light mode", and "re-theme this UI".
 ---
 
 # Theme Factory
 
-Generate production-ready UI themes from any starting point.
+Create coherent themes with explicit semantic mapping and accessibility checks.
+
+## Scope
+
+- In scope: palette creation, semantic token mapping, mode pairing, export snippets.
+- Out of scope: complete product redesign, illustration generation, or logo design.
 
 ## Input Modes
 
-| Input | What to do |
-|-------|------------|
-| Description ("a calm fintech app") | Generate palette from semantic intent |
-| Brand colors (hex values) | Derive full palette via lightness/saturation scaling |
-| Reference image URL | Sample dominant and accent colors |
-| Existing CSS/Tailwind config | Extend or harmonize with existing values |
+- Description ("calm fintech dashboard") -> infer mood and contrast strategy.
+- Brand colors -> derive systematic scales.
+- Reference image -> sample dominant/accent clusters.
+- Existing config -> preserve structure and re-theme safely.
 
 ## Process
 
-### Step 1 — Establish Core Palette
+### 1. Establish Anchor Colors
 
-Pick or derive 5 anchor colors:
+Define anchors:
 - `primary` — main action/brand color
 - `secondary` — supporting action or brand
 - `accent` — highlight, badge, tag
 - `neutral` — backgrounds, borders, text
 - `destructive` — errors, deletions
 
-### Step 2 — Generate Shades
+### 2. Build Scales
 
-For each anchor, produce a 50–950 shade scale (or 9-step 100–900):
-- Lighten by adjusting L in HSL, keeping H/S stable
-- Ensure each step has sufficient contrast from adjacent steps
+For each anchor, produce consistent steps (50-950 or 100-900). Preserve hue identity while varying luminance for usable UI depth.
 
-### Step 3 — Map Semantic Tokens
+### 3. Map Semantic Tokens
 
 ```
 background    → neutral-50 (light) / neutral-950 (dark)
@@ -46,7 +47,7 @@ muted         → neutral-100 (light) / neutral-800 (dark)
 muted-fg      → neutral-500
 ```
 
-### Step 4 — Output Formats
+### 4. Export In Requested Format
 
 **CSS Custom Properties (default)**
 ```css
@@ -64,7 +65,7 @@ muted-fg      → neutral-500
 }
 ```
 
-**Tailwind `theme.extend.colors` (on request)**
+**Tailwind theme.extend.colors (on request)**
 ```js
 colors: {
   primary: {
@@ -75,21 +76,29 @@ colors: {
 }
 ```
 
-**shadcn/ui `globals.css` drop-in (on request)** — produces the full `:root` + `.dark` block compatible with shadcn conventions.
+**shadcn/ui globals.css block (on request)** -> provide :root plus .dark with semantic variables.
+
+## Output Contract
+
+Always return:
+- Theme intent (2-3 lines)
+- Anchor palette with rationale
+- Semantic mapping table
+- Export snippet(s)
+- Accessibility report and any auto-fixes
 
 ## Contrast Validation
 
-After generating, check critical pairs:
+Check at minimum:
 - `foreground` on `background`: ≥ 7:1 (AAA body text)
 - `primary-foreground` on `primary`: ≥ 4.5:1 (AA)
 - Muted text on card: ≥ 3:1 (AA large text minimum)
 
-Report any failures and auto-fix by adjusting lightness.
+If a pair fails, adjust and re-report corrected values.
 
-## Bundled Themes
+## Practical Rules
 
-The `themes/` directory contains ready-to-use starting points:
-- `themes/ocean.css` — cool blues and teals
-- `themes/forest.css` — greens and earthy neutrals
-- `themes/dusk.css` — warm purples and rose
-- `themes/mono.css` — grayscale with single accent
+- Keep hue count controlled; too many primaries reduces coherence.
+- Prefer semantic tokens over raw color references in component code.
+- Preserve existing project conventions when extending a live codebase.
+- Use the `themes/` directory presets only as starting points, not hard constraints.
