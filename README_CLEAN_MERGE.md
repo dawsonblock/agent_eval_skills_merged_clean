@@ -14,14 +14,14 @@ Use this as controlled infrastructure for agent development:
 
 **Validation status:** Pruned smoke release candidate for controlled testing.
 
-**Final clean archive SHA256:** `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+**Final clean archive SHA256:** `2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231`
 
 Applies only to the canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189`
+  - SHA256: `2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c`
+  - SHA256: `959cb033495fa5c04575743bfc6d262a72a6275b3f2dafadace216f80acfb526`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 

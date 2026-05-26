@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-26T07:44:42.762539+00:00",
+  "created_at_utc": "2026-05-26T08:06:48.433835+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "0f587e5cffe59cc7eafa50a5deb5c5679b5471933b8a1ea1bc8cbb1f6ec5ddbe"
+      "sha256": "1e62f10b7a6ca1aeb4935cb79ccc8008779f0ce040f42288ae87e2e07f0d2f13"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "e656f7427697e4b08ecbcfa8ac8282bb400dff536c9a6e3b21d925c09983cd19"
+      "sha256": "cbeb633cf861242b8ffd973f20c578e5d1b33ceb71c85844ebd24ed0d5e04f7e"
     },
     {
       "path": "ToolForge/.bandit",
@@ -2353,15 +2353,15 @@
     },
     {
       "path": "release_artifacts/PUBLISH_MANIFEST_CANONICAL_PAIR.md",
-      "sha256": "603ea3d9ed0c473e7bda13f1ae10761ad42b84109e8e285e56f0b05e61e89f5e"
+      "sha256": "a8714bb838de64e1d5b3501ce23a0c232521270cc4b2676cb5c1c001c3508985"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md",
-      "sha256": "a8c23e5297d04e8d3e63863c0dc6e26a52ce4fbf60a556a5b9f927112280e93f"
+      "sha256": "0ee292d837af67448cfeea01ae4e66d11b5b62dd77f8e7f308a78e94d46ce64b"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "6217504fa12c9d79b8629d524c7ce5ddb7f5c293a4a7670827e1e773d4f7ff2a"
+      "sha256": "438493b922f2d673f772b3e59dd3e5682b016d5581d01fba95801a77a596b952"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
@@ -2369,7 +2369,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
-      "sha256": "4902935536cd095d39a0082f62807cdf5dff8877cc4b6e0b05628ed3fe69f450"
+      "sha256": "34baba82a4891267baa7a0bb4c83c7602650d83b3a8e85de27b53fef520ce9a8"
     },
     {
       "path": "release_artifacts/SKILLFORGE_CANDIDATE_MANIFEST_2026-05-25.json",
@@ -2413,19 +2413,19 @@
     },
     {
       "path": "release_artifacts/toolathlon_artifact_build_summary.json",
-      "sha256": "d8b35c5bd8d9d81c60b6926f4ee5aca7553e7fc26bdb2bb9e80852970fcdbf4d"
+      "sha256": "85a5e115f72a0ffa7d79a13a975f16e64c33032ef4d1466350635d7e3be8f7b8"
     },
     {
       "path": "release_artifacts/toolathlon_mcp_smoke_summary.json",
-      "sha256": "1f356944c0dfe45aca19a4b40a9a52c7ba9fccb66b0f01ae02442665a1cba476"
+      "sha256": "bd3107b3de760bbc30aabb49842e2b6a9f97d34c1a3afe4c9c90e808314e2eaa"
     },
     {
       "path": "release_artifacts/toolathlon_preflight_summary.json",
-      "sha256": "4a869cef3c38d8d87fd0f117a05e21c2425233dae43070b8b4811888b7dcce38"
+      "sha256": "543c0d7d70d4c4837566a3bec714d812262354d7cbf6eb119751f201586cbf66"
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "6e05f489553942d3b329aa102132d5cb6cc6219898e01f88d2f71ad90e6e345b"
+      "sha256": "0fb62ed53c14e474e7e38b259820f3c17ed15e74e30e32fed3cb83e310f8c639"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2437,7 +2437,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "e40afe06b53510ba0a7657312331cc890b62ee1baa5e6d9dde3962c34dac9b02"
+      "sha256": "dfafe4face2f28dd52c7cf5061e613c8ada7349e1712dd1491c8bba91688c691"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
@@ -2473,11 +2473,11 @@
     },
     {
       "path": "scripts/finalize_release_distribution.sh",
-      "sha256": "38cac4c122c9b0eb0ae306775ea6822c9bfc226f14083b97b60f1de06fbfd6d9"
+      "sha256": "a6f0d55d21aeacf8fe2747a152a87b7774be0c737d255881355c6d1a4bd7fda5"
     },
     {
       "path": "scripts/generate_publish_manifest.sh",
-      "sha256": "d5ba81d3d84100ae6f8db4b5c3d1c9ce8c91632579e4735618634500d91e918a"
+      "sha256": "9a1b5a45ceed173ef97a83b0c02ebb1e25c7b54a8498cbfd7636ec8cf4125f3e"
     },
     {
       "path": "scripts/generate_release_manifest.py",
@@ -2505,7 +2505,7 @@
     },
     {
       "path": "scripts/prove_smoke_release.sh",
-      "sha256": "811c758a822b2e4f127ec9755928b1d118f38b833c8dc28186211ae3a62d2139"
+      "sha256": "16ad8fe38a54570213aed3fb3453927463a454034b245a86f430036031a15a12"
     },
     {
       "path": "scripts/release_forbidden_entries.sh",
@@ -2514,6 +2514,10 @@
     {
       "path": "scripts/run_with_timeout.py",
       "sha256": "fda430453f13ecd75ed74a35e5d15ac7a05cd103a2f6fb10643445171a849833"
+    },
+    {
+      "path": "scripts/sanitize_release_paths.py",
+      "sha256": "15a6c21d256e87239b30e0c8bb2c410f91e567a45c799abebd3bc96ded7fa6c9"
     },
     {
       "path": "scripts/validate_full_workspace.sh",

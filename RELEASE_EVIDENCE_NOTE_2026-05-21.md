@@ -121,7 +121,7 @@ bash scripts/create_release_zip.sh --output agent_eval_skills_merged_clean-prune
 Source archive: [agent_eval_skills_merged_clean-pruned-smoke.zip](agent_eval_skills_merged_clean-pruned-smoke.zip)
 
 - Forbidden-entry scan: no matches for __MACOSX, /._, .DS_Store, node_modules, .validation_logs, __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .venv
-- SHA256: 74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189
+- SHA256: 2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231
 
 ## Scope Statement
 

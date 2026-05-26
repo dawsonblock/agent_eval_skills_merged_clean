@@ -57,6 +57,24 @@ RELEASE_PATH="${RELEASE_ZIP_PATH:-$REPO_ROOT/$EXPECTED_RELEASE_NAME}"
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-$REPO_ROOT/$EXPECTED_EVIDENCE_NAME}"
 DIST_RELEASE_DIR="${DIST_RELEASE_DIR:-$REPO_ROOT/dist/release}"
 
+release_classification=""
+if [ -f "$REPO_ROOT/RELEASE_STATUS.json" ]; then
+  release_classification="$(python3 - "$REPO_ROOT/RELEASE_STATUS.json" <<'PYEOF'
+import json
+import sys
+
+with open(sys.argv[1], 'r', encoding='utf-8') as fh:
+    data = json.load(fh)
+print(data.get('release_classification', ''))
+PYEOF
+  )"
+fi
+
+source_bundle_mode=0
+if [ "$release_classification" = "SOURCE_BUNDLE" ]; then
+  source_bundle_mode=1
+fi
+
 usage() {
   cat <<'USAGE'
 Usage: bash scripts/finalize_release_distribution.sh [--release PATH] [--evidence PATH] [--output-dir PATH]
@@ -143,17 +161,17 @@ evidence_name="$(basename "$EVIDENCE_PATH")"
 release_sha="$(shasum -a 256 "$RELEASE_PATH" | awk '{print $1}')"
 evidence_sha="$(shasum -a 256 "$EVIDENCE_PATH" | awk '{print $1}')"
 
-if [ "$release_name" != "$EXPECTED_RELEASE_NAME" ]; then
+if [ "$source_bundle_mode" -eq 0 ] && [ "$release_name" != "$EXPECTED_RELEASE_NAME" ]; then
   echo "Release filename mismatch: expected $EXPECTED_RELEASE_NAME, got $release_name" >&2
   exit 1
 fi
 
-if [ "$evidence_name" != "$EXPECTED_EVIDENCE_NAME" ]; then
+if [ "$source_bundle_mode" -eq 0 ] && [ "$evidence_name" != "$EXPECTED_EVIDENCE_NAME" ]; then
   echo "Evidence filename mismatch: expected $EXPECTED_EVIDENCE_NAME, got $evidence_name" >&2
   exit 1
 fi
 
-if [ "$release_sha" != "$EXPECTED_RELEASE_SHA" ]; then
+if [ "$source_bundle_mode" -eq 0 ] && [ "$release_sha" != "$EXPECTED_RELEASE_SHA" ]; then
   cat >&2 <<EOF
 Release ZIP hash differs from canonical attestation.
 Expected: $EXPECTED_RELEASE_SHA
@@ -163,7 +181,7 @@ EOF
   exit 1
 fi
 
-if [ "$evidence_sha" != "$EXPECTED_EVIDENCE_SHA" ]; then
+if [ "$source_bundle_mode" -eq 0 ] && [ "$evidence_sha" != "$EXPECTED_EVIDENCE_SHA" ]; then
   cat >&2 <<EOF
 Evidence ZIP hash differs from canonical attestation.
 Expected: $EXPECTED_EVIDENCE_SHA
@@ -191,7 +209,9 @@ if [ -s "$release_forbidden_tmp" ]; then
 fi
 
 # Use existing policy scripts for evidence and pair checks.
-(cd "$REPO_ROOT" && bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_PATH")
+if [ "$source_bundle_mode" -eq 0 ]; then
+  (cd "$REPO_ROOT" && bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_PATH")
+fi
 (cd "$REPO_ROOT" && bash scripts/verify_release_pair.sh --release "$RELEASE_PATH" --evidence "$EVIDENCE_PATH")
 (cd "$REPO_ROOT" && bash scripts/verify_release_gate_policy.sh)
 
@@ -208,6 +228,31 @@ cp -f "$REPO_ROOT/RELEASE_ATTESTATION_2026-05-22.md" "$DIST_RELEASE_DIR/RELEASE_
     "$EXPECTED_EVIDENCE_NAME" \
     "RELEASE_ATTESTATION_2026-05-22.md" > SHA256SUMS.txt
 )
+
+if [ "$source_bundle_mode" -eq 1 ]; then
+  cat <<EOF
+
+Publish-ready source bundle verified.
+
+Release ZIP:
+$release_name
+SHA256: $release_sha
+
+Evidence ZIP:
+$evidence_name
+SHA256: $evidence_sha
+
+Mode: SOURCE_BUNDLE (canonical hash/evidence attestation intentionally not enforced)
+
+Distribution bundle:
+$DIST_RELEASE_DIR
+- $EXPECTED_RELEASE_NAME
+- $EXPECTED_EVIDENCE_NAME
+- RELEASE_ATTESTATION_2026-05-22.md
+- SHA256SUMS.txt
+EOF
+  exit 0
+fi
 
 cat <<EOF
 

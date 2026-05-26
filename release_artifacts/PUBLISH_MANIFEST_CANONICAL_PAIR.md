@@ -1,6 +1,6 @@
 # Publish Manifest: Canonical Attested Pair
 
-Generated UTC: 2026-05-24T20:30:36Z
+Generated UTC: 2026-05-26T08:06:01Z
 
 ## Classification
 
@@ -10,11 +10,11 @@ agent_eval_skills_merged_clean - pruned smoke release candidate for controlled t
 
 Release ZIP:
 - Name: agent_eval_skills_merged_clean-pruned-smoke.zip
-- SHA256: 74b34edf25141c8f96bbf03975ed8e6675dd3f574d962be2921278295544b189
+- SHA256: 2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231
 
 Evidence ZIP:
 - Name: agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
-- SHA256: 5d2e43a0d6e961f99209fab0c55e3c11c5795228200974315f44bdb5e608426c
+- SHA256: 933725a1775ad4ab50564f12cdbf0e4c6372e98b30f84fba66004000d610f661
 
 ## Scope Boundary
 

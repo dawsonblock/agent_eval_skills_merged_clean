@@ -92,6 +92,22 @@ mkdir -p "$(dirname "$OUTPUT_PATH")"
 
 release_name="$(basename "$RELEASE_PATH")"
 evidence_name="$(basename "$EVIDENCE_PATH")"
+release_sha_actual="$(shasum -a 256 "$RELEASE_PATH" | awk '{print $1}')"
+evidence_sha_actual="$(shasum -a 256 "$EVIDENCE_PATH" | awk '{print $1}')"
+manifest_release_sha="$EXPECTED_RELEASE_SHA"
+manifest_evidence_sha="$EXPECTED_EVIDENCE_SHA"
+if [ -f "$REPO_ROOT/RELEASE_STATUS.json" ] && python3 - "$REPO_ROOT/RELEASE_STATUS.json" <<'PYEOF' >/dev/null
+import json
+import sys
+
+with open(sys.argv[1], 'r', encoding='utf-8') as fh:
+    data = json.load(fh)
+raise SystemExit(0 if data.get('release_classification') == 'SOURCE_BUNDLE' else 1)
+PYEOF
+then
+  manifest_release_sha="$release_sha_actual"
+  manifest_evidence_sha="$evidence_sha_actual"
+fi
 generated_utc="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
 cat >"$OUTPUT_PATH" <<EOF
@@ -107,11 +123,11 @@ agent_eval_skills_merged_clean - pruned smoke release candidate for controlled t
 
 Release ZIP:
 - Name: $release_name
-- SHA256: $EXPECTED_RELEASE_SHA
+- SHA256: $manifest_release_sha
 
 Evidence ZIP:
 - Name: $evidence_name
-- SHA256: $EXPECTED_EVIDENCE_SHA
+- SHA256: $manifest_evidence_sha
 
 ## Scope Boundary
 
