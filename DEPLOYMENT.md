@@ -9,9 +9,9 @@ Current smoke release-candidate archive SHA256: `2918ecd852deae6fa49dee983d39d98
 Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-   - SHA256: `2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231`
+  - SHA256: `2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-   - SHA256: `959cb033495fa5c04575743bfc6d262a72a6275b3f2dafadace216f80acfb526`
+  - SHA256: `933725a1775ad4ab50564f12cdbf0e4c6372e98b30f84fba66004000d610f661`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 

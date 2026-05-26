@@ -3,7 +3,7 @@
   "release_classification": "SOURCE_BUNDLE",
   "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
   "canonical_release_sha256": "2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231",
-  "uploaded_archive_sha256": "0bec45846f232bf1550a74bda59407af5811ce1a360f1150ed5a9c3b65fe877d",
+  "uploaded_archive_sha256": "46f237ecd30c20ab5b3b409956249ea5e0e5486c20e494768fbffff841d98894",
   "toolathlon_profile": "smoke",
   "full_profile_validated": false,
   "production_claim_allowed": false,

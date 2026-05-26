@@ -12,7 +12,7 @@
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
   "release_zip_sha256": "2918ecd852deae6fa49dee983d39d9882db175d8817eed42a5162c6e4c8fd231",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
-  "evidence_zip_sha256": "959cb033495fa5c04575743bfc6d262a72a6275b3f2dafadace216f80acfb526",
+  "evidence_zip_sha256": "933725a1775ad4ab50564f12cdbf0e4c6372e98b30f84fba66004000d610f661",
   "validated_scope": [
     "ToolForge",
     "Agent Skills",
