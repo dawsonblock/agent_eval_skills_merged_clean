@@ -16,6 +16,7 @@ const chatMode = document.getElementById("chatMode");
 const chatInput = document.getElementById("chatInput");
 const apiKeyStatus = document.getElementById("apiKeyStatus");
 const apiKeyInput = document.getElementById("apiKeyInput");
+const toggleApiKeyBtn = document.getElementById("toggleApiKey");
 
 async function request(path, options = {}) {
   const response = await fetch(path, {
@@ -70,9 +71,27 @@ async function saveApiKey() {
     } else {
       addMessage("tool_result", "API key cleared");
     }
+
+    // Always return to hidden mode after save/clear for shoulder-surfing safety.
+    apiKeyInput.type = "password";
+    toggleApiKeyBtn.textContent = "Show";
+    toggleApiKeyBtn.setAttribute("aria-pressed", "false");
+
     await loadHealth();
   } catch (error) {
     addMessage("validation_error", error.message);
+  }
+}
+
+function toggleApiKeyVisibility() {
+  if (apiKeyInput.type === "password") {
+    apiKeyInput.type = "text";
+    toggleApiKeyBtn.textContent = "Hide";
+    toggleApiKeyBtn.setAttribute("aria-pressed", "true");
+  } else {
+    apiKeyInput.type = "password";
+    toggleApiKeyBtn.textContent = "Show";
+    toggleApiKeyBtn.setAttribute("aria-pressed", "false");
   }
 }
 
@@ -295,6 +314,7 @@ document.getElementById("validateTool").addEventListener("click", validateTool);
 document.getElementById("runTool").addEventListener("click", runTool);
 document.getElementById("openOutput").addEventListener("click", openOutputFolder);
 document.getElementById("saveApiKey").addEventListener("click", saveApiKey);
+document.getElementById("toggleApiKey").addEventListener("click", toggleApiKeyVisibility);
 
 chatMode.addEventListener("change", () => {
   if (chatMode.value === "tool_builder") {
