@@ -154,3 +154,224 @@ def test_validate_tool_request_requires_required_arg(tmp_path: Path) -> None:
 
     assert result["allowed"] is False
     assert any("Missing required argument" in msg for msg in result["errors"])
+
+
+def test_validate_tool_request_enforces_enum_and_length(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    entrypoint, working_dir = _write_dummy_tool(tmp_path, slug="enum-tool")
+
+    spec_path = tmp_path / "tools" / "generated" / "enum-tool" / "toolforge.yaml"
+    spec_path.write_text(
+        "name: enum-tool\n"
+        "slug: enum-tool\n"
+        "description: Enum test tool\n"
+        "language: python\n"
+        "entry_point: tool.py\n"
+        "parameters:\n"
+        "  - name: mode\n"
+        "    type: string\n"
+        "    description: Mode\n"
+        "    required: true\n"
+        "    enum: [safe, fast]\n"
+        "  - name: request\n"
+        "    type: string\n"
+        "    description: Request text\n"
+        "    required: true\n"
+        "    min_length: 3\n"
+        "    max_length: 8\n"
+        "output:\n"
+        "  type: object\n"
+        "  description: Demo output\n"
+        "security:\n"
+        "  required_capabilities: [read_files]\n"
+        "  requires_network: false\n"
+        "  requires_shell: false\n"
+        "  requires_filesystem: true\n"
+        "  allowed_read_paths: ['./**']\n"
+        "  allowed_write_paths: ['./generated_tools/_outputs/**']\n"
+        "sandbox_level: 2\n",
+        encoding="utf-8",
+    )
+
+    adapter.registry.register_tool(
+        {
+            "name": "enum-tool",
+            "type": "python",
+            "entrypoint": entrypoint,
+            "working_dir": working_dir,
+            "description": "enum",
+            "permissions": ["read_files"],
+            "risk_level": "low",
+            "validated": True,
+            "mcp_server": None,
+        }
+    )
+
+    result = adapter.validate_tool_request(
+        "enum-tool",
+        {"mode": "unsafe", "request": "ok"},
+    )
+
+    assert result["allowed"] is False
+    assert any("must be one of" in msg for msg in result["errors"])
+    assert any("length must be >=" in msg for msg in result["errors"])
+
+
+def test_validate_tool_request_enforces_numeric_bounds(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    entrypoint, working_dir = _write_dummy_tool(tmp_path, slug="bounds-tool")
+
+    spec_path = tmp_path / "tools" / "generated" / "bounds-tool" / "toolforge.yaml"
+    spec_path.write_text(
+        "name: bounds-tool\n"
+        "slug: bounds-tool\n"
+        "description: Bounds test tool\n"
+        "language: python\n"
+        "entry_point: tool.py\n"
+        "parameters:\n"
+        "  - name: score\n"
+        "    type: number\n"
+        "    description: Score\n"
+        "    required: true\n"
+        "    minimum: 0\n"
+        "    maximum: 1\n"
+        "output:\n"
+        "  type: object\n"
+        "  description: Demo output\n"
+        "security:\n"
+        "  required_capabilities: [read_files]\n"
+        "  requires_network: false\n"
+        "  requires_shell: false\n"
+        "  requires_filesystem: true\n"
+        "  allowed_read_paths: ['./**']\n"
+        "  allowed_write_paths: ['./generated_tools/_outputs/**']\n"
+        "sandbox_level: 2\n",
+        encoding="utf-8",
+    )
+
+    adapter.registry.register_tool(
+        {
+            "name": "bounds-tool",
+            "type": "python",
+            "entrypoint": entrypoint,
+            "working_dir": working_dir,
+            "description": "bounds",
+            "permissions": ["read_files"],
+            "risk_level": "low",
+            "validated": True,
+            "mcp_server": None,
+        }
+    )
+
+    result = adapter.validate_tool_request("bounds-tool", {"score": 2})
+
+    assert result["allowed"] is False
+    assert any("must be <=" in msg for msg in result["errors"])
+
+
+def test_validate_tool_request_enforces_array_item_bounds(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    entrypoint, working_dir = _write_dummy_tool(tmp_path, slug="array-tool")
+
+    spec_path = tmp_path / "tools" / "generated" / "array-tool" / "toolforge.yaml"
+    spec_path.write_text(
+        "name: array-tool\n"
+        "slug: array-tool\n"
+        "description: Array bounds test tool\n"
+        "language: python\n"
+        "entry_point: tool.py\n"
+        "parameters:\n"
+        "  - name: items\n"
+        "    type: array\n"
+        "    description: Values\n"
+        "    required: true\n"
+        "    min_items: 2\n"
+        "    max_items: 3\n"
+        "output:\n"
+        "  type: object\n"
+        "  description: Demo output\n"
+        "security:\n"
+        "  required_capabilities: [read_files]\n"
+        "  requires_network: false\n"
+        "  requires_shell: false\n"
+        "  requires_filesystem: true\n"
+        "  allowed_read_paths: ['./**']\n"
+        "  allowed_write_paths: ['./generated_tools/_outputs/**']\n"
+        "sandbox_level: 2\n",
+        encoding="utf-8",
+    )
+
+    adapter.registry.register_tool(
+        {
+            "name": "array-tool",
+            "type": "python",
+            "entrypoint": entrypoint,
+            "working_dir": working_dir,
+            "description": "array",
+            "permissions": ["read_files"],
+            "risk_level": "low",
+            "validated": True,
+            "mcp_server": None,
+        }
+    )
+
+    result = adapter.validate_tool_request("array-tool", {"items": [1]})
+    assert result["allowed"] is False
+    assert any("item count must be >=" in msg for msg in result["errors"])
+
+    result = adapter.validate_tool_request("array-tool", {"items": [1, 2, 3, 4]})
+    assert result["allowed"] is False
+    assert any("item count must be <=" in msg for msg in result["errors"])
+
+
+def test_validate_tool_request_enforces_object_required_keys(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    entrypoint, working_dir = _write_dummy_tool(tmp_path, slug="object-tool")
+
+    spec_path = tmp_path / "tools" / "generated" / "object-tool" / "toolforge.yaml"
+    spec_path.write_text(
+        "name: object-tool\n"
+        "slug: object-tool\n"
+        "description: Object required keys test tool\n"
+        "language: python\n"
+        "entry_point: tool.py\n"
+        "parameters:\n"
+        "  - name: config\n"
+        "    type: object\n"
+        "    description: Config object\n"
+        "    required: true\n"
+        "    required_keys: [mode, path]\n"
+        "output:\n"
+        "  type: object\n"
+        "  description: Demo output\n"
+        "security:\n"
+        "  required_capabilities: [read_files]\n"
+        "  requires_network: false\n"
+        "  requires_shell: false\n"
+        "  requires_filesystem: true\n"
+        "  allowed_read_paths: ['./**']\n"
+        "  allowed_write_paths: ['./generated_tools/_outputs/**']\n"
+        "sandbox_level: 2\n",
+        encoding="utf-8",
+    )
+
+    adapter.registry.register_tool(
+        {
+            "name": "object-tool",
+            "type": "python",
+            "entrypoint": entrypoint,
+            "working_dir": working_dir,
+            "description": "object",
+            "permissions": ["read_files"],
+            "risk_level": "low",
+            "validated": True,
+            "mcp_server": None,
+        }
+    )
+
+    result = adapter.validate_tool_request(
+        "object-tool",
+        {"config": {"mode": "safe"}},
+    )
+    assert result["allowed"] is False
+    assert any("missing required keys" in msg for msg in result["errors"])

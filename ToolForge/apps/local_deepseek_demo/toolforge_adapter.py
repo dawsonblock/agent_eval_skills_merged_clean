@@ -12,6 +12,7 @@ from packages.runners.tool_runner import run_tool
 from packages.validators.schema_validator import validate_yaml_file
 from skillforge_ai.planner import SkillPlanner
 from skillforge_ai.tool_registry import SkillForgeRegistry
+from skillforge_ai.yaml_utils import load_yaml
 
 
 BLOCKED_PATH_FRAGMENTS = (
@@ -493,7 +494,54 @@ class ToolForgeAdapter:
                 "minimum": param.minimum,
                 "maximum": param.maximum,
             }
+
+        # Optional extended constraints can be present in raw YAML parameter metadata.
+        # We support them here without requiring ToolSpec schema expansion.
+        raw_constraints = self._raw_parameter_constraints_for_tool(spec_path)
+        for name, extras in raw_constraints.items():
+            schema.setdefault(name, {}).update(extras)
+
         return schema
+
+    def _raw_parameter_constraints_for_tool(
+        self,
+        spec_path: Path,
+    ) -> dict[str, dict[str, Any]]:
+        try:
+            payload = load_yaml(spec_path)
+        except Exception:
+            return {}
+        if not isinstance(payload, dict):
+            return {}
+
+        params = payload.get("parameters")
+        if not isinstance(params, list):
+            return {}
+
+        out: dict[str, dict[str, Any]] = {}
+        for item in params:
+            if not isinstance(item, dict):
+                continue
+            name = item.get("name")
+            if not isinstance(name, str) or not name.strip():
+                continue
+
+            extras: dict[str, Any] = {}
+            if isinstance(item.get("min_items"), int):
+                extras["min_items"] = item["min_items"]
+            if isinstance(item.get("max_items"), int):
+                extras["max_items"] = item["max_items"]
+
+            required_keys = item.get("required_keys")
+            if isinstance(required_keys, list) and all(
+                isinstance(k, str) for k in required_keys
+            ):
+                extras["required_keys"] = required_keys
+
+            if extras:
+                out[name] = extras
+
+        return out
 
     def _resolve_tool_spec_path(self, tool: dict[str, Any]) -> Path | None:
         working_dir = str(tool.get("working_dir") or "").strip()
@@ -573,6 +621,28 @@ class ToolForgeAdapter:
                 if isinstance(maximum, (int, float)) and value > maximum:
                     errors.append(
                         f"Argument {key!r} must be <= {maximum}, got {value}."
+                    )
+
+            min_items = meta.get("min_items")
+            max_items = meta.get("max_items")
+            if isinstance(value, list):
+                if isinstance(min_items, int) and len(value) < min_items:
+                    errors.append(
+                        f"Argument {key!r} item count must be >= {min_items}, "
+                        f"got {len(value)}."
+                    )
+                if isinstance(max_items, int) and len(value) > max_items:
+                    errors.append(
+                        f"Argument {key!r} item count must be <= {max_items}, "
+                        f"got {len(value)}."
+                    )
+
+            required_keys = meta.get("required_keys")
+            if isinstance(value, dict) and isinstance(required_keys, list):
+                missing_keys = [k for k in required_keys if k not in value]
+                if missing_keys:
+                    errors.append(
+                        f"Argument {key!r} missing required keys: {missing_keys!r}."
                     )
 
         return errors
