@@ -3,14 +3,14 @@
 **Date:** May 23, 2026  
 **Scope:** agent_eval_skills_merged_clean  
 **Classification:** Pruned smoke release candidate for controlled testing.
-**Final clean archive SHA256:** `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe`
+**Final clean archive SHA256:** `ab34ebeebaf35992d0b4502e82719b151808a9d206a7814cb427303f01c27c07`
 
 Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe`
+  - SHA256: `ab34ebeebaf35992d0b4502e82719b151808a9d206a7814cb427303f01c27c07`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `51ca3e39159337646546a215e7babf3507cab207ae2b947679aabe685380c20b`
+  - SHA256: `2494385bb8e52ee9f160486a8f82798e3ffc66f3ee29c5c80da15c90fee5e5ba`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 

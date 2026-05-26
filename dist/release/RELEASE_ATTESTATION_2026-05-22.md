@@ -9,21 +9,21 @@ Commit: cd757b1
 
 1. Release archive
    - Filename: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-   - SHA256: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe`
+   - SHA256: `ab34ebeebaf35992d0b4502e82719b151808a9d206a7814cb427303f01c27c07`
 
 2. Evidence bundle
    - Filename: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-   - SHA256: `51ca3e39159337646546a215e7babf3507cab207ae2b947679aabe685380c20b`
+   - SHA256: `2494385bb8e52ee9f160486a8f82798e3ffc66f3ee29c5c80da15c90fee5e5ba`
 
 ## Source Of Truth
 
 - Manifest: `RELEASE_EVIDENCE_MANIFEST_2026-05-22.json`
    - `release_zip`: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-   - `release_zip_sha256`: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe`
+   - `release_zip_sha256`: `ab34ebeebaf35992d0b4502e82719b151808a9d206a7814cb427303f01c27c07`
    - `evidence_zip`: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-   - `evidence_zip_sha256`: `51ca3e39159337646546a215e7babf3507cab207ae2b947679aabe685380c20b`
+   - `evidence_zip_sha256`: `2494385bb8e52ee9f160486a8f82798e3ffc66f3ee29c5c80da15c90fee5e5ba`
   - `archive.path`: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - `archive_sha256`: `a8eddb53a95a9bc1a0daa1fe04419d121faef51f80305bd3a55132badaefddbe`
+  - `archive_sha256`: `ab34ebeebaf35992d0b4502e82719b151808a9d206a7814cb427303f01c27c07`
   - `status_policy.current_label`: `Pruned smoke release candidate for controlled testing`
 
 ## Acceptance Rule
