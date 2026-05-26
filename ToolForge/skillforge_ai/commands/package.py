@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import json
 import shutil
 import zipfile
 from pathlib import Path
@@ -11,6 +12,36 @@ from skillforge_ai.evidence_logger import EvidenceLogger
 from skillforge_ai.package_manager import PackageManager
 from skillforge_ai.skill_registry import SkillRegistry
 from skillforge_ai.tool_registry import SkillForgeRegistry
+
+
+def _write_provenance(
+    workspace_root: Path,
+    slug: str,
+    package_path: Path,
+    sha256: str,
+    packaging_mode: str,
+) -> Path:
+    provenance_dir = workspace_root / ".skillforge" / "provenance"
+    provenance_dir.mkdir(parents=True, exist_ok=True)
+    provenance_path = provenance_dir / "toolforge_provenance.json"
+    payload = {
+        "schema_version": "1.0",
+        "generated_at_utc": datetime.datetime.now(
+            datetime.timezone.utc
+        ).isoformat(),
+        "skill": slug,
+        "workspace_root": str(workspace_root),
+        "packaging_mode": packaging_mode,
+        "package": {
+            "path": str(package_path),
+            "sha256": sha256,
+        },
+    }
+    provenance_path.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return provenance_path
 
 
 def run_package(
@@ -48,6 +79,13 @@ def run_package(
         reg.upsert(entry)
 
         SkillForgeRegistry(workspace_root).mark_packaged(slug)
+        provenance_path = _write_provenance(
+            workspace_root=workspace_root,
+            slug=slug,
+            package_path=package_path,
+            sha256=sha256,
+            packaging_mode="skill_layout",
+        )
         evidence.log_package(slug, package_path)
         evidence.write_minimum_artifacts(
             run_payload={
@@ -56,8 +94,9 @@ def run_package(
                 "status": "passed",
                 "package_path": str(package_path),
                 "sha256": sha256,
+                "provenance_path": str(provenance_path),
             },
-            files_changed=[str(package_path)],
+            files_changed=[str(package_path), str(provenance_path)],
             validation_payload={
                 "skill": slug,
                 "status": "passed",
@@ -86,6 +125,13 @@ def run_package(
 
     SkillForgeRegistry(workspace_root).mark_packaged(slug)
     sha256 = _sha256(output)
+    provenance_path = _write_provenance(
+        workspace_root=workspace_root,
+        slug=slug,
+        package_path=output,
+        sha256=sha256,
+        packaging_mode="tool_archive",
+    )
 
     reg = SkillRegistry(workspace_root)
     entry = reg.get(slug) or {"name": slug}
@@ -105,8 +151,9 @@ def run_package(
             "status": "passed",
             "package_path": str(output),
             "sha256": sha256,
+            "provenance_path": str(provenance_path),
         },
-        files_changed=[str(output)],
+        files_changed=[str(output), str(provenance_path)],
         validation_payload={
             "skill": slug,
             "status": "passed",

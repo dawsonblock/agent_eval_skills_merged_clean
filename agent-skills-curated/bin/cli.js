@@ -23,6 +23,7 @@ const crypto = require("crypto");
 const REPO_URL = "https://github.com/eigent-ai/agent-skills.git";
 const LOCK_FILE = ".eigent-skills.lock.json";
 const SKILLS_DIR_NAME = "skills";
+const QUALITY_POLICY_FILE = "quality_exceptions.json";
 
 // ── Agent definitions ────────────────────────────────────────────────────────
 
@@ -205,6 +206,88 @@ function parseSkillMeta(skillMdPath) {
     if (m) meta[m[1]] = m[2].trim();
   }
   return meta;
+}
+
+function loadQualityPolicy() {
+  const defaults = {
+    minQualityScore: 70,
+    warningQualityScore: 85,
+  };
+  const policy = {
+    defaults,
+    exceptions: {},
+  };
+
+  const policyPath = path.join(__dirname, "..", QUALITY_POLICY_FILE);
+  if (!fileExists(policyPath)) return policy;
+
+  try {
+    const raw = JSON.parse(fs.readFileSync(policyPath, "utf-8"));
+    const min = Number(raw?.defaults?.min_quality_score);
+    const warn = Number(raw?.defaults?.warning_quality_score);
+    if (Number.isFinite(min)) policy.defaults.minQualityScore = min;
+    if (Number.isFinite(warn)) policy.defaults.warningQualityScore = warn;
+
+    if (raw?.exceptions && typeof raw.exceptions === "object") {
+      for (const [skillKey, cfg] of Object.entries(raw.exceptions)) {
+        const cfgObj = cfg && typeof cfg === "object" ? cfg : {};
+        const eMin = Number(cfgObj.min_quality_score);
+        const eWarn = Number(cfgObj.warning_quality_score);
+        policy.exceptions[skillKey] = {
+          minQualityScore: Number.isFinite(eMin)
+            ? eMin
+            : policy.defaults.minQualityScore,
+          warningQualityScore: Number.isFinite(eWarn)
+            ? eWarn
+            : policy.defaults.warningQualityScore,
+          reason: typeof cfgObj.reason === "string" ? cfgObj.reason : null,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn(`  Warning: failed to parse ${QUALITY_POLICY_FILE}: ${err.message}`);
+  }
+
+  return policy;
+}
+
+function resolveQualityThresholds(policy, category, skill) {
+  const key = `${category}/${skill}`;
+  const exception = policy.exceptions[key] || null;
+  return {
+    minQualityScore: exception?.minQualityScore ?? policy.defaults.minQualityScore,
+    warningQualityScore: exception?.warningQualityScore ?? policy.defaults.warningQualityScore,
+    exceptionReason: exception?.reason ?? null,
+    exceptionKey: exception ? key : null,
+  };
+}
+
+function evaluateQualityGate(score, thresholds) {
+  if (score == null || !Number.isFinite(score)) {
+    return {
+      status: "unscored",
+      message: "No quality score available",
+    };
+  }
+
+  if (score < thresholds.minQualityScore) {
+    return {
+      status: "fail",
+      message: `Quality ${score}/100 is below minimum ${thresholds.minQualityScore}/100`,
+    };
+  }
+
+  if (score < thresholds.warningQualityScore) {
+    return {
+      status: "warn",
+      message: `Quality ${score}/100 is below warning threshold ${thresholds.warningQualityScore}/100`,
+    };
+  }
+
+  return {
+    status: "pass",
+    message: `Quality ${score}/100 meets thresholds`,
+  };
 }
 
 // ── Remote fetch (for auto-update) ──────────────────────────────────────────
@@ -574,7 +657,7 @@ function printHelp() {
     uninstall     Remove installed Eigent skills (all or specific)
     list          List available skills in this package
     status        Show installation status per agent
-    eval          Run structural checks and show quality scores
+    eval          Run structural checks and enforce quality score thresholds
     auto-update   Show instructions for scheduled auto-updates
     doctor        Check agent detection and installation health
 
@@ -621,6 +704,7 @@ function doctor() {
 
 function runEval(skillsRoot, args) {
   const { scoreSkill, loadScores } = require(path.join(__dirname, "..", "evals", "scorer"));
+  const qualityPolicy = loadQualityPolicy();
 
   const allSkills = discoverSkills(skillsRoot);
 
@@ -644,6 +728,15 @@ function runEval(skillsRoot, args) {
 
   for (const skill of targets) {
     const result = scoreSkill(skill.path);
+    const qualityScore = result.existingScores?.qualityScore;
+    const thresholds = resolveQualityThresholds(qualityPolicy, result.category, result.skill);
+    const qualityGate = evaluateQualityGate(qualityScore, thresholds);
+    result.qualityGate = {
+      ...qualityGate,
+      ...thresholds,
+      qualityScore: qualityScore ?? null,
+    };
+
     results.push(result);
 
     if (!args.json) {
@@ -665,6 +758,23 @@ function runEval(skillsRoot, args) {
           console.log(`         [${sev}] ${c.name}: ${c.message}`);
         }
       }
+
+      if (result.structural.overallPassed) {
+        if (qualityGate.status === "fail") {
+          console.log(`         [ERR] Quality gate: ${qualityGate.message}`);
+        } else if (qualityGate.status === "warn") {
+          console.log(`         [WRN] Quality gate: ${qualityGate.message}`);
+        }
+
+        if (thresholds.exceptionKey) {
+          const reasonSuffix = thresholds.exceptionReason
+            ? ` (${thresholds.exceptionReason})`
+            : "";
+          console.log(
+            `         [INF] Exception applied: ${thresholds.exceptionKey} -> min ${thresholds.minQualityScore}, warn ${thresholds.warningQualityScore}${reasonSuffix}`
+          );
+        }
+      }
     }
   }
 
@@ -674,11 +784,20 @@ function runEval(skillsRoot, args) {
     // Summary
     const passed = results.filter((r) => r.structural.overallPassed).length;
     const scored = results.filter((r) => r.existingScores?.qualityScore != null);
+    const qualityFails = results.filter(
+      (r) => r.structural.overallPassed && r.qualityGate?.status === "fail"
+    );
+    const qualityWarns = results.filter(
+      (r) => r.structural.overallPassed && r.qualityGate?.status === "warn"
+    );
     console.log(`\n  Structural: ${passed}/${results.length} passed`);
     if (scored.length > 0) {
       const avg = Math.round(scored.reduce((s, r) => s + r.existingScores.qualityScore, 0) / scored.length);
       console.log(`  Avg quality: ${avg}/100 (${scored.length} with scores)`);
     }
+    console.log(
+      `  Quality gates: ${results.length - qualityFails.length - qualityWarns.length} pass, ${qualityWarns.length} warn, ${qualityFails.length} fail`
+    );
     const unscored = results.filter((r) => r.structural.overallPassed && !r.existingScores);
     if (unscored.length > 0) {
       console.log(`  Unscored: ${unscored.length} skill(s) need LLM evaluation`);
@@ -687,7 +806,10 @@ function runEval(skillsRoot, args) {
 
   console.log();
   const hasErrors = results.some((r) => !r.structural.overallPassed);
-  process.exit(hasErrors ? 1 : 0);
+  const hasQualityGateFailures = results.some(
+    (r) => r.structural.overallPassed && r.qualityGate?.status === "fail"
+  );
+  process.exit(hasErrors || hasQualityGateFailures ? 1 : 0);
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────

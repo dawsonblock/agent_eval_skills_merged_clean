@@ -26,7 +26,10 @@ def _make_skill_layout(tmp_path: Path, slug: str) -> Path:
     (skill_dir / "metadata.json").write_text("{}\n", encoding="utf-8")
     (skill_dir / "validation_report.json").write_text("{}\n", encoding="utf-8")
     (skill_dir / "tool" / "main.py").write_text("print('ok')\n", encoding="utf-8")
-    (skill_dir / "tests" / "test_basic.py").write_text("def test_basic():\n    assert True\n", encoding="utf-8")
+    (skill_dir / "tests" / "test_basic.py").write_text(
+        "def test_basic():\n    assert True\n",
+        encoding="utf-8",
+    )
     (skill_dir / "examples" / "sample.csv").write_text("a,b\n1,2\n", encoding="utf-8")
     return skill_dir
 
@@ -46,6 +49,13 @@ def test_run_package_records_hash_in_skill_registry(tmp_path: Path):
     assert entry["package_hash"] == sha
     assert entry["status"] == "packaged"
 
+    provenance_path = tmp_path / ".skillforge" / "provenance" / "toolforge_provenance.json"
+    assert provenance_path.exists()
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    assert provenance["skill"] == slug
+    assert provenance["packaging_mode"] == "tool_archive"
+    assert provenance["package"]["sha256"] == sha
+
 
 def test_run_package_prefers_skill_layout_package_dir(tmp_path: Path):
     slug = "csv-cleaner"
@@ -57,6 +67,11 @@ def test_run_package_prefers_skill_layout_package_dir(tmp_path: Path):
     assert output.exists()
     assert len(sha) == 64
     assert ".skillforge/packages/" in output.as_posix()
+
+    provenance_path = tmp_path / ".skillforge" / "provenance" / "toolforge_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    assert provenance["packaging_mode"] == "skill_layout"
+    assert provenance["package"]["path"] == str(output)
 
 
 def test_run_package_skill_layout_output_override_updates_registry(tmp_path: Path):

@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "min_quality_score": 70,
+    "warning_quality_score": 85
+  },
+  "exceptions": {
+    "web-and-frontend-development/brand-guidelines": {
+      "min_quality_score": 20,
+      "warning_quality_score": 65,
+      "reason": "Temporary exception while weak-skill remediation backlog is in progress."
+    },
+    "web-and-frontend-development/theme-factory": {
+      "min_quality_score": 40,
+      "warning_quality_score": 70,
+      "reason": "Temporary exception while weak-skill remediation backlog is in progress."
+    },
+    "image-and-video-generation/canvas-design": {
+      "min_quality_score": 45,
+      "warning_quality_score": 75,
+      "reason": "Temporary exception while weak-skill remediation backlog is in progress."
+    },
+    "web-and-frontend-development/frontend-design": {
+      "min_quality_score": 50,
+      "warning_quality_score": 75,
+      "reason": "Temporary exception while weak-skill remediation backlog is in progress."
+    },
+    "communication/internal-comms": {
+      "min_quality_score": 55,
+      "warning_quality_score": 80,
+      "reason": "Temporary exception while weak-skill remediation backlog is in progress."
+    },
+    "coding-agents-and-ides/skill-creator": {
+      "min_quality_score": 60,
+      "warning_quality_score": 80,
+      "reason": "Temporary exception while weak-skill remediation backlog is in progress."
+    }
+  }
+}
