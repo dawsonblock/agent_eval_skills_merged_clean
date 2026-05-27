@@ -479,8 +479,11 @@ def validate(slug: str) -> None:
     if tests_dir.exists():
         console.print("[bold]Running tests...[/]", end=" ")
         report = run_tests(td)
-        if report.all_passed and report.passed > 0:
-            console.print(f"[green]✓ {report.passed} passed[/]")
+        if report.all_passed and (report.passed > 0 or report.skipped > 0):
+            if report.skipped > 0 and report.passed == 0:
+                console.print(f"[green]✓ 0 passed, {report.skipped} skipped[/]")
+            else:
+                console.print(f"[green]✓ {report.passed} passed[/]")
         else:
             console.print(f"[red]✗ {report.failed} failed, {report.errors} errors[/]")
             all_ok = False

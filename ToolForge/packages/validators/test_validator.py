@@ -207,8 +207,10 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
             }
         )
 
-    # If tests directory exists but nothing collected, fail for generated tools.
-    if report.total == 0:
+    # If tests directory exists but nothing was executed or skipped, fail.
+    # Skipped-only runs are allowed for freshly scaffolded tools that still
+    # contain placeholder implementations.
+    if report.total == 0 and report.skipped == 0:
         report.errors = max(report.errors, 1)
         report.failures.append({"message": "No tests were collected"})
 

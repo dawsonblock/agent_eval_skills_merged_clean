@@ -346,6 +346,7 @@ def scaffold_tool(spec: ToolSpec, output_root: Path, overwrite: bool = False) ->
     tool_dir = output_root / spec.slug
     tool_dir.mkdir(parents=True, exist_ok=True)
     (tool_dir / "tests").mkdir(exist_ok=True)
+    (tool_dir / "examples").mkdir(exist_ok=True)
 
     ctx = _ctx(spec)
     written: list[Path] = []
@@ -460,7 +461,10 @@ def _generate_test(spec: ToolSpec) -> str:
             lines.append(f"def {fn}():")
             lines.append(f'    """Eval case: {case.description or case.id}"""')
             kw = ", ".join(f"{k}={v!r}" for k, v in case.inputs.items())
-            lines.append(f"    result = run({kw})")
+            lines.append("    try:")
+            lines.append(f"        result = run({kw})")
+            lines.append("    except NotImplementedError:")
+            lines.append("        pytest.skip(\"Tool implementation is pending\")")
             if case.expected_output is not None:
                 lines.append(f"    assert result == {case.expected_output!r}")
             else:

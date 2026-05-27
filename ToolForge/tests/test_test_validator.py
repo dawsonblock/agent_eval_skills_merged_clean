@@ -123,3 +123,30 @@ def test_run_tests_skips_pytest_timeout_when_unavailable(
     cmd = captured_cmds[0]
     assert "pytest_timeout" not in cmd
     assert "--timeout=30" not in cmd
+
+
+def test_run_tests_allows_skipped_only_results(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tests_dir = tmp_path / "tests"
+    tests_dir.mkdir(parents=True)
+    (tests_dir / "test_ok.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
+
+    def _fake_run(cmd: list[str], cwd: Path, env: dict[str, str], timeout: float, grace_period: float = 0.5) -> subprocess.CompletedProcess[str]:
+        del cwd, env, timeout, grace_period
+        report_arg = next(a for a in cmd if a.startswith("--json-report-file="))
+        report_path = Path(report_arg.split("=", 1)[1])
+        report_path.write_text(
+            '{"summary": {"passed": 0, "failed": 0, "errors": 0, "skipped": 1}, "duration": 0.01, "tests": []}',
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(args=cmd, returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(test_validator_module, "run_with_process_tree_timeout", _fake_run)
+
+    report = run_tests(tmp_path)
+
+    assert report.passed == 0
+    assert report.failed == 0
+    assert report.errors == 0
+    assert report.skipped == 1

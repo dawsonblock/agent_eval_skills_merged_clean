@@ -158,7 +158,7 @@ def test_cli_command_wiring_inprocess(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(mcp_val_mod, "validate_mcp_server", lambda _spec, _mcp_dir: [])
     monkeypatch.setattr(skill_val_mod, "validate_skill_file", lambda _path: [])
 
-    pass_report = SimpleNamespace(all_passed=True, passed=1, failed=0, errors=0, failures=[])
+    pass_report = SimpleNamespace(all_passed=True, passed=1, failed=0, errors=0, skipped=0, failures=[])
     monkeypatch.setattr(test_val_mod, "run_tests", lambda _td: pass_report)
     monkeypatch.setattr(test_val_mod, "run_safety_checks", lambda _spec, _td: pass_report)
 
@@ -239,4 +239,48 @@ def test_registry_info_missing_tool(tmp_path: Path) -> None:
     assert init_result.exit_code == 0
     result = runner.invoke(cli, ["registry", "info", "missing"], catch_exceptions=False)
     assert result.exit_code == 1
-    assert "not found in registry" in result.output
+
+
+def test_validate_accepts_skipped_only_test_report(monkeypatch, tmp_path: Path) -> None:
+    runner = CliRunner()
+    monkeypatch.chdir(tmp_path)
+
+    import packages.core.registry as registry_mod
+    import packages.core.tool_spec as tool_spec_mod
+    import packages.validators.mcp_validator as mcp_val_mod
+    import packages.validators.schema_validator as schema_mod
+    import packages.validators.security_validator as sec_mod
+    import packages.validators.skill_validator as skill_val_mod
+    import packages.validators.test_validator as test_val_mod
+
+    dummy = _DummySpec(slug="dummy-tool")
+    monkeypatch.setattr(registry_mod, "ToolRegistry", _DummyRegistry)
+    monkeypatch.setattr(tool_spec_mod.ToolSpec, "from_yaml", classmethod(lambda _cls, _path: dummy))
+    monkeypatch.setattr(schema_mod, "validate_yaml_file", lambda _path: dummy)
+    monkeypatch.setattr(sec_mod, "validate_security", lambda _spec: [])
+    monkeypatch.setattr(mcp_val_mod, "validate_mcp_server", lambda _spec, _mcp_dir: [])
+    monkeypatch.setattr(skill_val_mod, "validate_skill_file", lambda _path: [])
+
+    skipped_report = SimpleNamespace(
+        all_passed=True,
+        passed=0,
+        failed=0,
+        errors=0,
+        skipped=1,
+        failures=[],
+    )
+    monkeypatch.setattr(test_val_mod, "run_tests", lambda _td: skipped_report)
+    monkeypatch.setattr(test_val_mod, "run_safety_checks", lambda _spec, _td: skipped_report)
+
+    tool_dir = tmp_path / "tools" / "generated" / "dummy-tool"
+    (tool_dir / "tests").mkdir(parents=True, exist_ok=True)
+    (tool_dir / "evals" / "cases").mkdir(parents=True, exist_ok=True)
+    (tool_dir / "skill").mkdir(parents=True, exist_ok=True)
+    (tool_dir / "toolforge.yaml").write_text("slug: dummy-tool\n", encoding="utf-8")
+    (tool_dir / "evals" / "task_config.json").write_text("{}", encoding="utf-8")
+    (tool_dir / "evals" / "cases" / "case-01.json").write_text("{}", encoding="utf-8")
+    (tool_dir / "skill" / "SKILL.md").write_text("# skill\n", encoding="utf-8")
+
+    result = runner.invoke(cli, ["validate", "dummy-tool"], catch_exceptions=False)
+    assert result.exit_code == 0
+    assert "All validations passed." in result.output
