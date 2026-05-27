@@ -15,7 +15,7 @@ REQUIRED_LOGS = [
     ".validation_logs/toolforge_validator_tests.log",
     ".validation_logs/toolforge_registry_tests.log",
     ".validation_logs/agent_skills_eval.json",
-    ".validation_logs/toolathlon_smoke_preflight.json",
+    ".validation_logs/toolathlon_preflight_summary.json",
 ]
 
 
@@ -45,7 +45,7 @@ def test_release_status_schema_and_values() -> None:
     assert payload["release_classification"] in allowed
     assert payload["toolathlon_profile"] == "smoke"
     assert payload["smoke_targets"] == ["rail_12306", "filesystem"]
-    assert payload["removed_smoke_targets"] == ["google_calendar"]
+    assert payload["excluded_smoke_targets"] == ["google_calendar"]
     assert "google_calendar" not in payload["smoke_targets"]
     assert payload["production_claim_allowed"] is False
 

@@ -129,11 +129,17 @@ jobs:
 
             - name: Clean local cache artifacts
               run: |
+                  rm -rf ToolForge/.skillforge
+                  rm -rf ToolForge/skills/*/tool/outputs
                   find . -name '._*' -delete
                   find . -name '.DS_Store' -delete
                   rm -rf .pytest_cache .mypy_cache .ruff_cache
                   find . -type d -name '__pycache__' -prune -exec rm -rf {} +
                   find . -name '*.pyc' -delete
+
+            - name: Install Toolathlon validation dependency
+              run: |
+                  python -m pip install pyyaml
 
             - name: Install ToolForge dev dependencies
               working-directory: ./ToolForge
@@ -141,22 +147,37 @@ jobs:
                   python -m pip install --upgrade pip
                   python -m pip install -e ".[dev]"
 
-                        - name: Verify smoke profile excludes google_calendar
-                            run: |
-                                    python - <<'PY'
-                                    import json
-                                    from pathlib import Path
+            - name: Verify smoke profile excludes google_calendar
+              run: |
+                  python - <<'PY'
+                  import json
+                  from pathlib import Path
 
-                                    profile = json.loads(Path('toolathlon-gym-curated/profiles/smoke/mcp_servers.json').read_text(encoding='utf-8'))
-                                    servers = profile.get('servers', [])
-                                    assert servers == ['rail_12306', 'filesystem'], servers
-                                    assert 'google_calendar' not in servers, servers
-                                    print('Smoke profile target list verified:', servers)
-                                    PY
+                  profile = json.loads(
+                      Path('toolathlon-gym-curated/profiles/smoke/mcp_servers.json').read_text(encoding='utf-8')
+                  )
+                  servers = profile.get('servers', [])
+                  assert servers == ['rail_12306', 'filesystem'], servers
+                  assert 'google_calendar' not in servers, servers
+                  print('Smoke profile target list verified:', servers)
+                  PY
+
+            - name: Build required MCP artifacts
+              working-directory: ./toolathlon-gym-curated
+              run: |
+                  TOOLATHLON_PROFILE=smoke bash scripts/build_required_mcp_artifacts.sh
 
             - name: Run smoke preflight check
               run: |
-                  bash scripts/check_toolathlon_smoke_profile.sh
+                  TOOLATHLON_PROFILE=smoke python toolathlon-gym-curated/scripts/preflight_mcp_paths.py \
+                    --json-output .validation_logs/toolathlon_preflight_summary.json
+
+            - name: Run runtime MCP smoke
+              run: |
+                  TOOLATHLON_PROFILE=smoke python toolathlon-gym-curated/scripts/smoke_mcp_servers.py \
+                    --profile smoke \
+                    --json-output .validation_logs/toolathlon_mcp_smoke_summary.json
+                  python scripts/sanitize_release_paths.py
 
             - name: Compile Python modules
               run: |

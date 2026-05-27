@@ -13,7 +13,7 @@ export TOOLATHLON_PROFILE=smoke
 mkdir -p "$LOG_DIR"
 
 python scripts/preflight_mcp_paths.py \
-	--json-output "$LOG_DIR/toolathlon_smoke_preflight.json"
+	--json-output "$LOG_DIR/toolathlon_preflight_summary.json"
 
 python scripts/smoke_mcp_servers.py \
 	--profile smoke \

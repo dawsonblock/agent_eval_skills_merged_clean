@@ -254,7 +254,9 @@ if not isinstance(smoke_targets, list):
     smoke_targets = []
 
 release_status = load_json(repo_root / "RELEASE_STATUS.json")
-excluded_smoke_targets = release_status.get("removed_smoke_targets", [])
+excluded_smoke_targets = release_status.get("excluded_smoke_targets")
+if excluded_smoke_targets is None:
+  excluded_smoke_targets = release_status.get("removed_smoke_targets", [])
 if not isinstance(excluded_smoke_targets, list):
     excluded_smoke_targets = []
 
