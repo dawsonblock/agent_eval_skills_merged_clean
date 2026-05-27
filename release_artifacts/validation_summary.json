@@ -15,7 +15,7 @@
   "overall_status": "passed",
   "phases": [
     {
-      "duration_seconds": 17,
+      "duration_seconds": 18,
       "exit_code": 0,
       "logs": [
         "${REPO_ROOT}/.validation_logs/toolforge_python_version.log",
@@ -43,7 +43,7 @@
       "status": "passed"
     },
     {
-      "duration_seconds": 17,
+      "duration_seconds": 15,
       "exit_code": 0,
       "logs": [
         "${REPO_ROOT}/.validation_logs/toolathlon_artifact_build.log",
@@ -70,9 +70,9 @@
   ],
   "python_executable": "${REPO_ROOT}/.venv/bin/python",
   "python_version": "3.12.12",
-  "run_duration_seconds": 34,
-  "run_finished_at": "2026-05-27T08:30:55Z",
-  "run_started_at": "2026-05-27T08:30:21Z",
+  "run_duration_seconds": 33,
+  "run_finished_at": "2026-05-27T20:04:22Z",
+  "run_started_at": "2026-05-27T20:03:49Z",
   "smoke_targets": [
     "rail_12306",
     "filesystem"

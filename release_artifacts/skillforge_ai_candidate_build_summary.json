@@ -2,11 +2,11 @@
   "summary_version": "2026-05-25",
   "component": "skillforge_ai",
   "artifact_type": "candidate_zip",
-  "generated_at": "2026-05-27T08:31:41.261469+00:00",
+  "generated_at": "2026-05-27T20:05:08.517968+00:00",
   "overall_status": "passed",
   "output": {
     "path": "dist/skillforge_ai_candidate_2026-05-25.zip",
-    "sha256": "2fc6f469bd109db4ad4e4875daa127e5cb6716bc724e0f0d9e4c29f03bf13212"
+    "sha256": "2754724681e2cae335ce35eeda1273878703741cd033fdbdf6a6f8622e9bf31b"
   },
   "contents": [
     "ToolForge/**",

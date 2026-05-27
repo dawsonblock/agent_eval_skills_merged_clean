@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-27T08:31:28.047755+00:00",
+  "created_at_utc": "2026-05-27T20:10:12.258296+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "a5d370346753ab1242d0265b598d6bb2b2656799dab297f6548defb8c3b0213e"
+      "sha256": "533c1c4940c9d5a1b1706c2883c6425c5c4541859208b97ce6f91c35657c59e6"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "26854062e4ca279ab0d28a654d97713ffe96bc18b32a0bc1e53334cd6de79594"
+      "sha256": "25e4502e0ab50a394b0b5fe03ad1b7e00fe3eddc5d83111b709253219b649e1e"
     },
     {
       "path": "ToolForge/.bandit",
@@ -2409,7 +2409,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "ff9330dbbd343a2cc4c914949e06e599a8c03cd6840c071015e792169aec0b59"
+      "sha256": "fc98f3a0122a39eb5c24ff9a607e6324c3da4748669b69f2ce8e8133cf758436"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
@@ -2421,7 +2421,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
-      "sha256": "f127f1406413b5bd30199ff15e3794b8ce1b9d3e478fcfc2d9530c4c69eaa138"
+      "sha256": "8c156fdf8168f44584f84bf91b62cd7fbc26282401fb2f44903265c7bfc61cb8"
     },
     {
       "path": "release_artifacts/RELEASE_HANDOFF_2026-05-27.md",
@@ -2441,7 +2441,7 @@
     },
     {
       "path": "release_artifacts/skillforge_ai_candidate_build_summary.json",
-      "sha256": "e3d4f219106142bdd80b0100f7f15c4412969ad6ac7d13e95da70c013d13e3f4"
+      "sha256": "092b8642edd1522c1bf2ed897992e409bb6aee0e30a0945110b3cbffd6313e16"
     },
     {
       "path": "release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json",
@@ -2461,23 +2461,23 @@
     },
     {
       "path": "release_artifacts/toolathlon_artifact_build_summary.json",
-      "sha256": "7c333a85ff229e8b42dd1d3bd69cdd53178fa5413b7c350f564fc3d50bb31014"
+      "sha256": "7c7f4b014c1cf0ac1aafbf3430272340c5cbab40454aca85f320f029da7207e0"
     },
     {
       "path": "release_artifacts/toolathlon_mcp_smoke_summary.json",
-      "sha256": "836039a1b622a032304cde624a922550be70955bca4be9c07a6536f9e7db35cf"
+      "sha256": "354958b242a99ce7decb4188fa53348c9213c1c1f339046485837913b7d5c732"
     },
     {
       "path": "release_artifacts/toolathlon_preflight_summary.json",
-      "sha256": "783d8d96b4da7e461ab2bf6d75089da06e7c4e8d875ad7796f627444da6615c4"
+      "sha256": "91eef3ca75271edef66654b350bf68d338b141c4459ea73aab6b706ac858e882"
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "ebf58734b9a0e1d34f7b57dc9973f1824ff80c2743da66213fe96eedef4370bd"
+      "sha256": "059a4e5bc02fb8ba05abfa416d4d2c359401281c9008ab60367f971f76a82e9b"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
-      "sha256": "990096b4cb41f5c46dcb585b6baea5b28f5d0a7727b47860b968f3009ddc2542"
+      "sha256": "ae547745a2aaed4ea2567098ba4934d6919b539988d40f88b6af024b790d2b24"
     },
     {
       "path": "scripts/build_skillforge_ai_candidate_zip.sh",
@@ -2485,7 +2485,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "705a9dbb63d773688005a716775caedd3f648681a97fd70a2ad3f8e55656e074"
+      "sha256": "b7b9a13f28306ae829a8da0836429f8e538fabf8f51ea46ef509ad9bf7932aad"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
@@ -2509,7 +2509,7 @@
     },
     {
       "path": "scripts/create_release_zip.sh",
-      "sha256": "6a0a4b07481c37a8877e30c331237655810a2afcbc80768546682b0249d44b17"
+      "sha256": "0355c74a057871c38d0b863c244653bd91898dd31cd55c9878afd95d31d1f15e"
     },
     {
       "path": "scripts/create_skillforge_evidence_bundle.sh",
@@ -2577,7 +2577,7 @@
     },
     {
       "path": "scripts/validate_release_policy_drift.sh",
-      "sha256": "cc608f7dd99d45a48ababbfc49acce32aeabd345e1bdf062e42ed9f8e92d3ba0"
+      "sha256": "7f0b4b256248ca06aa83a754836b75b83ee9b25721b7d50f096c49cf961866c7"
     },
     {
       "path": "scripts/validate_smoke_workspace.sh",
