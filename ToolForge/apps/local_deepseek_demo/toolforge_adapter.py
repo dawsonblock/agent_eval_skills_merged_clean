@@ -34,6 +34,14 @@ BLOCKED_PREFIXES = (
 )
 
 
+def is_under(child: Path, parent: Path) -> bool:
+    try:
+        child.resolve().relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
 class AdapterError(RuntimeError):
     """Raised for adapter validation or execution failures."""
 
@@ -183,7 +191,7 @@ class ToolForgeAdapter:
         requested_name = str(plan.get("tool_name") or "generated-tool")
         slug = self._slugify(requested_name)
         tool_root = (self.generated_root / slug).resolve()
-        if not str(tool_root).startswith(str(self.generated_root.resolve())):
+        if not is_under(tool_root, self.generated_root):
             raise AdapterError("Refusing to write outside ToolForge/generated_tools.")
         if tool_root.exists() and not allow_overwrite:
             raise AdapterError(
@@ -325,7 +333,7 @@ class ToolForgeAdapter:
 
     def validate_generated_tool(self, path: str) -> dict[str, Any]:
         candidate = (self.workspace_root / path).resolve()
-        if not str(candidate).startswith(str(self.generated_root.resolve())):
+        if not is_under(candidate, self.generated_root):
             raise AdapterError("Validation is limited to ToolForge/generated_tools/ paths.")
         if not candidate.exists() or not candidate.is_dir():
             raise AdapterError(f"Generated tool path not found: {candidate}")
@@ -453,12 +461,20 @@ class ToolForgeAdapter:
         normalized = value.replace("\\", "/")
         if any(fragment in normalized for fragment in BLOCKED_PATH_FRAGMENTS):
             return True
-        abs_candidate = str(Path(value).expanduser())
-        return any(abs_candidate.startswith(prefix) for prefix in BLOCKED_PREFIXES)
+
+        candidate = Path(value).expanduser()
+        if not candidate.is_absolute():
+            candidate = self.workspace_root / candidate
+        candidate = candidate.resolve()
+
+        for prefix in BLOCKED_PREFIXES:
+            if is_under(candidate, Path(prefix).expanduser().resolve()):
+                return True
+        return False
 
     def _is_within_workspace(self, value: str) -> bool:
         candidate = self._resolve_workspace_path(value)
-        return str(candidate).startswith(str(self.workspace_root))
+        return is_under(candidate, self.workspace_root)
 
     def _resolve_workspace_path(self, maybe_path: str) -> Path:
         p = Path(maybe_path).expanduser()
