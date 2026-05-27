@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-27T04:20:43.425466+00:00",
+  "created_at_utc": "2026-05-27T05:28:15.790468+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "116f02db5c3e190036064f96f8cdfad0c61616e004bb1236d540510600ddba81"
+      "sha256": "7aff2ea0e8b4ed69834b1fad974d0b6f06215ab23dded4f08ce00e1ad9471edd"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "53102847dcab9b185217b52d72bd32f86df2cb664503548d9b51bf7ff8da759e"
+      "sha256": "603b89a7c4a381613551572dc134823f12389f2c82332a0eb83e870c307e3aca"
     },
     {
       "path": "ToolForge/.bandit",
@@ -2409,7 +2409,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "35bd1dcec415a54490b6b2a443bfe02a8a4bd2626ea62193d21d3b5a86024307"
+      "sha256": "9bd43b3a89c0b4ef9ff1c2ada53437f7ab4dab89dc4969e5c0bcf8240b115f4f"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
@@ -2461,19 +2461,19 @@
     },
     {
       "path": "release_artifacts/toolathlon_artifact_build_summary.json",
-      "sha256": "a6f26b7977cc169f49f2aaf9d5360319b12adc0f2bd4e092dfa4eabe8e8b0e23"
+      "sha256": "592131521c4ab86a627c0deabf031341e9699c8b1a11307976accdb695019359"
     },
     {
       "path": "release_artifacts/toolathlon_mcp_smoke_summary.json",
-      "sha256": "e0de106be5f4e04a6455e239095bd5f47054ef7152bfa40758286e775fcde241"
+      "sha256": "e0c240d2ae5885a539cc1fd88ec9fa8c7a7485378005fcb0445747529a709100"
     },
     {
       "path": "release_artifacts/toolathlon_preflight_summary.json",
-      "sha256": "39c9db9d179d09ffc23e39122f47c3c51fa7c997dd90819cc5d075539b9988e5"
+      "sha256": "af860e7be1b86d8a255b8588a08baa7b93c1697f37762bfd5c0aed971a5e3496"
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "868f193402b959dd426c8c29ffaf84dd78717f72686975323005d1de6ad86cb7"
+      "sha256": "9a069076a105da6037c21e166ac336d227e2377f437a81f64832c7babaa781c8"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2485,7 +2485,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "4d40fd09beed92fc8a3d5a46dcb4298f6cb0f13505a38f50add990b596acc2aa"
+      "sha256": "97c5da68b1409fd126840ba71face4e138b19e139853694aedb4161cdcfec17d"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
