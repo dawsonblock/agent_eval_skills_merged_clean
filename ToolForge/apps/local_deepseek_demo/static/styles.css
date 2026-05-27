@@ -131,6 +131,13 @@ button {
   font: inherit;
 }
 
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 textarea {
   min-height: 86px;
   resize: vertical;
@@ -288,6 +295,19 @@ button:hover {
   gap: 8px;
 }
 
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-prompts button {
+  width: auto;
+  font-size: 12px;
+  padding: 6px 10px;
+  background: #f8fafc;
+}
+
 .pre {
   white-space: pre-wrap;
   border: 1px solid var(--line);
@@ -316,6 +336,27 @@ button:hover {
   display: block;
   margin-top: 6px;
   color: var(--muted);
+}
+
+.selected-tool-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f7fafc;
+  padding: 10px;
+  margin-bottom: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.args-input {
+  min-height: 100px;
+  font-family: "SFMono-Regular", "Consolas", "Menlo", monospace;
+  font-size: 12px;
+}
+
+.args-input.invalid {
+  border-color: var(--danger);
+  background: #fff5f5;
 }
 
 .bottom-drawer {

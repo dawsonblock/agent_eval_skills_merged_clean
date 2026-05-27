@@ -89,6 +89,8 @@ const activeModeBadge = document.getElementById("activeModeBadge");
 const toolCountBadge = document.getElementById("toolCountBadge");
 const generatedCountBadge = document.getElementById("generatedCountBadge");
 const chatHint = document.getElementById("chatHint");
+const selectedToolCard = document.getElementById("selectedToolCard");
+const toolArgsInput = document.getElementById("toolArgsInput");
 const bodyEl = document.body;
 const toggleLeftSidebar = document.getElementById("toggleLeftSidebar");
 const toggleRightSidebar = document.getElementById("toggleRightSidebar");
@@ -97,6 +99,10 @@ const templateSelect = document.getElementById("templateSelect");
 const applyTemplateBtn = document.getElementById("applyTemplate");
 const saveTemplateBtn = document.getElementById("saveTemplate");
 const deleteTemplateBtn = document.getElementById("deleteTemplate");
+const useToolBtn = document.getElementById("useTool");
+const validateToolBtn = document.getElementById("validateTool");
+const runToolBtn = document.getElementById("runTool");
+const quickPrompts = document.getElementById("quickPrompts");
 
 function nowStamp() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -206,9 +212,13 @@ async function loadModels() {
 async function loadTools() {
   const payload = await request("/api/tools");
   state.tools = payload.tools || [];
+  if (state.selectedTool && !state.tools.some((tool) => tool.name === state.selectedTool)) {
+    state.selectedTool = null;
+  }
   applyToolFilter();
   renderTools();
   syncCounters();
+  renderSelectionState();
 }
 
 async function loadGeneratedTools() {
@@ -240,6 +250,48 @@ function applyGeneratedToolFilter() {
 function syncCounters() {
   toolCountBadge.textContent = `Tools: ${state.tools.length}`;
   generatedCountBadge.textContent = `Generated: ${state.generatedTools.length}`;
+}
+
+function renderSelectionState() {
+  const hasSelection = Boolean(state.selectedTool);
+  useToolBtn.disabled = !hasSelection;
+  validateToolBtn.disabled = !hasSelection;
+  runToolBtn.disabled = !hasSelection;
+
+  if (!hasSelection) {
+    selectedToolCard.innerHTML = `
+      <strong>No tool selected</strong>
+      <div class="muted-note">Select a tool to preview permissions and run it safely.</div>
+    `;
+    return;
+  }
+
+  const tool = state.tools.find((item) => item.name === state.selectedTool);
+  if (!tool) {
+    return;
+  }
+
+  selectedToolCard.innerHTML = `
+    <strong>${escapeHtml(tool.name)}</strong>
+    <div>${escapeHtml(tool.description || "No description")}</div>
+    <div class="muted-note">risk=${escapeHtml(tool.risk_level || "unknown")} validated=${Boolean(tool.validated)}</div>
+  `;
+}
+
+function parseToolArgs() {
+  const raw = toolArgsInput.value.trim() || "{}";
+  toolArgsInput.classList.remove("invalid");
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
+      throw new Error("Arguments must be a JSON object.");
+    }
+    return parsed;
+  } catch (error) {
+    toolArgsInput.classList.add("invalid");
+    addMessage("validation_error", `Invalid JSON args: ${error.message || error}`);
+    return null;
+  }
 }
 
 function readBool(key) {
@@ -330,7 +382,10 @@ function renderTools() {
     card.addEventListener("click", () => {
       state.selectedTool = tool.name;
       state.pendingRunArgs = {};
+      toolArgsInput.value = JSON.stringify(state.pendingRunArgs, null, 2);
+      toolArgsInput.classList.remove("invalid");
       renderTools();
+      renderSelectionState();
       permissionPreview.textContent = JSON.stringify(
         {
           selected_tool: tool.name,
@@ -491,12 +546,8 @@ async function useTool() {
     return;
   }
 
-  let args = {};
-  const raw = prompt("Arguments as JSON object", "{}") || "{}";
-  try {
-    args = JSON.parse(raw);
-  } catch {
-    addMessage("validation_error", "Invalid JSON args.");
+  const args = parseToolArgs();
+  if (!args) {
     return;
   }
   state.pendingRunArgs = args;
@@ -518,12 +569,17 @@ async function runTool() {
     addMessage("validation_error", "Select a tool first.");
     return;
   }
+  const args = parseToolArgs();
+  if (!args) {
+    return;
+  }
+  state.pendingRunArgs = args;
   try {
     const response = await request("/api/tools/run", {
       method: "POST",
       body: JSON.stringify({
         tool_name: state.selectedTool,
-        args: state.pendingRunArgs || {},
+        args: args,
         approve: true,
       }),
     });
@@ -587,6 +643,10 @@ toolSearch.addEventListener("input", () => {
   renderTools();
 });
 
+toolArgsInput.addEventListener("input", () => {
+  toolArgsInput.classList.remove("invalid");
+});
+
 generatedToolSearch.addEventListener("input", () => {
   applyGeneratedToolFilter();
   renderGeneratedTools();
@@ -597,6 +657,19 @@ chatInput.addEventListener("keydown", (event) => {
     event.preventDefault();
     sendChat();
   }
+});
+
+quickPrompts.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLButtonElement)) {
+    return;
+  }
+  const promptText = target.dataset.prompt;
+  if (!promptText) {
+    return;
+  }
+  chatInput.value = promptText;
+  chatInput.focus();
 });
 
 tabChat.addEventListener("click", () => activateTab("chat"));
@@ -700,6 +773,7 @@ deleteTemplateBtn.addEventListener("click", () => {
     renderPromptTemplates();
     applySidebarState();
     setCompactDensity(readBool(STORAGE_KEYS.compactDensity));
+    renderSelectionState();
   } catch (error) {
     addMessage("validation_error", error.message);
   }

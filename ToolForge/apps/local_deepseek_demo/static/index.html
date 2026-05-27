@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Local DeepSeek Tool UI Demo</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260527b" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260527c" />
   </head>
   <body>
     <header class="topbar">
@@ -69,6 +69,11 @@
               <button id="deleteTemplate" type="button">Delete</button>
             </div>
           </div>
+          <div class="quick-prompts" id="quickPrompts">
+            <button type="button" data-prompt="Summarize the current project and list the top 3 next actions.">Project Summary</button>
+            <button type="button" data-prompt="Suggest the safest tool to use for this task and provide JSON args.">Tool Suggestion</button>
+            <button type="button" data-prompt="Create a tool plan with Goal, Inputs, Outputs, Files, Safety Checks, and Test Plan.">Build Tool Plan</button>
+          </div>
           <div id="chatMessages" class="chat-messages"></div>
           <div class="chat-input">
             <textarea id="chatInput" placeholder="Ask DeepSeek to chat, use tools, or design a new tool..."></textarea>
@@ -90,13 +95,21 @@
       <aside class="sidebar right">
         <h2>Tool Registry</h2>
         <input id="toolSearch" type="search" placeholder="Search tool registry..." />
+        <div id="selectedToolCard" class="selected-tool-card">
+          <strong>No tool selected</strong>
+          <div class="muted-note">Select a tool to preview permissions and run it safely.</div>
+        </div>
         <div id="toolList" class="tool-list"></div>
 
         <h2>Permission Preview</h2>
         <pre id="permissionPreview" class="pre"></pre>
 
+        <h2>Run Arguments (JSON)</h2>
+        <textarea id="toolArgsInput" class="args-input" placeholder='{"request": "example"}'>{}</textarea>
+        <div class="muted-note">Edit arguments here, then preview or run.</div>
+
         <div class="actions">
-          <button id="useTool">Use Tool</button>
+          <button id="useTool">Preview Run</button>
           <button id="createTool">Create Tool</button>
           <button id="validateTool">Validate Tool</button>
           <button id="runTool">Run Tool</button>
@@ -112,6 +125,6 @@
       <pre id="outputViewer" class="pre"></pre>
     </section>
 
-    <script src="/static/app.js?v=20260527b"></script>
+    <script src="/static/app.js?v=20260527c"></script>
   </body>
 </html>
