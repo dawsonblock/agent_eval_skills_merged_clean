@@ -74,6 +74,30 @@ def test_validate_tool_request_blocks_path_traversal(tmp_path: Path) -> None:
     assert any("Blocked path access" in msg for msg in result["errors"])
 
 
+def test_within_workspace_rejects_prefix_collision(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    sibling = tmp_path.parent / f"{tmp_path.name}_unsafe"
+    sibling.mkdir(parents=True, exist_ok=True)
+
+    assert adapter._is_within_workspace(str(sibling)) is False
+
+
+def test_validate_generated_tool_rejects_outside_generated_root(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    outside = tmp_path / "generated_tools_unsafe"
+    outside.mkdir(parents=True, exist_ok=True)
+    (outside / "tool.py").write_text("print('x')\n", encoding="utf-8")
+    (outside / "toolforge.yaml").write_text("name: x\nslug: x\n", encoding="utf-8")
+    (outside / "README.md").write_text("# x\n", encoding="utf-8")
+
+    try:
+        adapter.validate_generated_tool(str(outside.relative_to(tmp_path)))
+    except RuntimeError as exc:
+        assert "Validation is limited" in str(exc)
+    else:
+        raise AssertionError("Expected validate_generated_tool to reject outside directory")
+
+
 def test_create_tool_from_plan_generates_expected_files(tmp_path: Path) -> None:
     adapter = ToolForgeAdapter(tmp_path)
     plan = {
