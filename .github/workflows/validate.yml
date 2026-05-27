@@ -190,7 +190,7 @@ jobs:
 
             - name: Verify SkillForge baseline gate
               run: |
-                                    bash scripts/verify_skillforge_baseline_gate.sh
+                  bash scripts/verify_skillforge_baseline_gate.sh
 
             - name: Regenerate release manifest
               run: |
