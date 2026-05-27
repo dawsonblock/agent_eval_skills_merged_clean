@@ -19,9 +19,9 @@
 Historical attested pair reference:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
+  - SHA256: `fa03b950563d3f902ad61f124f1457e1b01d4c6f7e6bbc160f696ca21b855358`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a`
+  - SHA256: `705abb5a9ac854e4f60feb3222b95c13b7ddffc9a2df4016ca5aa137406739b3`
 
 Validated scope for the historical pair is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 

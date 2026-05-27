@@ -2,8 +2,8 @@
   "package_name": "agent_eval_skills_merged_clean",
   "release_classification": "SOURCE_BUNDLE",
   "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "canonical_release_sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
-  "uploaded_archive_sha256": "e5359423cc1e0b93b901688b3105446055d7fa95e768d99ee31e83672a62c99e",
+  "canonical_release_sha256": "fa03b950563d3f902ad61f124f1457e1b01d4c6f7e6bbc160f696ca21b855358",
+  "uploaded_archive_sha256": "2bc9c6eb1f4214746e62082be4142e3ab2a610c92836199c8ed67aafc2895a5b",
   "toolathlon_profile": "smoke",
   "smoke_targets": [
     "rail_12306",
