@@ -164,11 +164,11 @@ if release_status_path.exists():
     smoke_targets = release_status.get("smoke_targets")
     if smoke_targets is not None:
         require_sequence(smoke_targets, expected_smoke_targets, f"{release_status_path}:smoke_targets")
-  excluded_targets = release_status.get("excluded_smoke_targets")
-  if excluded_targets is None:
-    excluded_targets = release_status.get("removed_smoke_targets")
-  if excluded_targets is not None and "google_calendar" not in excluded_targets:
-    errors.append(f"{release_status_path}:excluded_smoke_targets must include 'google_calendar'")
+    excluded_targets = release_status.get("excluded_smoke_targets")
+    if excluded_targets is None:
+        excluded_targets = release_status.get("removed_smoke_targets")
+    if excluded_targets is not None and "google_calendar" not in excluded_targets:
+        errors.append(f"{release_status_path}:excluded_smoke_targets must include 'google_calendar'")
 
 manifest_candidates = [
     root / "RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",

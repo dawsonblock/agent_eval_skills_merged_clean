@@ -94,7 +94,6 @@ zip_excludes=(
 # This avoids self-referential hash churn when publishing attestation updates.
 release_metadata_excludes=(
   -x "scripts/canonical_release_attestation.env"
-  -x "RELEASE_STATUS.json"
   -x "RELEASE_ATTESTATION_*.md"
   -x "RELEASE_EVIDENCE_MANIFEST_*.json"
   -x "RELEASE_HANDOFF_*.md"
