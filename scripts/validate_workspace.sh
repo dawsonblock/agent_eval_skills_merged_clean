@@ -207,6 +207,7 @@ PY
   export TOOLATHLON_ARTIFACT_BUILD_SUMMARY_JSON TOOLATHLON_SMOKE_SUMMARY_JSON
   export DOCKER_BUILD_LOG DOCKER_PREFLIGHT_LOG DOCKER_PREFLIGHT_SUMMARY_JSON
   export DOCKER_SMOKE_SUMMARY_JSON VALIDATION_SUMMARY_JSON
+  export REPO_ROOT
 
   VALIDATION_FAILED_COUNT="$failed" \
   RUN_FINISHED_AT="$run_finished_at" \
@@ -235,6 +236,33 @@ def phase_entry(name: str, status: str, duration_key: str, logs: list[str]) -> d
     }
 
 
+def load_json(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+repo_root = Path(os.environ["REPO_ROOT"])
+profile_name = os.environ.get("TOOLATHLON_PROFILE", "smoke")
+profile_path = repo_root / "toolathlon-gym-curated" / "profiles" / profile_name / "mcp_servers.json"
+profile_payload = load_json(profile_path)
+smoke_targets = profile_payload.get("servers", [])
+if not isinstance(smoke_targets, list):
+    smoke_targets = []
+
+release_status = load_json(repo_root / "RELEASE_STATUS.json")
+excluded_smoke_targets = release_status.get("removed_smoke_targets", [])
+if not isinstance(excluded_smoke_targets, list):
+    excluded_smoke_targets = []
+
+full_profile_validated = release_status.get("full_profile_validated")
+if not isinstance(full_profile_validated, bool):
+    full_profile_validated = False
+
+
 summary = {
     "run_started_at": os.environ["RUN_STARTED_AT"],
     "run_finished_at": os.environ["RUN_FINISHED_AT"],
@@ -243,6 +271,10 @@ summary = {
     "python_executable": os.environ.get("WORKSPACE_PYTHON_EXECUTABLE", "unknown"),
     "overall_status": "passed" if to_int(os.environ["VALIDATION_FAILED_COUNT"]) == 0 else "failed",
     "failed_phase_count": to_int(os.environ["VALIDATION_FAILED_COUNT"]),
+    "toolathlon_profile": profile_name,
+    "smoke_targets": smoke_targets,
+    "excluded_smoke_targets": excluded_smoke_targets,
+    "full_toolathlon_profile_validated": full_profile_validated,
     "capabilities": {
         "docker_available": os.environ["DOCKER_AVAILABLE"] == "true",
         "toolforge_python_supported": os.environ["TOOLFORGE_PYTHON_SUPPORTED"] == "true",

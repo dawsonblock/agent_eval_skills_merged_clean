@@ -7,7 +7,6 @@ Release-gated profile.
 Targets:
 - rail_12306
 - filesystem
-- google_calendar
 
 Claims allowed:
 - local import/start smoke validation
@@ -34,5 +33,8 @@ Targets:
 - woocommerce
 - youtube
 - youtube_transcript
+
+Google Calendar remains optional/full-profile only and is not part of the
+release-gated smoke profile.
 
 Claims allowed only when full-profile validation logs are present and linked to the exact artifact pair being claimed.

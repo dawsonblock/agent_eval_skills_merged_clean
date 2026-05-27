@@ -7,11 +7,15 @@
     "toolathlon_profile": "smoke",
     "toolforge_python_supported": true
   },
+  "excluded_smoke_targets": [
+    "google_calendar"
+  ],
   "failed_phase_count": 0,
+  "full_toolathlon_profile_validated": false,
   "overall_status": "passed",
   "phases": [
     {
-      "duration_seconds": 16,
+      "duration_seconds": 30,
       "exit_code": 0,
       "logs": [
         "${REPO_ROOT}/.validation_logs/toolforge_python_version.log",
@@ -39,7 +43,7 @@
       "status": "passed"
     },
     {
-      "duration_seconds": 24,
+      "duration_seconds": 28,
       "exit_code": 0,
       "logs": [
         "${REPO_ROOT}/.validation_logs/toolathlon_artifact_build.log",
@@ -64,9 +68,14 @@
       "status": "skipped"
     }
   ],
-  "python_executable": "${REPO_ROOT}/.venv/bin/python",
+  "python_executable": "<LOCAL_PATH>",
   "python_version": "3.12.12",
-  "run_duration_seconds": 40,
-  "run_finished_at": "2026-05-27T05:25:16Z",
-  "run_started_at": "2026-05-27T05:24:36Z"
+  "run_duration_seconds": 59,
+  "run_finished_at": "2026-05-27T07:23:24Z",
+  "run_started_at": "2026-05-27T07:22:25Z",
+  "smoke_targets": [
+    "rail_12306",
+    "filesystem"
+  ],
+  "toolathlon_profile": "smoke"
 }

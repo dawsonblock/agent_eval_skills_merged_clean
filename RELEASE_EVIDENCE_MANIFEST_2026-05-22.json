@@ -1,8 +1,8 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "main",
-  "commit": "4570334",
-  "generated_at_utc": "2026-05-26T22:42:34Z",
+  "commit": "cebce44",
+  "generated_at_utc": "2026-05-27T07:26:30Z",
   "status_policy": {
     "default_label": "Pruned smoke release-candidate candidate",
     "promotion_label": "Pruned smoke release candidate for controlled testing",
@@ -10,8 +10,9 @@
     "promotion_requires_attached_evidence": true
   },
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_zip_sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
+  "release_zip_sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
+  "evidence_zip_sha256": "34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a",
   "validated_scope": [
     "ToolForge",
     "Agent Skills",
@@ -26,7 +27,7 @@
   ],
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
+    "sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -41,19 +42,26 @@
       ".venv"
     ]
   },
-  "archive_sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
+  "archive_sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",
     ".validation_logs/toolathlon_mcp_smoke_summary.json",
-    ".validation_logs/toolathlon_preflight_summary.json",
-    ".validation_logs/docker_mcp_smoke_summary.json",
-    ".validation_logs/docker_preflight_summary.json"
+    ".validation_logs/toolathlon_preflight_summary.json"
   ],
   "validation_summary": {
     "overall_status": "passed",
     "failed_phase_count": 0,
     "python_version": "3.12.12",
+    "toolathlon_profile": "smoke",
+    "smoke_targets": [
+      "rail_12306",
+      "filesystem"
+    ],
+    "excluded_smoke_targets": [
+      "google_calendar"
+    ],
+    "full_toolathlon_profile_validated": false,
     "capabilities": {
       "docker_available": true,
       "docker_requested": false,
@@ -66,39 +74,24 @@
   "toolathlon_artifact_build_summary": {
     "profile": "smoke",
     "overall_status": "passed",
-    "expected_package_count": 3,
-    "package_count": 3,
-    "passed_count": 3,
+    "expected_package_count": 2,
+    "package_count": 2,
+    "passed_count": 2,
     "failed_count": 0
   },
   "toolathlon_mcp_smoke_summary": {
     "profile": "smoke",
     "overall_status": "passed",
-    "target_count": 3,
-    "passed_count": 3,
+    "target_count": 2,
+    "passed_count": 2,
     "failed_count": 0,
-    "checked_at": "2026-05-26T22:35:40Z"
+    "checked_at": "2026-05-27T07:23:22Z"
   },
   "toolathlon_preflight_summary": {
     "profile": "smoke",
     "status": "passed",
-    "found_count": 3,
+    "found_count": 2,
     "missing_count": 0,
-    "checked_at": "2026-05-26T22:35:40.742688+00:00"
-  },
-  "docker_mcp_smoke_summary": {
-    "profile": "smoke",
-    "overall_status": "passed",
-    "target_count": 3,
-    "passed_count": 3,
-    "failed_count": 0,
-    "checked_at": "2026-05-23T20:49:14Z"
-  },
-  "docker_preflight_summary": {
-    "profile": "smoke",
-    "status": "passed",
-    "found_count": 3,
-    "missing_count": 0,
-    "checked_at": "2026-05-23T20:49:15.399678+00:00"
+    "checked_at": "2026-05-27T07:23:23.371221+00:00"
   }
 }

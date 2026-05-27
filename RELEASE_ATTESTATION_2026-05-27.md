@@ -8,15 +8,15 @@ classification in [RELEASE_STATUS.json](RELEASE_STATUS.json) remains
 
 **Release Label:** agent_eval_skills_merged_clean exact-pair repo-local attestation
 **Release Date:** 2026-05-27
-**Git Commit:** 3b6a7718165b73264d31cff92969ffb4073a5d43
+**Git Commit:** cebce448c19a0adce8af313701e99612fa435364
 **Git Branch:** main
 
 ## Artifact Pair
 
 | Artifact | SHA256 |
 | --- | --- |
-| `agent_eval_skills_merged_clean-pruned-smoke.zip` | `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5` |
-| `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip` | `96e7f2633f91e90302a6150a3136130a6ae4014287d8ab1cf48d90ae97cbc2e0` |
+| `agent_eval_skills_merged_clean-pruned-smoke.zip` | `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43` |
+| `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip` | `34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a` |
 
 ## Scope
 

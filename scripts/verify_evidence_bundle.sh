@@ -33,7 +33,7 @@ require_attestation_value() {
   fi
 }
 
-for required_var in EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA EXPECTED_TOOLATHLON_PROFILE EXPECTED_MCP_PACKAGE_COUNT EXPECTED_PYTHON_VERSION MAX_EVIDENCE_AGE_DAYS; do
+for required_var in EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA EXPECTED_TOOLATHLON_PROFILE EXPECTED_MCP_PACKAGE_COUNT EXPECTED_SMOKE_TARGETS EXPECTED_FULL_PROFILE_VALIDATED EXPECTED_PYTHON_VERSION MAX_EVIDENCE_AGE_DAYS; do
   require_attestation_value "$required_var"
 done
 
@@ -48,7 +48,7 @@ EXPECTED_EVIDENCE_NAME="$CANONICAL_EVIDENCE_NAME"
 EXPECTED_EVIDENCE_SHA="$CANONICAL_EVIDENCE_SHA"
 
 export EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA
-export EXPECTED_TOOLATHLON_PROFILE EXPECTED_MCP_PACKAGE_COUNT EXPECTED_PYTHON_VERSION MAX_EVIDENCE_AGE_DAYS
+export EXPECTED_TOOLATHLON_PROFILE EXPECTED_MCP_PACKAGE_COUNT EXPECTED_SMOKE_TARGETS EXPECTED_FULL_PROFILE_VALIDATED EXPECTED_PYTHON_VERSION MAX_EVIDENCE_AGE_DAYS
 
 usage() {
   cat <<'USAGE'
@@ -152,8 +152,25 @@ EXPECTED_EVIDENCE_SHA = os.environ.get(
 )
 EXPECTED_TOOLATHLON_PROFILE = os.environ.get("EXPECTED_TOOLATHLON_PROFILE")
 EXPECTED_MCP_PACKAGE_COUNT = int(os.environ.get("EXPECTED_MCP_PACKAGE_COUNT", "0"))
+EXPECTED_SMOKE_TARGETS = [
+  item.strip()
+  for item in os.environ.get("EXPECTED_SMOKE_TARGETS", "").split(",")
+  if item.strip()
+]
+EXPECTED_FULL_PROFILE_VALIDATED_RAW = os.environ.get("EXPECTED_FULL_PROFILE_VALIDATED")
 EXPECTED_PYTHON_VERSION = os.environ.get("EXPECTED_PYTHON_VERSION")
 MAX_EVIDENCE_AGE_DAYS = int(os.environ.get("MAX_EVIDENCE_AGE_DAYS", "0"))
+
+
+def parse_bool(raw):
+  if raw == "true":
+    return True
+  if raw == "false":
+    return False
+  return None
+
+
+EXPECTED_FULL_PROFILE_VALIDATED = parse_bool(EXPECTED_FULL_PROFILE_VALIDATED_RAW)
 
 required_env_values = {
     "EXPECTED_RELEASE_NAME": EXPECTED_RELEASE_NAME,
@@ -166,6 +183,10 @@ required_env_values = {
 missing_env = [k for k, v in required_env_values.items() if not isinstance(v, str) or not v.strip()]
 if EXPECTED_MCP_PACKAGE_COUNT <= 0:
     missing_env.append("EXPECTED_MCP_PACKAGE_COUNT")
+if not EXPECTED_SMOKE_TARGETS:
+  missing_env.append("EXPECTED_SMOKE_TARGETS")
+if EXPECTED_FULL_PROFILE_VALIDATED is None:
+  missing_env.append("EXPECTED_FULL_PROFILE_VALIDATED")
 if MAX_EVIDENCE_AGE_DAYS <= 0:
     missing_env.append("MAX_EVIDENCE_AGE_DAYS")
 if missing_env:
@@ -176,8 +197,6 @@ required_files = [
     "release_artifacts/toolathlon_artifact_build_summary.json",
     "release_artifacts/toolathlon_mcp_smoke_summary.json",
     "release_artifacts/toolathlon_preflight_summary.json",
-    "release_artifacts/docker_mcp_smoke_summary.json",
-    "release_artifacts/docker_preflight_summary.json",
     "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
     "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
     "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md",
@@ -196,6 +215,11 @@ def require(data, path, expected, errors, label):
     if actual != expected:
         dotted = ".".join(path)
         errors.append(f"{label}:{dotted} expected {expected!r}, got {actual!r}")
+
+
+def require_sequence(actual, expected, errors, label):
+  if actual != expected:
+    errors.append(f"{label} expected {expected!r}, got {actual!r}")
 
 
 def parse_iso8601(value):
@@ -249,6 +273,18 @@ with zipfile.ZipFile(zip_path, "r") as zf:
         require(validation_summary, ["failed_phase_count"], 0, errors, "validation_summary")
         require(validation_summary, ["python_version"], EXPECTED_PYTHON_VERSION, errors, "validation_summary")
         require(validation_summary, ["capabilities", "toolathlon_profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "validation_summary")
+        smoke_targets = validation_summary.get("smoke_targets")
+        if smoke_targets is not None:
+            require_sequence(smoke_targets, EXPECTED_SMOKE_TARGETS, errors, "validation_summary:smoke_targets")
+        excluded_targets = validation_summary.get("excluded_smoke_targets")
+        if excluded_targets is not None and "google_calendar" not in excluded_targets:
+            errors.append("validation_summary:excluded_smoke_targets must include 'google_calendar'")
+        full_validated = validation_summary.get("full_toolathlon_profile_validated")
+        if full_validated is not None and full_validated != EXPECTED_FULL_PROFILE_VALIDATED:
+            errors.append(
+                "validation_summary:full_toolathlon_profile_validated expected "
+                f"{EXPECTED_FULL_PROFILE_VALIDATED!r}, got {full_validated!r}"
+            )
 
     artifact_summary = read_json("release_artifacts/toolathlon_artifact_build_summary.json")
     if artifact_summary is not None:
@@ -258,6 +294,9 @@ with zipfile.ZipFile(zip_path, "r") as zf:
         require(artifact_summary, ["package_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
         require(artifact_summary, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
         require(artifact_summary, ["failed_count"], 0, errors, "toolathlon_artifact_build_summary")
+        packages = [item.get("package") for item in artifact_summary.get("packages", []) if isinstance(item, dict)]
+        if packages:
+            require_sequence(packages, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_artifact_build_summary:packages")
 
     smoke_summary = read_json("release_artifacts/toolathlon_mcp_smoke_summary.json")
     if smoke_summary is not None:
@@ -266,6 +305,9 @@ with zipfile.ZipFile(zip_path, "r") as zf:
         require(smoke_summary, ["target_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_mcp_smoke_summary")
         require(smoke_summary, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_mcp_smoke_summary")
         require(smoke_summary, ["failed_count"], 0, errors, "toolathlon_mcp_smoke_summary")
+        targets = [item.get("target") for item in smoke_summary.get("results", []) if isinstance(item, dict)]
+        if targets:
+            require_sequence(targets, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_mcp_smoke_summary:targets")
 
     preflight_summary = read_json("release_artifacts/toolathlon_preflight_summary.json")
     if preflight_summary is not None:
@@ -273,6 +315,9 @@ with zipfile.ZipFile(zip_path, "r") as zf:
         require(preflight_summary, ["status"], "passed", errors, "toolathlon_preflight_summary")
         require(preflight_summary, ["found_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_preflight_summary")
         require(preflight_summary, ["missing_count"], 0, errors, "toolathlon_preflight_summary")
+        found_servers = [item.get("server") for item in preflight_summary.get("found", []) if isinstance(item, dict)]
+        if found_servers:
+            require_sequence(found_servers, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_preflight_summary:found_servers")
 
     docker_smoke = read_json("release_artifacts/docker_mcp_smoke_summary.json")
     if docker_smoke is not None:
@@ -281,12 +326,18 @@ with zipfile.ZipFile(zip_path, "r") as zf:
         require(docker_smoke, ["target_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "docker_mcp_smoke_summary")
         require(docker_smoke, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "docker_mcp_smoke_summary")
         require(docker_smoke, ["failed_count"], 0, errors, "docker_mcp_smoke_summary")
+        docker_targets = [item.get("target") for item in docker_smoke.get("results", []) if isinstance(item, dict)]
+        if docker_targets:
+            require_sequence(docker_targets, EXPECTED_SMOKE_TARGETS, errors, "docker_mcp_smoke_summary:targets")
 
     docker_preflight = read_json("release_artifacts/docker_preflight_summary.json")
     if docker_preflight is not None:
         require(docker_preflight, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "docker_preflight_summary")
         require(docker_preflight, ["status"], "passed", errors, "docker_preflight_summary")
         require(docker_preflight, ["missing_count"], 0, errors, "docker_preflight_summary")
+        docker_found = [item.get("server") for item in docker_preflight.get("found", []) if isinstance(item, dict)]
+        if docker_found:
+            require_sequence(docker_found, EXPECTED_SMOKE_TARGETS, errors, "docker_preflight_summary:found_servers")
 
     manifest = read_json("release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json")
     if manifest is not None:

@@ -2,7 +2,7 @@
 
 Repository: agent_eval_skills_merged_clean
 Branch: main
-Commit: 3b6a771
+Commit: cebce44
 
 ## Handoff Type
 
@@ -16,9 +16,9 @@ event.
 ## Artifact Pair
 
 - Release ZIP: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-- Release SHA256: `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
+- Release SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
 - Evidence ZIP: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-- Evidence SHA256: `96e7f2633f91e90302a6150a3136130a6ae4014287d8ab1cf48d90ae97cbc2e0`
+- Evidence SHA256: `34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a`
 
 ## Gate Snapshot
 

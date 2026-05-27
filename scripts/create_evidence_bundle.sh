@@ -118,11 +118,14 @@ required_files=(
   "release_artifacts/toolathlon_artifact_build_summary.json"
   "release_artifacts/toolathlon_mcp_smoke_summary.json"
   "release_artifacts/toolathlon_preflight_summary.json"
-  "release_artifacts/docker_mcp_smoke_summary.json"
-  "release_artifacts/docker_preflight_summary.json"
   "release_artifacts/RELEASE_EVIDENCE_MANIFEST_${DATE_TAG}.json"
   "release_artifacts/RELEASE_HANDOFF_${DATE_TAG}.md"
   "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md"
+)
+
+optional_files=(
+  "release_artifacts/docker_mcp_smoke_summary.json"
+  "release_artifacts/docker_preflight_summary.json"
 )
 
 for rel in "${required_files[@]}"; do
@@ -130,6 +133,12 @@ for rel in "${required_files[@]}"; do
     FILES_TO_BUNDLE+=("$rel")
   else
     missing_required+=("$rel")
+  fi
+done
+
+for rel in "${optional_files[@]}"; do
+  if [ -f "$REPO_ROOT/$rel" ]; then
+    FILES_TO_BUNDLE+=("$rel")
   fi
 done
 

@@ -44,6 +44,9 @@ def test_release_status_schema_and_values() -> None:
     }
     assert payload["release_classification"] in allowed
     assert payload["toolathlon_profile"] == "smoke"
+    assert payload["smoke_targets"] == ["rail_12306", "filesystem"]
+    assert payload["removed_smoke_targets"] == ["google_calendar"]
+    assert "google_calendar" not in payload["smoke_targets"]
     assert payload["production_claim_allowed"] is False
 
 
@@ -61,6 +64,16 @@ def test_validation_logs_present_and_recent() -> None:
         assert path.exists(), f"Missing required validation log: {rel}"
         mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
         assert now - mtime <= max_age, f"Validation log is stale: {rel}"
+
+
+def test_validation_summary_tracks_two_target_smoke_profile() -> None:
+    summary = _load_json(REPO_ROOT / ".validation_logs" / "validation_summary.json")
+
+    assert summary["toolathlon_profile"] == "smoke"
+    assert summary["smoke_targets"] == ["rail_12306", "filesystem"]
+    assert summary["excluded_smoke_targets"] == ["google_calendar"]
+    assert summary["full_toolathlon_profile_validated"] is False
+    assert "google_calendar" not in summary["smoke_targets"]
 
 
 def test_verify_release_pair_succeeds_for_source_bundle_mode() -> None:

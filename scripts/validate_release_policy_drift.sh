@@ -30,6 +30,7 @@ for required_var in \
   EXPECTED_EVIDENCE_NAME \
   EXPECTED_EVIDENCE_SHA \
   EXPECTED_TOOLATHLON_PROFILE \
+  EXPECTED_SMOKE_TARGETS \
   EXPECTED_MCP_PACKAGE_COUNT; do
   require_attestation_value "$required_var"
 done
@@ -127,7 +128,7 @@ if [ "$missing" -ne 0 ]; then
   exit 1
 fi
 
-python3 - "$REPO_ROOT" "$EXPECTED_RELEASE_NAME" "$EXPECTED_RELEASE_SHA" "$EXPECTED_EVIDENCE_NAME" "$EXPECTED_EVIDENCE_SHA" "$EXPECTED_TOOLATHLON_PROFILE" "$EXPECTED_MCP_PACKAGE_COUNT" "$REQUIRE_VALIDATION_LOGS" <<'PY'
+python3 - "$REPO_ROOT" "$EXPECTED_RELEASE_NAME" "$EXPECTED_RELEASE_SHA" "$EXPECTED_EVIDENCE_NAME" "$EXPECTED_EVIDENCE_SHA" "$EXPECTED_TOOLATHLON_PROFILE" "$EXPECTED_SMOKE_TARGETS" "$EXPECTED_MCP_PACKAGE_COUNT" "$REQUIRE_VALIDATION_LOGS" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -139,15 +140,33 @@ from pathlib import Path
     expected_evidence_name,
     expected_evidence_sha,
     expected_profile,
+    expected_smoke_targets_raw,
     expected_pkg_count,
     require_logs,
 ) = sys.argv[1:]
 
 root = Path(repo_root)
 expected_pkg_count_int = int(expected_pkg_count)
+expected_smoke_targets = [item.strip() for item in expected_smoke_targets_raw.split(",") if item.strip()]
 require_logs_bool = require_logs == "1"
 
 errors: list[str] = []
+
+
+def require_sequence(actual, expected, label):
+    if actual != expected:
+        errors.append(f"{label} mismatch (expected {expected!r}, got {actual!r})")
+
+
+release_status_path = root / "RELEASE_STATUS.json"
+if release_status_path.exists():
+    release_status = json.loads(release_status_path.read_text(encoding="utf-8"))
+    smoke_targets = release_status.get("smoke_targets")
+    if smoke_targets is not None:
+        require_sequence(smoke_targets, expected_smoke_targets, f"{release_status_path}:smoke_targets")
+    removed_targets = release_status.get("removed_smoke_targets")
+    if removed_targets is not None and "google_calendar" not in removed_targets:
+        errors.append(f"{release_status_path}:removed_smoke_targets must include 'google_calendar'")
 
 manifest_candidates = [
     root / "RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
@@ -202,28 +221,37 @@ if require_logs_bool:
             errors.append(f"Missing required validation summary: {required}")
 
 if require_logs_bool and artifact_summary_path.exists():
-  artifact_summary = json.loads(artifact_summary_path.read_text(encoding="utf-8"))
-  if artifact_summary.get("profile") != expected_profile:
-    errors.append(
-      f"{artifact_summary_path}: profile mismatch (expected {expected_profile!r}, got {artifact_summary.get('profile')!r})"
-    )
-  if artifact_summary.get("expected_package_count") != expected_pkg_count_int:
-    errors.append(
-      f"{artifact_summary_path}: expected_package_count mismatch (expected {expected_pkg_count_int}, got {artifact_summary.get('expected_package_count')!r})"
-    )
-  if artifact_summary.get("package_count") != expected_pkg_count_int:
-    errors.append(
-      f"{artifact_summary_path}: package_count mismatch (expected {expected_pkg_count_int}, got {artifact_summary.get('package_count')!r})"
-    )
+    artifact_summary = json.loads(artifact_summary_path.read_text(encoding="utf-8"))
+    if artifact_summary.get("profile") != expected_profile:
+        errors.append(
+            f"{artifact_summary_path}: profile mismatch (expected {expected_profile!r}, got {artifact_summary.get('profile')!r})"
+        )
+    if artifact_summary.get("expected_package_count") != expected_pkg_count_int:
+        errors.append(
+            f"{artifact_summary_path}: expected_package_count mismatch (expected {expected_pkg_count_int}, got {artifact_summary.get('expected_package_count')!r})"
+        )
+    if artifact_summary.get("package_count") != expected_pkg_count_int:
+        errors.append(
+            f"{artifact_summary_path}: package_count mismatch (expected {expected_pkg_count_int}, got {artifact_summary.get('package_count')!r})"
+        )
+    packages = [item.get("package") for item in artifact_summary.get("packages", []) if isinstance(item, dict)]
+    if packages:
+        require_sequence(packages, expected_smoke_targets, f"{artifact_summary_path}:packages")
 
 if require_logs_bool and validation_summary_path.exists():
-  validation_summary = json.loads(validation_summary_path.read_text(encoding="utf-8"))
-  capabilities = validation_summary.get("capabilities", {})
-  profile = capabilities.get("toolathlon_profile")
-  if profile != expected_profile:
-    errors.append(
-      f"{validation_summary_path}: capabilities.toolathlon_profile mismatch (expected {expected_profile!r}, got {profile!r})"
-    )
+    validation_summary = json.loads(validation_summary_path.read_text(encoding="utf-8"))
+    capabilities = validation_summary.get("capabilities", {})
+    profile = capabilities.get("toolathlon_profile")
+    if profile != expected_profile:
+        errors.append(
+            f"{validation_summary_path}: capabilities.toolathlon_profile mismatch (expected {expected_profile!r}, got {profile!r})"
+        )
+    smoke_targets = validation_summary.get("smoke_targets")
+    if smoke_targets is not None:
+        require_sequence(smoke_targets, expected_smoke_targets, f"{validation_summary_path}:smoke_targets")
+    excluded_targets = validation_summary.get("excluded_smoke_targets")
+    if excluded_targets is not None and "google_calendar" not in excluded_targets:
+        errors.append(f"{validation_summary_path}:excluded_smoke_targets must include 'google_calendar'")
 
 if errors:
     print("Release policy drift detected:", file=sys.stderr)

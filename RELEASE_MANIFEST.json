@@ -1,19 +1,19 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-27T06:28:12.402168+00:00",
+  "created_at_utc": "2026-05-27T07:39:32.195727+00:00",
   "profile": "smoke",
   "files": [
     {
       "path": "CLAIMS_MATRIX.md",
-      "sha256": "8f76de173e46f0848ccc420a81990df3c3d6a00469dc9e224789923e8fa0d38c"
+      "sha256": "10086ca1b645d6c650ed0ed73eccd4fa9c06dc76597e20da07c13b1363dc0a76"
     },
     {
       "path": "README.md",
-      "sha256": "32bb57cdcd1dd21a340e5a49ab028f3d9c8004243764e85708043d1b40ca3c2b"
+      "sha256": "a5d370346753ab1242d0265b598d6bb2b2656799dab297f6548defb8c3b0213e"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "603b89a7c4a381613551572dc134823f12389f2c82332a0eb83e870c307e3aca"
+      "sha256": "584565fe1fd9b6f6b4f1ab64e4c54fdc135a7c2ead178ad25702c893324b33fb"
     },
     {
       "path": "ToolForge/.bandit",
@@ -2409,27 +2409,27 @@
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "9bd43b3a89c0b4ef9ff1c2ada53437f7ab4dab89dc4969e5c0bcf8240b115f4f"
+      "sha256": "ff9330dbbd343a2cc4c914949e06e599a8c03cd6840c071015e792169aec0b59"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
       "sha256": "b4ae55d8b7e28143407d72146a9dcbf425006d4e000566f2de41b1238951dc1c"
     },
     {
+      "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-27.json",
+      "sha256": "8a4159f5bf057b6dcfaa3193b2ff03b0e3c8d2b3bd7d3c3ddd2de2d14ee6871d"
+    },
+    {
       "path": "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
-      "sha256": "a8f0aa7702e3afa906546787565086b2dd52fea7d5f0f8068c622e62b02a4b33"
+      "sha256": "f127f1406413b5bd30199ff15e3794b8ce1b9d3e478fcfc2d9530c4c69eaa138"
+    },
+    {
+      "path": "release_artifacts/RELEASE_HANDOFF_2026-05-27.md",
+      "sha256": "691a949dc11b903e9dca5b47e4572042d7ad41f29b87a039cbe8965dd8fce27a"
     },
     {
       "path": "release_artifacts/SKILLFORGE_CANDIDATE_MANIFEST_2026-05-25.json",
       "sha256": "eabe4b7bc26e4042dab15d1937fc9c63e82a90da8a52fd686c7e42e51a42aef4"
-    },
-    {
-      "path": "release_artifacts/docker_mcp_smoke_summary.json",
-      "sha256": "6e0ba9fe200f7d2a5e5c34e91766f56b69e48ef7dd8af376cf4344fad7b72753"
-    },
-    {
-      "path": "release_artifacts/docker_preflight_summary.json",
-      "sha256": "7232919ae2c4f9407eac888d283939db51cc330abbcbea88225ed6995d8e461e"
     },
     {
       "path": "release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log",
@@ -2461,19 +2461,19 @@
     },
     {
       "path": "release_artifacts/toolathlon_artifact_build_summary.json",
-      "sha256": "a963024d1f5fb709199b7e28244fb0e06996adcf2f7fc4f136e23e4894c7a225"
+      "sha256": "7c333a85ff229e8b42dd1d3bd69cdd53178fa5413b7c350f564fc3d50bb31014"
     },
     {
       "path": "release_artifacts/toolathlon_mcp_smoke_summary.json",
-      "sha256": "8014471c33270abad8b93a0dca284a5aef3f8cae69412d925ea262b41ccd8452"
+      "sha256": "836039a1b622a032304cde624a922550be70955bca4be9c07a6536f9e7db35cf"
     },
     {
       "path": "release_artifacts/toolathlon_preflight_summary.json",
-      "sha256": "5e24f1852ea6209a0447fea5df273a297804a1e72c3f3e6c4440d07c81c10d23"
+      "sha256": "783d8d96b4da7e461ab2bf6d75089da06e7c4e8d875ad7796f627444da6615c4"
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "88c0045712034c16a0febb60ae42d4791b2408d262410931baeaeb5a0dbeb00a"
+      "sha256": "ebf58734b9a0e1d34f7b57dc9973f1824ff80c2743da66213fe96eedef4370bd"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2485,7 +2485,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "72bfc0f4c0c86141c2a92084a79b027dfa9f7a03fa6cbbd8044dadcb2a58a67d"
+      "sha256": "705a9dbb63d773688005a716775caedd3f648681a97fd70a2ad3f8e55656e074"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
@@ -2505,11 +2505,11 @@
     },
     {
       "path": "scripts/create_evidence_bundle.sh",
-      "sha256": "e2f6af102cfaacd71c2118230dbc8b83bed61f16bb54e345efa1bf10e4eb591f"
+      "sha256": "00a972cc5ac0f2076906785f043f2a8ad3a23212ec50de456f01ae3f617b3917"
     },
     {
       "path": "scripts/create_release_zip.sh",
-      "sha256": "d63ca14561e00c6dfa2eae746112f4192dd1e637a92db5ebc79f428fe5c3d3a1"
+      "sha256": "6a0a4b07481c37a8877e30c331237655810a2afcbc80768546682b0249d44b17"
     },
     {
       "path": "scripts/create_skillforge_evidence_bundle.sh",
@@ -2529,7 +2529,7 @@
     },
     {
       "path": "scripts/generate_release_manifest.py",
-      "sha256": "d337ca0447c9d09cbd3e28ca37e4b09075b62a408540077b917953b1da8b8ec5"
+      "sha256": "7316946e834d59103f6b972d1b4d09ae41839895e0bdb97dcb9fe852e1122bd8"
     },
     {
       "path": "scripts/generate_skillforge_ai_summaries.sh",
@@ -2577,7 +2577,7 @@
     },
     {
       "path": "scripts/validate_release_policy_drift.sh",
-      "sha256": "64a7d2f900ba9f42ce677eee808e3088fa276444489a88e68dfe2fb1288ea899"
+      "sha256": "61f70f11c3d79b756ad34efc1a757edd5c70c60b6d335a6e5e811f616fb1fbd9"
     },
     {
       "path": "scripts/validate_smoke_workspace.sh",
@@ -2585,7 +2585,7 @@
     },
     {
       "path": "scripts/validate_workspace.sh",
-      "sha256": "3b0c901df8bde874844b9b2bc18ed2f9d56eccadb951ea08427d46e34436e6ee"
+      "sha256": "e4e6838daa5225815619cdf6edffbd3f19e626a92b19ee1339f7e82b7fbc8ba2"
     },
     {
       "path": "scripts/verify_canonical_release_pair.sh",
@@ -2593,7 +2593,7 @@
     },
     {
       "path": "scripts/verify_evidence_bundle.sh",
-      "sha256": "953b5834f191b115bbfef73afc8e57d5238488a67ef450fb5f6a1261385b6c9e"
+      "sha256": "1a5c120ee4800555fcad5c32425d3d0344aa825019fa2c6ad09892b1f09bad5b"
     },
     {
       "path": "scripts/verify_manifest_hash_agreement.py",
@@ -2617,7 +2617,7 @@
     },
     {
       "path": "scripts/verify_skip_existing_artifacts_strict.sh",
-      "sha256": "fcf9712f3d645fd70b871bc105dc7384bfef70ca726201cd9c5d8e461a6c6a8d"
+      "sha256": "46f046ae02dc7370ca504d1fc35659a1307a1570e9249279bd6bf4d87c4b2bda"
     },
     {
       "path": "scripts/verify_source_bundle_hygiene.sh",
@@ -2649,7 +2649,7 @@
     },
     {
       "path": "toolathlon-gym-curated/PROFILES.md",
-      "sha256": "aa9f0d3cf18c650cb489f463cd6d75b1fe8ba4255667ffe6a90392040add364d"
+      "sha256": "75e0b7b05c140280e0c1db8ab9c72cd48d3a17b1b778088ddcbac0e607e65ab8"
     },
     {
       "path": "toolathlon-gym-curated/README.md",
@@ -2690,10 +2690,6 @@
     {
       "path": "toolathlon-gym-curated/configs/mcp_servers/filesystem.yaml",
       "sha256": "0697deaa56ea9dc153fb53b7aaa8942f9da85142b33a23b1dbd9d7ce1822bc6d"
-    },
-    {
-      "path": "toolathlon-gym-curated/configs/mcp_servers/google_calendar.yaml",
-      "sha256": "84e81cdf24ec3c65729bff3e873203b0e0983cf5c767ccbb2c7dc2bf41c17eee"
     },
     {
       "path": "toolathlon-gym-curated/configs/mcp_servers/google_forms.yaml",
@@ -2862,14 +2858,6 @@
     {
       "path": "toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/README.md",
       "sha256": "5c1a6b8de561a8e28a1964f8da9b8130eb12f0f7592ce74c31ed0fb8e0dc2ee2"
-    },
-    {
-      "path": "toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "sha256": "a06d57676a986a204604832911c9e692dcf53e826c5a809a93ce59a20bbb7257"
-    },
-    {
-      "path": "toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/pg-calendar.js",
-      "sha256": "0693f94bfa2167e9b3cf7a2955bd601b9890c3bfb4ec4ec91905f61e99535b37"
     },
     {
       "path": "toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/docker-compose.yml",
@@ -6261,7 +6249,7 @@
     },
     {
       "path": "toolathlon-gym-curated/profiles/smoke/mcp_servers.json",
-      "sha256": "a17eeec38237d1551de0356424a5c5807dcfe64b5938848adc3b4a8f1cb0ed1d"
+      "sha256": "df9f77cdc3255c43bbc5bb82e9ab15dca7cfc9d1cc14c06044e7fb3ac58810d9"
     },
     {
       "path": "toolathlon-gym-curated/profiles/smoke/tasks.json",

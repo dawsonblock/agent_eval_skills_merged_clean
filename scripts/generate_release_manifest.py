@@ -40,6 +40,14 @@ INCLUDED_TOP_LEVEL = {
     "CLAIMS_MATRIX.md",
 }
 
+EXCLUDED_RELATIVE_PATHS = {
+    "toolathlon-gym-curated/configs/mcp_servers/google_calendar.yaml",
+}
+
+EXCLUDED_RELATIVE_PREFIXES = (
+    "toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/",
+)
+
 
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
@@ -51,9 +59,16 @@ def sha256(path: Path) -> str:
 
 def should_include(path: Path) -> bool:
     rel = path.relative_to(ROOT)
+    rel_posix = rel.as_posix()
 
     top = rel.parts[0]
     if top not in INCLUDED_TOP_LEVEL:
+        return False
+
+    if rel_posix in EXCLUDED_RELATIVE_PATHS:
+        return False
+
+    if any(rel_posix.startswith(prefix) for prefix in EXCLUDED_RELATIVE_PREFIXES):
         return False
 
     if any(part in EXCLUDED_PARTS for part in rel.parts):

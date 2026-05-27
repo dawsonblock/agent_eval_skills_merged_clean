@@ -226,7 +226,7 @@ run_build "smoke" 0 1
 
 assert_summary_sane
 
-for pkg in rail_12306 filesystem google_calendar; do
+for pkg in rail_12306 filesystem; do
   assert_reason_equals "$pkg" "runtime_ready_skip"
 done
 

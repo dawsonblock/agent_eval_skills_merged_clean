@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-05-27T05:25:16.279057+00:00",
+  "checked_at": "2026-05-27T07:23:23.371221+00:00",
   "config_dir": "${REPO_ROOT}/toolathlon-gym-curated/configs/mcp_servers",
   "found": [
     {
@@ -11,14 +11,9 @@
       "config": "filesystem.yaml",
       "path": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "server": "filesystem"
-    },
-    {
-      "config": "google_calendar.yaml",
-      "path": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "server": "google_calendar"
     }
   ],
-  "found_count": 3,
+  "found_count": 2,
   "local_servers_dir": "${REPO_ROOT}/toolathlon-gym-curated/local_servers",
   "missing": [],
   "missing_count": 0,

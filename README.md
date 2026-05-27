@@ -19,9 +19,9 @@
 Historical attested pair reference:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
+  - SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `96e7f2633f91e90302a6150a3136130a6ae4014287d8ab1cf48d90ae97cbc2e0`
+  - SHA256: `34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a`
 
 Validated scope for the historical pair is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
@@ -66,7 +66,7 @@ This repository can validate with two profiles:
 
 Release-candidate status applies to the `smoke` profile by default only after fresh environment proof is attached. The `full` profile remains available for extended validation and should only be claimed when separate full-profile evidence is present.
 
-For this repository, only 3 smoke-profile Toolathlon MCP targets are release-gated (`rail_12306`, `filesystem`, `google_calendar`). The broader 25-server inventory is retained but not fully release-validated by the default gate.
+For this repository, only 2 smoke-profile Toolathlon MCP targets are release-gated (`rail_12306`, `filesystem`). Google Calendar remains optional/full-profile only. The broader 25-server inventory is retained but not fully release-validated by the default gate.
 
 Validated scope:
 
@@ -138,7 +138,7 @@ This repository is a controlled-merge of three interconnected systems designed f
 | --- | --- | --- |
 | [**ToolForge**](ToolForge/) | Create, validate, run, and package AI tool prototypes as MCP servers and Copilot Skills | CLI platform |
 | [**Agent Skills**](agent-skills-curated/) | Curated registry of reusable agent skills with built-in evaluation | 23 curated skills |
-| [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers inventory (default smoke gate validates 3 targets) |
+| [**Toolathlon GYM**](toolathlon-gym-curated/) | Self-contained benchmark environment for evaluating LLM agents on real-world tasks | 503 tasks · 25 MCP servers inventory (default smoke gate validates 2 targets) |
 
 ---
 

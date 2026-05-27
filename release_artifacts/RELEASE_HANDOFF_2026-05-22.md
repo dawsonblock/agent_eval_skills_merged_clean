@@ -2,7 +2,7 @@
 
 Repository: agent_eval_skills_merged_clean
 Branch: main
-Commit: cd757b1
+Commit: cebce44
 
 ## Current Label
 
@@ -13,7 +13,7 @@ Promotion label is permitted only when the matching machine-readable evidence bu
 ## Upload Archive
 
 - Archive: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-- SHA256: `9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251`
+- SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
 - Forbidden-entry scan: passed (`__MACOSX`, `._*`, `.DS_Store`, `node_modules`, `.validation_logs`, caches, `.venv` absent)
 
 ## Required Evidence Bundle (same build/hash)
@@ -22,19 +22,18 @@ Promotion label is permitted only when the matching machine-readable evidence bu
 - `.validation_logs/toolathlon_artifact_build_summary.json`
 - `.validation_logs/toolathlon_mcp_smoke_summary.json`
 - `.validation_logs/toolathlon_preflight_summary.json`
-- `.validation_logs/docker_mcp_smoke_summary.json`
-- `.validation_logs/docker_preflight_summary.json`
 - `RELEASE_EVIDENCE_MANIFEST_2026-05-22.json`
 
 ## Gate Snapshot (from current local proof run)
 
 - Unified validation: `overall_status=passed`, `failed_phase_count=0`
-- Unified validation runtime: `python_version=3.12.9`
-- Toolathlon artifact build: `profile=smoke`, `overall_status=passed`, `package_count=3`, `expected_package_count=3`, `failed_count=0`
-- Toolathlon MCP smoke: `profile=smoke`, `overall_status=passed`, `target_count=3`, `passed_count=3`, `failed_count=0`
+- Unified validation runtime: `python_version=3.12.12`
+- Toolathlon smoke targets: `rail_12306`, `filesystem`
+- Toolathlon artifact build: `profile=smoke`, `overall_status=passed`, `package_count=2`, `expected_package_count=2`, `failed_count=0`
+- Toolathlon MCP smoke: `profile=smoke`, `overall_status=passed`, `target_count=2`, `passed_count=2`, `failed_count=0`
 - Toolathlon preflight: `profile=smoke`, `status=passed`, `missing_count=0`
-- Docker MCP smoke: `profile=smoke`, `overall_status=passed`, `failed_count=0`
-- Docker preflight: `profile=smoke`, `status=passed`, `missing_count=0`
+
+Google Calendar is optional/full-profile only and is not part of the required smoke gate.
 
 ## Promotion Rule
 

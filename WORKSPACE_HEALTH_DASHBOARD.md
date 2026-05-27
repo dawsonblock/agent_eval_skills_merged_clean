@@ -3,14 +3,14 @@
 **Date:** May 27, 2026  
 **Scope:** agent_eval_skills_merged_clean  
 **Classification:** `SOURCE_BUNDLE` repair state. Historical attested smoke-pair data is listed below for reference.
-**Historical clean archive SHA256:** `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
+**Historical clean archive SHA256:** `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
 
 Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
+  - SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `96e7f2633f91e90302a6150a3136130a6ae4014287d8ab1cf48d90ae97cbc2e0`
+  - SHA256: `34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 
@@ -40,10 +40,10 @@ ZIP cache cleanliness ......... ✅ Verified
 Python syntax ................. ✅ Verified
 Agent Skills .................. ✅ Verified
 ToolForge grouped validation .. ✅ Passed on supported Python
-Toolathlon MCP smoke .......... ✅ Passed (`profile=smoke`, `passed_count=3`, `failed_count=0`)
+Toolathlon MCP smoke .......... ✅ Passed (`profile=smoke`, `passed_count=2`, `failed_count=0`)
 Toolathlon fresh preflight .... ✅ Passed (`profile=smoke`, `missing_count=0`)
-Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=3`, `expected_package_count=3`, `failed_count=0`)
-Docker validation ............. ✅ Passed (`profile=smoke`, `target_count=3`, `failed_count=0`, checked_at=2026-05-23T20:49:14Z)
+Toolathlon artifact builder ... ✅ Passed (`profile=smoke`, `package_count=2`, `expected_package_count=2`, `failed_count=0`)
+Docker validation ............. ✅ Passed (`profile=smoke`, `target_count=2`, `failed_count=0`, checked_at=2026-05-23T20:49:14Z)
 Unified validation ............ ✅ Passed (`overall_status=passed`, run_finished_at=2026-05-23T20:47:54Z)
 Release readiness ............. ✅ Pruned smoke release candidate for controlled testing (hash-bound evidence attached)
 ```
@@ -61,6 +61,8 @@ Release-candidate gate is satisfied **only when** the listed evidence artifacts 
 Docker proof is optional for the default smoke gate and must only be claimed when generated in the same evidence run (or explicitly attached as external CI evidence).
 
 The `full` profile remains available for extended validation but is not part of the default release-candidate gate until full evidence passes.
+
+The release-gated smoke target set is `rail_12306` and `filesystem`. Google Calendar is optional/full-profile only.
 
 If any required summary artifact shows `profile != smoke` (or unified summary shows `capabilities.toolathlon_profile != smoke`), default release-candidate status is not met and evidence must be regenerated using the smoke validation entrypoint.
 

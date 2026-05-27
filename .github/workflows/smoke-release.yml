@@ -27,11 +27,18 @@ jobs:
                   python -m pip install --upgrade pip
                   python -m pip install -e ".[dev]"
 
-            - name: Build Google Calendar MCP artifact
-              run: |
-                  cd toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server
-                  npm ci --ignore-scripts
-                  npm run build
+                        - name: Verify smoke profile excludes google_calendar
+                            run: |
+                                    python - <<'PY'
+                                    import json
+                                    from pathlib import Path
+
+                                    profile = json.loads(Path('toolathlon-gym-curated/profiles/smoke/mcp_servers.json').read_text(encoding='utf-8'))
+                                    servers = profile.get('servers', [])
+                                    assert servers == ['rail_12306', 'filesystem'], servers
+                                    assert 'google_calendar' not in servers, servers
+                                    print('Smoke profile target list verified:', servers)
+                                    PY
 
             - name: Prove smoke release
               run: |

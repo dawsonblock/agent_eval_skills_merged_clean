@@ -2,14 +2,22 @@
   "package_name": "agent_eval_skills_merged_clean",
   "release_classification": "SOURCE_BUNDLE",
   "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "canonical_release_sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
-  "uploaded_archive_sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
+  "canonical_release_sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
+  "uploaded_archive_sha256": "436f9b51b3ac053f8213154b60d8e22ba4fd979013d7b53e6612b461304e6ca6",
   "toolathlon_profile": "smoke",
+  "smoke_targets": [
+    "rail_12306",
+    "filesystem"
+  ],
+  "removed_smoke_targets": [
+    "google_calendar"
+  ],
   "full_profile_validated": false,
   "production_claim_allowed": false,
   "notes": [
     "This source bundle is not the canonical release archive.",
     "Only smoke-profile validation may be claimed unless full-profile logs are present.",
+    "The release-gated Toolathlon smoke profile currently covers rail_12306 and filesystem only.",
     "Release claims require matching archive hash, evidence hash, and fresh validation logs."
   ]
 }

@@ -66,6 +66,8 @@ def test_claims_matrix_contains_required_guardrails() -> None:
 
     required_snippets = [
         "Smoke MCP profile works | Yes",
+        "rail_12306",
+        "filesystem",
         "Full Toolathlon profile works | No",
         "Production safe sandbox | No",
         "Builds any tool | No",

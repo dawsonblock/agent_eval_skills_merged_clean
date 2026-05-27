@@ -1,15 +1,15 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "main",
-  "commit": "3b6a771",
+  "commit": "cebce44",
   "generated_at_utc": "2026-05-27T06:45:00Z",
   "attestation_event_date": "2026-05-27",
   "attestation_scope": "repo-local exact artifact pair",
   "workspace_classification": "SOURCE_BUNDLE",
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_zip_sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
+  "release_zip_sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
-  "evidence_zip_sha256": "96e7f2633f91e90302a6150a3136130a6ae4014287d8ab1cf48d90ae97cbc2e0",
+  "evidence_zip_sha256": "34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a",
   "validated_scope": [
     "ToolForge",
     "Agent Skills",
@@ -24,10 +24,10 @@
   ],
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
+    "sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
     "forbidden_entries_scan": "passed"
   },
-  "archive_sha256": "1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5",
+  "archive_sha256": "88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43",
   "validation_summary": {
     "overall_status": "passed",
     "failed_phase_count": 0,
@@ -44,9 +44,9 @@
   "toolathlon_artifact_build_summary": {
     "profile": "smoke",
     "overall_status": "passed",
-    "expected_package_count": 3,
-    "package_count": 3,
-    "passed_count": 3,
+    "expected_package_count": 2,
+    "package_count": 2,
+    "passed_count": 2,
     "failed_count": 0
   },
   "notes": [

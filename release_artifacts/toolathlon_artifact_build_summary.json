@@ -1,31 +1,24 @@
 {
-  "expected_package_count": 3,
+  "expected_package_count": 2,
   "failed_count": 0,
   "overall_status": "passed",
-  "package_count": 3,
+  "package_count": 2,
   "packages": [
     {
       "artifact": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
-      "duration_seconds": 9,
+      "duration_seconds": 15,
       "package": "rail_12306",
       "skipped_existing": false,
       "status": "passed"
     },
     {
       "artifact": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
-      "duration_seconds": 4,
+      "duration_seconds": 9,
       "package": "filesystem",
-      "skipped_existing": false,
-      "status": "passed"
-    },
-    {
-      "artifact": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server/build/index.js",
-      "duration_seconds": 7,
-      "package": "google_calendar",
       "skipped_existing": false,
       "status": "passed"
     }
   ],
-  "passed_count": 3,
+  "passed_count": 2,
   "profile": "smoke"
 }

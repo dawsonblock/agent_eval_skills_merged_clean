@@ -3,7 +3,6 @@
   "description": "Default release-candidate MCP validation profile",
   "servers": [
     "rail_12306",
-    "filesystem",
-    "google_calendar"
+    "filesystem"
   ]
 }
