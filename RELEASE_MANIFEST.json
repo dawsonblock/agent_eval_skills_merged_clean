@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-27T03:59:13.765041+00:00",
+  "created_at_utc": "2026-05-27T04:20:43.425466+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -2441,7 +2441,7 @@
     },
     {
       "path": "release_artifacts/skillforge_ai_candidate_build_summary.json",
-      "sha256": "cfc0ba1c4e4cdd2e514e52c782cf8399c60b57615b97bafb2a06ace3304c5d9c"
+      "sha256": "e3d4f219106142bdd80b0100f7f15c4412969ad6ac7d13e95da70c013d13e3f4"
     },
     {
       "path": "release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json",
