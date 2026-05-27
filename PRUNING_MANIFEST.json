@@ -1,6 +1,6 @@
 {
   "created_at": "2026-05-20 21:40:54 UTC",
-  "updated_at": "2026-05-23 20:50:00 UTC",
+  "updated_at": "2026-05-27 00:00:00 UTC",
   "source_archives": [
     "toolathlon_gym-main.zip",
     "agent-skills-main 3.zip"
@@ -9,6 +9,13 @@
   "output_archive_sha256": "9f206ffbdcfe83a2772579ea830c9124b930e6fae4240ee1817b2fac31616251",
   "evidence_archive": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
   "evidence_archive_sha256": "f365e50185cc1a37a0127c7c048a63e9ffb1a5e3aa755517bdaa45c5fd26f3c3",
+  "historical_hash_record": true,
+  "current_workspace_classification": "SOURCE_BUNDLE",
+  "current_workspace_release_status_ref": "RELEASE_STATUS.json",
+  "notes": [
+    "The archive and evidence SHA256 values in this manifest are historical build-record values from the original pruning event.",
+    "Do not treat this file as the current workspace source of truth for release identity after subsequent source-bundle repairs or independently rebuilt archives."
+  ],
   "status": "pruned_smoke_release_candidate_for_controlled_testing",
   "promotion_label": "pruned_smoke_release_candidate_for_controlled_testing",
   "default_profile": "smoke",

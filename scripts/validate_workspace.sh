@@ -709,6 +709,7 @@ TOOLATHLON_EXIT_CODE="$(status_to_exit_code "$TOOLATHLON_STATUS")"
 DOCKER_EXIT_CODE="$(status_to_exit_code "$DOCKER_STATUS")"
 
 write_validation_summary
+python "$REPO_ROOT/scripts/sanitize_release_paths.py"
 
 if [ "$failed" -eq 0 ]; then
   echo -e "${GREEN}✓ Workspace validation passed.${NC}"

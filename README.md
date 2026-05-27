@@ -14,16 +14,16 @@
 
 ## Overview
 
-**Current status (May 23, 2026):** Pruned smoke release candidate for controlled testing (accepted release archive hash: `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5` — see [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md)).
+**Current workspace status (May 27, 2026):** `SOURCE_BUNDLE` repair state. Historical smoke release-candidate metadata is retained below for the exact attested pair, but the live workspace and any independently rebuilt ZIPs must be treated as new candidates unless separately re-attested.
 
-Applies only to the canonical attested pair:
+Historical attested pair reference:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
   - SHA256: `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `cce91633dc9b8bf08e0ba0bac9a33f6a09205ce0d05ddd7a2476ba9c4b6bba55`
+  - SHA256: `96e7f2633f91e90302a6150a3136130a6ae4014287d8ab1cf48d90ae97cbc2e0`
 
-Validated scope is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
+Validated scope for the historical pair is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 
 Status claims are time-bound to attached evidence artifacts and must be re-validated in new environments before promotion. If required machine-readable proof is missing from CI/release artifacts for a future build, classification reverts to release-candidate candidate.
 

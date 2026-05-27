@@ -1,16 +1,16 @@
 # Workspace Health Dashboard
 
-**Date:** May 23, 2026  
+**Date:** May 27, 2026  
 **Scope:** agent_eval_skills_merged_clean  
-**Classification:** Pruned smoke release candidate for controlled testing.
-**Final clean archive SHA256:** `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
+**Classification:** `SOURCE_BUNDLE` repair state. Historical attested smoke-pair data is listed below for reference.
+**Historical clean archive SHA256:** `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
 
 Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
   - SHA256: `1cb8032f0dc753747656d588fda09f6dbb6b81d873902f6a01333c27223b7fd5`
 - `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `cce91633dc9b8bf08e0ba0bac9a33f6a09205ce0d05ddd7a2476ba9c4b6bba55`
+  - SHA256: `96e7f2633f91e90302a6150a3136130a6ae4014287d8ab1cf48d90ae97cbc2e0`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 

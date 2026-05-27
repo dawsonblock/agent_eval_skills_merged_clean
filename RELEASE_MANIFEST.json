@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-27T05:28:15.790468+00:00",
+  "created_at_utc": "2026-05-27T06:28:12.402168+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,7 +9,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "7aff2ea0e8b4ed69834b1fad974d0b6f06215ab23dded4f08ce00e1ad9471edd"
+      "sha256": "32bb57cdcd1dd21a340e5a49ab028f3d9c8004243764e85708043d1b40ca3c2b"
     },
     {
       "path": "RELEASE_STATUS.json",
@@ -2461,19 +2461,19 @@
     },
     {
       "path": "release_artifacts/toolathlon_artifact_build_summary.json",
-      "sha256": "592131521c4ab86a627c0deabf031341e9699c8b1a11307976accdb695019359"
+      "sha256": "a963024d1f5fb709199b7e28244fb0e06996adcf2f7fc4f136e23e4894c7a225"
     },
     {
       "path": "release_artifacts/toolathlon_mcp_smoke_summary.json",
-      "sha256": "e0c240d2ae5885a539cc1fd88ec9fa8c7a7485378005fcb0445747529a709100"
+      "sha256": "8014471c33270abad8b93a0dca284a5aef3f8cae69412d925ea262b41ccd8452"
     },
     {
       "path": "release_artifacts/toolathlon_preflight_summary.json",
-      "sha256": "af860e7be1b86d8a255b8588a08baa7b93c1697f37762bfd5c0aed971a5e3496"
+      "sha256": "5e24f1852ea6209a0447fea5df273a297804a1e72c3f3e6c4440d07c81c10d23"
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "9a069076a105da6037c21e166ac336d227e2377f437a81f64832c7babaa781c8"
+      "sha256": "88c0045712034c16a0febb60ae42d4791b2408d262410931baeaeb5a0dbeb00a"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2485,7 +2485,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "97c5da68b1409fd126840ba71face4e138b19e139853694aedb4161cdcfec17d"
+      "sha256": "72bfc0f4c0c86141c2a92084a79b027dfa9f7a03fa6cbbd8044dadcb2a58a67d"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",
@@ -2493,7 +2493,7 @@
     },
     {
       "path": "scripts/check_toolathlon_smoke_profile.sh",
-      "sha256": "547e537a65fdb8cd10b41f4b416d917f29d232e1d6e56ab00421d75036362139"
+      "sha256": "cfd96c16fc8b20bbc0f8df56090c2def872d2e9f1a802d688a9afc830750d9d9"
     },
     {
       "path": "scripts/classify_release_upload.sh",
@@ -2585,7 +2585,7 @@
     },
     {
       "path": "scripts/validate_workspace.sh",
-      "sha256": "948949c6f3204fd3ca5b61469c34bee4a85c5de455473a896358acc340a4fc3f"
+      "sha256": "3b0c901df8bde874844b9b2bc18ed2f9d56eccadb951ea08427d46e34436e6ee"
     },
     {
       "path": "scripts/verify_canonical_release_pair.sh",

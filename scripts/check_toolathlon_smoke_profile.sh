@@ -19,4 +19,6 @@ python scripts/smoke_mcp_servers.py \
 	--profile smoke \
 	--json-output "$LOG_DIR/toolathlon_mcp_smoke_summary.json"
 
+python "$ROOT/scripts/sanitize_release_paths.py"
+
 echo "Toolathlon smoke profile checks completed."

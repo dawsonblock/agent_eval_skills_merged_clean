@@ -90,11 +90,27 @@ zip_excludes=(
   -x "*/dist/*"
 )
 
+# Keep the source bundle free of attestation/hash-bearing release metadata.
+# This avoids self-referential hash churn when publishing attestation updates.
+release_metadata_excludes=(
+  -x "scripts/canonical_release_attestation.env"
+  -x "RELEASE_STATUS.json"
+  -x "RELEASE_ATTESTATION_*.md"
+  -x "RELEASE_EVIDENCE_MANIFEST_*.json"
+  -x "RELEASE_HANDOFF_*.md"
+  -x "RELEASE_NOTE_PUBLIC_*.md"
+  -x "release_artifacts/RELEASE_EVIDENCE_MANIFEST_*.json"
+  -x "release_artifacts/RELEASE_HANDOFF_*.md"
+)
+
+zip_excludes+=("${release_metadata_excludes[@]}")
+
 for exclude_glob in "${RELEASE_FORBIDDEN_ZIP_EXCLUDES[@]}"; do
   zip_excludes+=(-x "$exclude_glob")
 done
 
-zip -rq "$OUTPUT_PATH" . "${zip_excludes[@]}"
+# -X strips variable extra file attributes that can differ between runs.
+zip -rXq "$OUTPUT_PATH" . "${zip_excludes[@]}"
 
 if [ "$VALIDATE_ARCHIVE" -eq 1 ]; then
   tmp_forbidden="$(mktemp)"
