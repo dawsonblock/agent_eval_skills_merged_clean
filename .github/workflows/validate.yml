@@ -34,7 +34,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
-                  python-version: "3.11"
+                                    python-version: "3.12"
 
             - name: Install ToolForge dev dependencies
               working-directory: ./ToolForge
@@ -87,7 +87,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
-                  python-version: "3.11"
+                                    python-version: "3.12"
 
             - name: Install PyYAML
               run: |
@@ -120,16 +120,115 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
-                  python-version: "3.11"
+                  python-version: "3.12"
 
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
 
+            - name: Clean local cache artifacts
+              run: |
+                  find . -name '._*' -delete
+                  find . -name '.DS_Store' -delete
+                  rm -rf .pytest_cache .mypy_cache .ruff_cache
+                  find . -type d -name '__pycache__' -prune -exec rm -rf {} +
+                  find . -name '*.pyc' -delete
+
+            - name: Install ToolForge dev dependencies
+              working-directory: ./ToolForge
+              run: |
+                  python -m pip install --upgrade pip
+                  python -m pip install -e ".[dev]"
+
+            - name: Build Google Calendar MCP artifact
+              working-directory: ./toolathlon-gym-curated/local_servers/Calendar-Autoauth-MCP-Server
+              run: |
+                  npm ci --ignore-scripts
+                  npm run build
+
+            - name: Run smoke preflight check
+              run: |
+                  bash scripts/check_toolathlon_smoke_profile.sh
+
+            - name: Compile Python modules
+              run: |
+                  python -m compileall -q ToolForge/packages ToolForge/apps ToolForge/skillforge_ai ToolForge/tests tests scripts
+
+            - name: Run ToolForge targeted release tests
+              working-directory: ./ToolForge
+              run: |
+                  python -m pytest \
+                    tests/test_tool_spec.py \
+                    tests/test_path_safety.py \
+                    tests/test_safety_analyzer.py \
+                    tests/test_validators.py \
+                    tests/test_registry.py \
+                    tests/test_dangerous_tool_specs.py \
+                    tests/test_security_policy_expanded.py \
+                    tests/test_skillforge_lifecycle.py \
+                    tests/test_skillforge_ai \
+                    tests/test_local_deepseek_demo_adapter.py \
+                    tests/test_local_deepseek_demo_api.py \
+                    -q
+
+            - name: Run Agent Skills eval
+              run: |
+                  node agent-skills-curated/bin/cli.js eval
+
             - name: Run unified validation script
               run: |
-                  TOOLATHLON_PROFILE=smoke bash scripts/validate_workspace.sh
+                  TOOLATHLON_PROFILE=smoke ENFORCE_RC_SMOKE_PROFILE=1 bash scripts/validate_workspace.sh
+
+            - name: Strict absolute path leak check
+              run: |
+                  python scripts/check_no_absolute_local_paths.py --strict
+
+            - name: Build SkillForge candidate bundle
+              run: |
+                  bash scripts/build_skillforge_ai_candidate_zip.sh
+
+            - name: Verify SkillForge baseline gate
+              run: |
+                  bash scripts/verify_skillforge_baseline_gate.sh --allow-dirty
+
+            - name: Regenerate release manifest
+              run: |
+                  python scripts/generate_release_manifest.py
+
+            - name: Assert release manifest has zero missing files
+              run: |
+                  python - <<'PY'
+                  import json
+                  from pathlib import Path
+
+                  root = Path('.')
+                  manifest = json.loads(Path('RELEASE_MANIFEST.json').read_text(encoding='utf-8'))
+                  missing = [
+                      item['path']
+                      for item in manifest.get('files', [])
+                      if not (root / item['path']).exists()
+                  ]
+                  if missing:
+                      raise SystemExit('Manifest missing files: ' + ', '.join(missing[:20]))
+                  print('Release manifest missing-file check passed.')
+                  PY
+
+            - name: Verify evidence bundle policy
+              run: |
+                  bash scripts/verify_evidence_bundle.sh --evidence dist/release/agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
+
+            - name: Build canonical pruned smoke ZIP
+              run: |
+                  bash scripts/build_pruned_smoke_release.sh --canonical
+
+            - name: Verify canonical release pair
+              run: |
+                  bash scripts/verify_canonical_release_pair.sh
+
+            - name: Run root release policy tests
+              run: |
+                  PYTHONPATH=ToolForge python -m pytest tests/test_release_identity.py tests/test_claims_policy.py -q
 
             - name: Assert smoke profile evidence
               run: |
@@ -171,6 +270,22 @@ jobs:
 
                   print('Smoke evidence assertion passed.')
                   PY
+
+            - name: Upload validation logs
+              uses: actions/upload-artifact@v4
+              with:
+                  name: validation-logs-smoke
+                  path: .validation_logs
+                  if-no-files-found: error
+                  retention-days: 7
+
+            - name: Upload release artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist-release-smoke
+                  path: dist/release
+                  if-no-files-found: error
+                  retention-days: 7
 
     release-policy-drift:
         name: Validate Release Policy Drift
@@ -268,7 +383,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
-                  python-version: "3.11"
+                                    python-version: "3.12"
 
             - name: Set up Node.js
               uses: actions/setup-node@v4

@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-27T02:37:15.305314+00:00",
+  "created_at_utc": "2026-05-27T02:39:55.119609+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -97,7 +97,7 @@
     },
     {
       "path": "ToolForge/apps/local_deepseek_demo/toolforge_adapter.py",
-      "sha256": "2ab1abd8206fd5bcaf4ab0f54f7931cdd4dbda391192a8dc53f58c329984b1b8"
+      "sha256": "a413c225ff4511b3abbe6b45faf7117f81f8798af829e43aabf5e0966d9b6afd"
     },
     {
       "path": "ToolForge/apps/web/index.html",
@@ -845,7 +845,7 @@
     },
     {
       "path": "ToolForge/tests/test_local_deepseek_demo_adapter.py",
-      "sha256": "5cacfe7cb8f8439cbe0aa677bb6ecd52145fa590000a6a173587914e340934b1"
+      "sha256": "ba52fe189207785e847a7ded556eb2c496dad462ccb1d539a4d3d408110a0e15"
     },
     {
       "path": "ToolForge/tests/test_local_deepseek_demo_api.py",
@@ -2441,7 +2441,7 @@
     },
     {
       "path": "release_artifacts/skillforge_ai_candidate_build_summary.json",
-      "sha256": "cc31e261d074d438badac9e7908a481f8f67d2d49f59b41c3c9b8ed38f9875df"
+      "sha256": "cfc0ba1c4e4cdd2e514e52c782cf8399c60b57615b97bafb2a06ace3304c5d9c"
     },
     {
       "path": "release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json",
