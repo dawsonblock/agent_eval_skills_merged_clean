@@ -36,7 +36,7 @@
 
         <label for="modelSelect">Model</label>
         <select id="modelSelect"></select>
-        <input id="customModel" placeholder="custom model string" />
+        <input id="customModel" placeholder="custom model string" aria-label="Custom model string" />
 
         <label for="chatMode">Mode</label>
         <select id="chatMode">
@@ -83,7 +83,7 @@
 
         <div id="generatedToolsView" class="tab-view">
           <div class="view-toolbar split">
-            <input id="generatedToolSearch" type="search" placeholder="Filter generated tools..." />
+            <input id="generatedToolSearch" type="search" placeholder="Filter generated tools..." aria-label="Filter generated tools" />
             <button id="refreshGeneratedTools" type="button">Refresh Generated Tools</button>
           </div>
           <div id="generatedToolList" class="tool-list"></div>
@@ -94,7 +94,7 @@
 
       <aside class="sidebar right">
         <h2>Tool Registry</h2>
-        <input id="toolSearch" type="search" placeholder="Search tool registry..." />
+        <input id="toolSearch" type="search" placeholder="Search tool registry..." aria-label="Search tool registry" />
         <div id="selectedToolCard" class="selected-tool-card">
           <strong>No tool selected</strong>
           <div class="muted-note">Select a tool to preview permissions and run it safely.</div>
