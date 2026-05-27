@@ -148,6 +148,11 @@ def tools() -> dict[str, Any]:
     return {"tools": adapter.list_tools()}
 
 
+@app.get("/api/generated-tools")
+def generated_tools() -> dict[str, Any]:
+    return {"tools": adapter.list_generated_tools()}
+
+
 @app.post("/api/chat")
 async def chat(request: ChatRequest) -> dict[str, Any]:
     deepseek = DeepSeekClient(model=request.selected_model or None)
@@ -172,9 +177,12 @@ async def chat(request: ChatRequest) -> dict[str, Any]:
             if t.get("name")
         ]
 
+    mode_instruction = _build_mode_instruction(request.mode)
+    chat_messages = [{"role": "system", "content": mode_instruction}, *request.messages]
+
     try:
         response = await deepseek.chat(
-            messages=request.messages,
+            messages=chat_messages,
             tools=tools_payload,
             temperature=request.temperature,
             model=request.selected_model,
@@ -377,3 +385,29 @@ def _is_within_allowed_roots(candidate: Path, allowed_roots: list[Path]) -> bool
         except ValueError:
             continue
     return False
+
+
+def _build_mode_instruction(mode: str) -> str:
+    base = (
+        "You are the Local DeepSeek Tool UI assistant. Be concise, factual, and safe. "
+        "Do not invent filesystem state. If uncertain, ask for one clarifying detail."
+    )
+    if mode == "tool_use":
+        return (
+            base
+            + " In tool_use mode, prefer using available tools for concrete actions. "
+            "Before suggesting a tool call, provide a one-line rationale and explicit arguments. "
+            "Never request blocked capabilities such as shell_commands or read_secrets."
+        )
+    if mode == "tool_builder":
+        return (
+            base
+            + " In tool_builder mode, produce practical implementation guidance for generated tools. "
+            "Keep outputs structured with sections: Goal, Inputs, Outputs, Files, Safety Checks, Test Plan. "
+            "All file paths must stay under generated_tools/."
+        )
+    return (
+        base
+        + " In normal mode, answer directly and clearly. "
+        "When relevant, include short actionable next steps."
+    )

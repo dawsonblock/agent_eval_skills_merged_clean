@@ -1,6 +1,8 @@
 const state = {
   tools: [],
+  generatedTools: [],
   selectedTool: null,
+  selectedGeneratedTool: null,
   lastPlan: null,
   pendingRunArgs: {},
 };
@@ -17,6 +19,12 @@ const chatInput = document.getElementById("chatInput");
 const apiKeyStatus = document.getElementById("apiKeyStatus");
 const apiKeyInput = document.getElementById("apiKeyInput");
 const toggleApiKeyBtn = document.getElementById("toggleApiKey");
+const tabChat = document.getElementById("tabChat");
+const tabGeneratedTools = document.getElementById("tabGeneratedTools");
+const chatView = document.getElementById("chatView");
+const generatedToolsView = document.getElementById("generatedToolsView");
+const generatedToolList = document.getElementById("generatedToolList");
+const generatedToolDetails = document.getElementById("generatedToolDetails");
 
 async function request(path, options = {}) {
   const response = await fetch(path, {
@@ -115,6 +123,12 @@ async function loadTools() {
   renderTools();
 }
 
+async function loadGeneratedTools() {
+  const payload = await request("/api/generated-tools");
+  state.generatedTools = payload.tools || [];
+  renderGeneratedTools();
+}
+
 function renderTools() {
   toolList.innerHTML = "";
   state.tools.forEach((tool) => {
@@ -142,6 +156,39 @@ function renderTools() {
     });
     toolList.appendChild(card);
   });
+}
+
+function renderGeneratedTools() {
+  generatedToolList.innerHTML = "";
+  state.generatedTools.forEach((tool) => {
+    const card = document.createElement("div");
+    card.className = "tool-item" + (state.selectedGeneratedTool === tool.name ? " active" : "");
+    card.innerHTML = `
+      <strong>${escapeHtml(tool.name || "unnamed")}</strong>
+      <div>${escapeHtml(tool.path || "")}</div>
+      <small>registered=${Boolean(tool.registered)} validated=${Boolean(tool.validated)} risk=${escapeHtml(tool.risk_level || "unknown")}</small>
+    `;
+    card.addEventListener("click", () => {
+      state.selectedGeneratedTool = tool.name;
+      generatedToolDetails.textContent = JSON.stringify(tool, null, 2);
+      if (tool.registered) {
+        state.selectedTool = tool.name;
+        renderTools();
+      }
+      renderGeneratedTools();
+    });
+    generatedToolList.appendChild(card);
+  });
+}
+
+function activateTab(tabName) {
+  const isChat = tabName === "chat";
+  tabChat.classList.toggle("active", isChat);
+  tabGeneratedTools.classList.toggle("active", !isChat);
+  tabChat.setAttribute("aria-selected", isChat ? "true" : "false");
+  tabGeneratedTools.setAttribute("aria-selected", isChat ? "false" : "true");
+  chatView.classList.toggle("active", isChat);
+  generatedToolsView.classList.toggle("active", !isChat);
 }
 
 function selectedModel() {
@@ -317,9 +364,26 @@ document.getElementById("saveApiKey").addEventListener("click", saveApiKey);
 document.getElementById("toggleApiKey").addEventListener("click", toggleApiKeyVisibility);
 
 chatMode.addEventListener("change", () => {
+  if (chatMode.value === "normal") {
+    chatInput.placeholder = "Ask a direct question or request help with a tool...";
+  } else if (chatMode.value === "tool_use") {
+    chatInput.placeholder = "Describe the task and desired arguments. The assistant will suggest/use tools.";
+  } else {
+    chatInput.placeholder = "Describe the tool you want to generate, including inputs, outputs, and safety constraints.";
+  }
   if (chatMode.value === "tool_builder") {
     planTool();
   }
+});
+
+tabChat.addEventListener("click", () => activateTab("chat"));
+tabGeneratedTools.addEventListener("click", () => {
+  activateTab("generated_tools");
+  loadGeneratedTools().catch((error) => addMessage("validation_error", error.message));
+});
+
+document.getElementById("refreshGeneratedTools").addEventListener("click", () => {
+  loadGeneratedTools().catch((error) => addMessage("validation_error", error.message));
 });
 
 (async () => {
@@ -327,6 +391,8 @@ chatMode.addEventListener("change", () => {
     await loadHealth();
     await loadModels();
     await loadTools();
+    await loadGeneratedTools();
+    activateTab("chat");
   } catch (error) {
     addMessage("validation_error", error.message);
   }

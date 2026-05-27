@@ -116,6 +116,40 @@ def test_create_tool_from_plan_generates_expected_files(tmp_path: Path) -> None:
     assert (generated / "README.md").exists()
 
 
+def test_list_generated_tools_includes_registered_metadata(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    entrypoint, working_dir = _write_dummy_tool(tmp_path)
+    _write_dummy_spec(tmp_path)
+
+    generated = tmp_path / "generated_tools" / "demo-tool"
+    generated.mkdir(parents=True, exist_ok=True)
+    (generated / "tool.py").write_text("def run(inputs):\n    return {'ok': True}\n", encoding="utf-8")
+    (generated / "toolforge.yaml").write_text("name: demo-tool\nslug: demo-tool\n", encoding="utf-8")
+    (generated / "README.md").write_text("# demo-tool\n", encoding="utf-8")
+    (generated / "plan.json").write_text("{}\n", encoding="utf-8")
+
+    adapter.registry.register_tool(
+        {
+            "name": "demo-tool",
+            "type": "python",
+            "entrypoint": entrypoint,
+            "working_dir": working_dir,
+            "description": "demo",
+            "permissions": ["read_files"],
+            "risk_level": "low",
+            "validated": True,
+            "mcp_server": None,
+        }
+    )
+
+    rows = adapter.list_generated_tools()
+    assert rows
+    row = next(item for item in rows if item["name"] == "demo-tool")
+    assert row["registered"] is True
+    assert row["validated"] is True
+    assert row["has_spec"] is True
+
+
 def test_plan_tool_creation_returns_safety_metadata(tmp_path: Path) -> None:
     adapter = ToolForgeAdapter(tmp_path)
 

@@ -75,6 +75,42 @@ class ToolForgeAdapter:
             )
         return normalized
 
+    def list_generated_tools(self) -> list[dict[str, Any]]:
+        if not self.generated_root.exists():
+            return []
+
+        registry_by_name: dict[str, dict[str, Any]] = {}
+        for item in self.registry.list_registered_tools():
+            if isinstance(item, dict) and item.get("name"):
+                registry_by_name[str(item.get("name"))] = item
+
+        rows: list[dict[str, Any]] = []
+        for candidate in sorted(self.generated_root.iterdir()):
+            if not candidate.is_dir() or candidate.name == "_outputs":
+                continue
+
+            slug = candidate.name
+            spec_path = candidate / "toolforge.yaml"
+            test_dir = candidate / "tests"
+            plan_path = candidate / "plan.json"
+
+            registry_item = registry_by_name.get(slug)
+            rows.append(
+                {
+                    "name": slug,
+                    "path": str(candidate.relative_to(self.workspace_root)),
+                    "has_spec": spec_path.exists(),
+                    "has_tests": test_dir.exists() and test_dir.is_dir(),
+                    "has_plan": plan_path.exists(),
+                    "registered": registry_item is not None,
+                    "validated": bool(registry_item.get("validated", False)) if registry_item else False,
+                    "risk_level": str(registry_item.get("risk_level", "unknown")) if registry_item else "unknown",
+                    "description": str(registry_item.get("description", "")) if registry_item else "",
+                }
+            )
+
+        return rows
+
     def validate_tool_request(self, tool_name: str, args: dict[str, Any]) -> dict[str, Any]:
         tool = self.registry.get_registered_tool(tool_name)
         if not tool:

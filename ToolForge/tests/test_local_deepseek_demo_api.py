@@ -107,7 +107,10 @@ def test_health_and_models(client: TestClient, monkeypatch: pytest.MonkeyPatch) 
 
 
 def test_chat_with_mocked_deepseek(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
     async def fake_chat(*args, **kwargs):
+        captured.update(kwargs)
         return {
             "message": {"content": "mocked response", "tool_calls": []},
             "tool_calls": [],
@@ -131,6 +134,31 @@ def test_chat_with_mocked_deepseek(client: TestClient, monkeypatch: pytest.Monke
     body = resp.json()
     assert body["message_type"] == "assistant"
     assert body["assistant"] == "mocked response"
+    sent_messages = captured.get("messages")
+    assert isinstance(sent_messages, list)
+    assert sent_messages
+    assert sent_messages[0]["role"] == "system"
+    assert "Local DeepSeek Tool UI assistant" in sent_messages[0]["content"]
+
+
+def test_generated_tools_endpoint_lists_created_tool(
+    client: TestClient,
+    tmp_path: Path,
+) -> None:
+    slug = _register_demo_tool(tmp_path)
+
+    generated_dir = tmp_path / "generated_tools" / slug
+    generated_dir.mkdir(parents=True, exist_ok=True)
+    (generated_dir / "tool.py").write_text("def run(inputs):\n    return {'ok': True}\n", encoding="utf-8")
+    (generated_dir / "toolforge.yaml").write_text("name: demo-api-tool\nslug: demo-api-tool\n", encoding="utf-8")
+    (generated_dir / "README.md").write_text("# demo-api-tool\n", encoding="utf-8")
+
+    resp = client.get("/api/generated-tools")
+    assert resp.status_code == 200
+    payload = resp.json()
+    tools = payload["tools"]
+    names = [item["name"] for item in tools]
+    assert slug in names
 
 
 def test_set_api_key_endpoint(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
