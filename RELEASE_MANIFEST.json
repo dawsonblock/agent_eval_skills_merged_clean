@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-26T22:45:09.929273+00:00",
+  "created_at_utc": "2026-05-27T01:49:34.579625+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "4ad550a74624f9c80c14d128dc3d162eea35a82b33c53864f965a06d96230317"
+      "sha256": "116f02db5c3e190036064f96f8cdfad0c61616e004bb1236d540510600ddba81"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "cbb94db09e66138ed2ce65ea66d214dddefe55b95d7cbce29402d9aedef5094e"
+      "sha256": "e86b9328b9bc7e7b783fd8dc5e6320cf67fd501ed196fe561d1acb804e3c0430"
     },
     {
       "path": "ToolForge/.bandit",
@@ -957,7 +957,7 @@
     },
     {
       "path": "ToolForge/tests/test_skillforge_ai/test_skillforge_cli.py",
-      "sha256": "2c9aaaa0970c51107d2dcf70db634b4db80c04599e79789939f57cd5ee36ea63"
+      "sha256": "d9631b5c3a5d84c7e51112987a3021a96932b126548bebc2691aeb03c974759c"
     },
     {
       "path": "ToolForge/tests/test_skillforge_ai/test_skillforge_package_entrypoints.py",
@@ -2409,7 +2409,7 @@
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-      "sha256": "dcfd811953726611afab89aa0e197a8f30713849885882f659a08d9856d365c3"
+      "sha256": "35bd1dcec415a54490b6b2a443bfe02a8a4bd2626ea62193d21d3b5a86024307"
     },
     {
       "path": "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-23.json",
@@ -2441,7 +2441,7 @@
     },
     {
       "path": "release_artifacts/skillforge_ai_candidate_build_summary.json",
-      "sha256": "247933478bb02bfa8a8bec75e177676c93a0e4ccacc738b87bcb6b6cc734600f"
+      "sha256": "cc31e261d074d438badac9e7908a481f8f67d2d49f59b41c3c9b8ed38f9875df"
     },
     {
       "path": "release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json",
@@ -2461,19 +2461,19 @@
     },
     {
       "path": "release_artifacts/toolathlon_artifact_build_summary.json",
-      "sha256": "ead05781c90c6e915d720bebcbbfe124b1fc227a26e7de48cd712b18db6eadd4"
+      "sha256": "a6f26b7977cc169f49f2aaf9d5360319b12adc0f2bd4e092dfa4eabe8e8b0e23"
     },
     {
       "path": "release_artifacts/toolathlon_mcp_smoke_summary.json",
-      "sha256": "4f822255393ac885a19bd3225033cb9fbcceab6f43f4a1c98c87a60975cfd8bb"
+      "sha256": "e0de106be5f4e04a6455e239095bd5f47054ef7152bfa40758286e775fcde241"
     },
     {
       "path": "release_artifacts/toolathlon_preflight_summary.json",
-      "sha256": "b00f0d6a2b22ca46f85a0c05a2884a728acb5737fc7fc812f41c420d25db157e"
+      "sha256": "39c9db9d179d09ffc23e39122f47c3c51fa7c997dd90819cc5d075539b9988e5"
     },
     {
       "path": "release_artifacts/validation_summary.json",
-      "sha256": "d0803b3108562ff08a417f4b02d222ea7154f485d47318d8567ee69999169633"
+      "sha256": "868f193402b959dd426c8c29ffaf84dd78717f72686975323005d1de6ad86cb7"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
@@ -2485,7 +2485,7 @@
     },
     {
       "path": "scripts/canonical_release_attestation.env",
-      "sha256": "90601934119788f39b62f6e046dbd1fab00379e09c6f67e62605d8fc0e0693ae"
+      "sha256": "4d40fd09beed92fc8a3d5a46dcb4298f6cb0f13505a38f50add990b596acc2aa"
     },
     {
       "path": "scripts/check_no_absolute_local_paths.py",

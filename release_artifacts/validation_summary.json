@@ -14,16 +14,16 @@
       "duration_seconds": 22,
       "exit_code": 0,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_python_version.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_install.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_doctor.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_schema_path_safety.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_validator_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_registry_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_cli_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_e2e_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_eval_tests.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolforge_integration_tests.log"
+        "${REPO_ROOT}/.validation_logs/toolforge_python_version.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_install.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_doctor.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_schema_path_safety.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_validator_tests.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_registry_tests.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_cli_tests.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_e2e_tests.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_eval_tests.log",
+        "${REPO_ROOT}/.validation_logs/toolforge_integration_tests.log"
       ],
       "phase": "toolforge",
       "status": "passed"
@@ -32,8 +32,8 @@
       "duration_seconds": 1,
       "exit_code": 0,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/agent_skills_list.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/agent_skills_eval.log"
+        "${REPO_ROOT}/.validation_logs/agent_skills_list.log",
+        "${REPO_ROOT}/.validation_logs/agent_skills_eval.log"
       ],
       "phase": "agent_skills",
       "status": "passed"
@@ -42,11 +42,11 @@
       "duration_seconds": 38,
       "exit_code": 0,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_artifact_build.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_preflight.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_mcp_smoke_summary.json",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_preflight_summary.json",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/toolathlon_artifact_build_summary.json"
+        "${REPO_ROOT}/.validation_logs/toolathlon_artifact_build.log",
+        "${REPO_ROOT}/.validation_logs/toolathlon_preflight.log",
+        "${REPO_ROOT}/.validation_logs/toolathlon_mcp_smoke_summary.json",
+        "${REPO_ROOT}/.validation_logs/toolathlon_preflight_summary.json",
+        "${REPO_ROOT}/.validation_logs/toolathlon_artifact_build_summary.json"
       ],
       "phase": "toolathlon",
       "status": "passed"
@@ -55,16 +55,16 @@
       "duration_seconds": 0,
       "exit_code": null,
       "logs": [
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_build.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_preflight.log",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_mcp_smoke_summary.json",
-        "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.validation_logs/docker_preflight_summary.json"
+        "${REPO_ROOT}/.validation_logs/docker_build.log",
+        "${REPO_ROOT}/.validation_logs/docker_preflight.log",
+        "${REPO_ROOT}/.validation_logs/docker_mcp_smoke_summary.json",
+        "${REPO_ROOT}/.validation_logs/docker_preflight_summary.json"
       ],
       "phase": "docker",
       "status": "skipped"
     }
   ],
-  "python_executable": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/.venv31212/bin/python",
+  "python_executable": "${REPO_ROOT}/.venv31212/bin/python",
   "python_version": "3.12.12",
   "run_duration_seconds": 62,
   "run_finished_at": "2026-05-26T22:35:41Z",

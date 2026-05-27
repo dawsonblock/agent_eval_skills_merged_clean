@@ -25,7 +25,11 @@ def _make_workspace(tmp_path: Path) -> Path:
 
 @pytest.fixture()
 def runner() -> CliRunner:
-    return CliRunner(mix_stderr=False)
+    try:
+        return CliRunner(mix_stderr=False)
+    except TypeError:
+        # Click/Typer compatibility: some versions removed mix_stderr.
+        return CliRunner()
 
 
 @pytest.fixture()

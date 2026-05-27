@@ -10,7 +10,7 @@
     "promotion_requires_attached_evidence": true
   },
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_zip_sha256": "4d934a0bd6976d9918201dd8a616e599be827268014cae7853192f62b134e027",
+  "release_zip_sha256": "11b02ca3337b2bee31d70dc01250bad5e521b76aeb21d60361805e1c742456de",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip",
   "validated_scope": [
     "ToolForge",
@@ -26,7 +26,7 @@
   ],
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "4d934a0bd6976d9918201dd8a616e599be827268014cae7853192f62b134e027",
+    "sha256": "11b02ca3337b2bee31d70dc01250bad5e521b76aeb21d60361805e1c742456de",
     "forbidden_entries_scan": "passed",
     "forbidden_entries": [
       "__MACOSX",
@@ -41,7 +41,7 @@
       ".venv"
     ]
   },
-  "archive_sha256": "4d934a0bd6976d9918201dd8a616e599be827268014cae7853192f62b134e027",
+  "archive_sha256": "11b02ca3337b2bee31d70dc01250bad5e521b76aeb21d60361805e1c742456de",
   "evidence_files": [
     ".validation_logs/validation_summary.json",
     ".validation_logs/toolathlon_artifact_build_summary.json",
