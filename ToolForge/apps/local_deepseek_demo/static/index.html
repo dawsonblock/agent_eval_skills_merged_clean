@@ -4,12 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Local DeepSeek Tool UI Demo</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260527b" />
   </head>
   <body>
     <header class="topbar">
-      <h1>Local DeepSeek Tool UI Demo</h1>
-      <span id="apiKeyStatus" class="badge">Checking API key...</span>
+      <div class="title-block">
+        <h1>Local DeepSeek Tool UI Demo</h1>
+        <p class="subtitle">Build, validate, and run generated tools with guided safety controls.</p>
+      </div>
+      <div class="topbar-status">
+        <span id="activeModeBadge" class="badge">Mode: Normal Chat</span>
+        <span id="toolCountBadge" class="badge">Tools: 0</span>
+        <span id="generatedCountBadge" class="badge">Generated: 0</span>
+        <span id="apiKeyStatus" class="badge">Checking API key...</span>
+        <button id="toggleLeftSidebar" class="topbar-btn" type="button">Hide Settings</button>
+        <button id="toggleRightSidebar" class="topbar-btn" type="button">Hide Registry</button>
+        <button id="densityToggle" class="topbar-btn" type="button">Compact: Off</button>
+      </div>
     </header>
 
     <main class="layout">
@@ -36,6 +47,7 @@
 
         <div class="actions">
           <button id="refreshTools">Refresh Tools</button>
+          <button id="refreshGeneratedToolsFromSettings">Refresh Generated</button>
           <button id="clearChat">Clear</button>
           <button id="openOutput">Open Output Folder</button>
         </div>
@@ -48,6 +60,15 @@
         </div>
 
         <div id="chatView" class="tab-view active">
+          <div class="view-toolbar split">
+            <span id="chatHint" class="muted-note">Chat with model-aware, mode-specific instructions.</span>
+            <div class="template-controls">
+              <select id="templateSelect" aria-label="Prompt template selection"></select>
+              <button id="applyTemplate" type="button">Apply</button>
+              <button id="saveTemplate" type="button">Save Current</button>
+              <button id="deleteTemplate" type="button">Delete</button>
+            </div>
+          </div>
           <div id="chatMessages" class="chat-messages"></div>
           <div class="chat-input">
             <textarea id="chatInput" placeholder="Ask DeepSeek to chat, use tools, or design a new tool..."></textarea>
@@ -56,7 +77,8 @@
         </div>
 
         <div id="generatedToolsView" class="tab-view">
-          <div class="view-toolbar">
+          <div class="view-toolbar split">
+            <input id="generatedToolSearch" type="search" placeholder="Filter generated tools..." />
             <button id="refreshGeneratedTools" type="button">Refresh Generated Tools</button>
           </div>
           <div id="generatedToolList" class="tool-list"></div>
@@ -67,6 +89,7 @@
 
       <aside class="sidebar right">
         <h2>Tool Registry</h2>
+        <input id="toolSearch" type="search" placeholder="Search tool registry..." />
         <div id="toolList" class="tool-list"></div>
 
         <h2>Permission Preview</h2>
@@ -89,6 +112,6 @@
       <pre id="outputViewer" class="pre"></pre>
     </section>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=20260527b"></script>
   </body>
 </html>

@@ -7,11 +7,12 @@
   --line: #dbe1e8;
   --accent: #0f6d53;
   --danger: #a52020;
+  --shadow: 0 8px 24px rgba(14, 32, 48, 0.08);
 }
 
 body {
   margin: 0;
-  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  font-family: "Avenir Next", "IBM Plex Sans", "Segoe UI", sans-serif;
   background: linear-gradient(160deg, #eef3f8, #f7f9fc 45%, #eaf3ed);
   color: var(--text);
 }
@@ -19,15 +20,47 @@ body {
 .topbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--line);
   background: var(--panel);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.topbar-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.topbar-btn {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: #f8fafc;
 }
 
 h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
+  letter-spacing: 0.2px;
 }
 
 h2 {
@@ -37,9 +70,10 @@ h2 {
 
 .badge {
   font-size: 12px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border-radius: 12px;
-  background: #eceff3;
+  background: #f0f4f8;
+  border: 1px solid #d6e0ea;
 }
 
 .layout {
@@ -55,8 +89,14 @@ h2 {
 .bottom-drawer {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.sidebar {
+  max-height: calc(100vh - 112px);
+  overflow: auto;
 }
 
 .left label {
@@ -99,10 +139,14 @@ textarea {
 button {
   background: #fff;
   cursor: pointer;
+  font-weight: 600;
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
 button:hover {
   border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(15, 109, 83, 0.12);
+  transform: translateY(-1px);
 }
 
 .actions {
@@ -153,8 +197,35 @@ button:hover {
   justify-content: flex-end;
 }
 
+.view-toolbar.split {
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
 .view-toolbar button {
   width: auto;
+}
+
+.template-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.template-controls select {
+  min-width: 220px;
+  width: auto;
+}
+
+.template-controls button {
+  width: auto;
+}
+
+.muted-note {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .chat-messages {
@@ -170,10 +241,24 @@ button:hover {
 
 .message {
   border-left: 3px solid var(--line);
-  padding: 6px 8px;
+  padding: 8px 10px;
   margin-bottom: 8px;
   background: #fff;
   word-break: break-word;
+  border-radius: 8px;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.message-time {
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .message.user {
@@ -216,9 +301,10 @@ button:hover {
 .tool-item {
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 8px;
+  padding: 9px;
   margin-bottom: 8px;
   background: #fdfefe;
+  cursor: pointer;
 }
 
 .tool-item.active {
@@ -236,9 +322,85 @@ button:hover {
   margin: 0 12px 12px;
 }
 
+body.sidebar-left-collapsed .layout {
+  grid-template-columns: 1fr 320px;
+}
+
+body.sidebar-left-collapsed .sidebar.left {
+  display: none;
+}
+
+body.sidebar-right-collapsed .layout {
+  grid-template-columns: 280px 1fr;
+}
+
+body.sidebar-right-collapsed .sidebar.right {
+  display: none;
+}
+
+body.sidebar-left-collapsed.sidebar-right-collapsed .layout {
+  grid-template-columns: 1fr;
+}
+
+body.density-compact h1 {
+  font-size: 18px;
+}
+
+body.density-compact .subtitle {
+  font-size: 12px;
+}
+
+body.density-compact .layout {
+  gap: 8px;
+  padding: 8px;
+}
+
+body.density-compact .sidebar,
+body.density-compact .chat-panel,
+body.density-compact .bottom-drawer {
+  padding: 8px;
+  border-radius: 10px;
+}
+
+body.density-compact .chat-messages {
+  min-height: 340px;
+}
+
+body.density-compact .message {
+  padding: 6px 8px;
+  margin-bottom: 6px;
+}
+
+body.density-compact .topbar {
+  padding: 10px 12px;
+}
+
+#toolSearch,
+#generatedToolSearch {
+  margin-bottom: 8px;
+}
+
 @media (max-width: 1200px) {
   .layout {
     grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-status {
+    justify-content: flex-start;
+  }
+
+  .template-controls {
+    width: 100%;
+  }
+
+  .template-controls select {
+    min-width: 0;
+    width: 100%;
   }
 
   .chat-panel {
@@ -247,5 +409,9 @@ button:hover {
 
   .chat-messages {
     max-height: 48vh;
+  }
+
+  .sidebar {
+    max-height: none;
   }
 }

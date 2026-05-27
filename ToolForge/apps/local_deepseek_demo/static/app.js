@@ -1,11 +1,69 @@
 const state = {
   tools: [],
   generatedTools: [],
+  filteredTools: [],
+  filteredGeneratedTools: [],
+  promptTemplates: [],
   selectedTool: null,
   selectedGeneratedTool: null,
   lastPlan: null,
   pendingRunArgs: {},
 };
+
+const STORAGE_KEYS = {
+  leftCollapsed: "deepseek.demo.sidebar.leftCollapsed",
+  rightCollapsed: "deepseek.demo.sidebar.rightCollapsed",
+  compactDensity: "deepseek.demo.ui.compactDensity",
+  promptTemplates: "deepseek.demo.promptTemplates",
+};
+
+const DEFAULT_TEMPLATES = [
+  {
+    id: "normal-summary",
+    name: "Summarize Context",
+    text: "Summarize the current project context and list the top 3 next actions.",
+  },
+  {
+    id: "tool-use-plan",
+    name: "Tool Use Plan",
+    text: "Plan which tool to use, expected arguments, and safety checks before running.",
+  },
+  {
+    id: "tool-builder-spec",
+    name: "Build Tool Spec",
+    text: "Create a tool plan with goal, inputs, outputs, files, safety risks, and test plan.",
+  },
+];
+
+const memoryStore = new Map();
+
+function safeGet(key) {
+  try {
+    const value = window.localStorage.getItem(key);
+    if (value !== null) {
+      return value;
+    }
+  } catch {
+    // Ignore storage access errors and fall back to memory.
+  }
+  return memoryStore.has(key) ? memoryStore.get(key) : null;
+}
+
+function safeSet(key, value) {
+  memoryStore.set(key, value);
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage access errors and keep in-memory fallback.
+  }
+}
+
+function makeId() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+  return `tpl-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
 
 const chatMessages = document.getElementById("chatMessages");
 const toolList = document.getElementById("toolList");
@@ -25,6 +83,28 @@ const chatView = document.getElementById("chatView");
 const generatedToolsView = document.getElementById("generatedToolsView");
 const generatedToolList = document.getElementById("generatedToolList");
 const generatedToolDetails = document.getElementById("generatedToolDetails");
+const toolSearch = document.getElementById("toolSearch");
+const generatedToolSearch = document.getElementById("generatedToolSearch");
+const activeModeBadge = document.getElementById("activeModeBadge");
+const toolCountBadge = document.getElementById("toolCountBadge");
+const generatedCountBadge = document.getElementById("generatedCountBadge");
+const chatHint = document.getElementById("chatHint");
+const bodyEl = document.body;
+const toggleLeftSidebar = document.getElementById("toggleLeftSidebar");
+const toggleRightSidebar = document.getElementById("toggleRightSidebar");
+const densityToggle = document.getElementById("densityToggle");
+const templateSelect = document.getElementById("templateSelect");
+const applyTemplateBtn = document.getElementById("applyTemplate");
+const saveTemplateBtn = document.getElementById("saveTemplate");
+const deleteTemplateBtn = document.getElementById("deleteTemplate");
+
+function nowStamp() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function prettyType(type) {
+  return String(type || "assistant").replaceAll("_", " ");
+}
 
 async function request(path, options = {}) {
   const response = await fetch(path, {
@@ -41,7 +121,13 @@ async function request(path, options = {}) {
 function addMessage(type, text, extra = null) {
   const el = document.createElement("div");
   el.className = `message ${type}`;
-  el.innerHTML = `<strong>${type}</strong><div>${escapeHtml(text)}</div>`;
+  el.innerHTML = `
+    <div class="message-header">
+      <strong>${escapeHtml(prettyType(type))}</strong>
+      <span class="message-time">${escapeHtml(nowStamp())}</span>
+    </div>
+    <div>${escapeHtml(text)}</div>
+  `;
   if (extra) {
     const pre = document.createElement("pre");
     pre.className = "pre";
@@ -120,18 +206,120 @@ async function loadModels() {
 async function loadTools() {
   const payload = await request("/api/tools");
   state.tools = payload.tools || [];
+  applyToolFilter();
   renderTools();
+  syncCounters();
 }
 
 async function loadGeneratedTools() {
   const payload = await request("/api/generated-tools");
   state.generatedTools = payload.tools || [];
+  applyGeneratedToolFilter();
   renderGeneratedTools();
+  syncCounters();
+}
+
+function applyToolFilter() {
+  const query = (toolSearch.value || "").trim().toLowerCase();
+  state.filteredTools = state.tools.filter((tool) => {
+    if (!query) return true;
+    const blob = [tool.name, tool.description, tool.risk_level].join(" ").toLowerCase();
+    return blob.includes(query);
+  });
+}
+
+function applyGeneratedToolFilter() {
+  const query = (generatedToolSearch.value || "").trim().toLowerCase();
+  state.filteredGeneratedTools = state.generatedTools.filter((tool) => {
+    if (!query) return true;
+    const blob = [tool.name, tool.path, tool.description, tool.risk_level].join(" ").toLowerCase();
+    return blob.includes(query);
+  });
+}
+
+function syncCounters() {
+  toolCountBadge.textContent = `Tools: ${state.tools.length}`;
+  generatedCountBadge.textContent = `Generated: ${state.generatedTools.length}`;
+}
+
+function readBool(key) {
+  return safeGet(key) === "1";
+}
+
+function writeBool(key, value) {
+  safeSet(key, value ? "1" : "0");
+}
+
+function applySidebarState() {
+  const leftCollapsed = readBool(STORAGE_KEYS.leftCollapsed);
+  const rightCollapsed = readBool(STORAGE_KEYS.rightCollapsed);
+  bodyEl.classList.toggle("sidebar-left-collapsed", leftCollapsed);
+  bodyEl.classList.toggle("sidebar-right-collapsed", rightCollapsed);
+  toggleLeftSidebar.textContent = leftCollapsed ? "Show Settings" : "Hide Settings";
+  toggleRightSidebar.textContent = rightCollapsed ? "Show Registry" : "Hide Registry";
+}
+
+function setCompactDensity(enabled) {
+  bodyEl.classList.toggle("density-compact", enabled);
+  writeBool(STORAGE_KEYS.compactDensity, enabled);
+  densityToggle.textContent = `Compact: ${enabled ? "On" : "Off"}`;
+}
+
+function loadPromptTemplates() {
+  const raw = safeGet(STORAGE_KEYS.promptTemplates);
+  if (!raw) {
+    state.promptTemplates = [...DEFAULT_TEMPLATES];
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      state.promptTemplates = [...DEFAULT_TEMPLATES];
+      return;
+    }
+    state.promptTemplates = parsed
+      .filter((item) => item && typeof item.name === "string" && typeof item.text === "string")
+      .map((item) => ({
+        id: String(item.id || makeId()),
+        name: item.name.trim() || "Untitled",
+        text: item.text,
+      }));
+    if (!state.promptTemplates.length) {
+      state.promptTemplates = [...DEFAULT_TEMPLATES];
+    }
+  } catch {
+    state.promptTemplates = [...DEFAULT_TEMPLATES];
+  }
+}
+
+function persistPromptTemplates() {
+  safeSet(STORAGE_KEYS.promptTemplates, JSON.stringify(state.promptTemplates));
+}
+
+function renderPromptTemplates() {
+  templateSelect.innerHTML = "";
+  state.promptTemplates.forEach((tpl) => {
+    const opt = document.createElement("option");
+    opt.value = tpl.id;
+    opt.textContent = tpl.name;
+    templateSelect.appendChild(opt);
+  });
+}
+
+function selectedTemplate() {
+  const id = templateSelect.value;
+  return state.promptTemplates.find((tpl) => tpl.id === id) || null;
 }
 
 function renderTools() {
   toolList.innerHTML = "";
-  state.tools.forEach((tool) => {
+  if (!state.filteredTools.length) {
+    toolList.innerHTML = '<div class="muted-note">No tools match this filter.</div>';
+    return;
+  }
+
+  state.filteredTools.forEach((tool) => {
     const card = document.createElement("div");
     card.className = "tool-item" + (state.selectedTool === tool.name ? " active" : "");
     card.innerHTML = `
@@ -160,7 +348,12 @@ function renderTools() {
 
 function renderGeneratedTools() {
   generatedToolList.innerHTML = "";
-  state.generatedTools.forEach((tool) => {
+  if (!state.filteredGeneratedTools.length) {
+    generatedToolList.innerHTML = '<div class="muted-note">No generated tools match this filter.</div>';
+    return;
+  }
+
+  state.filteredGeneratedTools.forEach((tool) => {
     const card = document.createElement("div");
     card.className = "tool-item" + (state.selectedGeneratedTool === tool.name ? " active" : "");
     card.innerHTML = `
@@ -189,6 +382,18 @@ function activateTab(tabName) {
   tabGeneratedTools.setAttribute("aria-selected", isChat ? "false" : "true");
   chatView.classList.toggle("active", isChat);
   generatedToolsView.classList.toggle("active", !isChat);
+}
+
+function updateModeUi() {
+  const selectedText = chatMode.options[chatMode.selectedIndex]?.text || "Normal Chat";
+  activeModeBadge.textContent = `Mode: ${selectedText}`;
+  if (chatMode.value === "normal") {
+    chatHint.textContent = "Chat with model-aware, mode-specific instructions.";
+  } else if (chatMode.value === "tool_use") {
+    chatHint.textContent = "Get safer tool suggestions with explicit arguments and preview flow.";
+  } else {
+    chatHint.textContent = "Design new tools with structured planning and safety constraints.";
+  }
 }
 
 function selectedModel() {
@@ -374,6 +579,24 @@ chatMode.addEventListener("change", () => {
   if (chatMode.value === "tool_builder") {
     planTool();
   }
+  updateModeUi();
+});
+
+toolSearch.addEventListener("input", () => {
+  applyToolFilter();
+  renderTools();
+});
+
+generatedToolSearch.addEventListener("input", () => {
+  applyGeneratedToolFilter();
+  renderGeneratedTools();
+});
+
+chatInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendChat();
+  }
 });
 
 tabChat.addEventListener("click", () => activateTab("chat"));
@@ -386,6 +609,85 @@ document.getElementById("refreshGeneratedTools").addEventListener("click", () =>
   loadGeneratedTools().catch((error) => addMessage("validation_error", error.message));
 });
 
+document.getElementById("refreshGeneratedToolsFromSettings").addEventListener("click", () => {
+  Promise.all([loadTools(), loadGeneratedTools()]).catch((error) => addMessage("validation_error", error.message));
+});
+
+toggleLeftSidebar.addEventListener("click", () => {
+  const next = !readBool(STORAGE_KEYS.leftCollapsed);
+  writeBool(STORAGE_KEYS.leftCollapsed, next);
+  applySidebarState();
+});
+
+toggleRightSidebar.addEventListener("click", () => {
+  const next = !readBool(STORAGE_KEYS.rightCollapsed);
+  writeBool(STORAGE_KEYS.rightCollapsed, next);
+  applySidebarState();
+});
+
+densityToggle.addEventListener("click", () => {
+  const next = !bodyEl.classList.contains("density-compact");
+  setCompactDensity(next);
+});
+
+applyTemplateBtn.addEventListener("click", () => {
+  const tpl = selectedTemplate();
+  if (!tpl) {
+    addMessage("validation_error", "Select a template to apply.");
+    return;
+  }
+  chatInput.value = tpl.text;
+  chatInput.focus();
+});
+
+saveTemplateBtn.addEventListener("click", () => {
+  const text = chatInput.value.trim();
+  if (!text) {
+    addMessage("validation_error", "Enter a prompt in chat input before saving a template.");
+    return;
+  }
+  const name = (prompt("Template name", "New Template") || "").trim();
+  if (!name) {
+    return;
+  }
+
+  let nextSelectedId = "";
+  const existing = state.promptTemplates.find(
+    (tpl) => tpl.name.toLowerCase() === name.toLowerCase(),
+  );
+  if (existing) {
+    existing.text = text;
+    nextSelectedId = existing.id;
+  } else {
+    const entry = { id: makeId(), name, text };
+    state.promptTemplates.push(entry);
+    nextSelectedId = entry.id;
+  }
+  persistPromptTemplates();
+  renderPromptTemplates();
+  if (nextSelectedId) {
+    templateSelect.value = nextSelectedId;
+  }
+  addMessage("tool_result", `Saved template: ${name}`);
+});
+
+deleteTemplateBtn.addEventListener("click", () => {
+  const tpl = selectedTemplate();
+  if (!tpl) {
+    addMessage("validation_error", "Select a template to delete.");
+    return;
+  }
+  if (!confirm(`Delete template "${tpl.name}"?`)) {
+    return;
+  }
+  state.promptTemplates = state.promptTemplates.filter((item) => item.id !== tpl.id);
+  if (!state.promptTemplates.length) {
+    state.promptTemplates = [...DEFAULT_TEMPLATES];
+  }
+  persistPromptTemplates();
+  renderPromptTemplates();
+});
+
 (async () => {
   try {
     await loadHealth();
@@ -393,6 +695,11 @@ document.getElementById("refreshGeneratedTools").addEventListener("click", () =>
     await loadTools();
     await loadGeneratedTools();
     activateTab("chat");
+    updateModeUi();
+    loadPromptTemplates();
+    renderPromptTemplates();
+    applySidebarState();
+    setCompactDensity(readBool(STORAGE_KEYS.compactDensity));
   } catch (error) {
     addMessage("validation_error", error.message);
   }
