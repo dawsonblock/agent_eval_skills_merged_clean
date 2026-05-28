@@ -17,11 +17,12 @@ This note does not constitute a fresh canonical re-attestation of a newly rebuil
 ## Historical Canonical Artifact Pair (2026-05-22)
 
 - Release ZIP: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
-- Evidence ZIP: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a`
+- Evidence ZIP: `agent_eval_skills_merged_clean-smoke-evidence-*.zip`
 
-These values are maintained as the current source-bundle policy reference in the repository, not as proof that every regenerated ZIP from the working tree has identical bytes.
+SHA256 hashes for the current canonical artifact pair are maintained as the single source
+of truth in `release_artifacts/release_lock.json` (`release_sha256` / `evidence_sha256`).
+Hardcoded hash values in release notes become stale when the release ZIP is rebuilt;
+consult `release_lock.json` for authoritative hashes.
 
 ## Verification Status
 

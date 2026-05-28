@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
+"""Build the final deterministic upload wrapper ZIP.
+
+Includes source workspace + canonical release artifacts.
+Excludes generated/vendor/cache directories.
+
+Usage:
+    python scripts/build_upload_wrapper.py
+    python scripts/build_upload_wrapper.py --out /tmp/upload.zip
+"""
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import stat
 import zipfile
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "release_artifacts" / "agent_eval_skills_merged_clean-pruned-smoke.zip"
+RELEASE_ARTIFACTS = ROOT / "release_artifacts"
+DEFAULT_OUT = ROOT / "release_artifacts" / "agent_eval_skills_merged_clean-upload-wrapper.zip"
 
-INCLUDE = [
+# Top-level items included from source workspace
+SOURCE_INCLUDE = [
     "ToolForge",
     "agent-skills-curated",
     "toolathlon-gym-curated",
@@ -20,15 +30,20 @@ INCLUDE = [
     "tests",
     "docs",
     "README.md",
-    "RELEASE_STATUS.json",
-    "RELEASE_MANIFEST.json",
-    "VALIDATION_EVIDENCE.md",
-    "RELEASE_ATTESTATION_2026-05-27.md",
     "CLAIMS_MATRIX.md",
     "SECURITY.md",
     "SECURITY_FIXTURES.md",
     "DEPLOYMENT.md",
     "WORKSPACE_HEALTH_DASHBOARD.md",
+    "RELEASE_STATUS.json",
+    "RELEASE_MANIFEST.json",
+    "VALIDATION_EVIDENCE.md",
+    "RELEASE_ATTESTATION_2026-05-27.md",
+    "setup.cfg",
+    "pyrightconfig.json",
+    "pytest.ini",
+    "Makefile",
+    "LICENSE",
 ]
 
 EXCLUDE_PARTS = {
@@ -40,13 +55,10 @@ EXCLUDE_PARTS = {
     ".mypy_cache",
     ".ruff_cache",
     "node_modules",
-    "dist",
-    "build",
     ".skillforge",
+    "validation_logs",
 }
-EXCLUDE_NAMES = {
-    ".DS_Store",
-}
+EXCLUDE_NAMES = {".DS_Store"}
 FIXED_DATE = (2026, 5, 27, 0, 0, 0)
 
 
@@ -61,9 +73,9 @@ def should_exclude(path: Path) -> bool:
     return False
 
 
-def iter_files() -> list[Path]:
-    files = []
-    for item in INCLUDE:
+def iter_source_files() -> list[Path]:
+    files: list[Path] = []
+    for item in SOURCE_INCLUDE:
         p = ROOT / item
         if not p.exists():
             continue
@@ -77,6 +89,17 @@ def iter_files() -> list[Path]:
     return sorted(files, key=lambda p: p.relative_to(ROOT).as_posix())
 
 
+def iter_release_artifact_files() -> list[Path]:
+    files: list[Path] = []
+    for p in RELEASE_ARTIFACTS.iterdir():
+        if p.is_file() and p.suffix == ".zip":
+            files.append(p)
+    lock = RELEASE_ARTIFACTS / "release_lock.json"
+    if lock.exists():
+        files.append(lock)
+    return sorted(files, key=lambda p: p.name)
+
+
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -86,54 +109,47 @@ def sha256(path: Path) -> str:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Build the pruned smoke release ZIP."
-    )
-    parser.add_argument(
-        "--profile",
-        default="smoke",
-        choices=["smoke", "full"],
-        help="Validation profile (default: smoke)",
-    )
+    parser = argparse.ArgumentParser(description="Build the final upload wrapper ZIP.")
     parser.add_argument(
         "--out",
         type=Path,
-        default=OUT,
-        help="Output path for the release ZIP (default: release_artifacts/...pruned-smoke.zip)",
-    )
-    parser.add_argument(
-        "--update-lock",
-        action="store_true",
-        default=False,
-        help="Update release_lock.json release_sha256 after building (default: off)",
+        default=DEFAULT_OUT,
+        help="Output path for the wrapper ZIP",
     )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    out_path = args.out
+    out_path: Path = args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     if out_path.exists():
         out_path.unlink()
+
+    source_files = iter_source_files()
+    artifact_files = iter_release_artifact_files()
+
+    # Exclude the wrapper itself from artifact list to avoid including old wrapper in new
+    artifact_files = [f for f in artifact_files if f != out_path and "upload-wrapper" not in f.name]
+
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-        for path in iter_files():
+        for path in source_files:
             rel = path.relative_to(ROOT).as_posix()
             info = zipfile.ZipInfo(rel, FIXED_DATE)
             info.external_attr = (stat.S_IFREG | 0o644) << 16
             zf.writestr(info, path.read_bytes())
+
+        for path in artifact_files:
+            rel = path.relative_to(ROOT).as_posix()
+            info = zipfile.ZipInfo(rel, FIXED_DATE)
+            info.external_attr = (stat.S_IFREG | 0o644) << 16
+            zf.writestr(info, path.read_bytes())
+
     digest = sha256(out_path)
+    size_mb = out_path.stat().st_size / (1024 * 1024)
     print(f"Wrote {out_path}")
+    print(f"Size:   {size_mb:.1f} MB")
     print(f"SHA256: {digest}")
-
-    if args.update_lock:
-        lock_path = ROOT / "release_artifacts" / "release_lock.json"
-        if lock_path.exists():
-            lock = json.loads(lock_path.read_text(encoding="utf-8"))
-            lock["release_sha256"] = digest
-            lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
-            print(f"Updated {lock_path}")
-
     return 0
 
 

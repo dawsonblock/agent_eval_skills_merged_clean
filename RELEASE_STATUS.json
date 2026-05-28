@@ -1,13 +1,11 @@
 {
   "status": "release-candidate",
   "canonical": true,
-  "release_classification": "canonical_distribution",
-  "source_bundle_only": false,
   "validation_profile": "smoke",
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_sha256": "01ffe2f112a76baee38d56863413b4595abd9d0e89b799908442a50382c10f0e",
+  "release_sha256": "68c8fff42d714c2e623fceeb3fcebb0c20f4ae1b01f4eb63080b1fff1a3d4ae8",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
-  "evidence_sha256": "e7ec62bd40c43c49c4e7262fa108888e1e2c4e77ac7a0033fa83e3c6e6a4df73",
+  "evidence_sha256": "a163ed3e5078d9fb136f4e69e353367474d393b9180ce0bf06ff7f9ccaa76477",
   "python_version": "3.12",
   "node_version_min": "20",
   "limitations": [
@@ -15,13 +13,5 @@
     "Toolathlon full profile is experimental.",
     "Agent Skills quality warnings remain.",
     "Not production deployment approved."
-  ],
-  "fixes_1_to_4": {
-    "remove_toolforge_skillforge_from_workspace": "completed",
-    "classification_decision": "canonical_distribution",
-    "canonical_release_zip_present": "completed",
-    "source_bundle_assertion_downgrade_path": "not_selected"
-  },
-  "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "canonical_release_sha256": "01ffe2f112a76baee38d56863413b4595abd9d0e89b799908442a50382c10f0e"
+  ]
 }

@@ -34,7 +34,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build smoke evidence zip from validation logs")
     parser.add_argument("--logs", type=Path, default=DEFAULT_LOG_DIR)
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--release-zip", type=Path, help="Path to the release ZIP (existence + SHA256 are verified)")
     parser.add_argument("--release-sha")
+    parser.add_argument("--lock", type=Path, default=ROOT / "release_artifacts" / "release_lock.json",
+                        help="Path to release_lock.json (default: release_artifacts/release_lock.json)")
     parser.add_argument("--date", help="Override zip entry date as YYYY-MM-DD")
     args = parser.parse_args()
 
@@ -54,7 +57,21 @@ def main() -> int:
         print(f"FAIL: missing validation logs: {log_dir}")
         return 1
 
-    lock_path = ROOT / "release_artifacts" / "release_lock.json"
+    # Verify release ZIP if explicitly provided
+    if args.release_zip:
+        if not args.release_zip.exists():
+            print(f"FAIL: release ZIP not found: {args.release_zip}")
+            return 1
+        computed_sha = sha256(args.release_zip)
+        if args.release_sha and computed_sha != args.release_sha:
+            print("FAIL: --release-sha does not match computed SHA256 of --release-zip")
+            print(f"computed: {computed_sha}")
+            print(f"arg:      {args.release_sha}")
+            return 1
+        if not args.release_sha:
+            args.release_sha = computed_sha
+
+    lock_path: Path = args.lock
     lock: dict[str, object] = {}
     if lock_path.exists():
         lock = json.loads(lock_path.read_text(encoding="utf-8"))
