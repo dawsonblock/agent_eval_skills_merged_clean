@@ -28,6 +28,17 @@ def emit(path: Path | None, payload: dict) -> None:
     path.write_text(rendered, encoding="utf-8")
 
 
+def matches_locked_artifact(path: Path, locked_value: str) -> bool:
+    locked_path = Path(locked_value)
+    if path.name == locked_path.name:
+        return True
+    try:
+        rel = path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return False
+    return rel == locked_path.as_posix()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Classify release archive against canonical lock metadata"
@@ -55,7 +66,7 @@ def main() -> int:
     canonical = False
     verdict = "unbound_wrapper_source_bundle"
 
-    if args.archive.name != lock["release_zip"]:
+    if not matches_locked_artifact(args.archive, lock["release_zip"]):
         reasons.append("release filename mismatch")
     if archive_sha != lock["release_sha256"]:
         reasons.append("release hash mismatch")
@@ -66,7 +77,7 @@ def main() -> int:
         reasons.append("evidence artifact path does not exist")
     else:
         evidence_sha = sha256_of(args.evidence)
-        if args.evidence.name != lock["evidence_zip"]:
+        if not matches_locked_artifact(args.evidence, lock["evidence_zip"]):
             reasons.append("evidence filename mismatch")
         if evidence_sha != lock["evidence_sha256"]:
             reasons.append("evidence hash mismatch")

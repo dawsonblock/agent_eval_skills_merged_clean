@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-28T01:24:19.650679+00:00",
+  "created_at_utc": "2026-05-28T01:43:06.747588+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "533c1c4940c9d5a1b1706c2883c6425c5c4541859208b97ce6f91c35657c59e6"
+      "sha256": "866483129c3527d9a1d7db751b558a3996f37fd336088a8a812bf1566b0befce"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "56ae8fd6544abf8e3374c7a167f8a5a55e7c9c5e7b0f40a0f8b98ad02c9cfe0c"
+      "sha256": "927e9407130c84e63c2c5bfb0745c9463321ceba3f0c3e6ec1a746e35e7b5d0b"
     },
     {
       "path": "ToolForge/.bandit",
@@ -2444,8 +2444,16 @@
       "sha256": "eabe4b7bc26e4042dab15d1937fc9c63e82a90da8a52fd686c7e42e51a42aef4"
     },
     {
+      "path": "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
+      "sha256": "88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9"
+    },
+    {
+      "path": "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
+      "sha256": "a41bd41733aabb0576bb8510bd107ebeba12d550f0929996b3d73f8e59e84a18"
+    },
+    {
       "path": "release_artifacts/release_lock.json",
-      "sha256": "94d06608d7bc9bd55cdec58c758f8555679b5e1451da863d9765b41e0079d433"
+      "sha256": "ee7a686f086f796c8dd890fff2a4006425ae4bbee485eb0891abfa722fbf1137"
     },
     {
       "path": "release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log",
@@ -2488,6 +2496,94 @@
       "sha256": "91eef3ca75271edef66654b350bf68d338b141c4459ea73aab6b706ac858e882"
     },
     {
+      "path": "release_artifacts/validation_logs/agent_skill_packages.txt",
+      "sha256": "97abc4f8fbd21879fc1295c6c0f58bc760e9583f512f100ec2ff65adc130381d"
+    },
+    {
+      "path": "release_artifacts/validation_logs/agent_skills_list.txt",
+      "sha256": "c4fcbb315ae89e1f5b820e45229128f4c36d53a475528a77ac647b8904885bba"
+    },
+    {
+      "path": "release_artifacts/validation_logs/agent_skills_summary.json",
+      "sha256": "13fb88d34e715c62af30303e0e9af930e0d02915ce1eab3dc583faabe83ff1b7"
+    },
+    {
+      "path": "release_artifacts/validation_logs/environment.json",
+      "sha256": "d3d9ab8f92be9526be7a8d9959c4a5a9d4e511ac11bc1fd217fc0d4bb4ab4f72"
+    },
+    {
+      "path": "release_artifacts/validation_logs/environment_node.txt",
+      "sha256": "c642a0de246dcdc6c51318fe449646fc5067b981a8d09e9ccdb8141a5756339a"
+    },
+    {
+      "path": "release_artifacts/validation_logs/environment_npm.txt",
+      "sha256": "608c86d3f47c084a7a0de5d4eb4bc18724c96c456f3fe6842d17f04004338c3f"
+    },
+    {
+      "path": "release_artifacts/validation_logs/environment_python.txt",
+      "sha256": "11127b908355ca05c3fd89fb6e7622ae40cd54419cb5d62508fd633c259ee313"
+    },
+    {
+      "path": "release_artifacts/validation_logs/release_hashes.json",
+      "sha256": "5573b4d40173dce28de4d1d4a1e9865eb2afd82f58bb68162cd7a80ccf42ca94"
+    },
+    {
+      "path": "release_artifacts/validation_logs/release_pair_verification.txt",
+      "sha256": "806765c4b14875e54b51cc12da23331ca1ca0ed0759c88e21659e73bff5c4482"
+    },
+    {
+      "path": "release_artifacts/validation_logs/source_bundle_hygiene.txt",
+      "sha256": "9df6b9cef1f49630287cec32648ac5d6cb6bfa34058e3399b28f81221fd204d1"
+    },
+    {
+      "path": "release_artifacts/validation_logs/test_results_agent_skills.txt",
+      "sha256": "c4fcbb315ae89e1f5b820e45229128f4c36d53a475528a77ac647b8904885bba"
+    },
+    {
+      "path": "release_artifacts/validation_logs/test_results_root.txt",
+      "sha256": "5099540f41d3691ed8a3269db234c2e8c66190398ee14c94a8d7d74710ce6bbf"
+    },
+    {
+      "path": "release_artifacts/validation_logs/test_results_toolathlon.txt",
+      "sha256": "178ddcd21833e8ac86d56e1227a1824b0928fb0ac9b2d35a8ef8f3c4086693ce"
+    },
+    {
+      "path": "release_artifacts/validation_logs/test_results_toolforge.txt",
+      "sha256": "f4c141af54c107ee74d7db6447cf4879922b53116567849771296b628d880026"
+    },
+    {
+      "path": "release_artifacts/validation_logs/toolathlon_build_smoke.txt",
+      "sha256": "7381113b6e4469d0c5cc2dd4b09982b3e27d220236a504b108bfa783d21706c7"
+    },
+    {
+      "path": "release_artifacts/validation_logs/toolathlon_build_smoke_summary.json",
+      "sha256": "95c0be3e4c00f9486bbf25f75d617cc8e991df7b0f27d735a27a19ef6ccf09e6"
+    },
+    {
+      "path": "release_artifacts/validation_logs/toolathlon_preflight_summary.json",
+      "sha256": "3ec1f5656d37a013a954deac15b256ba23e9cced407ed1c8966af773783a8944"
+    },
+    {
+      "path": "release_artifacts/validation_logs/toolathlon_smoke.txt",
+      "sha256": "178ddcd21833e8ac86d56e1227a1824b0928fb0ac9b2d35a8ef8f3c4086693ce"
+    },
+    {
+      "path": "release_artifacts/validation_logs/toolathlon_smoke_summary.json",
+      "sha256": "c01a3be876c9c07f4dc5e9f98511d27a8ab11a4b2066a860282c60c2158ffef0"
+    },
+    {
+      "path": "release_artifacts/validation_logs/toolforge_doctor.txt",
+      "sha256": "2528941c70f21695a6b98175b2d549958b06280b9cfad24588204d76ac70e3db"
+    },
+    {
+      "path": "release_artifacts/validation_logs/toolforge_summary.json",
+      "sha256": "d368e3167aa8136d55eba663a6c8f9b0f2f2fe07c7ed49826e5ff576dd5065bf"
+    },
+    {
+      "path": "release_artifacts/validation_logs/validation_summary.json",
+      "sha256": "8c52b0b92e3a54e95acb7fef2eea73bc55ca6b82d183c38b002e04100d1649b2"
+    },
+    {
       "path": "release_artifacts/validation_summary.json",
       "sha256": "059a4e5bc02fb8ba05abfa416d4d2c359401281c9008ab60367f971f76a82e9b"
     },
@@ -2497,11 +2593,11 @@
     },
     {
       "path": "scripts/build_pruned_smoke_release.py",
-      "sha256": "0f8467da3dcb73bd22d76efbef0021da981e207a42b9ffe79ab8def962af8882"
+      "sha256": "c9240e8699c2961fd885e7c45e126304a396888dbe045eeb97e355be1920a807"
     },
     {
       "path": "scripts/build_pruned_smoke_release.sh",
-      "sha256": "ae547745a2aaed4ea2567098ba4934d6919b539988d40f88b6af024b790d2b24"
+      "sha256": "8ffa3a12ab53a4f1f70b585e678924aad58584a9265f70c31f63219b1fb27c05"
     },
     {
       "path": "scripts/build_skillforge_ai_candidate_zip.sh",
@@ -2521,7 +2617,7 @@
     },
     {
       "path": "scripts/check_release_hash_consistency.py",
-      "sha256": "d56da9065f9b1ccda4ed8eed8ffbb567f61fcad571c5dbb2624a55ddc4dc6872"
+      "sha256": "a1c25a07237bf49383284dcd7885e42fcccaf791e2379f86a4e6e386cda67923"
     },
     {
       "path": "scripts/check_toolathlon_smoke_profile.sh",
@@ -2529,7 +2625,7 @@
     },
     {
       "path": "scripts/classify_release_artifact.py",
-      "sha256": "4cdfe5d79694e6ded6f8edb3b25e0ccc2cb6c3713f0c2f3eaf5c0b446e472ec8"
+      "sha256": "fe642124c4c4b18d76e49f61b42e5f3f113a3ac7a2e48791b53e18a744ab933e"
     },
     {
       "path": "scripts/classify_release_upload.sh",
@@ -2609,7 +2705,7 @@
     },
     {
       "path": "scripts/sync_release_metadata_from_lock.py",
-      "sha256": "4f73d5a60508f19a909a57ebae35cccfa5d78a9950cb8baad354f63ede0cad1f"
+      "sha256": "32ef1cbd3fe77e9738bfd0680bf5cb067fcb2e5c690d6c328c014ef35fca6248"
     },
     {
       "path": "scripts/validate_full_workspace.sh",
@@ -2621,7 +2717,7 @@
     },
     {
       "path": "scripts/validate_release_smoke.sh",
-      "sha256": "4a8e01277811596062d93d6af6643b4a4f1162cbfd4a9441be8aba9d3b66360c"
+      "sha256": "e3d71bebefcb0da3b90bfcdefdebeb6da9ff7d52c2e5e86598f1bbad6c7f2470"
     },
     {
       "path": "scripts/validate_smoke_workspace.sh",
@@ -2653,7 +2749,7 @@
     },
     {
       "path": "scripts/verify_release_pair.py",
-      "sha256": "8a3e462876ae16fdc377da90eaec24aec041a3ff6fc54ec9d7b3ae820b01d6ba"
+      "sha256": "2abfd64a4a7b2c3d69c79075ba312b34469aac4dbd3e6957da6f2a83cb5ceb04"
     },
     {
       "path": "scripts/verify_release_pair.sh",
@@ -2677,7 +2773,7 @@
     },
     {
       "path": "scripts/write_validation_summary.py",
-      "sha256": "08aa7a42c117f5fbf6d383239ec72b561394bb11f14c8844a240c9f61aac0f0f"
+      "sha256": "e67acdddc2c9354048739c82c45910307e91ab0e29faec5144fee6d55ac9d0b1"
     },
     {
       "path": "toolathlon-gym-curated/.dockerignore",
@@ -2709,7 +2805,7 @@
     },
     {
       "path": "toolathlon-gym-curated/README.md",
-      "sha256": "fa4508dcd73a3b1b13cd8b265bedc88af0e1496476066b4742afefa21fc767de"
+      "sha256": "8d04563d7f997b8706173860fdac8cdaf51d5f4884c7aa0e13016319e7b42a49"
     },
     {
       "path": "toolathlon-gym-curated/SERVERS.md",
@@ -6333,7 +6429,7 @@
     },
     {
       "path": "toolathlon-gym-curated/scripts/preflight_mcp_paths.py",
-      "sha256": "f04a3ce486b6e9965cb148a55f46094fd215c238bdec6d1334952821bcd989ef"
+      "sha256": "b9f5cc9bed4faf5688780b2b352501e70b4265fc47ef34d9056245987b30ea79"
     },
     {
       "path": "toolathlon-gym-curated/scripts/profile_utils.py",

@@ -49,13 +49,16 @@ def main() -> int:
     readme = readme_path.read_text(encoding="utf-8")
     readme = replace_or_fail(
         readme,
-        r"- `agent_eval_skills_merged_clean-pruned-smoke\.zip`\n\s+- SHA256: `[a-f0-9]{64}`",
+        r"- `[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip`\n\s+- SHA256: `[a-f0-9]{64}`",
         f"- `{release_zip}`\n  - SHA256: `{release_sha}`",
         "README release hash",
     )
     readme = replace_or_fail(
         readme,
-        r"- `agent_eval_skills_merged_clean-smoke-evidence-[^`]+`\n\s+- SHA256: `[a-f0-9]{64}`",
+        (
+            r"- `[^`]*agent_eval_skills_merged_clean-smoke-evidence-[^`]+`"
+            r"\n\s+- SHA256: `[a-f0-9]{64}`"
+        ),
         f"- `{evidence_zip}`\n  - SHA256: `{evidence_sha}`",
         "README evidence hash",
     )
@@ -65,14 +68,17 @@ def main() -> int:
     evidence_doc = evidence_doc_path.read_text(encoding="utf-8")
     evidence_doc = replace_or_fail(
         evidence_doc,
-        r"- `agent_eval_skills_merged_clean-pruned-smoke\.zip`\n\s+- SHA256: `[a-f0-9]{64}`",
-        f"- `{release_zip}`\n   - SHA256: `{release_sha}`",
+        r"- `[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip`\n\s+- SHA256: `[a-f0-9]{64}`",
+        f"- `{release_zip}`\n  - SHA256: `{release_sha}`",
         "VALIDATION_EVIDENCE release hash",
     )
     evidence_doc = replace_or_fail(
         evidence_doc,
-        r"- `agent_eval_skills_merged_clean-smoke-evidence-[^`]+`\n\s+- SHA256: `[a-f0-9]{64}`",
-        f"- `{evidence_zip}`\n   - SHA256: `{evidence_sha}`",
+        (
+            r"- `[^`]*agent_eval_skills_merged_clean-smoke-evidence-[^`]+`"
+            r"\n\s+- SHA256: `[a-f0-9]{64}`"
+        ),
+        f"- `{evidence_zip}`\n  - SHA256: `{evidence_sha}`",
         "VALIDATION_EVIDENCE evidence hash",
     )
     evidence_doc_path.write_text(evidence_doc, encoding="utf-8")
@@ -81,13 +87,13 @@ def main() -> int:
     att = att_path.read_text(encoding="utf-8")
     att = replace_or_fail(
         att,
-        r"\| `agent_eval_skills_merged_clean-pruned-smoke\.zip` \| `[a-f0-9]{64}` \|",
+        r"\| `[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip` \| `[a-f0-9]{64}` \|",
         f"| `{release_zip}` | `{release_sha}` |",
         "attestation release row",
     )
     att = replace_or_fail(
         att,
-        r"\| `agent_eval_skills_merged_clean-smoke-evidence-[^`]+` \| `[a-f0-9]{64}` \|",
+        r"\| `[^`]*agent_eval_skills_merged_clean-smoke-evidence-[^`]+` \| `[a-f0-9]{64}` \|",
         f"| `{evidence_zip}` | `{evidence_sha}` |",
         "attestation evidence row",
     )

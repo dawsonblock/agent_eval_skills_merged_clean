@@ -19,6 +19,7 @@ INCLUDE_TOP = {
     "scripts",
     "tests",
     "README.md",
+    "CLAIMS_MATRIX.md",
     "RELEASE_STATUS.json",
     "RELEASE_MANIFEST.json",
     "VALIDATION_EVIDENCE.md",

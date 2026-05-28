@@ -32,6 +32,17 @@ def load_lock(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def matches_locked_artifact(path: Path, locked_value: str) -> bool:
+    locked_path = Path(locked_value)
+    if path.name == locked_path.name:
+        return True
+    try:
+        rel = path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return False
+    return rel == locked_path.as_posix()
+
+
 def zip_entries(path: Path) -> list[str]:
     with zipfile.ZipFile(path) as zf:
         return zf.namelist()
@@ -87,9 +98,9 @@ def main() -> int:
             print(f"FAIL: {item}")
         return 1
 
-    if release_path.name != lock["release_zip"]:
+    if not matches_locked_artifact(release_path, lock["release_zip"]):
         errors.append("release filename mismatch against lock")
-    if evidence_path.name != lock["evidence_zip"]:
+    if not matches_locked_artifact(evidence_path, lock["evidence_zip"]):
         errors.append("evidence filename mismatch against lock")
 
     release_sha = sha256_of(release_path)

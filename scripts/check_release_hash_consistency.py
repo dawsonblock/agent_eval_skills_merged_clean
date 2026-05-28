@@ -68,12 +68,12 @@ def main() -> int:
         text = attestation_path.read_text(encoding="utf-8")
         att_release = find_required(
             text,
-            r"`agent_eval_skills_merged_clean-pruned-smoke\.zip` \| `([a-f0-9]{64})`",
+            r"`[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip` \| `([a-f0-9]{64})`",
             "release attestation hash",
         )
         att_evidence = find_required(
             text,
-            r"`agent_eval_skills_merged_clean-smoke-evidence-[^`]+` \| `([a-f0-9]{64})`",
+            r"`[^`]*agent_eval_skills_merged_clean-smoke-evidence-[^`]+` \| `([a-f0-9]{64})`",
             "evidence attestation hash",
         )
         if att_release != release_sha:

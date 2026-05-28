@@ -20,10 +20,10 @@ Release claim baseline: smoke-validated release candidate for local agent-tool e
 
 Historical attested pair reference:
 
-- `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `fa03b950563d3f902ad61f124f1457e1b01d4c6f7e6bbc160f696ca21b855358`
-- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-  - SHA256: `705abb5a9ac854e4f60feb3222b95c13b7ddffc9a2df4016ca5aa137406739b3`
+- `release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip`
+  - SHA256: `88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9`
+- `release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
+  - SHA256: `a41bd41733aabb0576bb8510bd107ebeba12d550f0929996b3d73f8e59e84a18`
 
 Validated scope for the historical pair is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 

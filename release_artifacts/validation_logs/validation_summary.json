@@ -1,5 +1,5 @@
 {
-  "status": "fail",
+  "status": "pass_with_warnings",
   "profile": "smoke",
   "toolathlon_profile": "smoke",
   "smoke_targets": [
@@ -17,8 +17,8 @@
     "agent_skills_eval": "pass_with_warnings",
     "agent_skill_packages": "pass",
     "toolathlon_smoke": "pass",
-    "source_bundle_hygiene": "fail",
-    "release_pair_verification": "fail"
+    "source_bundle_hygiene": "pass",
+    "release_pair_verification": "pass"
   },
   "warnings": [
     "Some skills remain below preferred quality threshold.",

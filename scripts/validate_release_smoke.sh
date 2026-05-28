@@ -65,9 +65,35 @@ PY
   cp "$LOG_DIR/toolathlon_smoke.txt" "$LOG_DIR/test_results_toolathlon.txt"
 )
 
+RELEASE_ZIP_REL="$(python - <<'PY'
+import json
+from pathlib import Path
+lock = json.loads(Path('release_artifacts/release_lock.json').read_text(encoding='utf-8'))
+print(lock['release_zip'])
+PY
+)"
+
+EVIDENCE_ZIP_REL="$(python - <<'PY'
+import json
+from pathlib import Path
+lock = json.loads(Path('release_artifacts/release_lock.json').read_text(encoding='utf-8'))
+print(lock['evidence_zip'])
+PY
+)"
+
+bash "$ROOT_DIR/scripts/verify_source_bundle_hygiene.sh" \
+  --zip "$ROOT_DIR/$RELEASE_ZIP_REL" | tee "$LOG_DIR/source_bundle_hygiene.txt"
+
+python "$ROOT_DIR/scripts/verify_release_pair.py" \
+  --release "$ROOT_DIR/$RELEASE_ZIP_REL" \
+  --evidence "$ROOT_DIR/$EVIDENCE_ZIP_REL" \
+  --lock "$ROOT_DIR/release_artifacts/release_lock.json" | tee "$LOG_DIR/release_pair_verification.txt"
+
 python "$ROOT_DIR/scripts/write_validation_summary.py" \
   --logs-dir "$LOG_DIR" \
   --out "$LOG_DIR/validation_summary.json"
+
+python "$ROOT_DIR/scripts/generate_release_manifest.py"
 
 python -m pytest -q tests | tee "$LOG_DIR/test_results_root.txt"
 
