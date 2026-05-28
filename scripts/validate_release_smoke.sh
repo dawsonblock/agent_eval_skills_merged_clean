@@ -18,7 +18,7 @@ npm --version >> "$LOG_DIR/environment.txt"
 CANONICAL_RELEASE="$ROOT_DIR/release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip"
 if [ ! -f "$CANONICAL_RELEASE" ]; then
     echo "Canonical release ZIP missing; building..."
-    python scripts/build_pruned_smoke_release.py
+    python scripts/build_pruned_smoke_release.py --profile smoke --update-lock
 fi
 
 echo "Collecting smoke evidence and building evidence ZIP..."

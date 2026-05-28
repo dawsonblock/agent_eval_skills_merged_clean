@@ -2,10 +2,15 @@
   "status": "release-candidate",
   "canonical": true,
   "validation_profile": "smoke",
+  "release_classification": "SOURCE_BUNDLE",
+  "toolathlon_profile": "smoke",
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_sha256": "68c8fff42d714c2e623fceeb3fcebb0c20f4ae1b01f4eb63080b1fff1a3d4ae8",
+  "release_sha256": "0a2ccaec4a1f5f0c1ef80f60338c805b0e7719c3682aeae6b3bc56f7a334bd08",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
-  "evidence_sha256": "a163ed3e5078d9fb136f4e69e353367474d393b9180ce0bf06ff7f9ccaa76477",
+  "evidence_sha256": "cb4f163e5d3d9e32cd7e0d626628f9967fdf9308023a3b2cc6d56ca09cf13ffb",
+  "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
+  "canonical_release_sha256": "0a2ccaec4a1f5f0c1ef80f60338c805b0e7719c3682aeae6b3bc56f7a334bd08",
+  "uploaded_archive_sha256": "74a40d41a07ecb441c4357ca6476a584408efda0ab44d6b805122003ebcd1ca1",
   "python_version": "3.12",
   "node_version_min": "20",
   "limitations": [
@@ -13,7 +18,5 @@
     "Toolathlon full profile is experimental.",
     "Agent Skills quality warnings remain.",
     "Not production deployment approved."
-  ],
-  "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "canonical_release_sha256": "68c8fff42d714c2e623fceeb3fcebb0c20f4ae1b01f4eb63080b1fff1a3d4ae8"
+  ]
 }

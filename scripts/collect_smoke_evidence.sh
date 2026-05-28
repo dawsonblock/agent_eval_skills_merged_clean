@@ -15,7 +15,7 @@ export ENFORCE_RC_SMOKE_PROFILE=1
 CANONICAL_RELEASE="$ROOT/release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip"
 if [ ! -f "$CANONICAL_RELEASE" ]; then
     echo "Canonical release ZIP missing; building..."
-    python3 "$ROOT/scripts/build_pruned_smoke_release.py"
+    python3 "$ROOT/scripts/build_pruned_smoke_release.py" --profile smoke --update-lock
 fi
 
 python3 --version | tee "$LOG_DIR/environment_python.txt"
@@ -86,6 +86,7 @@ python3 "$ROOT/scripts/write_validation_summary.py" \
 python3 "$ROOT/scripts/build_evidence_zip.py" \
   --logs "$LOG_DIR" \
   --out "$EVIDENCE_ZIP" \
+    --release-zip "$CANONICAL_RELEASE" \
   --release-sha "$(python3 - <<'PY'
 import hashlib
 from pathlib import Path
