@@ -5,9 +5,31 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$ROOT/../release_artifacts/validation_logs"
 mkdir -p "$LOG_DIR"
 
-# Will be populated with per-server results before writing the final summary.
-declare -A SERVER_STATUS
-declare -A SERVER_HAS_BUILD
+# Bash 3 compatibility: use explicit per-server variables (macOS /bin/bash).
+_BSTATUS_rail_12306="pass"
+_BSTATUS_filesystem="pass"
+_BHAS_BUILD_rail_12306="false"
+_BHAS_BUILD_filesystem="false"
+
+set_server_result() {
+  local name="$1"
+  local status="$2"
+  local has_build="$3"
+  case "$name" in
+    rail_12306)
+      _BSTATUS_rail_12306="$status"
+      _BHAS_BUILD_rail_12306="$has_build"
+      ;;
+    filesystem)
+      _BSTATUS_filesystem="$status"
+      _BHAS_BUILD_filesystem="$has_build"
+      ;;
+    *)
+      echo "FAIL: unknown smoke server mapping: $name"
+      exit 1
+      ;;
+  esac
+}
 
 build_server() {
   local name="$1"
@@ -24,8 +46,7 @@ build_server() {
   echo "Building smoke server: $name"
   if [ ! -d "$dir" ]; then
     echo "FAIL: missing server directory: $dir"
-    SERVER_STATUS[$name]="fail"
-    SERVER_HAS_BUILD[$name]="false"
+    set_server_result "$name" "fail" "false"
     return 1
   fi
 
@@ -37,15 +58,13 @@ build_server() {
     npm install || install_ok=false
   else
     echo "FAIL: missing package.json for $name"
-    SERVER_STATUS[$name]="fail"
-    SERVER_HAS_BUILD[$name]="false"
+    set_server_result "$name" "fail" "false"
     cd "$ROOT"
     return 1
   fi
 
   if [ "$install_ok" = "false" ]; then
-    SERVER_STATUS[$name]="fail"
-    SERVER_HAS_BUILD[$name]="false"
+    set_server_result "$name" "fail" "false"
     cd "$ROOT"
     return 1
   fi
@@ -53,10 +72,9 @@ build_server() {
   local has_build="false"
   if npm run | grep -q " build"; then
     has_build="true"
-    npm run build || { SERVER_STATUS[$name]="fail"; SERVER_HAS_BUILD[$name]="true"; cd "$ROOT"; return 1; }
+    npm run build || { set_server_result "$name" "fail" "true"; cd "$ROOT"; return 1; }
   fi
-  SERVER_HAS_BUILD[$name]="$has_build"
-  SERVER_STATUS[$name]="pass"
+  set_server_result "$name" "pass" "$has_build"
   cd "$ROOT"
 }
 
@@ -65,10 +83,10 @@ build_server "filesystem"
 echo "PASS: smoke artifacts built"
 
 # Export status for the Python JSON writer.
-export _BSTATUS_rail_12306="${SERVER_STATUS[rail_12306]:-pass}"
-export _BSTATUS_filesystem="${SERVER_STATUS[filesystem]:-pass}"
-export _BHAS_BUILD_rail_12306="${SERVER_HAS_BUILD[rail_12306]:-false}"
-export _BHAS_BUILD_filesystem="${SERVER_HAS_BUILD[filesystem]:-false}"
+export _BSTATUS_rail_12306
+export _BSTATUS_filesystem
+export _BHAS_BUILD_rail_12306
+export _BHAS_BUILD_filesystem
 export LOG_DIR
 
 # Write the build summary JSON with actual per-server status.

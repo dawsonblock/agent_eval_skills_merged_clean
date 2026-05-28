@@ -1,14 +1,15 @@
 {
   "profile": "smoke",
-  "status": "pass",
   "servers": {
     "rail_12306": {
-      "installed": true,
-      "built": true
+      "install": "pass",
+      "build": "pass",
+      "entrypoint": "pass"
     },
     "filesystem": {
-      "installed": true,
-      "built": true
+      "install": "pass",
+      "build": "pass",
+      "entrypoint": "pass"
     }
   }
 }

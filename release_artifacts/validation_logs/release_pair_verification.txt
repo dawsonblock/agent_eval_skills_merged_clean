@@ -1,2 +1,2 @@
 PASS: source bundle hygiene clean
-PASS: release/evidence pair verified
+PASS: release pre-evidence checks verified

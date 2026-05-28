@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-05-28T06:24:20Z",
+  "checked_at": "2026-05-28T22:32:55Z",
   "failed_count": 0,
   "local_servers_dir": "${REPO_ROOT}/toolathlon-gym-curated/local_servers",
   "overall_status": "passed",
@@ -9,7 +9,7 @@
     {
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' ${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp",
-      "duration_seconds": 0.994,
+      "duration_seconds": 1.998,
       "reason": "started_or_imported",
       "server": "rail_12306",
       "status": "passed",
@@ -20,7 +20,7 @@
     {
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' ${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem",
-      "duration_seconds": 0.16,
+      "duration_seconds": 0.159,
       "reason": "started_or_imported",
       "server": "filesystem",
       "status": "passed",
