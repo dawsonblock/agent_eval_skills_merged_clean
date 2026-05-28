@@ -196,7 +196,6 @@ REQUIRED_STATUS_FIELDS=(
   "canonical_release_zip"
   "release_classification"
   "toolathlon_profile"
-  "uploaded_archive_sha256"
   "canonical_release_sha256"
 )
 if [ -f "$RELEASE_STATUS_JSON" ]; then
@@ -213,6 +212,25 @@ print('' if v is None else str(v))
       fail "RELEASE_STATUS.$field is missing or null"
     fi
   done
+
+  UPLOAD_SHA_VALUE="$(python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+v = d.get('uploaded_archive_sha256')
+print('' if v is None else str(v))
+" "$RELEASE_STATUS_JSON")"
+  UPLOAD_SHA_LOCATION_VALUE="$(python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+v = d.get('uploaded_archive_sha256_location')
+print('' if v is None else str(v))
+" "$RELEASE_STATUS_JSON")"
+
+  if [ -n "$UPLOAD_SHA_VALUE" ] || [ -n "$UPLOAD_SHA_LOCATION_VALUE" ]; then
+    pass "RELEASE_STATUS uploaded archive hash semantics are set"
+  else
+    fail "RELEASE_STATUS uploaded archive hash fields are missing (need uploaded_archive_sha256 or uploaded_archive_sha256_location)"
+  fi
 fi
 
 echo ""

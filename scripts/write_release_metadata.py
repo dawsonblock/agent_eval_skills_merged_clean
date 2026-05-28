@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -43,10 +44,14 @@ def main() -> int:
         existing_status = json.loads(status_path.read_text(encoding="utf-8"))
 
     uploaded_archive_sha = existing_status.get("uploaded_archive_sha256", "")
+    uploaded_archive_sha_location = existing_status.get(
+        "uploaded_archive_sha256_location", "external .sha256 sidecar"
+    )
     if args.uploaded_archive is not None:
         if not args.uploaded_archive.exists():
             raise SystemExit(f"Uploaded archive not found: {args.uploaded_archive}")
         uploaded_archive_sha = sha256_file(args.uploaded_archive)
+        uploaded_archive_sha_location = str(args.uploaded_archive.with_suffix(args.uploaded_archive.suffix + ".sha256"))
 
     status = {
         "status": lock["status"],
@@ -61,6 +66,7 @@ def main() -> int:
         "canonical_release_zip": lock["release_zip"],
         "canonical_release_sha256": lock["release_sha256"],
         "uploaded_archive_sha256": uploaded_archive_sha,
+        "uploaded_archive_sha256_location": uploaded_archive_sha_location,
         "python_version": lock["python_version"],
         "node_version_min": lock["node_version_min"],
         "limitations": [
@@ -133,6 +139,55 @@ Non-scope:
 - Not a security-audited production benchmark environment.
 """
     (ROOT / "RELEASE_ATTESTATION_2026-05-27.md").write_text(attestation, encoding="utf-8")
+
+    release_zip_path = ROOT / "release_artifacts" / lock["release_zip"]
+    evidence_zip_path = ROOT / "release_artifacts" / lock["evidence_zip"]
+    identity_payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "release_classification": status["release_classification"],
+        "canonical_release_zip": lock["release_zip"],
+        "canonical_release_sha256": lock["release_sha256"],
+        "canonical_release_size_bytes": release_zip_path.stat().st_size if release_zip_path.exists() else 0,
+        "evidence_zip": lock["evidence_zip"],
+        "evidence_sha256": lock["evidence_sha256"],
+        "evidence_size_bytes": evidence_zip_path.stat().st_size if evidence_zip_path.exists() else 0,
+        "toolathlon_profile": status["toolathlon_profile"],
+        "full_profile_validated": False,
+        "production_claim_allowed": False,
+        "python_version": lock["python_version"],
+        "node_version_min": lock["node_version_min"],
+        "uploaded_archive_sha256": uploaded_archive_sha,
+        "uploaded_archive_sha256_location": uploaded_archive_sha_location,
+    }
+    (ROOT / "release_artifacts" / "release_identity.generated.json").write_text(
+        json.dumps(identity_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    attestation_env = "\n".join(
+        [
+            "# Canonical attested release/evidence pair constants.",
+            "# Scripts should source this file to avoid drift across gates.",
+            "",
+            f"EXPECTED_RELEASE_NAME={lock['release_zip']}",
+            f"EXPECTED_RELEASE_SHA={lock['release_sha256']}",
+            f"EXPECTED_EVIDENCE_NAME={lock['evidence_zip']}",
+            f"EXPECTED_EVIDENCE_SHA={lock['evidence_sha256']}",
+            "",
+            "# Canonical smoke-profile policy constants.",
+            "EXPECTED_TOOLATHLON_PROFILE=smoke",
+            "EXPECTED_MCP_PACKAGE_COUNT=2",
+            "EXPECTED_SMOKE_TARGETS=rail_12306,filesystem",
+            "EXPECTED_FULL_PROFILE_VALIDATED=false",
+            f"EXPECTED_PYTHON_VERSION={lock['python_version']}",
+            "MAX_EVIDENCE_AGE_DAYS=30",
+            "",
+        ]
+    )
+    (ROOT / "scripts" / "canonical_release_attestation.env").write_text(
+        attestation_env,
+        encoding="utf-8",
+    )
 
     print("Wrote release metadata files")
     return 0

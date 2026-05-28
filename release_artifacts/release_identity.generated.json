@@ -6,10 +6,12 @@
   "evidence_size_bytes": 206946,
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
   "full_profile_validated": false,
-  "generated_at": "2026-05-28T20:19:54.753246+00:00",
+  "generated_at": "2026-05-28T21:52:32.532205+00:00",
   "node_version_min": "20",
   "production_claim_allowed": false,
   "python_version": "3.12",
   "release_classification": "SOURCE_BUNDLE",
-  "toolathlon_profile": "smoke"
+  "toolathlon_profile": "smoke",
+  "uploaded_archive_sha256": "74a40d41a07ecb441c4357ca6476a584408efda0ab44d6b805122003ebcd1ca1",
+  "uploaded_archive_sha256_location": "external .sha256 sidecar"
 }

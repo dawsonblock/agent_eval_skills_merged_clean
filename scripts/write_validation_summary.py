@@ -31,6 +31,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Write smoke validation summary JSON")
     parser.add_argument("--logs-dir", type=Path, default=DEFAULT_LOG_DIR)
     parser.add_argument("--out", type=Path)
+    parser.add_argument(
+        "--stage",
+        choices=["pre-evidence", "final"],
+        default="final",
+        help="Validation stage (default: final)",
+    )
     args = parser.parse_args()
 
     log_dir = args.logs_dir
@@ -38,6 +44,14 @@ def main() -> int:
 
     log_dir.mkdir(parents=True, exist_ok=True)
     out.parent.mkdir(parents=True, exist_ok=True)
+
+    toolathlon_smoke_present = (
+        exists(log_dir, "toolathlon_smoke_summary.json")
+        or exists(log_dir, "toolathlon_mcp_smoke_summary.json")
+    )
+    pair_status = release_pair_verification_status(log_dir)
+    if args.stage == "pre-evidence" and pair_status == "missing":
+        pair_status = "pending"
 
     components = {
         "root_tests": "pass" if exists(log_dir, "test_results_root.txt") else "missing",
@@ -51,15 +65,21 @@ def main() -> int:
         "agent_skill_packages": (
             "pass" if exists(log_dir, "agent_skill_packages.txt") else "missing"
         ),
-        "toolathlon_smoke": (
-            "pass" if exists(log_dir, "toolathlon_smoke_summary.json") else "missing"
-        ),
-        "release_pair_verification": release_pair_verification_status(log_dir),
+        "toolathlon_smoke": "pass" if toolathlon_smoke_present else "missing",
+        "release_pair_verification": pair_status,
     }
-    hard_fail = [k for k, v in components.items() if v in {"missing", "fail"}]
+    required_components = dict(components)
+    if args.stage == "pre-evidence":
+        required_components.pop("release_pair_verification", None)
+
+    hard_fail = [k for k, v in required_components.items() if v in {"missing", "fail"}]
     summary = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "profile": "smoke",
+        "stage": args.stage,
+        "capabilities": {
+            "toolathlon_profile": "smoke",
+        },
         "status": "fail" if hard_fail else "pass",
         "components": components,
         "warnings": [

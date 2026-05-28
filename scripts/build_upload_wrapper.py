@@ -19,6 +19,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_ARTIFACTS = ROOT / "release_artifacts"
 DEFAULT_OUT = ROOT / "release_artifacts" / "agent_eval_skills_merged_clean-upload-wrapper.zip"
+REQUIRED_RELEASE_ARTIFACTS = [
+    RELEASE_ARTIFACTS / "release_lock.json",
+    RELEASE_ARTIFACTS / "agent_eval_skills_merged_clean-pruned-smoke.zip",
+    RELEASE_ARTIFACTS / "agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
+    RELEASE_ARTIFACTS / "release_identity.generated.json",
+]
 
 # Top-level items included from source workspace
 SOURCE_INCLUDE = [
@@ -68,6 +74,8 @@ FIXED_DATE = (2026, 5, 27, 0, 0, 0)
 
 def should_exclude(path: Path) -> bool:
     rel = path.relative_to(ROOT)
+    if rel.parts[:2] == ("release_artifacts", "validation_logs"):
+        return True
     if any(part in EXCLUDE_PARTS for part in rel.parts):
         return True
     if path.name in EXCLUDE_NAMES:
@@ -94,14 +102,15 @@ def iter_source_files() -> list[Path]:
 
 
 def iter_release_artifact_files() -> list[Path]:
-    files: list[Path] = []
-    for p in RELEASE_ARTIFACTS.iterdir():
-        if p.is_file() and p.suffix == ".zip":
-            files.append(p)
-    lock = RELEASE_ARTIFACTS / "release_lock.json"
-    if lock.exists():
-        files.append(lock)
-    return sorted(files, key=lambda p: p.name)
+    return sorted(REQUIRED_RELEASE_ARTIFACTS, key=lambda p: p.name)
+
+
+def verify_required_release_artifacts() -> None:
+    missing = [str(p) for p in REQUIRED_RELEASE_ARTIFACTS if not p.exists()]
+    if missing:
+        raise SystemExit(
+            "FAIL: missing required release artifact(s):\n" + "\n".join(missing)
+        )
 
 
 def sha256(path: Path) -> str:
@@ -125,6 +134,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    verify_required_release_artifacts()
+
     out_path: Path = args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     if out_path.exists():
@@ -137,17 +148,24 @@ def main() -> int:
     artifact_files = [f for f in artifact_files if f != out_path and "upload-wrapper" not in f.name]
 
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+        written_paths: set[str] = set()
         for path in source_files:
             rel = path.relative_to(ROOT).as_posix()
+            if rel in written_paths:
+                continue
             info = zipfile.ZipInfo(rel, FIXED_DATE)
             info.external_attr = (stat.S_IFREG | 0o644) << 16
             zf.writestr(info, path.read_bytes())
+            written_paths.add(rel)
 
         for path in artifact_files:
             rel = path.relative_to(ROOT).as_posix()
+            if rel in written_paths:
+                continue
             info = zipfile.ZipInfo(rel, FIXED_DATE)
             info.external_attr = (stat.S_IFREG | 0o644) << 16
             zf.writestr(info, path.read_bytes())
+            written_paths.add(rel)
 
     digest = sha256(out_path)
     size_mb = out_path.stat().st_size / (1024 * 1024)
