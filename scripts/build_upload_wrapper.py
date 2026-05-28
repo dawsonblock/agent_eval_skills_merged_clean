@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import stat
 import zipfile
 from pathlib import Path
@@ -35,15 +34,20 @@ SOURCE_INCLUDE = [
     "SECURITY_FIXTURES.md",
     "DEPLOYMENT.md",
     "WORKSPACE_HEALTH_DASHBOARD.md",
+    "RELEASE_EVIDENCE_MANIFEST_2026-05-27.json",
     "RELEASE_STATUS.json",
     "RELEASE_MANIFEST.json",
     "VALIDATION_EVIDENCE.md",
     "RELEASE_ATTESTATION_2026-05-27.md",
+    "release_artifacts/release_identity.generated.json",
+    "release_artifacts/RELEASE_HANDOFF_2026-05-27.md",
+    "release_artifacts/RELEASE_HANDOFF_2026-05-28.md",
     "setup.cfg",
     "pyrightconfig.json",
     "pytest.ini",
     "Makefile",
     "LICENSE",
+    "dist/release/SHA256SUMS.txt",
 ]
 
 EXCLUDE_PARTS = {

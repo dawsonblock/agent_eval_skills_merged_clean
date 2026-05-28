@@ -13,5 +13,7 @@
     "Toolathlon full profile is experimental.",
     "Agent Skills quality warnings remain.",
     "Not production deployment approved."
-  ]
+  ],
+  "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
+  "canonical_release_sha256": "68c8fff42d714c2e623fceeb3fcebb0c20f4ae1b01f4eb63080b1fff1a3d4ae8"
 }
