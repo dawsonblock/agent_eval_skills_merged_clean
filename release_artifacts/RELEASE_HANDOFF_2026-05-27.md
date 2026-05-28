@@ -16,9 +16,9 @@ event.
 ## Artifact Pair
 
 - Release ZIP: `agent_eval_skills_merged_clean-pruned-smoke.zip`
-- Release SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
-- Evidence ZIP: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-- Evidence SHA256: `34c8da07a487aef1fc69fb74d609de427d2e673ed999c5f29fa2de7d5f9bb79a`
+- Release SHA256: `01ffe2f112a76baee38d56863413b4595abd9d0e89b799908442a50382c10f0e`
+- Evidence ZIP: `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
+- Evidence SHA256: `e7ec62bd40c43c49c4e7262fa108888e1e2c4e77ac7a0033fa83e3c6e6a4df73`
 
 ## Gate Snapshot
 

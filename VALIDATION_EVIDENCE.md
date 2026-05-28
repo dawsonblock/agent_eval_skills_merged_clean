@@ -2,11 +2,11 @@
 Canonical release ZIP:
 `agent_eval_skills_merged_clean-pruned-smoke.zip`
 Release SHA256:
-`6bfb175693665a9706ddd08cc25418c6796657914c04c546c9f72c277518e14d`
+`01ffe2f112a76baee38d56863413b4595abd9d0e89b799908442a50382c10f0e`
 Canonical evidence ZIP:
 `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
 Evidence SHA256:
-`82fbb203ef4684b7f8efeddb081517e30ed5677dcfdd70a2b6911ee4b124b4f4`
+`e7ec62bd40c43c49c4e7262fa108888e1e2c4e77ac7a0033fa83e3c6e6a4df73`
 Validation profile:
 `smoke`
 Status:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -23,6 +24,11 @@ INCLUDE = [
     "RELEASE_MANIFEST.json",
     "VALIDATION_EVIDENCE.md",
     "RELEASE_ATTESTATION_2026-05-27.md",
+    "CLAIMS_MATRIX.md",
+    "SECURITY.md",
+    "SECURITY_FIXTURES.md",
+    "DEPLOYMENT.md",
+    "WORKSPACE_HEALTH_DASHBOARD.md",
 ]
 
 EXCLUDE_PARTS = {
@@ -79,26 +85,48 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Build the pruned smoke release ZIP."
+    )
+    parser.add_argument(
+        "--profile",
+        default="smoke",
+        choices=["smoke", "full"],
+        help="Validation profile (default: smoke)",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=OUT,
+        help="Output path for the release ZIP (default: release_artifacts/...pruned-smoke.zip)",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    if OUT.exists():
-        OUT.unlink()
-    with zipfile.ZipFile(OUT, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+    args = parse_args()
+    out_path = args.out
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    if out_path.exists():
+        out_path.unlink()
+    with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path in iter_files():
             rel = path.relative_to(ROOT).as_posix()
             info = zipfile.ZipInfo(rel, FIXED_DATE)
             info.external_attr = (stat.S_IFREG | 0o644) << 16
             zf.writestr(info, path.read_bytes())
-    digest = sha256(OUT)
-    print(f"Wrote {OUT}")
+    digest = sha256(out_path)
+    print(f"Wrote {out_path}")
     print(f"SHA256: {digest}")
 
-    lock_path = ROOT / "release_artifacts" / "release_lock.json"
-    if lock_path.exists():
-        lock = json.loads(lock_path.read_text(encoding="utf-8"))
-        lock["release_sha256"] = digest
-        lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
-        print(f"Updated {lock_path}")
+    if out_path == OUT:
+        lock_path = ROOT / "release_artifacts" / "release_lock.json"
+        if lock_path.exists():
+            lock = json.loads(lock_path.read_text(encoding="utf-8"))
+            lock["release_sha256"] = digest
+            lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+            print(f"Updated {lock_path}")
 
     return 0
 

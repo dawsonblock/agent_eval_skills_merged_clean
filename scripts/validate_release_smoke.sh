@@ -14,8 +14,12 @@ python --version > "$LOG_DIR/environment.txt"
 node --version >> "$LOG_DIR/environment.txt"
 npm --version >> "$LOG_DIR/environment.txt"
 
-echo "Running root tests..."
-pytest -q tests | tee "$LOG_DIR/test_results_root.txt"
+# Step 1: Ensure the canonical release ZIP exists before anything else.
+CANONICAL_RELEASE="$ROOT_DIR/release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip"
+if [ ! -f "$CANONICAL_RELEASE" ]; then
+    echo "Canonical release ZIP missing; building..."
+    python scripts/build_pruned_smoke_release.py
+fi
 
 echo "Running ToolForge tests..."
 cd "$ROOT_DIR/ToolForge"
@@ -37,8 +41,18 @@ echo "Running secret fixture policy check..."
 cd "$ROOT_DIR"
 python scripts/check_for_real_secrets.py | tee "$LOG_DIR/secrets_scan.txt"
 
+echo "Sanitizing absolute paths from evidence logs..."
+python scripts/sanitize_release_paths.py
+
 echo "Running canonical release/evidence pair verification..."
 python scripts/verify_release_pair.py | tee "$LOG_DIR/release_pair_verification.txt"
 
 python scripts/write_validation_summary.py
+
+# Step 5: Run root tests last — they require the canonical release ZIP and
+# evidence to already exist so all archive/hash assertions can pass.
+echo "Running root tests..."
+cd "$ROOT_DIR"
+pytest -q tests | tee "$LOG_DIR/test_results_root.txt"
+
 echo "PASS: release smoke validation complete"

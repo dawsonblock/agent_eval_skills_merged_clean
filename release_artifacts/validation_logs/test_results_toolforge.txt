@@ -6,21 +6,21 @@
 .......                                                                  [100%]
 =============================== warnings summary ===============================
 tests/test_ai_spec_generator.py::TestAISpecGenerator::test_fallback_to_rule_based
-  /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/packages/core/spec_from_prompt.py:565: UserWarning: LLM generation attempt 1 failed: OPENAI_API_KEY environment variable not set. Set it to use OpenAI backend.. Retrying in 1s...
+  ${REPO_ROOT}/ToolForge/packages/core/spec_from_prompt.py:565: UserWarning: LLM generation attempt 1 failed: OPENAI_API_KEY environment variable not set. Set it to use OpenAI backend.. Retrying in 1s...
     warnings.warn(
 
 tests/test_ai_spec_generator.py::TestAISpecGenerator::test_fallback_to_rule_based
-  /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/packages/core/spec_from_prompt.py:565: UserWarning: LLM generation attempt 2 failed: OPENAI_API_KEY environment variable not set. Set it to use OpenAI backend.. Retrying in 2s...
+  ${REPO_ROOT}/ToolForge/packages/core/spec_from_prompt.py:565: UserWarning: LLM generation attempt 2 failed: OPENAI_API_KEY environment variable not set. Set it to use OpenAI backend.. Retrying in 2s...
     warnings.warn(
 
 tests/test_ai_spec_generator.py::TestAISpecGenerator::test_fallback_to_rule_based
-  /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/packages/ai/spec_generator.py:138: UserWarning: AI generation with provider 'openai' failed: LLM generation failed after 3 attempts: OPENAI_API_KEY environment variable not set. Set it to use OpenAI backend.. Falling back to rule-based generation.
+  ${REPO_ROOT}/ToolForge/packages/ai/spec_generator.py:138: UserWarning: AI generation with provider 'openai' failed: LLM generation failed after 3 attempts: OPENAI_API_KEY environment variable not set. Set it to use OpenAI backend.. Falling back to rule-based generation.
     warnings.warn(
 
 tests/test_logger.py::test_toolforge_formatter_basic
 tests/test_logger.py::test_toolforge_formatter_with_exception
 tests/test_logger.py::test_toolforge_formatter_with_extra_fields
-  /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/ToolForge/packages/core/logger.py:16: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  ${REPO_ROOT}/ToolForge/packages/core/logger.py:16: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
     "timestamp": datetime.utcnow().isoformat(),
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
