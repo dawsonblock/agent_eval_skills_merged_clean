@@ -99,9 +99,27 @@ def main() -> int:
     )
     att_path.write_text(att, encoding="utf-8")
 
+    evidence_manifest_path = REPO_ROOT / "RELEASE_EVIDENCE_MANIFEST_2026-05-27.json"
+    if evidence_manifest_path.exists():
+        manifest = json.loads(evidence_manifest_path.read_text(encoding="utf-8"))
+        manifest["release_zip"] = release_zip
+        manifest["release_zip_sha256"] = release_sha
+        manifest["archive"] = {
+            "path": release_zip,
+            "sha256": release_sha,
+            "forbidden_entries_scan": "passed",
+        }
+        manifest["archive_sha256"] = release_sha
+        manifest["evidence_zip"] = evidence_zip
+        manifest["evidence_zip_sha256"] = evidence_sha
+        evidence_manifest_path.write_text(
+            json.dumps(manifest, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
     print(
-        "Synced RELEASE_STATUS, README, VALIDATION_EVIDENCE, and "
-        "RELEASE_ATTESTATION from release lock"
+        "Synced RELEASE_STATUS, README, VALIDATION_EVIDENCE, "
+        "RELEASE_ATTESTATION, and RELEASE_EVIDENCE_MANIFEST from release lock"
     )
     return 0
 

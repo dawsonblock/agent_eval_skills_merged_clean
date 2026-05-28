@@ -1,5 +1,5 @@
 == Source Bundle Hygiene Check ==
-ZIP: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
+ZIP: ${REPO_ROOT}/release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
 
 PASS: Required path present: ToolForge/
 PASS: Required path present: agent-skills-curated/

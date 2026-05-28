@@ -97,6 +97,8 @@ python "$ROOT_DIR/scripts/generate_release_manifest.py"
 
 python -m pytest -q tests | tee "$LOG_DIR/test_results_root.txt"
 
+python "$ROOT_DIR/scripts/sanitize_release_paths.py"
+
 python "$ROOT_DIR/scripts/write_validation_summary.py" \
   --logs-dir "$LOG_DIR" \
   --out "$LOG_DIR/validation_summary.json"

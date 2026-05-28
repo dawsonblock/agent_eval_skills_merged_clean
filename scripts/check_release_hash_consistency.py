@@ -63,6 +63,18 @@ def main() -> int:
         if evidence_sha not in text:
             mismatches.append("VALIDATION_EVIDENCE.md missing evidence SHA")
 
+    evidence_manifest_path = REPO_ROOT / "RELEASE_EVIDENCE_MANIFEST_2026-05-27.json"
+    if evidence_manifest_path.exists():
+        manifest = read_json(evidence_manifest_path)
+        if manifest.get("release_zip") != release_zip:
+            mismatches.append("RELEASE_EVIDENCE_MANIFEST release_zip mismatch")
+        if manifest.get("release_zip_sha256") != release_sha:
+            mismatches.append("RELEASE_EVIDENCE_MANIFEST release_zip_sha256 mismatch")
+        if manifest.get("evidence_zip") != evidence_zip:
+            mismatches.append("RELEASE_EVIDENCE_MANIFEST evidence_zip mismatch")
+        if manifest.get("evidence_zip_sha256") != evidence_sha:
+            mismatches.append("RELEASE_EVIDENCE_MANIFEST evidence_zip_sha256 mismatch")
+
     attestation_path = REPO_ROOT / "RELEASE_ATTESTATION_2026-05-27.md"
     if attestation_path.exists():
         text = attestation_path.read_text(encoding="utf-8")

@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET_DIRS = [ROOT / ".validation_logs", ROOT / "release_artifacts"]
+TEXT_SUFFIXES = {".txt", ".log", ".json"}
 
 ABSOLUTE_PATH_PATTERNS = [
     re.compile(r"/Users/[^/\s]+/[^\s\"']*"),
@@ -48,13 +49,27 @@ def _iter_json_files(base_dir: Path):
         yield path
 
 
+def _iter_text_files(base_dir: Path):
+    if not base_dir.exists():
+        return
+    for path in sorted(base_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in TEXT_SUFFIXES:
+            continue
+        if any(part in {"node_modules", "__pycache__", "withdrawn"} for part in path.parts):
+            continue
+        yield path
+
+
 def main() -> int:
     changed = 0
-    scanned = 0
+    scanned_json = 0
+    scanned_text = 0
 
     for base_dir in TARGET_DIRS:
         for json_path in _iter_json_files(base_dir):
-            scanned += 1
+            scanned_json += 1
             try:
                 data = json.loads(json_path.read_text(encoding="utf-8"))
             except Exception:
@@ -70,7 +85,19 @@ def main() -> int:
             )
             changed += 1
 
-    print(f"Scanned {scanned} JSON files; sanitized {changed} file(s).")
+        for text_path in _iter_text_files(base_dir):
+            scanned_text += 1
+            raw = text_path.read_text(encoding="utf-8", errors="replace")
+            sanitized = _sanitize_string(raw)
+            if sanitized == raw:
+                continue
+            text_path.write_text(sanitized, encoding="utf-8")
+            changed += 1
+
+    print(
+        f"Scanned {scanned_json} JSON and {scanned_text} text files; "
+        f"sanitized {changed} file(s)."
+    )
     return 0
 
 
