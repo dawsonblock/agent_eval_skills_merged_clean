@@ -1,4 +1,26 @@
-# Toolathlon Profiles
+# Toolathlon Validation Profiles
+
+This repository supports two validation profiles.
+
+## smoke
+
+- servers:
+  - rail_12306
+  - filesystem
+- status: supported
+- purpose: release validation
+- build command: `./scripts/build_smoke_artifacts.sh`
+- run command: `./scripts/run_smoke_profile.sh`
+
+## full
+
+- servers: all local MCP servers in `profiles/full/mcp_servers.json`
+- status: experimental / incomplete
+- purpose: development diagnostics only
+- run command: `python scripts/smoke_mcp_servers.py --profile full`
+
+The smoke profile is the only release-gated path. Full profile failures do not
+represent release regressions unless explicitly run with `--strict`.# Toolathlon Profiles
 
 ## smoke
 

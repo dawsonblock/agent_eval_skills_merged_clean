@@ -37,6 +37,8 @@ agent_eval_skills_merged_clean-pruned-smoke*.zip
 .skillforge/runs/
 .skillforge/evidence/
 .skillforge/packages/*.zip
+.skillforge/
+ToolForge/.skillforge/
 
 # Skill-local Python caches
 skills/*/__pycache__/

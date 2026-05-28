@@ -262,8 +262,14 @@ def main() -> int:
         default=None,
         help="Optional path to write a machine-readable JSON summary",
     )
+    parser.add_argument(
+        "--profile",
+        type=str,
+        default=None,
+        help="Validation profile to use (defaults to TOOLATHLON_PROFILE)",
+    )
     args = parser.parse_args()
-    profile = get_profile_name()
+    profile = (args.profile or get_profile_name()).strip() or "smoke"
 
     # Find the repo root (parent of this script's parent)
     script_dir = Path(__file__).resolve().parent

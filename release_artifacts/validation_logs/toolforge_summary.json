@@ -1,0 +1,5 @@
+{
+  "overall_status": "passed",
+  "tests_log": "release_artifacts/validation_logs/test_results_toolforge.txt",
+  "doctor_log": "release_artifacts/validation_logs/toolforge_doctor.txt"
+}

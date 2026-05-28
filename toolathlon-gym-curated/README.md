@@ -207,6 +207,29 @@ wait
 - Keep network disabled unless a task explicitly requires network access.
 - Treat terminal MCP as container-only in benchmark mode.
 
+### Security Status
+
+- Security status: controlled local benchmark only.
+- Production deployment: not approved.
+
+npm audit warnings in local MCP fixture servers do not block smoke validation,
+but they do block any production-readiness claim.
+
+### Profile Support
+
+Supported validation path:
+
+```bash
+./scripts/build_smoke_artifacts.sh
+./scripts/run_smoke_profile.sh
+```
+
+Experimental path (not release-gated):
+
+```bash
+python scripts/smoke_mcp_servers.py --profile full
+```
+
 ---
 
 ## Model Provider Reference

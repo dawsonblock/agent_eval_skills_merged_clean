@@ -201,3 +201,6 @@ This repository is NOT suitable for:
 - ❌ Untrusted code execution environments.
 - ❌ Systems with sensitive data access.
 - ❌ Cloud-facing deployments without hardening.
+
+Security status: controlled local benchmark only.
+Production deployment: not approved.

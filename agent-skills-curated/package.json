@@ -21,6 +21,10 @@
   "bin": {
     "eigent-skills": "bin/cli.js"
   },
+  "scripts": {
+    "package": "node scripts/package_skills.js",
+    "validate:packages": "node scripts/validate_packages.js"
+  },
   "files": [
     "bin/",
     "skills/",

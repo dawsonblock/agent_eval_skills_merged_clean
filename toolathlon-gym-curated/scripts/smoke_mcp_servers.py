@@ -289,6 +289,19 @@ def parse_args() -> argparse.Namespace:
             "'smoke')."
         ),
     )
+    parser.add_argument(
+        "--strict",
+        dest="strict",
+        action="store_true",
+        default=None,
+        help="Fail command with non-zero exit if any target fails.",
+    )
+    parser.add_argument(
+        "--no-strict",
+        dest="strict",
+        action="store_false",
+        help="Always return zero even when some targets fail.",
+    )
     return parser.parse_args()
 
 
@@ -323,6 +336,30 @@ def run_target(
             timeout=timeout_seconds,
             check=False,
         )
+    except FileNotFoundError:
+        duration = round(time.time() - started, 3)
+        return {
+            "target": target.name,
+            "status": "failed",
+            "reason": "missing_executable",
+            "duration_seconds": duration,
+            "command": shlex.join(target.command),
+            "cwd": str(target.cwd),
+            "stdout": "",
+            "stderr": "Executable not found",
+        }
+    except PermissionError:
+        duration = round(time.time() - started, 3)
+        return {
+            "target": target.name,
+            "status": "failed",
+            "reason": "permission_denied",
+            "duration_seconds": duration,
+            "command": shlex.join(target.command),
+            "cwd": str(target.cwd),
+            "stdout": "",
+            "stderr": "Permission denied while launching executable",
+        }
     except subprocess.TimeoutExpired as exc:
         duration = round(time.time() - started, 3)
         status = "passed" if target.success_on_timeout else "failed"
@@ -375,6 +412,7 @@ def run_target(
 def main() -> int:
     args = parse_args()
     profile = (args.profile or get_profile_name()).strip() or "smoke"
+    strict_mode = args.strict if args.strict is not None else profile == "smoke"
     with tempfile.TemporaryDirectory(prefix="mcp-smoke-") as tmp_dir:
         workspace_root = Path(tmp_dir)
         (workspace_root / "memory").mkdir(parents=True, exist_ok=True)
@@ -401,6 +439,7 @@ def main() -> int:
         summary = {
             "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "profile": profile,
+            "strict_mode": strict_mode,
             "local_servers_dir": str(LOCAL_SERVERS_DIR),
             "target_count": len(results),
             "passed_count": len(results) - len(failed),
@@ -417,7 +456,9 @@ def main() -> int:
             )
 
         print(json.dumps(summary, indent=2))
-        return 0 if not failed else 1
+        if failed and strict_mode:
+            return 1
+        return 0
 
 
 if __name__ == "__main__":

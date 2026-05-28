@@ -1,0 +1,11 @@
+  ✓ Python >= 3.9 and < 3.13
+  ✓ pydantic
+  ✓ click
+  ✓ jinja2
+  ✓ ruamel.yaml
+  ✓ rich
+  ✓ jsonschema
+  ✓ pytest
+  ✓ repository hygiene
+
+ToolForge environment OK.

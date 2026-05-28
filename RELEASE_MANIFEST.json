@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-27T20:10:12.258296+00:00",
+  "created_at_utc": "2026-05-28T01:24:19.650679+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "25e4502e0ab50a394b0b5fe03ad1b7e00fe3eddc5d83111b709253219b649e1e"
+      "sha256": "56ae8fd6544abf8e3374c7a167f8a5a55e7c9c5e7b0f40a0f8b98ad02c9cfe0c"
     },
     {
       "path": "ToolForge/.bandit",
@@ -65,7 +65,7 @@
     },
     {
       "path": "ToolForge/apps/cli/toolforge_cli/main.py",
-      "sha256": "e975ae18a8f9428aef8956af63e7e6213542f930c429afcb7c41fb096f84ab32"
+      "sha256": "338c1836d352a2242f8d329daec957bf7fce9a66aa6ec37a319b3492ff96f986"
     },
     {
       "path": "ToolForge/apps/cli/toolforge_cli/test_helpers.py",
@@ -81,23 +81,23 @@
     },
     {
       "path": "ToolForge/apps/local_deepseek_demo/server.py",
-      "sha256": "704c4c727b5746f8abb89312608871f70020c39e562b6dedf479ce000d575dca"
+      "sha256": "6851aed871f8a73875d07bf080e149b67c0b7e6c189b616638f13e1a8b5bf058"
     },
     {
       "path": "ToolForge/apps/local_deepseek_demo/static/app.js",
-      "sha256": "2d457bc2e7cd537fa25fb3a1b0475b7d0f3cec8ca515c81d765b62d86a24d266"
+      "sha256": "6ec105fafabd4c1da4f30b8012f7c760c9662b97a9e3682e638d4060d0e57a8f"
     },
     {
       "path": "ToolForge/apps/local_deepseek_demo/static/index.html",
-      "sha256": "36200a912befe5b1a87ed169d19c6719434f0bf3b5ad27d3bdad1b6ff7393187"
+      "sha256": "ed0feda8bf5988257c608c3cf6e044aeed2841d245fdd918fd5e1d682c127906"
     },
     {
       "path": "ToolForge/apps/local_deepseek_demo/static/styles.css",
-      "sha256": "65247817b5ffdadab204a6c00056f5a40120297ea5f42d3a1a297690bebf0085"
+      "sha256": "95576010318ca5905b12499f6a2b4e0fddc02f214327f8bd342f5f27e6eef169"
     },
     {
       "path": "ToolForge/apps/local_deepseek_demo/toolforge_adapter.py",
-      "sha256": "a413c225ff4511b3abbe6b45faf7117f81f8798af829e43aabf5e0966d9b6afd"
+      "sha256": "a74a697319cd3d32587cdb3a1242add96e2b07718eb55af4c131ba03822559f2"
     },
     {
       "path": "ToolForge/apps/web/index.html",
@@ -309,7 +309,7 @@
     },
     {
       "path": "ToolForge/packages/core/tool_generator.py",
-      "sha256": "ce95c1c28a834e457c552e90d3aa41a5bfe666e6e347280b1392eacb342a53b3"
+      "sha256": "1d14f82417d1a6fa8c35d7f0ba530028e43a6fcf515c2332c5ee44f0db762e1d"
     },
     {
       "path": "ToolForge/packages/core/tool_schema.py",
@@ -441,7 +441,7 @@
     },
     {
       "path": "ToolForge/packages/validators/test_validator.py",
-      "sha256": "886a5bf0ec85919c9d61f38abee895c6758a4b5628256f2dfedff80e4881d9ce"
+      "sha256": "a03b8a36cc4779bfb081669c440f2195cddd66d25a8c17b927d58783c86e8bfc"
     },
     {
       "path": "ToolForge/pyproject.toml",
@@ -809,7 +809,7 @@
     },
     {
       "path": "ToolForge/tests/test_cli_main_inprocess_coverage.py",
-      "sha256": "7dfbbc48249b80d7574866eb259a6f51d6d15ffd9b2cf9e28beec6e926d58bdd"
+      "sha256": "875c4ca3ee5b0d07a2131845eb102fea3cbc58a388a8fcbc4c69c3fa07f5f613"
     },
     {
       "path": "ToolForge/tests/test_cli_validation_regressions.py",
@@ -845,11 +845,11 @@
     },
     {
       "path": "ToolForge/tests/test_local_deepseek_demo_adapter.py",
-      "sha256": "ba52fe189207785e847a7ded556eb2c496dad462ccb1d539a4d3d408110a0e15"
+      "sha256": "b591799a8d73c49c064fdb160093f834c00a218201a61355fb48ba0e1c365c68"
     },
     {
       "path": "ToolForge/tests/test_local_deepseek_demo_api.py",
-      "sha256": "64a6ff59d6f974b72a76824b4aa8bb186ee463e92fca93122af687345a2d30ee"
+      "sha256": "e09bf11494c2f6cbe103646f8628c7141b25bd263b37f6d98908984a9bcc205c"
     },
     {
       "path": "ToolForge/tests/test_logger.py",
@@ -981,7 +981,7 @@
     },
     {
       "path": "ToolForge/tests/test_test_validator.py",
-      "sha256": "8310d55c2c272cf36aac553e98f5a1b3b915ccc08d91a9b5f553181ea512e276"
+      "sha256": "a1d042f989408609c7153f27946ac01fe849e64139db055a01cbb28d5b04b5ee"
     },
     {
       "path": "ToolForge/tests/test_tool_generator.py",
@@ -1224,6 +1224,10 @@
       "sha256": "5752447ad4e9816a7899068724954f72baa1fd4c6309d83e993ce70f6a33bfb4"
     },
     {
+      "path": "agent-skills-curated/docs/QUALITY_UPGRADE_PLAN.md",
+      "sha256": "213fbf1fea359f4c9964ec5425a2b38dae9181066f0af2cec7f3a1c45b04196e"
+    },
+    {
       "path": "agent-skills-curated/evals/evaluate.js",
       "sha256": "3cef9938cddb9e93440b16c11748e59bcbee0b2c34fd59f28b21e1a024299185"
     },
@@ -1333,103 +1337,111 @@
     },
     {
       "path": "agent-skills-curated/package.json",
-      "sha256": "0638f8d744fab2cb6184eec3bc8efaf38fec297f61954f9cfc82387be828bf10"
+      "sha256": "dff53551bb2f229231ed55f0d76bc348fcbd60a8bfcaed8836c681192e73228f"
     },
     {
       "path": "agent-skills-curated/packages/browser-and-automation/webapp-testing.zip",
-      "sha256": "e7b513b2af19fdb9b6052f1ada1ab4eeb89a320869863d5f9d2ae1d5eb2e1e2b"
+      "sha256": "82eb4f55eaf524ff6ab978dbf7331b00a0f1103aa4e624978fc48180cd7e3299"
     },
     {
       "path": "agent-skills-curated/packages/coding-agents-and-ides/mcp-builder.zip",
-      "sha256": "e3f55b51063a5b250a16b4d34f12fe9957258dd4f58b0bdbfbe306a6980e56b5"
+      "sha256": "f774fcaa55d1f7891b7036f37ea6a1bd141f2e4431f4c9bcfcd2e2c006244f22"
     },
     {
       "path": "agent-skills-curated/packages/coding-agents-and-ides/mintlify-docs-updater.zip",
-      "sha256": "64940a7bebf558dbeb10b6d60ee1ee887f2bf41970287263203987f53db31c46"
+      "sha256": "bbab68e5cb1696f7159d5de6a020c81471623093dd67497b0be020a0df4686b7"
     },
     {
       "path": "agent-skills-curated/packages/coding-agents-and-ides/skill-creator.zip",
-      "sha256": "92b0fba03833e6530b3264c21a7733185cdfa444b19f025f5722c643526d487c"
+      "sha256": "afc6d03e3d840ba94e4e83a382441de8d9b31a9d7134ad53e6deb163ce4e5080"
     },
     {
       "path": "agent-skills-curated/packages/communication/internal-comms.zip",
-      "sha256": "7f9c79ef1beaefe6441fc9339a21acbf13df3e2ba6da610ebb7a86d65675904c"
+      "sha256": "c3554d773cd3bb85f61d244a5a73c7759d1d61a2ed882f132bcc3073c3b757e1"
     },
     {
       "path": "agent-skills-curated/packages/image-and-video-generation/algorithmic-art.zip",
-      "sha256": "760ca31a75095d7d0e9ab07868423912764424dd3edd8dd16e621952eae85c2a"
+      "sha256": "a16d3d65639d76c7e666a22ff6593db45d460b1ad89220c28869ac5d796158b6"
     },
     {
       "path": "agent-skills-curated/packages/image-and-video-generation/canvas-design.zip",
-      "sha256": "83ed7cc57c648c4cbccf298b5f2f213842b757306bf80696de96a27614f08048"
+      "sha256": "0cf68ba61af064042fd41b4b353affb14987ecc64c4de3a5c5913830683ea58f"
     },
     {
       "path": "agent-skills-curated/packages/image-and-video-generation/instagram-reel-editor.zip",
-      "sha256": "d38f1b362ba70caed77998e916593f9e4790469918a3a1933c181a01e3e7e293"
+      "sha256": "67c3afb79bbd940ab6b5b15506dd3567014e0ef00e4480d42858689cea6d2548"
     },
     {
       "path": "agent-skills-curated/packages/image-and-video-generation/remotion.zip",
-      "sha256": "e7b8ff2056d4064b53f21bca33d61d34dca9608232027970ad7046cb4dc44c60"
+      "sha256": "47f9cd984d7ba2a34d8366e8cc778c365cc0516b503f615b9737f9d6c1728ece"
     },
     {
       "path": "agent-skills-curated/packages/image-and-video-generation/slack-gif-creator.zip",
-      "sha256": "82a6df7b6459d521e13da628f0711eca9b9a3a6996f9c7dfd424c665d673577c"
+      "sha256": "6ed997e4a4b7be26e656f72e1248c78dad1adda525d6d1206253cbfd830ea2b8"
     },
     {
       "path": "agent-skills-curated/packages/marketing-and-sales/humanizer.zip",
-      "sha256": "a9966ab8f8e0066846ce37a87f43ba7b4570c9e26c9721c70b6aca45070536a3"
+      "sha256": "c336978765602a3f764cd002643cfa3f3fe7dedb61cbe15e9d045e7bbe6f8761"
     },
     {
       "path": "agent-skills-curated/packages/marketing-and-sales/instagram-posting.zip",
-      "sha256": "e9e9e1d2a8e0d5a868d8504ab976c72ca5846d8147c2d497429c70f29aa57d0c"
+      "sha256": "587377cffd4eda7abc25ecb4f15a0644748fb11d88f07aac9f2785fe299f7bea"
     },
     {
       "path": "agent-skills-curated/packages/pdf-and-documents/doc-coauthoring.zip",
-      "sha256": "059d6c35daf5447265db2e1fc71ecf144bf66191d335226213a624f479ad5c4e"
+      "sha256": "fbfff3f9287b13b426ec491906feabe9bb46c78d66630a70e4479c7429afa383"
     },
     {
       "path": "agent-skills-curated/packages/pdf-and-documents/docx.zip",
-      "sha256": "7ef30f9866f34ed13b68ffd00825469f6c4ea825a5a4dd7ed0fac5e5ca5a438a"
+      "sha256": "d562d708a7aa8c7a3636f6285516fb13406535ed31203618fa13947b8d4c6db4"
     },
     {
       "path": "agent-skills-curated/packages/pdf-and-documents/pdf.zip",
-      "sha256": "0350fb0cd135651d587f6571af0c9e11a5a0f84b8129a0964157f1c75adb2e64"
+      "sha256": "e4018699767c1cf1d4e624448301468d267b7830bee05d678ec73a8f7cd083dd"
     },
     {
       "path": "agent-skills-curated/packages/pdf-and-documents/pptx.zip",
-      "sha256": "55c85c1b90f152d9edb55d26376060d14e528493d48805b0cb3d8af7a1edd941"
+      "sha256": "b5fe7b2e0d53a373a763f966542deb40102ea690b95fc7297d49034e21ac49ea"
     },
     {
       "path": "agent-skills-curated/packages/pdf-and-documents/xlsx.zip",
-      "sha256": "a0bdb1033747026cd21bd48008c54e8dacf59ae698b5ec2d1333c6a3a9f5d90d"
+      "sha256": "7d10d54c7c83a5d21efdde4823a1beb403e30b1f9cc0591a2e5202181f025592"
     },
     {
       "path": "agent-skills-curated/packages/productivity-and-tasks/pm-skills.zip",
-      "sha256": "8ff494b8763c29c63e9232d1c1e9e48fed67a469b1188311629773699c809a68"
+      "sha256": "6226c08fd8779789125224e032af6c81567d0fff1fc6a1ae39a2c3aedf171e9d"
     },
     {
       "path": "agent-skills-curated/packages/web-and-frontend-development/brand-guidelines.zip",
-      "sha256": "6148b49f3962aaab8b663cc6ee698a9c9a9e61af9ca186dfb15032e44406865d"
+      "sha256": "5ddcc15d854a1c08d62ca68bdc7b7c0eda54053e94fedbf89ef55ead0b68fc70"
     },
     {
       "path": "agent-skills-curated/packages/web-and-frontend-development/excalidraw.zip",
-      "sha256": "e2c3a2a89daad018e6a136ca3b7c39854ebf84d16975cc6a2160820551a2d4eb"
+      "sha256": "d5e2c6295bb84905083abea5337b4fa2f441075445f6697dea285c539b6fee34"
     },
     {
       "path": "agent-skills-curated/packages/web-and-frontend-development/frontend-design.zip",
-      "sha256": "59fb6add31458313817ab144915c38c5a77a5ee383dc229ba82a0d4f8f2ade7f"
+      "sha256": "880bd004957df492fad02f1e49c693d75b7b64143d8740f23b372e03042e0195"
     },
     {
       "path": "agent-skills-curated/packages/web-and-frontend-development/theme-factory.zip",
-      "sha256": "caa03a050e9f3a1c676655bcfe2e3fbfa0c8e17fbad7ee4fb05aea6cba30575e"
+      "sha256": "b2794c125db664dc76c3a837e10733b8fec8c9d904514f983f36359a21726517"
     },
     {
       "path": "agent-skills-curated/packages/web-and-frontend-development/web-artifacts-builder.zip",
-      "sha256": "17bb3888b2e21731aac4cba0388c817a6990063f6d205912f3b3724891f9e102"
+      "sha256": "3d953cc3126dbc65adf1f59cc826f89bb367fa1ca3494b280d1444d66c22cc97"
     },
     {
       "path": "agent-skills-curated/quality_exceptions.json",
       "sha256": "a709843b941e3ebde0cc68fa527c2766e00b14cb56d97137e593f11dc954774d"
+    },
+    {
+      "path": "agent-skills-curated/scripts/package_skills.js",
+      "sha256": "d70a32af85eee15f485366a040ca610dadc1b44d47c2ae353b2ed9ec2549a6a3"
+    },
+    {
+      "path": "agent-skills-curated/scripts/validate_packages.js",
+      "sha256": "91edbd0fe8104cf8e0811a545776c3fd4c3caa595f927095cd421b0401ae8260"
     },
     {
       "path": "agent-skills-curated/skills/browser-and-automation/webapp-testing/LICENSE.txt",
@@ -2432,6 +2444,10 @@
       "sha256": "eabe4b7bc26e4042dab15d1937fc9c63e82a90da8a52fd686c7e42e51a42aef4"
     },
     {
+      "path": "release_artifacts/release_lock.json",
+      "sha256": "94d06608d7bc9bd55cdec58c758f8555679b5e1451da863d9765b41e0079d433"
+    },
+    {
       "path": "release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log",
       "sha256": "eba6155027d5b2c2f53a060217c3f3fd0f454bd6138c9c13a0d2841c6656f452"
     },
@@ -2476,6 +2492,14 @@
       "sha256": "059a4e5bc02fb8ba05abfa416d4d2c359401281c9008ab60367f971f76a82e9b"
     },
     {
+      "path": "scripts/build_evidence_zip.py",
+      "sha256": "cf741cefa918910b6ae3fcbc1a50e5006bc5d8f22bac3532553e84b8dcd16568"
+    },
+    {
+      "path": "scripts/build_pruned_smoke_release.py",
+      "sha256": "0f8467da3dcb73bd22d76efbef0021da981e207a42b9ffe79ab8def962af8882"
+    },
+    {
       "path": "scripts/build_pruned_smoke_release.sh",
       "sha256": "ae547745a2aaed4ea2567098ba4934d6919b539988d40f88b6af024b790d2b24"
     },
@@ -2488,16 +2512,28 @@
       "sha256": "b7b9a13f28306ae829a8da0836429f8e538fabf8f51ea46ef509ad9bf7932aad"
     },
     {
+      "path": "scripts/check_for_real_secrets.py",
+      "sha256": "97557d998a8be45e43d2bc60f28d86a2b4f42fbb0dce3afae24bf35e1380109f"
+    },
+    {
       "path": "scripts/check_no_absolute_local_paths.py",
       "sha256": "4b4cd4e9e37a032b34472dec873258ca1c5c00260daa6a630b1a5cae2d49e369"
+    },
+    {
+      "path": "scripts/check_release_hash_consistency.py",
+      "sha256": "d56da9065f9b1ccda4ed8eed8ffbb567f61fcad571c5dbb2624a55ddc4dc6872"
     },
     {
       "path": "scripts/check_toolathlon_smoke_profile.sh",
       "sha256": "0f406a47ad8c1c37ff373debdc3a2e5fcf663639976c8938328f6324434c1c6c"
     },
     {
+      "path": "scripts/classify_release_artifact.py",
+      "sha256": "4cdfe5d79694e6ded6f8edb3b25e0ccc2cb6c3713f0c2f3eaf5c0b446e472ec8"
+    },
+    {
       "path": "scripts/classify_release_upload.sh",
-      "sha256": "baefafd6ee8a21226c7e1a76d5b9ff967f2f3539dd784b5e821ea89ae30919f6"
+      "sha256": "e75d44a3be611b0f2054a9f9dae187d7a2f37947411661332641bb8d02c1e2b6"
     },
     {
       "path": "scripts/clean_workspace.sh",
@@ -2572,12 +2608,20 @@
       "sha256": "15a6c21d256e87239b30e0c8bb2c410f91e567a45c799abebd3bc96ded7fa6c9"
     },
     {
+      "path": "scripts/sync_release_metadata_from_lock.py",
+      "sha256": "4f73d5a60508f19a909a57ebae35cccfa5d78a9950cb8baad354f63ede0cad1f"
+    },
+    {
       "path": "scripts/validate_full_workspace.sh",
       "sha256": "3d5321514177c3702b6213a80e4800353b80f0153e694e561191f0aef3bb7fa5"
     },
     {
       "path": "scripts/validate_release_policy_drift.sh",
       "sha256": "7f0b4b256248ca06aa83a754836b75b83ee9b25721b7d50f096c49cf961866c7"
+    },
+    {
+      "path": "scripts/validate_release_smoke.sh",
+      "sha256": "4a8e01277811596062d93d6af6643b4a4f1162cbfd4a9441be8aba9d3b66360c"
     },
     {
       "path": "scripts/validate_smoke_workspace.sh",
@@ -2608,8 +2652,12 @@
       "sha256": "01c38830ae4823106a4d149b6a504c62a6b7d0bdfa3b55931150badfb89da4ab"
     },
     {
+      "path": "scripts/verify_release_pair.py",
+      "sha256": "8a3e462876ae16fdc377da90eaec24aec041a3ff6fc54ec9d7b3ae820b01d6ba"
+    },
+    {
       "path": "scripts/verify_release_pair.sh",
-      "sha256": "0583f93df01ae6da6c498de65db912fe649f746bbc208a258f508ef1d9d77626"
+      "sha256": "60555b92c299ad36f60eb0761f59b518eac52e6b419336958b96b83694dfcbee"
     },
     {
       "path": "scripts/verify_skillforge_baseline_gate.sh",
@@ -2622,6 +2670,14 @@
     {
       "path": "scripts/verify_source_bundle_hygiene.sh",
       "sha256": "a95c31e859ae53013af1d01db980ba90f3a5953e13496da77feec7819339e41e"
+    },
+    {
+      "path": "scripts/write_release_lock.py",
+      "sha256": "973fe8297b734478750b44d110de941236aa8a735b966a589619904022222669"
+    },
+    {
+      "path": "scripts/write_validation_summary.py",
+      "sha256": "08aa7a42c117f5fbf6d383239ec72b561394bb11f14c8844a240c9f61aac0f0f"
     },
     {
       "path": "toolathlon-gym-curated/.dockerignore",
@@ -2649,11 +2705,11 @@
     },
     {
       "path": "toolathlon-gym-curated/PROFILES.md",
-      "sha256": "75e0b7b05c140280e0c1db8ab9c72cd48d3a17b1b778088ddcbac0e607e65ab8"
+      "sha256": "ff52109b6c7681b0ae6dce7de0ede4c77d63e9bdb88d6b4614673fd3c129e6d0"
     },
     {
       "path": "toolathlon-gym-curated/README.md",
-      "sha256": "86d9aba5da8b768f090ac54cebacd6c891f73aae5542f4f614982718c35861d0"
+      "sha256": "fa4508dcd73a3b1b13cd8b265bedc88af0e1496476066b4742afefa21fc767de"
     },
     {
       "path": "toolathlon-gym-curated/SERVERS.md",
@@ -6268,6 +6324,10 @@
       "sha256": "ada33dd3ccc27685f1fa5aedacfc36668c5e0651706511f9a4ce8fefec96617d"
     },
     {
+      "path": "toolathlon-gym-curated/scripts/build_smoke_artifacts.sh",
+      "sha256": "61e95ca17225f3f0c6e9e4cc11e48eff1aaa32df79b8dd4dd553f170a0aa19d1"
+    },
+    {
       "path": "toolathlon-gym-curated/scripts/eval_config.json",
       "sha256": "43630ddd54fb15f69211e8b31c5ebcc2a069c7fdef49ef1a0ef712aeb951b73a"
     },
@@ -6288,8 +6348,12 @@
       "sha256": "4c3e2df8bbab0d8d47a6f9a6a4c3915c304acbf69bb43124c1bb57c92cbe9158"
     },
     {
+      "path": "toolathlon-gym-curated/scripts/run_smoke_profile.sh",
+      "sha256": "f41e824e96c0d767e62efec2810da12524d1049a46057fd94db657b4ad2ab33a"
+    },
+    {
       "path": "toolathlon-gym-curated/scripts/smoke_mcp_servers.py",
-      "sha256": "9f2fba86844e6c8cfdeec7f6322c398779bc99533fe12fa152eddec1861a2ef8"
+      "sha256": "8352e5649aed4abf0a17e97a259e5ed4d1a271873263cc3c515b31ce978b2ef3"
     },
     {
       "path": "toolathlon-gym-curated/scripts/test_containerized.sh",

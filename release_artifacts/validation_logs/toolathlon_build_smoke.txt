@@ -1,0 +1,119 @@
+Profile: smoke
+Node: v24.15.0
+npm: 11.12.1
+Using LOCAL_SERVERS_DIR=/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers
+SKIP_EXISTING_ARTIFACTS=0
+FORCE_REBUILD=0
+SKIP_SMOKE_TIMEOUT_SECONDS=120
+TOOLATHLON_PROFILE=smoke
+Building required MCP artifacts in /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers
+→ Building rail_12306 with 300s timeout
+→ Building rail_12306
+
+added 256 packages, and audited 257 packages in 23s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+14 vulnerabilities (1 low, 6 moderate, 7 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+> 12306-mcp@0.3.5 prebuild
+> run-script-os
+
+
+> 12306-mcp@0.3.5 prebuild:default
+> rm -rf build/*
+
+
+> 12306-mcp@0.3.5 build
+> tsc
+
+
+> 12306-mcp@0.3.5 postbuild
+> run-script-os
+
+
+> 12306-mcp@0.3.5 postbuild:darwin:linux
+> chmod +x build/index.js
+
+✓ Built rail_12306 in 25s
+✓ rail_12306 artifact: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js
+→ Building filesystem with 300s timeout
+→ Building filesystem
+
+added 216 packages, and audited 217 packages in 9s
+
+61 packages are looking for funding
+  run `npm fund` for details
+
+15 vulnerabilities (13 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> @modelcontextprotocol/server-filesystem@0.6.3 build
+> tsc && shx chmod +x dist/*.js
+
+✓ Built filesystem in 11s
+✓ filesystem artifact: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js
+→ Building runtime_smoke with 120s timeout
+{
+  "checked_at": "2026-05-28T01:29:27Z",
+  "profile": "smoke",
+  "strict_mode": true,
+  "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
+  "target_count": 2,
+  "passed_count": 2,
+  "failed_count": 0,
+  "overall_status": "passed",
+  "results": [
+    {
+      "target": "rail_12306",
+      "status": "passed",
+      "reason": "started_or_imported",
+      "duration_seconds": 4.143,
+      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "target": "filesystem",
+      "status": "passed",
+      "reason": "started_or_imported",
+      "duration_seconds": 0.267,
+      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem",
+      "stdout": "",
+      "stderr": "Usage: mcp-server-filesystem [allowed-directory] [additional-directories...]\nNote: Allowed directories can be provided via:\n  1. Command-line arguments (shown above)\n  2. MCP roots protocol (if client supports it)\nAt least one directory must be provided by EITHER method for the server to operate.\nSecure MCP Filesystem Server running on stdio\nStarted without allowed directories - waiting for client to provide roots via MCP protocol\n"
+    }
+  ]
+}
+✓ Built runtime_smoke in 5s
+→ Building preflight_paths with 120s timeout
+Checking MCP server paths in: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/configs/mcp_servers
+Local servers directory: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers
+Validation profile: smoke
+
+✓ rail_12306                     /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js
+✓ filesystem                     /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js
+
+Found: 2 paths
+Missing: 0 paths
+JSON summary: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/../.validation_logs/toolathlon_preflight_summary.json
+
+✓ All MCP server paths valid.
+✓ Built preflight_paths in 0s
+✓ Required MCP artifacts built successfully.
+Build summary: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/../.validation_logs/toolathlon_artifact_build_summary.json
+Wrote release_artifacts/validation_logs/toolathlon_build_smoke_summary.json

@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-OUT_DEFAULT="$ROOT/dist/agent_eval_skills_merged_clean-pruned-smoke-candidate.zip"
+OUT_DEFAULT="$ROOT/release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip"
 OUT="$OUT_DEFAULT"
 CANONICAL_RELEASE_NAME="agent_eval_skills_merged_clean-pruned-smoke.zip"
 CANONICAL_DIST_OUT="$ROOT/dist/release/$CANONICAL_RELEASE_NAME"
@@ -52,14 +52,16 @@ cd "$ROOT"
 mkdir -p "$(dirname "$OUT")"
 rm -f "$OUT"
 if [ "$WRITE_CANONICAL_COPY" -eq 1 ]; then
+	mkdir -p "$(dirname "$CANONICAL_DIST_OUT")"
 	rm -f "$CANONICAL_ROOT_OUT"
 fi
 
-# Reuse canonical packaging policy from create_release_zip.sh.
-RELEASE_ZIP_OUTPUT="$OUT" bash scripts/create_release_zip.sh
+python3 scripts/build_pruned_smoke_release.py --profile smoke --out "$OUT"
 
 if [ "$WRITE_CANONICAL_COPY" -eq 1 ]; then
+	cp -f "$OUT" "$CANONICAL_DIST_OUT"
 	cp -f "$OUT" "$CANONICAL_ROOT_OUT"
+	echo "Refreshed canonical dist copy: $CANONICAL_DIST_OUT"
 	echo "Refreshed canonical repo-root copy: $CANONICAL_ROOT_OUT"
 fi
 

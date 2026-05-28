@@ -1,126 +1,36 @@
 #!/usr/bin/env bash
-# trunk-ignore-all
-# shellcheck shell=bash disable=SC1044,SC1072,SC1073
-# trunk-ignore-all(shellcheck)
-# Verify whether a release+evidence ZIP pair matches the canonical attested hashes.
-
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
-if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
-  echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
-  exit 1
-fi
-# shellcheck disable=SC1090
-source "$FORBIDDEN_POLICY_FILE"
-
-ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
-if [ ! -f "$ATTESTATION_ENV_FILE" ]; then
-  echo "Error: attestation constants file missing: $ATTESTATION_ENV_FILE" >&2
-  exit 1
-fi
-# shellcheck disable=SC1090
-source "$ATTESTATION_ENV_FILE"
-
-require_attestation_value() {
-  local var_name="$1"
-  local var_value="${!var_name:-}"
-  if [ -z "$var_value" ]; then
-    echo "Error: required attestation value is missing: $var_name" >&2
-    exit 1
-  fi
-}
-
-for required_var in EXPECTED_RELEASE_NAME EXPECTED_RELEASE_SHA EXPECTED_EVIDENCE_NAME EXPECTED_EVIDENCE_SHA MAX_EVIDENCE_AGE_DAYS; do
-  require_attestation_value "$required_var"
-done
-
-CANONICAL_RELEASE_NAME="$EXPECTED_RELEASE_NAME"
-CANONICAL_RELEASE_SHA="$EXPECTED_RELEASE_SHA"
-CANONICAL_EVIDENCE_NAME="$EXPECTED_EVIDENCE_NAME"
-CANONICAL_EVIDENCE_SHA="$EXPECTED_EVIDENCE_SHA"
-
-EXPECTED_RELEASE_NAME="$CANONICAL_RELEASE_NAME"
-EXPECTED_RELEASE_SHA="$CANONICAL_RELEASE_SHA"
-EXPECTED_EVIDENCE_NAME="$CANONICAL_EVIDENCE_NAME"
-EXPECTED_EVIDENCE_SHA="$CANONICAL_EVIDENCE_SHA"
-MAX_MANIFEST_AGE_DAYS="$MAX_EVIDENCE_AGE_DAYS"
-
-DEFAULT_RELEASE_PATH="$REPO_ROOT/$EXPECTED_RELEASE_NAME"
-DEFAULT_EVIDENCE_PATH="$REPO_ROOT/$EXPECTED_EVIDENCE_NAME"
-if [ ! -f "$DEFAULT_RELEASE_PATH" ] && [ -f "$REPO_ROOT/../$EXPECTED_RELEASE_NAME" ]; then
-  DEFAULT_RELEASE_PATH="$REPO_ROOT/../$EXPECTED_RELEASE_NAME"
-fi
-if [ ! -f "$DEFAULT_EVIDENCE_PATH" ] && [ -f "$REPO_ROOT/../$EXPECTED_EVIDENCE_NAME" ]; then
-  DEFAULT_EVIDENCE_PATH="$REPO_ROOT/../$EXPECTED_EVIDENCE_NAME"
-fi
-
-RELEASE_PATH="${RELEASE_ZIP_PATH:-$DEFAULT_RELEASE_PATH}"
-EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-$DEFAULT_EVIDENCE_PATH}"
-
-release_classification=""
-if [ -f "$REPO_ROOT/RELEASE_STATUS.json" ]; then
-  release_classification="$(python3 - "$REPO_ROOT/RELEASE_STATUS.json" <<'PYEOF'
-import json
-import sys
-
-with open(sys.argv[1], 'r', encoding='utf-8') as fh:
-    data = json.load(fh)
-print(data.get('release_classification', ''))
-PYEOF
-  )"
-fi
-
-source_bundle_mode=0
-if [ "$release_classification" = "SOURCE_BUNDLE" ]; then
-  source_bundle_mode=1
-fi
+LOCK_PATH="${LOCK_PATH:-$REPO_ROOT/release_artifacts/release_lock.json}"
 
 usage() {
   cat <<'USAGE'
-Usage: bash scripts/verify_release_pair.sh [--release PATH] [--evidence PATH]
+Usage: bash scripts/verify_release_pair.sh [--release PATH] [--evidence PATH] [--lock PATH]
 
-Checks both filename and SHA256 against canonical 2026-05-22 attestation values.
-
-Options:
-  --release PATH   Path to release ZIP
-  --evidence PATH  Path to evidence ZIP
-  -h, --help       Show this help
-
-Environment overrides:
-  RELEASE_ZIP_PATH
-  EVIDENCE_ZIP_PATH
-  EXPECTED_RELEASE_NAME
-  EXPECTED_RELEASE_SHA
-  EXPECTED_EVIDENCE_NAME
-  EXPECTED_EVIDENCE_SHA
-  MAX_MANIFEST_AGE_DAYS
-
-Exit codes:
-  0 = canonical attested pair
-  1 = unbound wrapper/source bundle (or mismatched evidence pair)
+Defaults:
+  --lock     release_artifacts/release_lock.json
+  --release  value from release_lock.json.release_zip
+  --evidence value from release_lock.json.evidence_zip
 USAGE
 }
+
+RELEASE_PATH=""
+EVIDENCE_PATH=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --release)
-      if [ "$#" -lt 2 ]; then
-        echo "Missing value for --release" >&2
-        exit 1
-      fi
       RELEASE_PATH="$2"
       shift 2
       ;;
     --evidence)
-      if [ "$#" -lt 2 ]; then
-        echo "Missing value for --evidence" >&2
-        exit 1
-      fi
       EVIDENCE_PATH="$2"
+      shift 2
+      ;;
+    --lock)
+      LOCK_PATH="$2"
       shift 2
       ;;
     -h|--help)
@@ -135,133 +45,32 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if ! command -v shasum >/dev/null 2>&1; then
-  echo "Error: shasum is required for SHA256 verification." >&2
-  exit 1
+if [ -z "$RELEASE_PATH" ]; then
+  RELEASE_PATH="$(python3 - "$LOCK_PATH" <<'PY'
+import json
+import sys
+from pathlib import Path
+p = Path(sys.argv[1])
+lock = json.loads(p.read_text(encoding='utf-8'))
+print(lock['release_zip'])
+PY
+)"
 fi
 
-if ! command -v zipinfo >/dev/null 2>&1; then
-  echo "Error: zipinfo is required for archive entry checks." >&2
-  exit 1
+if [ -z "$EVIDENCE_PATH" ]; then
+  EVIDENCE_PATH="$(python3 - "$LOCK_PATH" <<'PY'
+import json
+import sys
+from pathlib import Path
+p = Path(sys.argv[1])
+lock = json.loads(p.read_text(encoding='utf-8'))
+print(lock['evidence_zip'])
+PY
+)"
 fi
 
-if ! command -v python3 >/dev/null 2>&1; then
-  echo "Error: python3 is required for evidence bundle verification." >&2
-  exit 1
-fi
-
-for p in "$RELEASE_PATH" "$EVIDENCE_PATH"; do
-  if [ ! -f "$p" ]; then
-    echo "Error: file not found: $p" >&2
-    exit 1
-  fi
-done
-
-release_name="$(basename "$RELEASE_PATH")"
-evidence_name="$(basename "$EVIDENCE_PATH")"
-release_sha="$(shasum -a 256 "$RELEASE_PATH" | awk '{print $1}')"
-evidence_sha="$(shasum -a 256 "$EVIDENCE_PATH" | awk '{print $1}')"
-
-check_forbidden_entries() {
-  local zip_path="$1"
-  local tmp_entries
-  tmp_entries="$(mktemp)"
-  zipinfo -1 "$zip_path" > "$tmp_entries"
-  if grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_entries" >/dev/null; then
-    echo "Forbidden metadata entries found in: $zip_path" >&2
-    grep -E "$RELEASE_FORBIDDEN_ENTRY_REGEX" "$tmp_entries" >&2
-    rm -f "$tmp_entries"
-    return 1
-  fi
-  rm -f "$tmp_entries"
-  return 0
-}
-
-check_manifest_hash_agreement() {
-  local evidence_zip="$1"
-  local expected_release_name="$2"
-  local expected_release_sha="$3"
-  local expected_evidence_name="$4"
-  local expected_evidence_sha="$5"
-  python3 "$SCRIPT_DIR/verify_manifest_hash_agreement.py" \
-    "$evidence_zip" \
-    "$expected_release_name" \
-    "$expected_release_sha" \
-    "$expected_evidence_name" \
-    "$expected_evidence_sha" \
-    "$MAX_MANIFEST_AGE_DAYS"
-}
-
-status=0
-notes=()
-
-if [ "$source_bundle_mode" -eq 0 ]; then
-  if [ "$release_name" != "$EXPECTED_RELEASE_NAME" ]; then
-    status=1
-    notes+=("release filename mismatch")
-  fi
-  if [ "$evidence_name" != "$EXPECTED_EVIDENCE_NAME" ]; then
-    status=1
-    notes+=("evidence filename mismatch")
-  fi
-  if [ "$release_sha" != "$EXPECTED_RELEASE_SHA" ]; then
-    status=1
-    notes+=("release hash mismatch")
-  fi
-  if [ "$evidence_sha" != "$EXPECTED_EVIDENCE_SHA" ]; then
-    status=1
-    notes+=("evidence hash mismatch")
-  fi
-fi
-if ! check_forbidden_entries "$RELEASE_PATH"; then
-  status=1
-  notes+=("release archive contains forbidden metadata entries")
-fi
-if ! check_forbidden_entries "$EVIDENCE_PATH"; then
-  status=1
-  notes+=("evidence archive contains forbidden metadata entries")
-fi
-
-if [ "$source_bundle_mode" -eq 0 ]; then
-  if ! (cd "$REPO_ROOT" && bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_PATH"); then
-    status=1
-    notes+=("evidence bundle content/value verification failed")
-  fi
-
-  if ! check_manifest_hash_agreement "$EVIDENCE_PATH" "$EXPECTED_RELEASE_NAME" "$EXPECTED_RELEASE_SHA" "$EXPECTED_EVIDENCE_NAME" "$EXPECTED_EVIDENCE_SHA"; then
-    status=1
-    notes+=("manifest hash agreement failed")
-  fi
-fi
-
-echo "Release ZIP:   $RELEASE_PATH"
-echo "Release name:  $release_name"
-echo "Release SHA:   $release_sha"
-echo "Evidence ZIP:  $EVIDENCE_PATH"
-echo "Evidence name: $evidence_name"
-echo "Evidence SHA:  $evidence_sha"
-
-if [ "$status" -eq 0 ] && [ "$source_bundle_mode" -eq 0 ]; then
-  echo
-  echo "Classification: agent_eval_skills_merged_clean — pruned smoke release candidate for controlled testing"
-  echo "Result: canonical attested artifact pair"
-  exit 0
-fi
-
-if [ "$status" -eq 0 ] && [ "$source_bundle_mode" -eq 1 ]; then
-  echo
-  echo "Classification: Source bundle"
-  echo "Result: source-bundle checks passed (canonical hash/evidence attestation intentionally not enforced)"
-  exit 0
-fi
-
-echo
-echo "Classification: Unbound wrapper/source bundle."
-echo "Result: not the final attested release artifact"
-if [ "${#notes[@]}" -gt 0 ]; then
-  echo "Reasons:"
-  for item in "${notes[@]}"; do
-    echo "  - $item"
-  done
-fi
-exit 1
+cd "$REPO_ROOT"
+python3 scripts/verify_release_pair.py \
+  --release "$RELEASE_PATH" \
+  --evidence "$EVIDENCE_PATH" \
+  --lock "$LOCK_PATH"

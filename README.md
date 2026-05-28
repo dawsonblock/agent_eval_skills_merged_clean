@@ -16,6 +16,8 @@
 
 **Current workspace status (May 27, 2026):** `SOURCE_BUNDLE` repair state. Historical smoke release-candidate metadata is retained below for the exact attested pair, but the live workspace and any independently rebuilt ZIPs must be treated as new candidates unless separately re-attested.
 
+Release claim baseline: smoke-validated release candidate for local agent-tool evaluation and curated skill packaging.
+
 Historical attested pair reference:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`

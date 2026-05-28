@@ -18,6 +18,8 @@
     "This source bundle is not the canonical release archive.",
     "Only smoke-profile validation may be claimed unless full-profile logs are present.",
     "The release-gated Toolathlon smoke profile currently covers rail_12306 and filesystem only.",
-    "Release claims require matching archive hash, evidence hash, and fresh validation logs."
+    "Release claims require matching archive hash, evidence hash, and fresh validation logs.",
+    "Security status: controlled local benchmark only.",
+    "Production deployment: not approved."
   ]
 }

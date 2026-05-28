@@ -1,0 +1,56 @@
+....FF....                                                               [100%]
+=================================== FAILURES ===================================
+___________________ test_validation_logs_present_and_recent ____________________
+
+    def test_validation_logs_present_and_recent() -> None:
+        now = datetime.now(timezone.utc)
+        max_age = timedelta(days=14)
+        logs_dir, layout = _validation_logs_dir()
+        required_logs = REQUIRED_LOGS_BY_LAYOUT[layout]
+    
+        for rel in required_logs:
+            path = logs_dir / rel
+>           assert path.exists(), f"Missing required validation log: {rel}"
+E           AssertionError: Missing required validation log: validation_summary.json
+E           assert False
+E            +  where False = exists()
+E            +    where exists = PosixPath('/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/release_artifacts/validation_logs/validation_summary.json').exists
+
+tests/test_release_identity.py:84: AssertionError
+___________ test_validation_summary_tracks_two_target_smoke_profile ____________
+
+    def test_validation_summary_tracks_two_target_smoke_profile() -> None:
+        logs_dir, _ = _validation_logs_dir()
+>       summary = _load_json(logs_dir / "validation_summary.json")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_release_identity.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_release_identity.py:40: in _load_json
+    return json.loads(path.read_text(encoding="utf-8"))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.pyenv/versions/3.12.12/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/release_artifacts/validation_logs/validation_summary.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/release_artifacts/validation_logs/validation_summary.json'
+
+../../.pyenv/versions/3.12.12/lib/python3.12/pathlib.py:1013: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_release_identity.py::test_validation_logs_present_and_recent
+FAILED tests/test_release_identity.py::test_validation_summary_tracks_two_target_smoke_profile
+2 failed, 8 passed in 0.34s

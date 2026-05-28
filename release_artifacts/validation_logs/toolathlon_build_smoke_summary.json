@@ -1,0 +1,24 @@
+{
+  "profile": "smoke",
+  "overall_status": "passed",
+  "expected_package_count": 2,
+  "package_count": 2,
+  "passed_count": 2,
+  "failed_count": 0,
+  "packages": [
+    {
+      "package": "rail_12306",
+      "status": "passed",
+      "duration_seconds": 25,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
+      "skipped_existing": false
+    },
+    {
+      "package": "filesystem",
+      "status": "passed",
+      "duration_seconds": 11,
+      "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
+      "skipped_existing": false
+    }
+  ]
+}
