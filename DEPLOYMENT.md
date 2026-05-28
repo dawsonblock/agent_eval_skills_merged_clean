@@ -4,16 +4,15 @@ Prerequisite: run smoke validation and ensure required evidence artifacts pass b
 
 Status claims in packaged ZIPs are advisory unless the matching evidence artifact bundle is published for the same archive hash.
 
-Historical smoke release-candidate archive SHA256: `fa03b950563d3f902ad61f124f1457e1b01d4c6f7e6bbc160f696ca21b855358` (see [RELEASE_ATTESTATION_2026-05-22.md](RELEASE_ATTESTATION_2026-05-22.md)).
-
-Current workspace posture is `SOURCE_BUNDLE`; use the historical pair below only as a reference point for prior attestation, not as proof that a newly rebuilt archive is already attested.
+Current workspace posture is `SOURCE_BUNDLE` with canonical smoke release-candidate artifacts tracked by lock metadata.
+Historical attestations remain available under [docs/archived_attestations](docs/archived_attestations).
 
 Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-   - SHA256: `fa03b950563d3f902ad61f124f1457e1b01d4c6f7e6bbc160f696ca21b855358`
-- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
-   - SHA256: `705abb5a9ac854e4f60feb3222b95c13b7ddffc9a2df4016ca5aa137406739b3`
+   - SHA256: `01ffe2f112a76baee38d56863413b4595abd9d0e89b799908442a50382c10f0e`
+- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
+   - SHA256: `e7ec62bd40c43c49c4e7262fa108888e1e2c4e77ac7a0033fa83e3c6e6a4df73`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 
@@ -230,7 +229,13 @@ RELEASE_ZIP_OUTPUT=dist/pruned-smoke-rc.zip make release-zip
 Optional hash lock (fail closed on byte drift):
 
 ```bash
-EXPECTED_RELEASE_SHA256=fa03b950563d3f902ad61f124f1457e1b01d4c6f7e6bbc160f696ca21b855358 \
+EXPECTED_RELEASE_SHA256="$(python3 - <<'PY'
+import json
+from pathlib import Path
+lock = json.loads(Path('release_artifacts/release_lock.json').read_text(encoding='utf-8'))
+print(lock['release_sha256'])
+PY
+)" \
 RELEASE_ZIP_OUTPUT=dist/agent_eval_skills_merged_clean-pruned-smoke.zip \
 make release-zip
 ```

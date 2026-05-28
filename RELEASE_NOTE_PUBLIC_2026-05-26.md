@@ -1,5 +1,7 @@
 # Release Note: agent_eval_skills_merged_clean (Smoke Candidate Repair)
 
+Historical notice: this note captures the 2026-05-26/2026-05-22 policy reference state and is superseded for current canonical hashes by [RELEASE_ATTESTATION_2026-05-27.md](RELEASE_ATTESTATION_2026-05-27.md) and [release_artifacts/release_lock.json](release_artifacts/release_lock.json).
+
 Date: 2026-05-26
 Commit: 03a0c23
 Branch: main
@@ -12,7 +14,7 @@ The evidence bundle was rebuilt, stale metadata was synchronized across policy a
 
 This note does not constitute a fresh canonical re-attestation of a newly rebuilt release ZIP.
 
-## Canonical Artifact Pair
+## Historical Canonical Artifact Pair (2026-05-22)
 
 - Release ZIP: `agent_eval_skills_merged_clean-pruned-smoke.zip`
   - SHA256: `88b4514aec9203910b85333a868d64437876b1f7127023bfb37ae2d324b06a43`
