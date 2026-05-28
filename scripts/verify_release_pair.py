@@ -80,6 +80,11 @@ def main() -> int:
     parser.add_argument("--release", type=Path, required=True)
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--lock", type=Path, default=DEFAULT_LOCK)
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Compatibility flag for strict gate invocations (verification is always strict).",
+    )
     args = parser.parse_args()
 
     lock = load_lock(args.lock)

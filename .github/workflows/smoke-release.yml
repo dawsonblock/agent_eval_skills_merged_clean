@@ -7,15 +7,12 @@ on:
 jobs:
     smoke-release:
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.9", "3.10", "3.11", "3.12"]
         steps:
             - uses: actions/checkout@v4
 
             - uses: actions/setup-python@v5
               with:
-                  python-version: ${{ matrix.python-version }}
+                  python-version: "3.12"
 
             - uses: actions/setup-node@v4
               with:
@@ -23,29 +20,62 @@ jobs:
 
             - name: Install ToolForge
               run: |
-                  cd ToolForge
                   python -m pip install --upgrade pip
-                  python -m pip install -e ".[dev]"
+                  python -m pip install -e "ToolForge[dev]"
 
-                        - name: Verify smoke profile excludes google_calendar
-                            run: |
-                                    python - <<'PY'
-                                    import json
-                                    from pathlib import Path
-
-                                    profile = json.loads(Path('toolathlon-gym-curated/profiles/smoke/mcp_servers.json').read_text(encoding='utf-8'))
-                                    servers = profile.get('servers', [])
-                                    assert servers == ['rail_12306', 'filesystem'], servers
-                                    assert 'google_calendar' not in servers, servers
-                                    print('Smoke profile target list verified:', servers)
-                                    PY
-
-            - name: Prove smoke release
+            - name: Install Toolathlon Smoke Dependencies
               run: |
-                  bash scripts/prove_smoke_release.sh
+                  bash scripts/install_toolathlon_smoke_deps.sh
 
-            - name: Upload validation logs
+            - name: Verify Smoke Profile Targets
+              run: |
+                  python - <<'PY'
+                  import json
+                  from pathlib import Path
+
+                  profile = json.loads(
+                      Path("toolathlon-gym-curated/profiles/smoke/mcp_servers.json").read_text(
+                          encoding="utf-8"
+                      )
+                  )
+                  servers = profile.get("servers", [])
+                  assert servers == ["rail_12306", "filesystem"], servers
+                  assert "google_calendar" not in servers, servers
+                  print("Smoke profile target list verified:", servers)
+                  PY
+
+            - name: Build Pruned Smoke Release
+              run: |
+                  python scripts/build_pruned_smoke_release.py --profile smoke
+
+            - name: Collect Smoke Evidence
+              run: |
+                  bash scripts/collect_smoke_evidence.sh
+
+            - name: Write Release Metadata
+              run: |
+                  python scripts/write_release_metadata.py
+                  python scripts/compute_release_identity.py
+
+            - name: Run Gate Sequence
+              run: |
+                  python scripts/sync_release_metadata_from_lock.py
+                  python scripts/sanitize_release_paths.py
+                  python scripts/check_release_hash_consistency.py
+                  python scripts/verify_release_pair.py \
+                    --release release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip \
+                    --evidence "$(ls -1t release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-*.zip | head -n1)" \
+                    --strict
+                  pytest -q tests
+                  bash scripts/verify_source_bundle_hygiene.sh
+                  python scripts/check_no_absolute_local_paths.py --strict
+                  python scripts/check_release_artifacts_for_secrets.py
+                  bash scripts/check_toolathlon_smoke_profile.sh
+
+            - name: Upload Validation Logs
               uses: actions/upload-artifact@v4
               with:
-                  name: validation-logs-${{ matrix.python-version }}
-                  path: .validation_logs
+                  name: validation-logs
+                  path: |
+                      release_artifacts/validation_logs
+                      release_artifacts/release_identity.generated.json

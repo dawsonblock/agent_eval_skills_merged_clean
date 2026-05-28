@@ -36,7 +36,7 @@ Promotion label (only when matching evidence is attached for the same build): pr
 Release identity is hash-bound to one canonical artifact pair:
 
 1. `agent_eval_skills_merged_clean-pruned-smoke.zip`
-2. `agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip`
+2. `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
 
 Only exact SHA256 matches to the attestation/manifest values are in scope for the current release classification. Wrapper/source uploads and independently regenerated ZIPs are treated as unbound artifacts unless a new manifest plus attestation is published for their exact hashes.
 
@@ -119,6 +119,20 @@ Release truth files:
 - [RELEASE_STATUS.json](RELEASE_STATUS.json) defines current release classification and canonical pair linkage.
 - [CLAIMS_MATRIX.md](CLAIMS_MATRIX.md) defines allowed claims and required evidence.
 - [RELEASE_MANIFEST.json](RELEASE_MANIFEST.json) is generated for release-file hash traceability.
+
+### Clean Checkout Smoke Validation
+
+To reproduce the release identity from a clean checkout:
+
+```bash
+bash scripts/install_toolathlon_smoke_deps.sh
+python3 scripts/build_pruned_smoke_release.py --profile smoke
+bash scripts/collect_smoke_evidence.sh
+python3 scripts/write_release_metadata.py
+python3 scripts/compute_release_identity.py
+```
+
+Full step-by-step guidance is documented in [docs/CLEAN_CHECKOUT_VALIDATION.md](docs/CLEAN_CHECKOUT_VALIDATION.md).
 
 Use upload triage to classify third-party wrapper/source uploads before any release claim:
 

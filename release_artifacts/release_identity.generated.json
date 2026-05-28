@@ -1,0 +1,15 @@
+{
+  "canonical_release_sha256": "88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9",
+  "canonical_release_size_bytes": 31347278,
+  "canonical_release_zip": "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
+  "evidence_sha256": "a41bd41733aabb0576bb8510bd107ebeba12d550f0929996b3d73f8e59e84a18",
+  "evidence_size_bytes": 25916,
+  "evidence_zip": "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
+  "full_profile_validated": false,
+  "generated_at": "2026-05-28T03:02:53.615158+00:00",
+  "node_version_min": "20",
+  "production_claim_allowed": false,
+  "python_version": "3.12",
+  "release_classification": "SOURCE_BUNDLE",
+  "toolathlon_profile": "smoke"
+}

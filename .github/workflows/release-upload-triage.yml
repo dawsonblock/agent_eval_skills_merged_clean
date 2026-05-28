@@ -19,7 +19,7 @@ jobs:
             - name: Classify uploaded artifact
               env:
                   RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-22.zip
+                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
               run: |
                   bash scripts/classify_release_upload.sh \
                       --release "$RELEASE_ZIP_PATH" \

@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "release_date": "2026-05-27",
+  "release_date": "2026-05-28",
   "release_zip": "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
   "release_sha256": "88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9",
   "evidence_zip": "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
