@@ -67,9 +67,10 @@ jobs:
                     --evidence "$(ls -1t release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-*.zip | head -n1)" \
                     --strict
                   pytest -q tests
-                  bash scripts/verify_source_bundle_hygiene.sh
+                  bash scripts/verify_source_bundle_hygiene.sh \
+                    --zip release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
                   python scripts/check_no_absolute_local_paths.py --strict
-                  python scripts/check_release_artifacts_for_secrets.py
+                  python scripts/check_for_real_secrets.py
                   bash scripts/check_toolathlon_smoke_profile.sh
 
             - name: Upload Validation Logs

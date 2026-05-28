@@ -1,6 +1,6 @@
 {
   "release_name": "agent_eval_skills_merged_clean-pruned-smoke",
-  "created_at_utc": "2026-05-28T03:02:53.545058+00:00",
+  "created_at_utc": "2026-05-28T03:13:24.348141+00:00",
   "profile": "smoke",
   "files": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "ed8c2ae281370878a69c924be47c4a1eef5f496faf3f3e9e28380cae30e38f4c"
+      "sha256": "2dfc7aacb4fc2e66aab95d2ad4bdfe13b4c7e247e1dffb77613067f50560f1fa"
     },
     {
       "path": "RELEASE_STATUS.json",
-      "sha256": "927e9407130c84e63c2c5bfb0745c9463321ceba3f0c3e6ec1a746e35e7b5d0b"
+      "sha256": "10a1bf3f60b40b124d53a92822eb79caed56dcacb49668228576af8b72478af1"
     },
     {
       "path": "ToolForge/.bandit",
@@ -2445,19 +2445,23 @@
     },
     {
       "path": "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
-      "sha256": "88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9"
+      "sha256": "24907801a383eefdaedd30bacf4e38f0d2f4737a24653674156371e13219b969"
     },
     {
       "path": "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
       "sha256": "a41bd41733aabb0576bb8510bd107ebeba12d550f0929996b3d73f8e59e84a18"
     },
     {
+      "path": "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip",
+      "sha256": "21ccbf8d4307627d1bd3d1e6e6e36bdcbcd2d0bc162ba53df86c895141f8420a"
+    },
+    {
       "path": "release_artifacts/release_identity.generated.json",
-      "sha256": "f9815f1c018b3b45c60c6a5572a8ce464c150fe5dfe0b5efc390e4e417d0810b"
+      "sha256": "18e6f50ce612f7cb3a10f80a7a100d63b76931165c543d76cf569919893a95a7"
     },
     {
       "path": "release_artifacts/release_lock.json",
-      "sha256": "384a481464a5041e04a6c2473db59737e0cd44439396e7094f6ee88196089465"
+      "sha256": "8d26dc545fc18446e3d0c44c9476b92f9da6b59a0f7022ce5a23bbe291678418"
     },
     {
       "path": "release_artifacts/skillforge_ai_baseline_gate_2026-05-25.log",
@@ -2529,11 +2533,11 @@
     },
     {
       "path": "release_artifacts/validation_logs/release_hashes.json",
-      "sha256": "5573b4d40173dce28de4d1d4a1e9865eb2afd82f58bb68162cd7a80ccf42ca94"
+      "sha256": "9be1c2e9d91985a0662ab1c2d3fde23a4112e2d91d70bd9f83ef44a788ea50bc"
     },
     {
       "path": "release_artifacts/validation_logs/release_pair_verification.txt",
-      "sha256": "806765c4b14875e54b51cc12da23331ca1ca0ed0759c88e21659e73bff5c4482"
+      "sha256": "dd2ba7f0fa6b2aa3c3af996466d7523eeaf8ecb2ebb7e3579604ed77ced69b61"
     },
     {
       "path": "release_artifacts/validation_logs/source_bundle_hygiene.txt",
@@ -2545,35 +2549,35 @@
     },
     {
       "path": "release_artifacts/validation_logs/test_results_root.txt",
-      "sha256": "5099540f41d3691ed8a3269db234c2e8c66190398ee14c94a8d7d74710ce6bbf"
+      "sha256": "bc99fefa9cd1828dc3629375e9743ae4ce32d5cba420ea83dc56d9f0bc261e89"
     },
     {
       "path": "release_artifacts/validation_logs/test_results_toolathlon.txt",
-      "sha256": "1f86f27e8b0ed83648a93b389ba5de7a7f84f939ece162a7733d0067c99bae86"
+      "sha256": "5f8bad4aa3cdf5dac983a0f093a217631974a6686d3422e363c4b1a2cfff6583"
     },
     {
       "path": "release_artifacts/validation_logs/test_results_toolforge.txt",
-      "sha256": "f55679146f39f6dd8498df17518f9d7203a4a9f9e550658fdf298cb4e0acc065"
+      "sha256": "36e547ad274e4551ea3915f4440aa1f02aa3dcd811631367a3947506a0b0823e"
     },
     {
       "path": "release_artifacts/validation_logs/toolathlon_build_smoke.txt",
-      "sha256": "54710c52d3d8a6b0e70a2beb6f216efaf15e36cd9683a28bd9716c6334ca6e1c"
+      "sha256": "6bb4d9f96c5ca5e6425203b154fefe337029a94b052a88c8ca80d26194ae575e"
     },
     {
       "path": "release_artifacts/validation_logs/toolathlon_build_smoke_summary.json",
-      "sha256": "4eb2507b01eb6a0325dffc73a6451d472f2ef222eeff0e68288e0fd1cfb5a415"
+      "sha256": "24c1c3ebb22d6bf7be9ceef4c2664f14cd96161daf871ec01e31a8d92f68a8ae"
     },
     {
       "path": "release_artifacts/validation_logs/toolathlon_preflight_summary.json",
-      "sha256": "9124bb7a9e4c1865c50aeb631d856807a460067733428ee59932a9a359a18d79"
+      "sha256": "21023c4e5c7b86a9ed393706f0ce9ebe245b802c0c4cc83af5edd1cd7768944a"
     },
     {
       "path": "release_artifacts/validation_logs/toolathlon_smoke.txt",
-      "sha256": "1f86f27e8b0ed83648a93b389ba5de7a7f84f939ece162a7733d0067c99bae86"
+      "sha256": "d8603062037de6320da4b80abf7d8f4c5a5a66ca00dd5e9d2d80e00d81d6bc66"
     },
     {
       "path": "release_artifacts/validation_logs/toolathlon_smoke_summary.json",
-      "sha256": "6d9840bd6cc17547ed760f626144d383e680c605bc1831def6b1828ef246a0b9"
+      "sha256": "a09c4660443146dce437bd634c3118c2aa81ac4aae9eabe4b72a534f56fa064b"
     },
     {
       "path": "release_artifacts/validation_logs/toolforge_doctor.txt",
@@ -2581,7 +2585,7 @@
     },
     {
       "path": "release_artifacts/validation_logs/toolforge_summary.json",
-      "sha256": "d368e3167aa8136d55eba663a6c8f9b0f2f2fe07c7ed49826e5ff576dd5065bf"
+      "sha256": "1201741fd24e613236737155012abaff441409a5d16bc99112475fb54f1921b0"
     },
     {
       "path": "release_artifacts/validation_logs/validation_summary.json",
@@ -2641,7 +2645,7 @@
     },
     {
       "path": "scripts/collect_smoke_evidence.sh",
-      "sha256": "f9604a8a9efc3b0c63fc434438320fc8e0e1addae5135af1b230223e153ef5d0"
+      "sha256": "4d9ea80565369112585de1a188601fe063fff59d5da472801fb52d40b206d37e"
     },
     {
       "path": "scripts/compute_release_identity.py",
@@ -2765,7 +2769,7 @@
     },
     {
       "path": "scripts/verify_release_pair.py",
-      "sha256": "2abfd64a4a7b2c3d69c79075ba312b34469aac4dbd3e6957da6f2a83cb5ceb04"
+      "sha256": "b0c19db041a7f1d5ceb27fe5edcf1d70b11bfb7725b6b708b66254ef850f8ea2"
     },
     {
       "path": "scripts/verify_release_pair.sh",

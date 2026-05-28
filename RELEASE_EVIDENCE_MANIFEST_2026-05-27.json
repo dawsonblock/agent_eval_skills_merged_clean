@@ -7,9 +7,9 @@
   "attestation_scope": "repo-local exact artifact pair",
   "workspace_classification": "SOURCE_BUNDLE",
   "release_zip": "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_zip_sha256": "88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9",
-  "evidence_zip": "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
-  "evidence_zip_sha256": "a41bd41733aabb0576bb8510bd107ebeba12d550f0929996b3d73f8e59e84a18",
+  "release_zip_sha256": "24907801a383eefdaedd30bacf4e38f0d2f4737a24653674156371e13219b969",
+  "evidence_zip": "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip",
+  "evidence_zip_sha256": "21ccbf8d4307627d1bd3d1e6e6e36bdcbcd2d0bc162ba53df86c895141f8420a",
   "validated_scope": [
     "ToolForge",
     "Agent Skills",
@@ -24,10 +24,10 @@
   ],
   "archive": {
     "path": "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9",
+    "sha256": "24907801a383eefdaedd30bacf4e38f0d2f4737a24653674156371e13219b969",
     "forbidden_entries_scan": "passed"
   },
-  "archive_sha256": "88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9",
+  "archive_sha256": "24907801a383eefdaedd30bacf4e38f0d2f4737a24653674156371e13219b969",
   "validation_summary": {
     "overall_status": "passed",
     "failed_phase_count": 0,

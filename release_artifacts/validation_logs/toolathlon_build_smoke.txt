@@ -10,7 +10,7 @@ Building required MCP artifacts in ${REPO_ROOT}/toolathlon-gym-curated/local_ser
 → Building rail_12306 with 300s timeout
 → Building rail_12306
 
-added 256 packages, and audited 257 packages in 9s
+added 256 packages, and audited 257 packages in 18s
 
 38 packages are looking for funding
   run `npm fund` for details
@@ -41,12 +41,12 @@ Run `npm audit` for details.
 > 12306-mcp@0.3.5 postbuild:darwin:linux
 > chmod +x build/index.js
 
-✓ Built rail_12306 in 13s
+✓ Built rail_12306 in 22s
 ✓ rail_12306 artifact: ${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js
 → Building filesystem with 300s timeout
 → Building filesystem
 
-added 216 packages, and audited 217 packages in 5s
+added 216 packages, and audited 217 packages in 6s
 
 61 packages are looking for funding
   run `npm fund` for details
@@ -64,11 +64,11 @@ Run `npm audit` for details.
 > @modelcontextprotocol/server-filesystem@0.6.3 build
 > tsc && shx chmod +x dist/*.js
 
-✓ Built filesystem in 8s
+✓ Built filesystem in 9s
 ✓ filesystem artifact: ${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem/dist/index.js
 → Building runtime_smoke with 120s timeout
 {
-  "checked_at": "2026-05-28T01:42:33Z",
+  "checked_at": "2026-05-28T03:09:13Z",
   "profile": "smoke",
   "strict_mode": true,
   "local_servers_dir": "${REPO_ROOT}/toolathlon-gym-curated/local_servers",
@@ -81,7 +81,7 @@ Run `npm audit` for details.
       "target": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 1.064,
+      "duration_seconds": 2.879,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' ${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
@@ -91,7 +91,7 @@ Run `npm audit` for details.
       "target": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.194,
+      "duration_seconds": 0.385,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' ${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",
@@ -99,7 +99,7 @@ Run `npm audit` for details.
     }
   ]
 }
-✓ Built runtime_smoke in 1s
+✓ Built runtime_smoke in 4s
 → Building preflight_paths with 120s timeout
 Checking MCP server paths in: ${REPO_ROOT}/toolathlon-gym-curated/configs/mcp_servers
 Local servers directory: ${REPO_ROOT}/toolathlon-gym-curated/local_servers
@@ -113,7 +113,7 @@ Missing: 0 paths
 JSON summary: ${REPO_ROOT}/toolathlon-gym-curated/../.validation_logs/toolathlon_preflight_summary.json
 
 ✓ All MCP server paths valid.
-✓ Built preflight_paths in 1s
+✓ Built preflight_paths in 0s
 ✓ Required MCP artifacts built successfully.
 Build summary: ${REPO_ROOT}/toolathlon-gym-curated/../.validation_logs/toolathlon_artifact_build_summary.json
 Wrote release_artifacts/validation_logs/toolathlon_build_smoke_summary.json

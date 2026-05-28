@@ -1,1 +1,2 @@
-PASS: release and evidence pair verified
+FAIL: release and evidence pair verification failed
+- release hash mismatch against lock

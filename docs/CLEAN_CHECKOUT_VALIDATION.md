@@ -17,39 +17,39 @@ git clone <repo-url>
 cd agent_eval_skills_merged_clean
 ```
 
-2. Install Python dependencies.
+1. Install Python dependencies.
 
 ```bash
 python3 -m pip install --upgrade pip
 python3 -m pip install -e "ToolForge[dev]"
 ```
 
-3. Install Toolathlon smoke dependencies.
+1. Install Toolathlon smoke dependencies.
 
 ```bash
 bash scripts/install_toolathlon_smoke_deps.sh
 ```
 
-4. Build deterministic pruned smoke release ZIP.
+1. Build deterministic pruned smoke release ZIP.
 
 ```bash
 python3 scripts/build_pruned_smoke_release.py --profile smoke
 ```
 
-5. Collect smoke evidence and build evidence ZIP.
+1. Collect smoke evidence and build evidence ZIP.
 
 ```bash
 bash scripts/collect_smoke_evidence.sh
 ```
 
-6. Sync lock-backed metadata and compute identity.
+1. Sync lock-backed metadata and compute identity.
 
 ```bash
 python3 scripts/write_release_metadata.py
 python3 scripts/compute_release_identity.py
 ```
 
-7. Run final gate checks.
+1. Run final gate checks.
 
 ```bash
 python3 scripts/sync_release_metadata_from_lock.py
@@ -60,9 +60,10 @@ python3 scripts/verify_release_pair.py \
   --evidence "$(ls -1t release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-*.zip | head -n1)" \
   --strict
 pytest -q tests
-bash scripts/verify_source_bundle_hygiene.sh
+bash scripts/verify_source_bundle_hygiene.sh \
+  --zip release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
 python3 scripts/check_no_absolute_local_paths.py --strict
-python3 scripts/check_release_artifacts_for_secrets.py
+python3 scripts/check_for_real_secrets.py
 bash scripts/check_toolathlon_smoke_profile.sh
 ```
 

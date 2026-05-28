@@ -15,8 +15,8 @@ classification in [RELEASE_STATUS.json](RELEASE_STATUS.json) remains
 
 | Artifact | SHA256 |
 | --- | --- |
-| `release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip` | `88f4978b37d4deb6ef876f1ef74abdffb261445e049f77858a90641649e5fdc9` |
-| `release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip` | `a41bd41733aabb0576bb8510bd107ebeba12d550f0929996b3d73f8e59e84a18` |
+| `release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip` | `24907801a383eefdaedd30bacf4e38f0d2f4737a24653674156371e13219b969` |
+| `release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip` | `21ccbf8d4307627d1bd3d1e6e6e36bdcbcd2d0bc162ba53df86c895141f8420a` |
 
 ## Scope
 

@@ -6,14 +6,14 @@
   "packages": [
     {
       "artifact": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
-      "duration_seconds": 13,
+      "duration_seconds": 28,
       "package": "rail_12306",
       "skipped_existing": false,
       "status": "passed"
     },
     {
       "artifact": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
-      "duration_seconds": 8,
+      "duration_seconds": 18,
       "package": "filesystem",
       "skipped_existing": false,
       "status": "passed"
