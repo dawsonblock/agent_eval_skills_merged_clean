@@ -162,6 +162,13 @@
   /* ── loading ──────────────────────────────────────────────── */
   .loading { color: var(--muted); padding: 40px; text-align: center; }
 
+  .sidebar-scroll { flex: 1; overflow-y: auto; padding-top: 8px; }
+  .quick-filter { margin-top: 12px; }
+  .mcp-nav-list { padding: 0 8px 8px; }
+  .toolathlon-link { font-size: 11px; color: var(--muted); text-decoration: none; }
+  .detail-mcp-chips { margin-top: 10px; }
+  .panel-close-static { position: static; }
+
   /* ── scrollbar ────────────────────────────────────────────── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -180,7 +187,7 @@
       <h2>Toolathlon-GYM</h2>
       <p>Task Explorer</p>
     </div>
-    <div style="flex:1;overflow-y:auto;padding-top:8px;">
+    <div class="sidebar-scroll">
       <div class="nav-section">Views</div>
       <div class="nav-item active" onclick="showView('overview')" id="nav-overview">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -194,8 +201,8 @@
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Tasks
       </div>
-      <div class="nav-section" style="margin-top:12px;">Quick Filter</div>
-      <div id="mcp-nav-list" style="padding: 0 8px 8px;"></div>
+      <div class="nav-section quick-filter">Quick Filter</div>
+      <div id="mcp-nav-list" class="mcp-nav-list"></div>
     </div>
   </div>
 
@@ -205,7 +212,7 @@
       <h1>Toolathlon-GYM Explorer</h1>
       <div class="badge" id="topbar-badge">loading…</div>
       <div class="spacer"></div>
-      <a href="https://github.com/hkust-nlp/Toolathlon" target="_blank" style="font-size:11px;color:var(--muted);text-decoration:none;">↗ Toolathlon</a>
+      <a href="https://github.com/hkust-nlp/Toolathlon" target="_blank" rel="noopener" class="toolathlon-link">↗ Toolathlon</a>
     </div>
     <div id="content">
       <!-- views injected here -->
@@ -218,7 +225,7 @@
   <div id="detail-panel">
     <button class="panel-close" onclick="closeDetail()">✕</button>
     <div class="panel-title" id="detail-title"></div>
-    <div id="detail-mcp-chips" style="margin-top:10px;"></div>
+    <div id="detail-mcp-chips" class="detail-mcp-chips"></div>
     <div class="panel-tabs">
       <button class="tab-btn active" onclick="switchTab('desc')">Description</button>
       <button class="tab-btn" onclick="switchTab('files')">Files</button>
@@ -237,7 +244,7 @@
   <div id="file-viewer-inner">
     <div id="file-viewer-header">
       <span id="file-viewer-title"></span>
-      <button class="panel-close" onclick="closeFileViewer()" style="position:static;">✕</button>
+      <button class="panel-close panel-close-static" onclick="closeFileViewer()">✕</button>
     </div>
     <div id="file-viewer-content"><pre id="file-viewer-pre"></pre></div>
   </div>
@@ -399,7 +406,7 @@ const PAGE_SIZE = 50;
 function renderTasks(c) {
   c.innerHTML = `
     <div id="search-bar">
-      <input type="text" id="q-input" placeholder="🔍  Search task name…" oninput="onSearch()" value="${taskFilter.q}" />
+      <input type="text" id="q-input" aria-label="Search task name" placeholder="🔍  Search task name…" oninput="onSearch()" value="${taskFilter.q}" />
       <select id="mcp-select" onchange="onSearch()">
         <option value="">All MCP servers</option>
         ${statsData ? Object.keys(statsData.mcp_usage).map(m => `<option value="${m}" ${taskFilter.mcp===m?'selected':''}>${m}</option>`).join('') : ''}

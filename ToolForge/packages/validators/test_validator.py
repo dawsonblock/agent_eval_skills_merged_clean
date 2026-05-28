@@ -12,9 +12,12 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from packages.core.process_timeout import ProcessTimeoutError, run_with_process_tree_timeout
-from packages.core.safety_analyzer import analyze_safety
-from packages.core.tool_spec import ToolSpec
+from packages.core.process_timeout import (  # type: ignore[import-untyped]
+    ProcessTimeoutError,
+    run_with_process_tree_timeout,
+)
+from packages.core.safety_analyzer import analyze_safety  # type: ignore[import-untyped]
+from packages.core.tool_spec import ToolSpec  # type: ignore[import-untyped]
 
 
 @dataclass
@@ -216,13 +219,14 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
 
     return report
 
+
 def run_safety_checks(spec: ToolSpec, tool_dir: Path) -> TestReport:
     """
     Run static safety analysis against tool source code.
     Returns a TestReport with errors if unsafe patterns detected.
     """
     report = TestReport()
-    
+
     try:
         safety_report = analyze_safety(spec, tool_dir)
         if safety_report.has_errors:
@@ -241,5 +245,5 @@ def run_safety_checks(spec: ToolSpec, tool_dir: Path) -> TestReport:
     except Exception as exc:
         report.errors = 1
         report.failures.append({"message": f"Safety analysis failed: {exc}"})
-    
+
     return report

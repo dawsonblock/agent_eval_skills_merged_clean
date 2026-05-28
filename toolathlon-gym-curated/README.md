@@ -52,6 +52,7 @@ bash scripts/validate_docker.sh
 ```
 
 The validator uses a two-layer image flow:
+
 - `Dockerfile.base`: heavyweight reusable base image (`toolathlon:base` by default)
 - `Dockerfile`: thin validation layer on top of the base
 
@@ -77,6 +78,7 @@ Environment variables:
 | `REBUILD_BASE_IMAGE` | `0` | Rebuild base image even if it already exists (`1` to force) |
 
 Typical timing profile on a warm local cache:
+
 - `REBUILD_BASE_IMAGE=0`: thin image build is usually fully cached (often near-instant), with overall runtime dominated by the container preflight check.
 - `REBUILD_BASE_IMAGE=1`: includes rebuilding heavyweight base layers, so runtime depends on dependency-layer cache hits and host Docker performance.
 
@@ -160,12 +162,14 @@ Toolathlon-GYM supports two execution patterns, each suited to different evaluat
 In this mode, all tasks share a single persistent PostgreSQL database. Tasks are run sequentially (or with controlled concurrency via semaphore in `run_parallel.sh`), and the database state persists across runs.
 
 **Characteristics:**
+
 - **Database**: Single PostgreSQL instance (`toolathlon_gym`) initialized once from `db/init.sql.gz`
 - **Isolation**: Tasks share state; later tasks may see side effects from earlier tasks (e.g., new database records, modified spreadsheets)
 - **Concurrency**: Controlled via FIFO semaphore in `run_parallel.sh`; default is up to 10 concurrent tasks
 - **Use case**: Benchmark evaluation where reproducibility is less critical; quick iteration; testing agent robustness to unexpected database state
 
 **Example:**
+
 ```bash
 # Mode 1: sequential with up to 10 concurrent runs, shared DB state
 bash run_parallel.sh 10 <task1> <task2> <task3>
@@ -176,12 +180,14 @@ bash run_parallel.sh 10 <task1> <task2> <task3>
 In this mode, each task gets its own completely isolated PostgreSQL instance. A fresh database is initialized from the dump for every task and destroyed on exit, guaranteeing zero cross-task state leakage.
 
 **Characteristics:**
+
 - **Database**: One PostgreSQL container spawned per task; database is fresh from `db/init.sql.gz` for each run
 - **Isolation**: Complete isolation; no task can affect another task's database state
 - **Concurrency**: True parallelism; tasks run in completely separate Docker containers and networks
 - **Use case**: Rigorous benchmarking; publishable results; evaluating agents where determinism and isolation are critical
 
 **Example:**
+
 ```bash
 # Mode 2: loop over tasks, each with isolated DB (requires Docker resource allocation)
 for TASK in howtocook-meal-plan-gcal wc-sales-tax-summary yf-stock-volatility-terminal; do
@@ -328,7 +334,6 @@ Below are representative examples from each tier, illustrating how task complexi
 **7 MCPs — `arxiv-research-pipeline-notion-excel`** (`scholarly`, `arxiv_local`, `terminal`, `excel`, `notion`, `filesystem`)
 
 > **Note on terminal MCP**: Run terminal MCP only inside disposable containers for benchmark workloads. Host subprocess execution is not a safe isolation boundary for benchmark or untrusted commands.
-
 > Build a research knowledge base on large language models. Search for papers on LLMs, prompt engineering, and in-context learning. Use the terminal to run a synthesis script that reads paper metadata and contents, calculates relevance scores, and outputs a structured JSON summary. Create an Excel file with three sheets (Paper_Catalog, Method_Comparison, Research_Gaps) and a Notion page titled "LLM Research Hub" containing a research dashboard with landscape overview, methodology comparison, and identified gaps.
 
 **8 MCPs — `arxiv-research-workflow-pipeline`** (`scholarly`, `arxiv-latex`, `terminal`, `word`, `google_calendar`, `emails`, `pdf-tools`, `filesystem`)

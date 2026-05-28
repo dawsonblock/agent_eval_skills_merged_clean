@@ -4,10 +4,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Optional
 
 from click.testing import CliRunner
 
-from apps.cli.toolforge_cli.main import cli
+from apps.cli.toolforge_cli.main import cli  # type: ignore[import-untyped]
 
 
 @dataclass
@@ -16,12 +17,12 @@ class _DummySpec:
     name: str = "Dummy Tool"
     version: str = "0.1.0"
     description: str = "dummy"
-    tags: list[str] = None
+    tags: Optional[list[str]] = None
     author: str | None = None
-    language: SimpleNamespace = None
-    mcp: SimpleNamespace = None
-    skill: SimpleNamespace = None
-    eval: SimpleNamespace = None
+    language: Optional[SimpleNamespace] = None
+    mcp: Optional[SimpleNamespace] = None
+    skill: Optional[SimpleNamespace] = None
+    eval: Optional[SimpleNamespace] = None
 
     def __post_init__(self) -> None:
         if self.tags is None:
@@ -41,7 +42,7 @@ class _DummySpec:
             name=self.name,
             version=self.version,
             description=self.description,
-            tags=list(self.tags),
+            tags=list(self.tags or []),
             author=self.author,
         )
         for key, value in update.items():
@@ -106,23 +107,23 @@ def test_cli_command_wiring_inprocess(monkeypatch, tmp_path: Path) -> None:
     runner = CliRunner()
     monkeypatch.chdir(tmp_path)
 
-    import packages.core.registry as registry_mod
-    import packages.core.spec_from_prompt as spec_mod
-    import packages.core.tool_generator as tool_gen_mod
-    import packages.core.mcp_generator as mcp_gen_mod
-    import packages.core.skill_generator as skill_gen_mod
-    import packages.core.eval_generator as eval_gen_mod
-    import packages.core.package_builder as pkg_mod
-    import packages.core.tool_spec as tool_spec_mod
-    import packages.runners.eval_runner as eval_runner_mod
-    import packages.runners.tool_runner as tool_runner_mod
-    import packages.validators.mcp_validator as mcp_val_mod
-    import packages.validators.schema_validator as schema_mod
-    import packages.validators.security_validator as sec_mod
-    import packages.validators.skill_validator as skill_val_mod
-    import packages.validators.test_validator as test_val_mod
-    import packages.integrations.agent_skills.importer as importer_mod
-    import packages.core.repo_hygiene as hygiene_mod
+    import packages.core.registry as registry_mod  # type: ignore[import-untyped]
+    import packages.core.spec_from_prompt as spec_mod  # type: ignore[import-untyped]
+    import packages.core.tool_generator as tool_gen_mod  # type: ignore[import-untyped]
+    import packages.core.mcp_generator as mcp_gen_mod  # type: ignore[import-untyped]
+    import packages.core.skill_generator as skill_gen_mod  # type: ignore[import-untyped]
+    import packages.core.eval_generator as eval_gen_mod  # type: ignore[import-untyped]
+    import packages.core.package_builder as pkg_mod  # type: ignore[import-untyped]
+    import packages.core.tool_spec as tool_spec_mod  # type: ignore[import-untyped]
+    import packages.runners.eval_runner as eval_runner_mod  # type: ignore[import-untyped]
+    import packages.runners.tool_runner as tool_runner_mod  # type: ignore[import-untyped]
+    import packages.validators.mcp_validator as mcp_val_mod  # type: ignore[import-untyped]
+    import packages.validators.schema_validator as schema_mod  # type: ignore[import-untyped]
+    import packages.validators.security_validator as sec_mod  # type: ignore[import-untyped]
+    import packages.validators.skill_validator as skill_val_mod  # type: ignore[import-untyped]
+    import packages.validators.test_validator as test_val_mod  # type: ignore[import-untyped]
+    import packages.integrations.agent_skills.importer as importer_mod  # type: ignore[import-untyped]  # noqa: E501
+    import packages.core.repo_hygiene as hygiene_mod  # type: ignore[import-untyped]
 
     dummy = _DummySpec(slug="dummy-tool", tags=["dummy", "tag"])
     monkeypatch.setattr(registry_mod, "ToolRegistry", _DummyRegistry)
@@ -147,9 +148,21 @@ def test_cli_command_wiring_inprocess(monkeypatch, tmp_path: Path) -> None:
         return [tool_dir / "toolforge.yaml"]
 
     monkeypatch.setattr(tool_gen_mod, "scaffold_tool", _scaffold)
-    monkeypatch.setattr(mcp_gen_mod, "generate_mcp_server", lambda *_a, **_k: [tmp_path / "mcp" / "server.py"])
-    monkeypatch.setattr(skill_gen_mod, "generate_skill", lambda *_a, **_k: [tmp_path / "skill" / "SKILL.md"])
-    monkeypatch.setattr(eval_gen_mod, "generate_eval", lambda *_a, **_k: [tmp_path / "evals" / "task_config.json"])
+    monkeypatch.setattr(
+        mcp_gen_mod,
+        "generate_mcp_server",
+        lambda *_a, **_k: [tmp_path / "mcp" / "server.py"],
+    )
+    monkeypatch.setattr(
+        skill_gen_mod,
+        "generate_skill",
+        lambda *_a, **_k: [tmp_path / "skill" / "SKILL.md"],
+    )
+    monkeypatch.setattr(
+        eval_gen_mod,
+        "generate_eval",
+        lambda *_a, **_k: [tmp_path / "evals" / "task_config.json"],
+    )
 
     monkeypatch.setattr(tool_spec_mod.ToolSpec, "from_yaml", classmethod(lambda _cls, _path: dummy))
 
@@ -158,14 +171,26 @@ def test_cli_command_wiring_inprocess(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(mcp_val_mod, "validate_mcp_server", lambda _spec, _mcp_dir: [])
     monkeypatch.setattr(skill_val_mod, "validate_skill_file", lambda _path: [])
 
-    pass_report = SimpleNamespace(all_passed=True, passed=1, failed=0, errors=0, skipped=0, failures=[])
+    pass_report = SimpleNamespace(
+        all_passed=True,
+        passed=1,
+        failed=0,
+        errors=0,
+        skipped=0,
+        failures=[],
+    )
     monkeypatch.setattr(test_val_mod, "run_tests", lambda _td: pass_report)
     monkeypatch.setattr(test_val_mod, "run_safety_checks", lambda _spec, _td: pass_report)
 
     monkeypatch.setattr(
         tool_runner_mod,
         "run_tool",
-        lambda *_a, **_k: SimpleNamespace(success=True, output='{"ok": true}', error="", exit_code=0),
+        lambda *_a, **_k: SimpleNamespace(
+            success=True,
+            output='{"ok": true}',
+            error="",
+            exit_code=0,
+        ),
     )
 
     eval_report = SimpleNamespace(
@@ -175,9 +200,21 @@ def test_cli_command_wiring_inprocess(monkeypatch, tmp_path: Path) -> None:
     )
     monkeypatch.setattr(eval_runner_mod, "run_evals", lambda *_a, **_k: eval_report)
 
-    monkeypatch.setattr(pkg_mod, "build_package", lambda *_a, **_k: tmp_path / "dist" / "dummy-tool-0.1.0.zip")
-    monkeypatch.setattr(importer_mod, "import_skill", lambda *_a, **_k: [tmp_path / "skills" / "generated" / "SKILL.md"])
-    monkeypatch.setattr(hygiene_mod, "scan_repo_hygiene", lambda _root: SimpleNamespace(has_issues=False, issues=[]))
+    monkeypatch.setattr(
+        pkg_mod,
+        "build_package",
+        lambda *_a, **_k: tmp_path / "dist" / "dummy-tool-0.1.0.zip",
+    )
+    monkeypatch.setattr(
+        importer_mod,
+        "import_skill",
+        lambda *_a, **_k: [tmp_path / "skills" / "generated" / "SKILL.md"],
+    )
+    monkeypatch.setattr(
+        hygiene_mod,
+        "scan_repo_hygiene",
+        lambda _root: SimpleNamespace(has_issues=False, issues=[]),
+    )
 
     assert runner.invoke(cli, ["init", str(tmp_path)]).exit_code == 0
     assert runner.invoke(cli, ["new", "tool", "--from-prompt", "dummy prompt"]).exit_code == 0
@@ -203,10 +240,10 @@ def test_cli_run_invalid_input_and_eval_failure(monkeypatch, tmp_path: Path) -> 
     runner = CliRunner()
     monkeypatch.chdir(tmp_path)
 
-    import packages.core.registry as registry_mod
-    import packages.core.tool_spec as tool_spec_mod
-    import packages.runners.eval_runner as eval_runner_mod
-    import packages.runners.tool_runner as tool_runner_mod
+    import packages.core.registry as registry_mod  # type: ignore[import-untyped]
+    import packages.core.tool_spec as tool_spec_mod  # type: ignore[import-untyped]
+    import packages.runners.eval_runner as eval_runner_mod  # type: ignore[import-untyped]
+    import packages.runners.tool_runner as tool_runner_mod  # type: ignore[import-untyped]
 
     dummy = _DummySpec(slug="dummy-tool")
     monkeypatch.setattr(registry_mod, "ToolRegistry", _DummyRegistry)
@@ -214,13 +251,26 @@ def test_cli_run_invalid_input_and_eval_failure(monkeypatch, tmp_path: Path) -> 
     monkeypatch.setattr(
         tool_runner_mod,
         "run_tool",
-        lambda *_a, **_k: SimpleNamespace(success=False, output="", error="resolved outside allowed_read_paths", exit_code=1),
+        lambda *_a, **_k: SimpleNamespace(
+            success=False,
+            output="",
+            error="resolved outside allowed_read_paths",
+            exit_code=1,
+        ),
     )
 
     fail_report = SimpleNamespace(
         pass_rate=0.0,
         overall_pass=False,
-        results=[SimpleNamespace(case_id="case-1", passed=False, score=0.0, details="", error="boom")],
+        results=[
+            SimpleNamespace(
+                case_id="case-1",
+                passed=False,
+                score=0.0,
+                details="",
+                error="boom",
+            )
+        ],
     )
     monkeypatch.setattr(eval_runner_mod, "run_evals", lambda *_a, **_k: fail_report)
 
@@ -245,13 +295,13 @@ def test_validate_accepts_skipped_only_test_report(monkeypatch, tmp_path: Path) 
     runner = CliRunner()
     monkeypatch.chdir(tmp_path)
 
-    import packages.core.registry as registry_mod
-    import packages.core.tool_spec as tool_spec_mod
-    import packages.validators.mcp_validator as mcp_val_mod
-    import packages.validators.schema_validator as schema_mod
-    import packages.validators.security_validator as sec_mod
-    import packages.validators.skill_validator as skill_val_mod
-    import packages.validators.test_validator as test_val_mod
+    import packages.core.registry as registry_mod  # type: ignore[import-untyped]
+    import packages.core.tool_spec as tool_spec_mod  # type: ignore[import-untyped]
+    import packages.validators.mcp_validator as mcp_val_mod  # type: ignore[import-untyped]
+    import packages.validators.schema_validator as schema_mod  # type: ignore[import-untyped]
+    import packages.validators.security_validator as sec_mod  # type: ignore[import-untyped]
+    import packages.validators.skill_validator as skill_val_mod  # type: ignore[import-untyped]
+    import packages.validators.test_validator as test_val_mod  # type: ignore[import-untyped]
 
     dummy = _DummySpec(slug="dummy-tool")
     monkeypatch.setattr(registry_mod, "ToolRegistry", _DummyRegistry)
