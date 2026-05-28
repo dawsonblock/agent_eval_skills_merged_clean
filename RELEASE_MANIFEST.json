@@ -2,10 +2,10 @@
   "release": {
     "name": "agent_eval_skills_merged_clean-pruned-smoke",
     "zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "b76f67965894c8dcefcd448eeb18baa9d852f393070b969398d5d0512a07fd6b"
+    "sha256": "6bfb175693665a9706ddd08cc25418c6796657914c04c546c9f72c277518e14d"
   },
   "evidence": {
     "zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
-    "sha256": "d4d08c795a2197737bd00abbcfc05ea5da6661910eaa4fb76cf60b20b67363ae"
+    "sha256": "82fbb203ef4684b7f8efeddb081517e30ed5677dcfdd70a2b6911ee4b124b4f4"
   }
 }

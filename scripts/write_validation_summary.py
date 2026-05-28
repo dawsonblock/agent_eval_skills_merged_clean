@@ -14,6 +14,18 @@ def exists(name: str) -> bool:
     return (LOG_DIR / name).exists()
 
 
+def release_pair_verification_status() -> str:
+    path = LOG_DIR / "release_pair_verification.txt"
+    if not path.exists():
+        return "missing"
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if "FAIL" in text:
+        return "fail"
+    if "PASS" in text:
+        return "pass"
+    return "fail"
+
+
 def main() -> int:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     components = {
@@ -25,11 +37,9 @@ def main() -> int:
         ),
         "agent_skill_packages": "pass" if exists("agent_skill_packages.txt") else "missing",
         "toolathlon_smoke": "pass" if exists("toolathlon_smoke_summary.json") else "missing",
-        "release_pair_verification": (
-            "pass" if exists("release_pair_verification.txt") else "missing"
-        ),
+        "release_pair_verification": release_pair_verification_status(),
     }
-    hard_fail = [k for k, v in components.items() if v == "missing"]
+    hard_fail = [k for k, v in components.items() if v in {"missing", "fail"}]
     summary = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "profile": "smoke",

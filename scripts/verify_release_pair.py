@@ -61,17 +61,28 @@ def main() -> int:
         names = set(zf.namelist())
         required = ".validation_logs/validation_summary.json"
         hashes_file = ".validation_logs/release_hashes.json"
+        pair_log = ".validation_logs/release_pair_verification.txt"
         if required not in names:
             print(f"FAIL: evidence missing {required}")
             return 1
         if hashes_file not in names:
             print(f"FAIL: evidence missing {hashes_file}")
             return 1
+        if pair_log not in names:
+            print(f"FAIL: evidence missing {pair_log}")
+            return 1
         summary = json.loads(zf.read(required).decode("utf-8"))
         release_hashes = json.loads(zf.read(hashes_file).decode("utf-8"))
+        pair_text = zf.read(pair_log).decode("utf-8", errors="replace")
 
     if summary.get("status") not in {"pass", "pass_with_warnings"}:
         print(f"FAIL: validation summary status: {summary.get('status')}")
+        return 1
+    if summary.get("components", {}).get("release_pair_verification") != "pass":
+        print("FAIL: validation summary release_pair_verification component is not pass")
+        return 1
+    if "FAIL" in pair_text or "PASS" not in pair_text:
+        print("FAIL: evidence release_pair_verification log is not PASS")
         return 1
 
     expected_release_zip = _normalize_rel(lock["release_zip"])
