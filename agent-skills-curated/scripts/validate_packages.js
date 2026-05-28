@@ -2,124 +2,70 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execFileSync } = require("child_process");
+const AdmZip = require("adm-zip");
 
-const ROOT = path.resolve(__dirname, "..");
-const PACKAGES_ROOT = path.join(ROOT, "packages");
+const root = path.resolve(__dirname, "..");
+const packagesDir = path.join(root, "packages");
+let failed = false;
 
-function listZipEntries(zipPath) {
-  const output = execFileSync("zipinfo", ["-1", zipPath], {
-    encoding: "utf-8",
-  });
-  return output
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+function fail(zipName, msg) {
+  failed = true;
+  console.error(`FAIL ${zipName}: ${msg}`);
 }
 
 function validateZip(zipPath) {
-  const entries = listZipEntries(zipPath);
-  const errors = [];
+  const zipName = path.relative(root, zipPath);
+  const zip = new AdmZip(zipPath);
+  const entries = zip.getEntries().filter((e) => !e.isDirectory);
+  const names = entries.map((e) => e.entryName.replace(/\\/g, "/"));
+  const topLevels = new Set(names.map((n) => n.split("/")[0]).filter(Boolean));
 
-  if (entries.length === 0) {
-    errors.push("archive is empty");
-    return errors;
+  if (topLevels.size !== 1) {
+    fail(
+      zipName,
+      `expected exactly one top-level directory, found ${[...topLevels].join(", ")}`,
+    );
   }
 
-  const topDirs = new Set();
-  const normalizedSet = new Set();
-  let skillMdCount = 0;
-
-  for (const entry of entries) {
-    const normalized = entry.replace(/\\/g, "/");
-    if (normalizedSet.has(normalized)) {
-      errors.push(`duplicate entry: ${normalized}`);
-    }
-    normalizedSet.add(normalized);
-
-    if (normalized.includes(".DS_Store")) {
-      errors.push("contains .DS_Store");
-    }
-    if (normalized.startsWith("__MACOSX/")) {
-      errors.push("contains __MACOSX metadata");
-    }
-    if (normalized.includes("/node_modules/") || normalized.startsWith("node_modules/")) {
-      errors.push("contains node_modules");
-    }
-    if (normalized.startsWith("agent-skills-curated/") || normalized.startsWith("skills/")) {
-      errors.push("contains nested repository path");
-    }
-
-    const firstPart = normalized.split("/")[0];
-    if (firstPart) {
-      topDirs.add(firstPart);
-    }
-
-    if (normalized.endsWith("/SKILL.md") || normalized === "SKILL.md") {
-      skillMdCount += 1;
-    }
+  const skillFiles = names.filter((n) => n.endsWith("/SKILL.md") || n === "SKILL.md");
+  if (skillFiles.length !== 1) {
+    fail(
+      zipName,
+      `expected exactly one SKILL.md, found ${skillFiles.length}: ${skillFiles.join(", ")}`,
+    );
   }
 
-  if (topDirs.size !== 1) {
-    errors.push(`expected exactly 1 top-level directory, found ${topDirs.size}`);
+  for (const name of names) {
+    if (name.includes("__MACOSX")) fail(zipName, `contains __MACOSX: ${name}`);
+    if (name.includes("node_modules/")) fail(zipName, `contains node_modules: ${name}`);
+    if (name.endsWith(".DS_Store")) fail(zipName, `contains .DS_Store: ${name}`);
+    if (name.includes("agent-skills-curated/skills/")) {
+      fail(zipName, `contains nested repository path: ${name}`);
+    }
   }
-  if (skillMdCount !== 1) {
-    errors.push(`expected exactly 1 SKILL.md, found ${skillMdCount}`);
-  }
-
-  return [...new Set(errors)];
 }
 
-function findZipFiles(dir) {
+function walk(dir) {
+  if (!fs.existsSync(dir)) return [];
   const out = [];
-  function walk(current) {
-    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
-      const full = path.join(current, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-      } else if (entry.isFile() && entry.name.endsWith(".zip")) {
-        out.push(full);
-      }
-    }
+  for (const item of fs.readdirSync(dir)) {
+    const p = path.join(dir, item);
+    const stat = fs.statSync(p);
+    if (stat.isDirectory()) out.push(...walk(p));
+    else if (item.endsWith(".zip")) out.push(p);
   }
-  walk(dir);
-  return out.sort();
+  return out;
 }
 
-function main() {
-  if (!fs.existsSync(PACKAGES_ROOT)) {
-    console.error("FAIL: packages/ directory does not exist");
-    process.exit(1);
-  }
-
-  const zips = findZipFiles(PACKAGES_ROOT);
-  if (zips.length === 0) {
-    console.error("FAIL: no ZIP packages found under packages/");
-    process.exit(1);
-  }
-
-  let failed = 0;
-  for (const zipPath of zips) {
-    const rel = path.relative(ROOT, zipPath);
-    const errors = validateZip(zipPath);
-    if (errors.length === 0) {
-      console.log(`PASS ${rel}`);
-      continue;
-    }
-
-    failed += 1;
-    console.log(`FAIL ${rel}`);
-    for (const err of errors) {
-      console.log(`  - ${err}`);
-    }
-  }
-
-  if (failed > 0) {
-    console.error(`FAIL: ${failed} package(s) invalid`);
-    process.exit(1);
-  }
-
-  console.log(`PASS: all skill packages valid (${zips.length})`);
+const zips = walk(packagesDir);
+if (zips.length === 0) {
+  console.error("FAIL: no package ZIPs found");
+  process.exit(1);
 }
 
-main();
+for (const z of zips) {
+  validateZip(z);
+}
+
+if (failed) process.exit(1);
+console.log(`PASS: ${zips.length} package ZIPs valid`);

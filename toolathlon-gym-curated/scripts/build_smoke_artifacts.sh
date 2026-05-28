@@ -1,22 +1,45 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$ROOT_DIR/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_DIR="$ROOT/../release_artifacts/validation_logs"
+mkdir -p "$LOG_DIR"
+echo '{ "profile": "smoke", "servers": {} }' > "$LOG_DIR/toolathlon_build_smoke_summary.json"
 
-mkdir -p "$REPO_ROOT/release_artifacts/validation_logs"
+build_server() {
+  local name="$1"
+  local dir=""
+  case "$name" in
+    rail_12306) dir="$ROOT/local_servers/12306-mcp" ;;
+    filesystem) dir="$ROOT/local_servers/filesystem" ;;
+    *)
+      echo "FAIL: unknown smoke server mapping: $name"
+      exit 1
+      ;;
+  esac
 
-echo "Profile: smoke"
-echo "Node: $(node --version)"
-echo "npm: $(npm --version)"
+  echo "Building smoke server: $name"
+  if [ ! -d "$dir" ]; then
+    echo "FAIL: missing server directory: $dir"
+    exit 1
+  fi
 
-TOOLATHLON_PROFILE=smoke bash "$ROOT_DIR/scripts/build_required_mcp_artifacts.sh"
+  cd "$dir"
+  if [ -f package-lock.json ]; then
+    npm ci
+  elif [ -f package.json ]; then
+    npm install
+  else
+    echo "FAIL: missing package.json for $name"
+    exit 1
+  fi
 
-if [ -f "$REPO_ROOT/.validation_logs/toolathlon_artifact_build_summary.json" ]; then
-  cp \
-    "$REPO_ROOT/.validation_logs/toolathlon_artifact_build_summary.json" \
-    "$REPO_ROOT/release_artifacts/validation_logs/toolathlon_build_smoke_summary.json"
-fi
+  if npm run | grep -q " build"; then
+    npm run build
+  fi
+  cd "$ROOT"
+}
 
-echo "Wrote release_artifacts/validation_logs/toolathlon_build_smoke_summary.json"
+build_server "rail_12306"
+build_server "filesystem"
+echo "PASS: smoke artifacts built"

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 from typing import Optional
 
@@ -233,7 +234,13 @@ def test_cli_command_wiring_inprocess(monkeypatch, tmp_path: Path) -> None:
     skill_file.parent.mkdir(parents=True, exist_ok=True)
     skill_file.write_text("# legacy\n", encoding="utf-8")
     assert runner.invoke(cli, ["install", str(skill_file)]).exit_code == 0
-    assert runner.invoke(cli, ["doctor"]).exit_code == 0
+    result = runner.invoke(cli, ["doctor"])
+    if sys.version_info >= (3, 13):
+        assert result.exit_code != 0
+        assert "Python" in result.output
+        assert "3.13" in result.output or "unsupported" in result.output.lower()
+    else:
+        assert result.exit_code == 0
 
 
 def test_cli_run_invalid_input_and_eval_failure(monkeypatch, tmp_path: Path) -> None:

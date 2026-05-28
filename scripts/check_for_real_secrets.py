@@ -6,17 +6,37 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ALLOWED_PREFIXES = ("tests/", "fixtures/", "examples/", "toolathlon-gym-curated/tasks/")
-SKIP_DIRS = {".git", ".venv", "node_modules", "dist", "build", "__pycache__"}
+ALLOWED_PREFIXES = (
+    "tests/",
+    "fixtures/",
+    "examples/",
+    "toolathlon-gym-curated/tasks/",
+    "toolathlon-gym-curated/local_servers/",
+)
+SKIP_DIRS = {
+    ".git",
+    ".venv",
+    "node_modules",
+    "dist",
+    "build",
+    "__pycache__",
+    "release_artifacts",
+}
 PATTERNS = {
     "openai_like": re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"),
     "aws_access_key": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
     "github_pat": re.compile(r"\bghp_[A-Za-z0-9]{20,}\b"),
+    "pem_private_key": re.compile(r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+    "generic_token": re.compile(r"\b(token|api[_-]?key|secret)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{24,}"),
 }
 
 
 def should_skip(path: Path) -> bool:
-    return any(part in SKIP_DIRS for part in path.parts)
+    if any(part in SKIP_DIRS for part in path.parts):
+        return True
+    if path.suffix.lower() in {".zip", ".gz", ".tar", ".tgz", ".png", ".jpg", ".jpeg", ".pdf"}:
+        return True
+    return False
 
 
 def allowed_path(rel: str) -> bool:

@@ -3,7 +3,7 @@
 **A unified workspace for building and evaluating AI agent tools.**
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://python.org)
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Protocol-6B46C1)](https://modelcontextprotocol.io)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
 [![License: Apache--2.0](https://img.shields.io/badge/License-Apache--2.0-22c55e)](LICENSE)
@@ -14,16 +14,11 @@
 
 ## Overview
 
-**Current workspace status (May 27, 2026):** `SOURCE_BUNDLE` repair state. Historical smoke release-candidate metadata is retained below for the exact attested pair, but the live workspace and any independently rebuilt ZIPs must be treated as new candidates unless separately re-attested.
+**Current workspace status (May 27, 2026):** smoke-validated local release candidate state for lock-bound artifacts.
 
 Release claim baseline: smoke-validated release candidate for local agent-tool evaluation and curated skill packaging.
 
-Historical attested pair reference:
-
-- `release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `24907801a383eefdaedd30bacf4e38f0d2f4737a24653674156371e13219b969`
-- `release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip`
-  - SHA256: `21ccbf8d4307627d1bd3d1e6e6e36bdcbcd2d0bc162ba53df86c895141f8420a`
+Canonical pair references are defined by release_artifacts/release_lock.json and the generated release metadata files.
 
 Validated scope for the historical pair is limited to ToolForge + Agent Skills + Toolathlon `smoke` profile evidence. Full Toolathlon profile remains available but is still experimental/non-default unless separately proven.
 

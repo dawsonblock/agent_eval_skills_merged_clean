@@ -43,3 +43,17 @@ ToolForge/.skillforge/
 # Skill-local Python caches
 skills/*/__pycache__/
 skills/*/.pytest_cache/
+
+# Canonical release hygiene exclusions
+.skillforge/
+ToolForge/.skillforge/
+**/.skillforge/
+release_artifacts/*.zip
+release_artifacts/validation_logs/
+.validation_logs/
+__pycache__/
+.pytest_cache/
+node_modules/
+dist/
+build/
+.DS_Store

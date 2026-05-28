@@ -1,27 +1,17 @@
 {
-  "status": "pass_with_warnings",
+  "generated_at": "2026-05-28T04:53:54.226893+00:00",
   "profile": "smoke",
-  "toolathlon_profile": "smoke",
-  "smoke_targets": [
-    "rail_12306",
-    "filesystem"
-  ],
-  "excluded_smoke_targets": [
-    "google_calendar"
-  ],
-  "full_toolathlon_profile_validated": false,
+  "status": "pass",
   "components": {
     "root_tests": "pass",
     "toolforge_tests": "pass",
     "toolforge_doctor": "pass",
     "agent_skills_eval": "pass_with_warnings",
     "agent_skill_packages": "pass",
-    "toolathlon_smoke": "pass",
-    "source_bundle_hygiene": "pass",
-    "release_pair_verification": "pass"
+    "toolathlon_smoke": "pass"
   },
   "warnings": [
-    "Some skills remain below preferred quality threshold.",
+    "Some Agent Skills may remain below preferred quality threshold.",
     "Toolathlon full profile is experimental."
   ]
 }

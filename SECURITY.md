@@ -7,6 +7,11 @@ This repository is validated as a local benchmark and evaluation workspace.
 - Security status: controlled local benchmark only.
 - Production deployment: not approved.
 
+# Security Status
+This repository is not approved for production deployment.
+The Toolathlon local MCP servers are local benchmark fixtures. They may contain dependency warnings and should run only in isolated local development environments.
+The smoke release validates reproducibility and launch behavior. It does not certify runtime security for public or production exposure.
+
 ## Constraints
 
 - Toolathlon local MCP servers are fixture workloads intended for isolated local testing.

@@ -336,24 +336,30 @@ def run_target(
             timeout=timeout_seconds,
             check=False,
         )
-    except FileNotFoundError:
+    except FileNotFoundError as exc:
         duration = round(time.time() - started, 3)
         return {
             "target": target.name,
-            "status": "failed",
+            "server": target.name,
+            "status": "fail",
             "reason": "missing_executable",
+            "error": str(exc),
+            "path": target.command[0] if target.command else "",
             "duration_seconds": duration,
             "command": shlex.join(target.command),
             "cwd": str(target.cwd),
             "stdout": "",
             "stderr": "Executable not found",
         }
-    except PermissionError:
+    except PermissionError as exc:
         duration = round(time.time() - started, 3)
         return {
             "target": target.name,
-            "status": "failed",
+            "server": target.name,
+            "status": "fail",
             "reason": "permission_denied",
+            "error": str(exc),
+            "path": target.command[0] if target.command else "",
             "duration_seconds": duration,
             "command": shlex.join(target.command),
             "cwd": str(target.cwd),
@@ -365,6 +371,7 @@ def run_target(
         status = "passed" if target.success_on_timeout else "failed"
         result: dict[str, Any] = {
             "target": target.name,
+            "server": target.name,
             "status": status,
             "reason": (
                 "startup_timeout"
@@ -387,6 +394,7 @@ def run_target(
     if completed.returncode == 0:
         return {
             "target": target.name,
+            "server": target.name,
             "status": "passed",
             "reason": "started_or_imported",
             "duration_seconds": duration,
@@ -398,6 +406,7 @@ def run_target(
 
     return {
         "target": target.name,
+        "server": target.name,
         "status": "failed",
         "reason": classify_failure(combined),
         "duration_seconds": duration,
@@ -413,6 +422,13 @@ def main() -> int:
     args = parse_args()
     profile = (args.profile or get_profile_name()).strip() or "smoke"
     strict_mode = args.strict if args.strict is not None else profile == "smoke"
+
+    def write_summary(path: Path | None, payload: dict[str, Any]) -> None:
+        if path is None:
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
     with tempfile.TemporaryDirectory(prefix="mcp-smoke-") as tmp_dir:
         workspace_root = Path(tmp_dir)
         (workspace_root / "memory").mkdir(parents=True, exist_ok=True)
@@ -422,12 +438,38 @@ def main() -> int:
             profile_targets = load_profile_servers(REPO_ROOT, profile)
         except ProfileConfigError as exc:
             print(f"Profile configuration error: {exc}", file=sys.stderr)
+            summary = {
+                "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "profile": profile,
+                "strict_mode": strict_mode,
+                "target_count": 0,
+                "passed_count": 0,
+                "failed_count": 1,
+                "overall_status": "failed",
+                "error": str(exc),
+                "results": [],
+            }
+            write_summary(args.json_output, summary)
+            print(json.dumps(summary, indent=2))
             return 2
 
         selected_names = args.targets or profile_targets
         unknown = sorted(set(selected_names) - set(targets))
         if unknown:
             print(f"Unknown targets: {', '.join(unknown)}", file=sys.stderr)
+            summary = {
+                "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "profile": profile,
+                "strict_mode": strict_mode,
+                "target_count": 0,
+                "passed_count": 0,
+                "failed_count": len(unknown),
+                "overall_status": "failed",
+                "error": f"Unknown targets: {', '.join(unknown)}",
+                "results": [],
+            }
+            write_summary(args.json_output, summary)
+            print(json.dumps(summary, indent=2))
             return 2
 
         results = [
@@ -448,12 +490,7 @@ def main() -> int:
             "results": results,
         }
 
-        if args.json_output:
-            args.json_output.parent.mkdir(parents=True, exist_ok=True)
-            args.json_output.write_text(
-                json.dumps(summary, indent=2) + "\n",
-                encoding="utf-8",
-            )
+        write_summary(args.json_output, summary)
 
         print(json.dumps(summary, indent=2))
         if failed and strict_mode:

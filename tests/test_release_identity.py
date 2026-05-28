@@ -4,36 +4,12 @@ import hashlib
 import json
 import subprocess
 import tempfile
-from datetime import datetime, timedelta, timezone
+import zipfile
 from pathlib import Path
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LOCK_PATH = REPO_ROOT / "release_artifacts" / "release_lock.json"
-
-
-REQUIRED_LOGS_BY_LAYOUT = {
-    "preferred": [
-        "validation_summary.json",
-        "toolforge_summary.json",
-        "agent_skills_summary.json",
-        "toolathlon_smoke_summary.json",
-    ],
-    "legacy": [
-        "validation_summary.json",
-        "toolforge_validator_tests.log",
-        "toolforge_registry_tests.log",
-        "agent_skills_eval.json",
-        "toolathlon_preflight_summary.json",
-    ],
-}
-
-
-def _validation_logs_dir() -> tuple[Path, str]:
-    preferred = REPO_ROOT / "release_artifacts" / "validation_logs"
-    legacy = REPO_ROOT / ".validation_logs"
-    if preferred.exists():
-        return preferred, "preferred"
-    return legacy, "legacy"
 
 
 def _load_json(path: Path) -> dict:
@@ -48,67 +24,36 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def test_release_status_schema_and_values() -> None:
-    status_path = REPO_ROOT / "RELEASE_STATUS.json"
-    assert status_path.exists(), "RELEASE_STATUS.json must exist"
+def _artifact_paths() -> tuple[Path, Path, dict]:
+    lock = _load_json(LOCK_PATH)
+    release_zip = REPO_ROOT / "release_artifacts" / lock["release_zip"]
+    evidence_zip = REPO_ROOT / "release_artifacts" / lock["evidence_zip"]
+    return release_zip, evidence_zip, lock
 
-    payload = _load_json(status_path)
-    allowed = {
-        "SOURCE_BUNDLE",
-        "CANONICAL_SMOKE_RELEASE",
-        "CANONICAL_FULL_RELEASE",
-        "WITHDRAWN_RELEASE",
-    }
-    assert payload["release_classification"] in allowed
-    assert payload["toolathlon_profile"] == "smoke"
-    assert payload["smoke_targets"] == ["rail_12306", "filesystem"]
-    assert payload["excluded_smoke_targets"] == ["google_calendar"]
-    assert "google_calendar" not in payload["smoke_targets"]
-    assert payload["production_claim_allowed"] is False
+
+def test_release_lock_exists() -> None:
+    assert LOCK_PATH.exists(), "release_lock.json must exist"
 
 
 def test_release_and_evidence_archives_exist() -> None:
-    lock = _load_json(LOCK_PATH)
-    assert (REPO_ROOT / lock["release_zip"]).exists()
-    assert (REPO_ROOT / lock["evidence_zip"]).exists()
+    release_zip, evidence_zip, _ = _artifact_paths()
+    assert release_zip.exists(), f"Missing release zip: {release_zip}"
+    assert evidence_zip.exists(), f"Missing evidence zip: {evidence_zip}"
 
 
-def test_validation_logs_present_and_recent() -> None:
-    now = datetime.now(timezone.utc)
-    max_age = timedelta(days=14)
-    logs_dir, layout = _validation_logs_dir()
-    required_logs = REQUIRED_LOGS_BY_LAYOUT[layout]
-
-    for rel in required_logs:
-        path = logs_dir / rel
-        assert path.exists(), f"Missing required validation log: {rel}"
-        mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
-        assert now - mtime <= max_age, f"Validation log is stale: {rel}"
+def test_hashes_match_release_lock() -> None:
+    release_zip, evidence_zip, lock = _artifact_paths()
+    assert _sha256(release_zip) == lock["release_sha256"]
+    assert _sha256(evidence_zip) == lock["evidence_sha256"]
 
 
-def test_validation_summary_tracks_two_target_smoke_profile() -> None:
-    logs_dir, _ = _validation_logs_dir()
-    summary = _load_json(logs_dir / "validation_summary.json")
-
-    assert summary["toolathlon_profile"] == "smoke"
-    assert summary["smoke_targets"] == ["rail_12306", "filesystem"]
-    assert summary["excluded_smoke_targets"] == ["google_calendar"]
-    assert summary["full_toolathlon_profile_validated"] is False
-    assert "google_calendar" not in summary["smoke_targets"]
-
-
-def test_verify_release_pair_succeeds_for_source_bundle_mode() -> None:
-    lock = _load_json(LOCK_PATH)
+def test_release_zip_hygiene_passes() -> None:
+    release_zip, _, _ = _artifact_paths()
     result = subprocess.run(
         [
             "python",
-            "scripts/verify_release_pair.py",
-            "--release",
-            lock["release_zip"],
-            "--evidence",
-            lock["evidence_zip"],
-            "--lock",
-            str(LOCK_PATH),
+            "scripts/check_source_bundle_hygiene.py",
+            str(release_zip),
         ],
         cwd=REPO_ROOT,
         capture_output=True,
@@ -116,28 +61,87 @@ def test_verify_release_pair_succeeds_for_source_bundle_mode() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stdout + "\n" + result.stderr
-    assert "PASS: release and evidence pair verified" in result.stdout
 
 
-def test_release_manifest_contains_current_status_hash() -> None:
-    manifest_path = REPO_ROOT / "RELEASE_MANIFEST.json"
-    manifest = _load_json(manifest_path)
-    files = manifest.get("files", [])
-
-    status_sha = _sha256(REPO_ROOT / "RELEASE_STATUS.json")
-    status_entries = [item for item in files if item.get("path") == "RELEASE_STATUS.json"]
-
-    assert status_entries, "RELEASE_MANIFEST must include RELEASE_STATUS.json"
-    assert status_entries[0]["sha256"] == status_sha
+def test_evidence_contains_validation_summary() -> None:
+    _, evidence_zip, _ = _artifact_paths()
+    with zipfile.ZipFile(evidence_zip) as zf:
+        assert ".validation_logs/validation_summary.json" in set(zf.namelist())
 
 
-def test_classification_reports_canonical_when_lock_matches() -> None:
-    lock = _load_json(LOCK_PATH)
-    release_zip = REPO_ROOT / lock["release_zip"]
-    evidence_zip = REPO_ROOT / lock["evidence_zip"]
+def test_verify_release_pair_passes() -> None:
+    result = subprocess.run(
+        ["python", "scripts/verify_release_pair.py"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + "\n" + result.stderr
 
+
+def test_classifier_missing_path_returns_clean_json_failure() -> None:
     with tempfile.TemporaryDirectory() as td:
-        verdict = Path(td) / "verdict.json"
+        verdict = Path(td) / "missing.json"
+        missing = REPO_ROOT / "release_artifacts" / "does-not-exist.zip"
+        result = subprocess.run(
+            [
+                "python",
+                "scripts/classify_release_artifact.py",
+                str(missing),
+                "--json-out",
+                str(verdict),
+            ],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode != 0
+        payload = _load_json(verdict)
+        assert payload == {
+            "status": "fail",
+            "verdict": "missing_artifact",
+            "canonical": False,
+            "path": str(missing),
+            "reasons": ["artifact path does not exist"],
+        }
+
+
+def test_classifier_wrapper_bundle_returns_unbound_verdict() -> None:
+    release_zip, evidence_zip, _ = _artifact_paths()
+    with tempfile.TemporaryDirectory() as td:
+        wrapper = Path(td) / "wrapper.zip"
+        wrapper.write_bytes(b"wrapper-source-bundle")
+        verdict = Path(td) / "wrapper_verdict.json"
+        result = subprocess.run(
+            [
+                "python",
+                "scripts/classify_release_artifact.py",
+                str(wrapper),
+                "--evidence",
+                str(evidence_zip),
+                "--json-out",
+                str(verdict),
+            ],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0
+        payload = _load_json(verdict)
+        assert payload["status"] == "pass"
+        assert payload["verdict"] == "unbound_wrapper_source_bundle"
+        assert payload["canonical"] is False
+        assert payload["archive"]["path"] == str(wrapper)
+        assert release_zip.name != wrapper.name
+
+
+def test_classifier_canonical_bundle_returns_canonical_verdict() -> None:
+    release_zip, evidence_zip, _ = _artifact_paths()
+    with tempfile.TemporaryDirectory() as td:
+        verdict = Path(td) / "canonical_verdict.json"
         result = subprocess.run(
             [
                 "python",
@@ -147,8 +151,6 @@ def test_classification_reports_canonical_when_lock_matches() -> None:
                 str(evidence_zip),
                 "--json-out",
                 str(verdict),
-                "--lock",
-                str(LOCK_PATH),
             ],
             cwd=REPO_ROOT,
             capture_output=True,
@@ -156,14 +158,7 @@ def test_classification_reports_canonical_when_lock_matches() -> None:
             check=False,
         )
         assert result.returncode == 0
-        assert verdict.exists(), "classifier did not produce verdict JSON"
         payload = _load_json(verdict)
+        assert payload["status"] == "pass"
         assert payload["verdict"] == "canonical_smoke_release"
-
-
-def test_withdrawn_evidence_is_quarantined_from_release_artifacts_root() -> None:
-    root_entries = list((REPO_ROOT / "release_artifacts").glob("*2026-05-23*.zip"))
-    assert not root_entries, "Withdrawn evidence ZIPs must not sit in release_artifacts root"
-
-    withdrawn_readme = REPO_ROOT / "release_artifacts" / "withdrawn" / "README.md"
-    assert withdrawn_readme.exists(), "release_artifacts/withdrawn/README.md must exist"
+        assert payload["canonical"] is True

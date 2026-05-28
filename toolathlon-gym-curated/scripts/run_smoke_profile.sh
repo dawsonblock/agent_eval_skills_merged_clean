@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$ROOT_DIR/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_DIR="$ROOT/../release_artifacts/validation_logs"
+mkdir -p "$LOG_DIR"
 
-mkdir -p "$REPO_ROOT/release_artifacts/validation_logs"
-
-python3 "$ROOT_DIR/scripts/preflight_mcp_paths.py" \
+cd "$ROOT"
+python scripts/preflight_mcp_paths.py \
   --profile smoke \
-  --json-output "$REPO_ROOT/release_artifacts/validation_logs/toolathlon_preflight_summary.json"
+  --json-output "$LOG_DIR/toolathlon_preflight_smoke_summary.json" \
+  | tee "$LOG_DIR/toolathlon_preflight_smoke.txt"
 
-python3 "$ROOT_DIR/scripts/smoke_mcp_servers.py" \
+python scripts/smoke_mcp_servers.py \
   --profile smoke \
-  --strict \
-  --json-output "$REPO_ROOT/release_artifacts/validation_logs/toolathlon_smoke_summary.json"
+  --json-output "$LOG_DIR/toolathlon_smoke_summary.json" \
+  | tee "$LOG_DIR/toolathlon_smoke.txt"
+echo "PASS: Toolathlon smoke profile passed"

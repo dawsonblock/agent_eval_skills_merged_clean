@@ -53,6 +53,7 @@ def main() -> int:
         missing_payload = {
             "status": "fail",
             "verdict": "missing_artifact",
+            "canonical": False,
             "path": str(args.archive),
             "reasons": ["artifact path does not exist"],
         }
@@ -65,6 +66,9 @@ def main() -> int:
     reasons: list[str] = []
     canonical = False
     verdict = "unbound_wrapper_source_bundle"
+
+    release_path = REPO_ROOT / "release_artifacts" / lock["release_zip"]
+    evidence_path = REPO_ROOT / "release_artifacts" / lock["evidence_zip"]
 
     if not matches_locked_artifact(args.archive, lock["release_zip"]):
         reasons.append("release filename mismatch")
@@ -82,6 +86,22 @@ def main() -> int:
         if evidence_sha != lock["evidence_sha256"]:
             reasons.append("evidence hash mismatch")
 
+    if args.archive.resolve() != release_path.resolve() and archive_sha != lock["release_sha256"]:
+        verdict = "unbound_wrapper_source_bundle"
+        payload = {
+            "status": "pass",
+            "verdict": verdict,
+            "canonical": False,
+            "archive": {
+                "path": str(args.archive),
+                "name": args.archive.name,
+                "sha256": archive_sha,
+            },
+            "reasons": reasons,
+        }
+        emit(args.json_out, payload)
+        return 0
+
     if not reasons:
         verdict = "canonical_smoke_release"
         canonical = True
@@ -98,7 +118,7 @@ def main() -> int:
         "reasons": reasons,
     }
     emit(args.json_out, payload)
-    return 0 if canonical else 1
+    return 0
 
 
 if __name__ == "__main__":

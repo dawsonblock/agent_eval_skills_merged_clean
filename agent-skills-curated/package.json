@@ -25,6 +25,9 @@
     "package": "node scripts/package_skills.js",
     "validate:packages": "node scripts/validate_packages.js"
   },
+  "devDependencies": {
+    "adm-zip": "^0.5.16"
+  },
   "files": [
     "bin/",
     "skills/",
