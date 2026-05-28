@@ -75,7 +75,7 @@ PY
 )
 
 python3 "$ROOT/scripts/verify_release_pair.py" --pre-evidence \
-    | tee "$LOG_DIR/release_pair_verification.txt"
+    | tee "$LOG_DIR/release_pair_pre_evidence.txt"
 
 python3 "$ROOT/scripts/sanitize_release_paths.py"
 
@@ -103,6 +103,30 @@ PY
 
 python3 "$ROOT/scripts/verify_release_pair.py" \
     | tee "$LOG_DIR/release_pair_verification.txt"
+
+python3 "$ROOT/scripts/write_validation_summary.py" \
+        --logs-dir "$LOG_DIR" \
+        --out "$LOG_DIR/validation_summary.json"
+
+python3 "$ROOT/scripts/write_release_hashes.py"
+
+python3 "$ROOT/scripts/build_evidence_zip.py" \
+    --logs "$LOG_DIR" \
+    --out "$EVIDENCE_ZIP" \
+        --release-zip "$CANONICAL_RELEASE" \
+    --release-sha "$(python3 - <<'PY'
+import hashlib
+from pathlib import Path
+p = Path('release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip')
+if not p.exists():
+        raise SystemExit('Missing release ZIP: release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip')
+h = hashlib.sha256()
+with p.open('rb') as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b''):
+                h.update(chunk)
+print(h.hexdigest())
+PY
+)"
 
 python3 - <<'PY'
 import hashlib

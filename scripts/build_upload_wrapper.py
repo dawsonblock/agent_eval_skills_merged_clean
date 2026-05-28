@@ -12,19 +12,15 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import stat
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_ARTIFACTS = ROOT / "release_artifacts"
+LOCK_PATH = RELEASE_ARTIFACTS / "release_lock.json"
 DEFAULT_OUT = ROOT / "release_artifacts" / "agent_eval_skills_merged_clean-upload-wrapper.zip"
-REQUIRED_RELEASE_ARTIFACTS = [
-    RELEASE_ARTIFACTS / "release_lock.json",
-    RELEASE_ARTIFACTS / "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    RELEASE_ARTIFACTS / "agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
-    RELEASE_ARTIFACTS / "release_identity.generated.json",
-]
 
 # Top-level items included from source workspace
 SOURCE_INCLUDE = [
@@ -102,11 +98,27 @@ def iter_source_files() -> list[Path]:
 
 
 def iter_release_artifact_files() -> list[Path]:
-    return sorted(REQUIRED_RELEASE_ARTIFACTS, key=lambda p: p.name)
+    return sorted(required_release_artifacts(), key=lambda p: p.name)
+
+
+def required_release_artifacts() -> list[Path]:
+    if not LOCK_PATH.exists():
+        raise SystemExit(f"FAIL: missing release lock: {LOCK_PATH}")
+
+    lock = json.loads(LOCK_PATH.read_text(encoding="utf-8"))
+    release_zip = RELEASE_ARTIFACTS / str(lock.get("release_zip", ""))
+    evidence_zip = RELEASE_ARTIFACTS / str(lock.get("evidence_zip", ""))
+
+    return [
+        LOCK_PATH,
+        release_zip,
+        evidence_zip,
+        RELEASE_ARTIFACTS / "release_identity.generated.json",
+    ]
 
 
 def verify_required_release_artifacts() -> None:
-    missing = [str(p) for p in REQUIRED_RELEASE_ARTIFACTS if not p.exists()]
+    missing = [str(p) for p in required_release_artifacts() if not p.exists()]
     if missing:
         raise SystemExit(
             "FAIL: missing required release artifact(s):\n" + "\n".join(missing)

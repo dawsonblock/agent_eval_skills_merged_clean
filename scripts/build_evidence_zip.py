@@ -30,14 +30,28 @@ def parse_fixed_date(date_str: str | None) -> tuple[int, int, int, int, int, int
     return (dt.year, dt.month, dt.day, 0, 0, 0)
 
 
+def write_json_atomic(path: Path, payload: dict[str, object]) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build smoke evidence zip from validation logs")
     parser.add_argument("--logs", type=Path, default=DEFAULT_LOG_DIR)
     parser.add_argument("--out", type=Path)
-    parser.add_argument("--release-zip", type=Path, help="Path to the release ZIP (existence + SHA256 are verified)")
+    parser.add_argument(
+        "--release-zip",
+        type=Path,
+        help="Path to the release ZIP (existence + SHA256 are verified)",
+    )
     parser.add_argument("--release-sha")
-    parser.add_argument("--lock", type=Path, default=ROOT / "release_artifacts" / "release_lock.json",
-                        help="Path to release_lock.json (default: release_artifacts/release_lock.json)")
+    parser.add_argument(
+        "--lock",
+        type=Path,
+        default=ROOT / "release_artifacts" / "release_lock.json",
+        help="Path to release_lock.json (default: release_artifacts/release_lock.json)",
+    )
     parser.add_argument("--date", help="Override zip entry date as YYYY-MM-DD")
     args = parser.parse_args()
 
@@ -86,11 +100,15 @@ def main() -> int:
             "release_zip": lock.get("release_zip", ""),
             "release_sha256": args.release_sha or lock.get("release_sha256", ""),
             "evidence_zip": out.name,
+            "evidence_sha256": lock.get("evidence_sha256", ""),
+            "evidence_sha256_source": "release_lock.json",
+            "evidence_sha256_note": (
+                "authoritative value is read from release_lock.json "
+                "after evidence build completes"
+            ),
             "profile": lock.get("validation_profile", "smoke"),
         }
-        (log_dir / "release_hashes.json").write_text(
-            json.dumps(release_hashes, indent=2) + "\n", encoding="utf-8"
-        )
+        write_json_atomic(log_dir / "release_hashes.json", release_hashes)
 
     out.parent.mkdir(parents=True, exist_ok=True)
     if out.exists():
@@ -114,7 +132,7 @@ def main() -> int:
     if lock_path.exists():
         lock["evidence_zip"] = out.name
         lock["evidence_sha256"] = digest
-        lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+        write_json_atomic(lock_path, lock)
         print(f"Updated {lock_path}")
 
     return 0

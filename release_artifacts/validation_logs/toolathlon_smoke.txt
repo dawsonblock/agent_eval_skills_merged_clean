@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-05-28T22:32:55Z",
+  "checked_at": "2026-05-28T23:22:15Z",
   "profile": "smoke",
   "strict_mode": true,
   "local_servers_dir": "${REPO_ROOT}/toolathlon-gym-curated/local_servers",
@@ -13,23 +13,7 @@
       "server": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 1.998,
-      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' <LOCAL_PATH>
-  "checked_at": "2026-05-28T22:32:55Z",
-  "profile": "smoke",
-  "strict_mode": true,
-  "local_servers_dir": "${REPO_ROOT}/toolathlon-gym-curated/local_servers",
-  "target_count": 2,
-  "passed_count": 2,
-  "failed_count": 0,
-  "overall_status": "passed",
-  "results": [
-    {
-      "target": "rail_12306",
-      "server": "rail_12306",
-      "status": "passed",
-      "reason": "started_or_imported",
-      "duration_seconds": 1.998,
+      "duration_seconds": 0.92,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' ${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
@@ -40,7 +24,7 @@
       "server": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.159,
+      "duration_seconds": 0.13,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' ${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "${REPO_ROOT}/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",
@@ -48,4 +32,3 @@
     }
   ]
 }
-PASS: Toolathlon smoke profile passed

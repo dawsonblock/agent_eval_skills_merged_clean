@@ -27,12 +27,11 @@ bash "$ROOT_DIR/scripts/collect_smoke_evidence.sh"
 echo "Running canonical release/evidence pair verification..."
 python "$ROOT_DIR/scripts/verify_release_pair.py" | tee "$LOG_DIR/release_pair_verification.txt"
 
-python "$ROOT_DIR/scripts/write_validation_summary.py" \
-    --logs-dir "$LOG_DIR" \
-    --out "$LOG_DIR/validation_summary.json"
+echo "Syncing release metadata from release lock..."
+python "$ROOT_DIR/scripts/sync_release_metadata_from_lock.py"
 
-python "$ROOT_DIR/scripts/build_evidence_zip.py" \
-    --logs "$LOG_DIR"
+echo "Checking release hash consistency..."
+python "$ROOT_DIR/scripts/check_release_hash_consistency.py"
 
 # Step 5: Run root tests last — they require the canonical release ZIP and
 # evidence to already exist so all archive/hash assertions can pass.

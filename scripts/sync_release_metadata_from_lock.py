@@ -63,10 +63,43 @@ def main() -> int:
     status_path = REPO_ROOT / "RELEASE_STATUS.json"
 
     def update_status(payload: dict) -> None:
+        payload["release_zip"] = release_zip
+        payload["release_sha256"] = release_sha
+        payload["evidence_zip"] = evidence_zip
+        payload["evidence_sha256"] = evidence_sha
         payload["canonical_release_zip"] = release_zip
         payload["canonical_release_sha256"] = release_sha
+        payload["status"] = lock.get("status", payload.get("status", "release-candidate"))
+        payload["canonical"] = lock.get("canonical", payload.get("canonical", True))
+        payload["validation_profile"] = lock.get(
+            "validation_profile", payload.get("validation_profile", "smoke")
+        )
+        payload["python_version"] = lock.get(
+            "python_version", payload.get("python_version", "3.12")
+        )
+        payload["node_version_min"] = lock.get(
+            "node_version_min", payload.get("node_version_min", "20")
+        )
+        # Uploaded archive hash is tracked separately and can legitimately differ
+        # from canonical release/evidence hashes, so keep it empty by default.
+        payload["uploaded_archive_sha256"] = ""
+        payload["uploaded_archive_sha256_location"] = "external .sha256 sidecar"
 
     update_json_file(status_path, update_status)
+
+    manifest_path = REPO_ROOT / "RELEASE_MANIFEST.json"
+
+    def update_manifest(payload: dict) -> None:
+        release = payload.setdefault("release", {})
+        evidence = payload.setdefault("evidence", {})
+        release["name"] = lock.get("release_name", release.get("name", ""))
+        release["zip"] = release_zip
+        release["sha256"] = release_sha
+        evidence["zip"] = evidence_zip
+        evidence["sha256"] = evidence_sha
+
+    if manifest_path.exists():
+        update_json_file(manifest_path, update_manifest)
 
     readme_path = REPO_ROOT / "README.md"
     readme = readme_path.read_text(encoding="utf-8")
@@ -74,7 +107,10 @@ def main() -> int:
         try:
             readme = replace_or_fail(
                 readme,
-                r"- `[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip`\n\s+- SHA256: `[a-f0-9]{64}`",
+                (
+                    r"- `[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip`"
+                    r"\n\s+- SHA256: `[a-f0-9]{64}`"
+                ),
                 f"- `{release_zip}`\n  - SHA256: `{release_sha}`",
                 "README release hash",
             )
@@ -120,13 +156,19 @@ def main() -> int:
     att = att_path.read_text(encoding="utf-8")
     att = replace_or_fail(
         att,
-        r"Release ZIP:\n`[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip`\nRelease SHA256:\n`[a-f0-9]{64}`",
+        (
+            r"Release ZIP:\n`[^`]*agent_eval_skills_merged_clean-pruned-smoke\.zip`"
+            r"\nRelease SHA256:\n`[a-f0-9]{64}`"
+        ),
         f"Release ZIP:\n`{release_zip}`\nRelease SHA256:\n`{release_sha}`",
         "attestation release row",
     )
     att = replace_or_fail(
         att,
-        r"Evidence ZIP:\n`[^`]*agent_eval_skills_merged_clean-smoke-evidence-[^`]+`\nEvidence SHA256:\n`[a-f0-9]{64}`",
+        (
+            r"Evidence ZIP:\n`[^`]*agent_eval_skills_merged_clean-smoke-evidence-[^`]+`"
+            r"\nEvidence SHA256:\n`[a-f0-9]{64}`"
+        ),
         f"Evidence ZIP:\n`{evidence_zip}`\nEvidence SHA256:\n`{evidence_sha}`",
         "attestation evidence row",
     )

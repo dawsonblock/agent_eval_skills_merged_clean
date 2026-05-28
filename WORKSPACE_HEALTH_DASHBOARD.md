@@ -3,14 +3,14 @@
 **Date:** May 27, 2026  
 **Scope:** agent_eval_skills_merged_clean  
 **Classification:** `SOURCE_BUNDLE` repair state. Historical attested smoke-pair data is listed below for reference.
-**Current canonical release SHA256:** `0a2ccaec4a1f5f0c1ef80f60338c805b0e7719c3682aeae6b3bc56f7a334bd08`
+**Current canonical release SHA256:** `92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad`
 
 Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
-  - SHA256: `0a2ccaec4a1f5f0c1ef80f60338c805b0e7719c3682aeae6b3bc56f7a334bd08`
-- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
-  - SHA256: `cb4f163e5d3d9e32cd7e0d626628f9967fdf9308023a3b2cc6d56ca09cf13ffb`
+  - SHA256: `92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad`
+- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip`
+  - SHA256: `b60e9b919da192253442f6f72be35e662f697dcaa56ed5b71f353820a2f5d215`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 
