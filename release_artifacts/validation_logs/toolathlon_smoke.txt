@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-05-28T04:53:36Z",
+  "checked_at": "2026-05-28T04:57:57Z",
   "profile": "smoke",
   "strict_mode": true,
   "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
@@ -13,23 +13,7 @@
       "server": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 1.201,
-      "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agen{
-  "checked_at": "2026-05-28T04:53:36Z",
-  "profile": "smoke",
-  "strict_mode": true,
-  "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
-  "target_count": 2,
-  "passed_count": 2,
-  "failed_count": 0,
-  "overall_status": "passed",
-  "results": [
-    {
-      "target": "rail_12306",
-      "server": "rail_12306",
-      "status": "passed",
-      "reason": "started_or_imported",
-      "duration_seconds": 1.201,
+      "duration_seconds": 2.684,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
@@ -40,7 +24,7 @@
       "server": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.165,
+      "duration_seconds": 0.382,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",
@@ -48,4 +32,3 @@
     }
   ]
 }
-PASS: Toolathlon smoke profile passed

@@ -24,7 +24,7 @@ Building smoke server: rail_12306
 > chmod +x build/index.js
 
 
-added 256 packages, and audited 257 packages in 14s
+added 256 packages, and audited 257 packages in 24s
 
 38 packages are looking for funding
   run `npm fund` for details
@@ -65,7 +65,7 @@ Building smoke server: filesystem
 > tsc && shx chmod +x dist/*.js
 
 
-added 216 packages, and audited 217 packages in 5s
+added 216 packages, and audited 217 packages in 14s
 
 61 packages are looking for funding
   run `npm fund` for details
@@ -83,4 +83,3 @@ Run `npm audit` for details.
 > @modelcontextprotocol/server-filesystem@0.6.3 build
 > tsc && shx chmod +x dist/*.js
 
-PASS: smoke artifacts built
