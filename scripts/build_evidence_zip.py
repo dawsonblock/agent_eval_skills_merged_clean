@@ -27,11 +27,27 @@ def main() -> int:
         print(f"FAIL: missing validation logs: {LOG_DIR}")
         return 1
 
+    lock_path = ROOT / "release_artifacts" / "release_lock.json"
+    if lock_path.exists():
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        release_hashes = {
+            "release_zip": lock.get("release_zip", ""),
+            "release_sha256": lock.get("release_sha256", ""),
+            "evidence_zip": lock.get("evidence_zip", ""),
+            "profile": lock.get("validation_profile", "smoke"),
+        }
+        (LOG_DIR / "release_hashes.json").write_text(
+            json.dumps(release_hashes, indent=2) + "\n", encoding="utf-8"
+        )
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     if OUT.exists():
         OUT.unlink()
 
-    files = sorted([p for p in LOG_DIR.rglob("*") if p.is_file()], key=lambda p: p.relative_to(LOG_DIR).as_posix())
+    files = sorted(
+        [p for p in LOG_DIR.rglob("*") if p.is_file()],
+        key=lambda p: p.relative_to(LOG_DIR).as_posix(),
+    )
     with zipfile.ZipFile(OUT, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path in files:
             rel = Path(".validation_logs") / path.relative_to(LOG_DIR)
@@ -43,7 +59,6 @@ def main() -> int:
     print(f"Wrote {OUT}")
     print(f"SHA256: {digest}")
 
-    lock_path = ROOT / "release_artifacts" / "release_lock.json"
     if lock_path.exists():
         lock = json.loads(lock_path.read_text(encoding="utf-8"))
         lock["evidence_sha256"] = digest

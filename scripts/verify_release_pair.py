@@ -21,6 +21,13 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def _normalize_rel(path_value: str) -> str:
+    text = path_value.replace("\\", "/")
+    if text.startswith("release_artifacts/"):
+        return text.split("/", 1)[1]
+    return text
+
+
 def main() -> int:
     if not LOCK.exists():
         print(f"FAIL: missing {LOCK}")
@@ -53,14 +60,39 @@ def main() -> int:
     with zipfile.ZipFile(evidence) as zf:
         names = set(zf.namelist())
         required = ".validation_logs/validation_summary.json"
+        hashes_file = ".validation_logs/release_hashes.json"
         if required not in names:
             print(f"FAIL: evidence missing {required}")
             return 1
+        if hashes_file not in names:
+            print(f"FAIL: evidence missing {hashes_file}")
+            return 1
         summary = json.loads(zf.read(required).decode("utf-8"))
+        release_hashes = json.loads(zf.read(hashes_file).decode("utf-8"))
+
     if summary.get("status") not in {"pass", "pass_with_warnings"}:
         print(f"FAIL: validation summary status: {summary.get('status')}")
         return 1
 
+    expected_release_zip = _normalize_rel(lock["release_zip"])
+    expected_evidence_zip = _normalize_rel(lock["evidence_zip"])
+    observed_release_zip = _normalize_rel(release_hashes.get("release_zip", ""))
+    observed_evidence_zip = _normalize_rel(release_hashes.get("evidence_zip", ""))
+    if observed_release_zip != expected_release_zip:
+        print("FAIL: evidence internal release_zip mismatch")
+        print(f"lock:     {expected_release_zip}")
+        print(f"evidence: {observed_release_zip}")
+        return 1
+    if observed_evidence_zip != expected_evidence_zip:
+        print("FAIL: evidence internal evidence_zip mismatch")
+        print(f"lock:     {expected_evidence_zip}")
+        print(f"evidence: {observed_evidence_zip}")
+        return 1
+    if release_hashes.get("release_sha256") != lock["release_sha256"]:
+        print("FAIL: evidence internal release_sha256 mismatch")
+        print(f"lock:     {lock['release_sha256']}")
+        print(f"evidence: {release_hashes.get('release_sha256')}")
+        return 1
     hygiene = run(
         [sys.executable, str(ROOT / "scripts" / "check_source_bundle_hygiene.py"), str(release)],
         cwd=ROOT,

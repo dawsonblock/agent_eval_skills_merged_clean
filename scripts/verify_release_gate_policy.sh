@@ -30,7 +30,7 @@ required_strings=(
 )
 
 expected_release_zip="agent_eval_skills_merged_clean-pruned-smoke.zip"
-expected_evidence_zip="agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip"
+expected_evidence_zip="agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip"
 
 declare -a files=(
   "$REPO_ROOT/.github/workflows/validate.yml"

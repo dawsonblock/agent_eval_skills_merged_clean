@@ -21,14 +21,16 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
-def latest_evidence_zip(release_artifacts: Path) -> Path:
-    candidates = sorted(
-        release_artifacts.glob("agent_eval_skills_merged_clean-smoke-evidence-*.zip"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    if not candidates:
-        raise SystemExit("No smoke evidence ZIP found in release_artifacts/")
-    return candidates[-1]
+def resolve_zip_path(path_value: str) -> Path:
+    under_artifacts = ROOT / "release_artifacts" / path_value
+    if under_artifacts.exists():
+        return under_artifacts
+
+    candidate = ROOT / path_value
+    if candidate.exists():
+        return candidate
+
+    return candidate
 
 
 def main() -> int:
@@ -46,12 +48,16 @@ def main() -> int:
 
     lock = json.loads(args.lock.read_text(encoding="utf-8")) if args.lock.exists() else {}
 
-    release_zip = args.release_zip or ROOT / lock.get(
-        "release_zip", "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip"
+    release_zip = args.release_zip or resolve_zip_path(
+        lock.get(
+            "release_zip", "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip"
+        )
     )
-    evidence_zip = args.evidence_zip or ROOT / lock.get("evidence_zip", "")
+    evidence_zip = args.evidence_zip or resolve_zip_path(lock.get("evidence_zip", ""))
     if not evidence_zip:
-        evidence_zip = latest_evidence_zip(ROOT / "release_artifacts")
+        raise SystemExit(
+            "Evidence ZIP must be provided via --evidence-zip or release_lock.json:evidence_zip"
+        )
 
     if not release_zip.exists():
         raise SystemExit(f"Release ZIP not found: {release_zip}")
@@ -70,7 +76,9 @@ def main() -> int:
         "evidence_zip": evidence_zip.relative_to(ROOT).as_posix(),
         "evidence_sha256": sha256_file(evidence_zip),
         "evidence_size_bytes": evidence_zip.stat().st_size,
-        "toolathlon_profile": status.get("toolathlon_profile", lock.get("validation_profile", "smoke")),
+        "toolathlon_profile": status.get(
+            "toolathlon_profile", lock.get("validation_profile", "smoke")
+        ),
         "full_profile_validated": status.get("full_profile_validated", False),
         "production_claim_allowed": status.get("production_claim_allowed", False),
         "python_version": lock.get("python_version", "3.12"),

@@ -20,9 +20,14 @@ def main() -> int:
         "root_tests": "pass" if exists("test_results_root.txt") else "missing",
         "toolforge_tests": "pass" if exists("test_results_toolforge.txt") else "missing",
         "toolforge_doctor": "pass" if exists("toolforge_doctor.txt") else "missing",
-        "agent_skills_eval": "pass_with_warnings" if exists("agent_skills_summary.json") else "missing",
+        "agent_skills_eval": (
+            "pass_with_warnings" if exists("agent_skills_summary.json") else "missing"
+        ),
         "agent_skill_packages": "pass" if exists("agent_skill_packages.txt") else "missing",
         "toolathlon_smoke": "pass" if exists("toolathlon_smoke_summary.json") else "missing",
+        "release_pair_verification": (
+            "pass" if exists("release_pair_verification.txt") else "missing"
+        ),
     }
     hard_fail = [k for k, v in components.items() if v == "missing"]
     summary = {

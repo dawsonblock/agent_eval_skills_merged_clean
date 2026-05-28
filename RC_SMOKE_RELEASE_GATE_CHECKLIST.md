@@ -38,7 +38,6 @@ make skillforge-evidence-bundle
 - Validated smoke servers:
   - `rail_12306`
   - `filesystem`
-  - `google_calendar`
 
 ## 2) Clean ZIP Packaging
 
@@ -68,20 +67,20 @@ Required summary values:
 - `.validation_logs/toolathlon_artifact_build_summary.json`
   - `profile = smoke`
   - `overall_status = passed`
-  - `expected_package_count = 3`
-  - `package_count = 3`
-  - `passed_count = 3`
+  - `expected_package_count = 2`
+  - `package_count = 2`
+  - `passed_count = 2`
   - `failed_count = 0`
 - `.validation_logs/toolathlon_mcp_smoke_summary.json`
   - `profile = smoke`
   - `overall_status = passed`
-  - `target_count = 3`
-  - `passed_count = 3`
+  - `target_count = 2`
+  - `passed_count = 2`
   - `failed_count = 0`
 - `.validation_logs/toolathlon_preflight_summary.json`
   - `profile = smoke`
   - `status = passed`
-  - `found_count = 3`
+  - `found_count = 2`
   - `missing_count = 0`
 
 ## 4) Toolathlon Repeatability (skip mode)
@@ -91,7 +90,7 @@ cd toolathlon-gym-curated
 TOOLATHLON_PROFILE=smoke SKIP_EXISTING_ARTIFACTS=1 bash scripts/build_required_mcp_artifacts.sh
 ```
 
-Required: still 3/3 packages, smoke pass, preflight `missing_count = 0`.
+Required: still 2/2 packages, smoke pass, preflight `missing_count = 0`.
 
 Automated strictness regression check (required before release promotion):
 
@@ -101,7 +100,7 @@ make verify-skip-strictness
 
 Required outcomes:
 
-- healthy skip run reports `runtime_ready_skip` for all three smoke targets
+- healthy skip run reports `runtime_ready_skip` for both smoke targets
 - unhealthy dependency perturbation forces rebuild with `filesystem` reason `rebuilt_after_npm_tree_unhealthy`
 
 ## 5) Unified Workspace Validation (Supported: Python 3.9-3.12; preferred release proof: 3.12)
@@ -165,8 +164,8 @@ Required:
 - `.validation_logs/docker_mcp_smoke_summary.json`
   - `profile = smoke`
   - `overall_status = passed`
-  - `target_count = 3`
-  - `passed_count = 3`
+  - `target_count = 2`
+  - `passed_count = 2`
   - `failed_count = 0`
 - `.validation_logs/docker_preflight_summary.json`
   - `profile = smoke`

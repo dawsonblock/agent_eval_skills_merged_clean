@@ -46,5 +46,4 @@ Retained but not release-validated:
 ## Source Of Truth
 
 - Root manifest: `RELEASE_EVIDENCE_MANIFEST_2026-05-27.json`
-- Release-artifacts manifest: `release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-27.json`
 - Attestation: `RELEASE_ATTESTATION_2026-05-27.md`

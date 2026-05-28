@@ -31,7 +31,7 @@ Promotion label (only when matching evidence is attached for the same build): pr
 Release identity is hash-bound to one canonical artifact pair:
 
 1. `agent_eval_skills_merged_clean-pruned-smoke.zip`
-2. `agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip`
+2. `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
 
 Only exact SHA256 matches to the attestation/manifest values are in scope for the current release classification. Wrapper/source uploads and independently regenerated ZIPs are treated as unbound artifacts unless a new manifest plus attestation is published for their exact hashes.
 

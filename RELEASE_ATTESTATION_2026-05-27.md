@@ -3,11 +3,11 @@ This attestation binds the smoke release artifact to its evidence package.
 Release ZIP:
 `agent_eval_skills_merged_clean-pruned-smoke.zip`
 Release SHA256:
-`20377dbc0b81856c097211a445cecea453a6162cad80ef7928e4a548f83e273b`
+`b76f67965894c8dcefcd448eeb18baa9d852f393070b969398d5d0512a07fd6b`
 Evidence ZIP:
 `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
 Evidence SHA256:
-`8bf4d4d5d050611f6f6a8289407f068f3032cdc2ac5587d7a35acfad2b1dcfb8`
+`d4d08c795a2197737bd00abbcfc05ea5da6661910eaa4fb76cf60b20b67363ae`
 Validation profile:
 `smoke`
 Status:

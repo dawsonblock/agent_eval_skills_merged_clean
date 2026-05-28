@@ -37,5 +37,8 @@ echo "Running secret fixture policy check..."
 cd "$ROOT_DIR"
 python scripts/check_for_real_secrets.py | tee "$LOG_DIR/secrets_scan.txt"
 
+echo "Running canonical release/evidence pair verification..."
+python scripts/verify_release_pair.py | tee "$LOG_DIR/release_pair_verification.txt"
+
 python scripts/write_validation_summary.py
 echo "PASS: release smoke validation complete"

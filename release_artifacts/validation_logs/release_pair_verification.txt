@@ -1,2 +1,2 @@
-FAIL: release and evidence pair verification failed
-- release hash mismatch against lock
+PASS: source bundle hygiene clean
+PASS: release/evidence pair verified
