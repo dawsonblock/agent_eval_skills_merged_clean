@@ -59,6 +59,17 @@ and current-state documentation updates that keep release claims aligned with lo
   - Extracted archive and executed scoped tests in extracted tree
   - Result: 367 passed, 3 warnings (expected OPENAI_API_KEY fallback warnings)
 
+## Requested 1-4 Closure
+
+1. Remove `ToolForge/.skillforge` from ZIP/source bundle context
+  - Completed: local runtime directory removed from workspace and excluded by hygiene policy.
+2. Decide whether upload is source bundle or canonical release
+  - Completed: selected canonical distribution path for this state.
+3. Ensure canonical release ZIP is included/present
+  - Completed: `release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip` present and hash-verified.
+4. Source-bundle-only downgrade path
+  - Not selected for this run because canonical path is satisfied; historical/superseded notes remain explicitly labeled.
+
 ## Scope Statement
 
 Validated scope:

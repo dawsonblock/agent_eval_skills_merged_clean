@@ -1,6 +1,8 @@
 {
   "status": "release-candidate",
   "canonical": true,
+  "release_classification": "canonical_distribution",
+  "source_bundle_only": false,
   "validation_profile": "smoke",
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
   "release_sha256": "01ffe2f112a76baee38d56863413b4595abd9d0e89b799908442a50382c10f0e",
@@ -14,6 +16,12 @@
     "Agent Skills quality warnings remain.",
     "Not production deployment approved."
   ],
+  "fixes_1_to_4": {
+    "remove_toolforge_skillforge_from_workspace": "completed",
+    "classification_decision": "canonical_distribution",
+    "canonical_release_zip_present": "completed",
+    "source_bundle_assertion_downgrade_path": "not_selected"
+  },
   "canonical_release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
   "canonical_release_sha256": "01ffe2f112a76baee38d56863413b4595abd9d0e89b799908442a50382c10f0e"
 }
