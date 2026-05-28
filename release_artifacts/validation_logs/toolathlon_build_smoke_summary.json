@@ -9,14 +9,14 @@
     {
       "package": "rail_12306",
       "status": "passed",
-      "duration_seconds": 25,
+      "duration_seconds": 13,
       "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "skipped_existing": false
     },
     {
       "package": "filesystem",
       "status": "passed",
-      "duration_seconds": 11,
+      "duration_seconds": 5,
       "artifact": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "skipped_existing": false
     }

@@ -4,16 +4,41 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 
-def read_json(path: Path) -> dict:
+def read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def status_for_eval_list(payload: list[Any]) -> str:
+    if not payload:
+        return "fail"
+
+    saw_warning = False
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        gate = item.get("qualityGate")
+        if not isinstance(gate, dict):
+            continue
+        state = str(gate.get("status", "")).lower()
+        if state in {"fail", "error", "failed"}:
+            return "fail"
+        if state in {"warn", "warning", "pass_with_warnings"}:
+            saw_warning = True
+
+    return "pass_with_warnings" if saw_warning else "pass"
 
 
 def status_for(path: Path, key: str = "overall_status") -> str:
     if not path.exists():
         return "fail"
     payload = read_json(path)
+    if isinstance(payload, list):
+        return status_for_eval_list(payload)
+    if not isinstance(payload, dict):
+        return "fail"
     value = payload.get(key)
     if isinstance(value, str) and value.lower() in {"passed", "pass"}:
         return "pass"
@@ -56,6 +81,10 @@ def main() -> int:
     payload = {
         "status": overall,
         "profile": "smoke",
+        "toolathlon_profile": "smoke",
+        "smoke_targets": ["rail_12306", "filesystem"],
+        "excluded_smoke_targets": ["google_calendar"],
+        "full_toolathlon_profile_validated": False,
         "components": components,
         "warnings": [
             "Some skills remain below preferred quality threshold.",

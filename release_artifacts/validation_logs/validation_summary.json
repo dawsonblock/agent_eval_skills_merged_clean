@@ -1,0 +1,27 @@
+{
+  "status": "fail",
+  "profile": "smoke",
+  "toolathlon_profile": "smoke",
+  "smoke_targets": [
+    "rail_12306",
+    "filesystem"
+  ],
+  "excluded_smoke_targets": [
+    "google_calendar"
+  ],
+  "full_toolathlon_profile_validated": false,
+  "components": {
+    "root_tests": "pass",
+    "toolforge_tests": "pass",
+    "toolforge_doctor": "pass",
+    "agent_skills_eval": "pass_with_warnings",
+    "agent_skill_packages": "pass",
+    "toolathlon_smoke": "pass",
+    "source_bundle_hygiene": "fail",
+    "release_pair_verification": "fail"
+  },
+  "warnings": [
+    "Some skills remain below preferred quality threshold.",
+    "Toolathlon full profile is experimental."
+  ]
+}

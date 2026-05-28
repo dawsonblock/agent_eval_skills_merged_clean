@@ -11,7 +11,7 @@ JSON summary: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/releas
 
 ✓ All MCP server paths valid.
 {
-  "checked_at": "2026-05-28T01:29:28Z",
+  "checked_at": "2026-05-28T01:33:34Z",
   "profile": "smoke",
   "strict_mode": true,
   "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
@@ -24,7 +24,7 @@ JSON summary: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/releas
       "target": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 1.027,
+      "duration_seconds": 1.344,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
@@ -34,7 +34,7 @@ JSON summary: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/releas
       "target": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.127,
+      "duration_seconds": 0.137,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",

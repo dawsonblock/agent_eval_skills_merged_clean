@@ -10,7 +10,7 @@ Building required MCP artifacts in /Users/dawsonblock/Downloads/agent_eval_skill
 → Building rail_12306 with 300s timeout
 → Building rail_12306
 
-added 256 packages, and audited 257 packages in 23s
+added 256 packages, and audited 257 packages in 11s
 
 38 packages are looking for funding
   run `npm fund` for details
@@ -41,12 +41,12 @@ Run `npm audit` for details.
 > 12306-mcp@0.3.5 postbuild:darwin:linux
 > chmod +x build/index.js
 
-✓ Built rail_12306 in 25s
+✓ Built rail_12306 in 13s
 ✓ rail_12306 artifact: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js
 → Building filesystem with 300s timeout
 → Building filesystem
 
-added 216 packages, and audited 217 packages in 9s
+added 216 packages, and audited 217 packages in 4s
 
 61 packages are looking for funding
   run `npm fund` for details
@@ -64,11 +64,11 @@ Run `npm audit` for details.
 > @modelcontextprotocol/server-filesystem@0.6.3 build
 > tsc && shx chmod +x dist/*.js
 
-✓ Built filesystem in 11s
+✓ Built filesystem in 5s
 ✓ filesystem artifact: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js
 → Building runtime_smoke with 120s timeout
 {
-  "checked_at": "2026-05-28T01:29:27Z",
+  "checked_at": "2026-05-28T01:33:32Z",
   "profile": "smoke",
   "strict_mode": true,
   "local_servers_dir": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers",
@@ -81,7 +81,7 @@ Run `npm audit` for details.
       "target": "rail_12306",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 4.143,
+      "duration_seconds": 0.977,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp/build/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/12306-mcp",
       "stdout": "",
@@ -91,7 +91,7 @@ Run `npm audit` for details.
       "target": "filesystem",
       "status": "passed",
       "reason": "started_or_imported",
-      "duration_seconds": 0.267,
+      "duration_seconds": 0.119,
       "command": "node --input-type=module -e 'import { pathToFileURL } from '\"'\"'node:url'\"'\"';\n\nconst entry = process.argv[1];\n\ntry {\n  await import(pathToFileURL(entry).href);\n  process.exit(0);\n} catch (error) {\n  console.error(error && error.stack ? error.stack : String(error));\n  process.exit(1);\n}' /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem/dist/index.js",
       "cwd": "/Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers/filesystem",
       "stdout": "",
@@ -99,7 +99,7 @@ Run `npm audit` for details.
     }
   ]
 }
-✓ Built runtime_smoke in 5s
+✓ Built runtime_smoke in 1s
 → Building preflight_paths with 120s timeout
 Checking MCP server paths in: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/configs/mcp_servers
 Local servers directory: /Users/dawsonblock/Downloads/agent_eval_skills_merged_clean/toolathlon-gym-curated/local_servers
