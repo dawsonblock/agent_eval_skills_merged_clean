@@ -359,6 +359,49 @@ button:hover {
   background: #fff5f5;
 }
 
+.plan-inputs-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f9fbfd;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.plan-inputs-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.plan-input-row {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.plan-input-row .inline-toggle {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.plan-input-row .inline-toggle input {
+  width: auto;
+  margin: 0;
+}
+
+.plan-input-row .remove-input-btn {
+  width: auto;
+  padding: 6px 10px;
+}
+
 .bottom-drawer {
   margin: 0 12px 12px;
 }
@@ -450,6 +493,10 @@ body.density-compact .topbar {
 
   .chat-messages {
     max-height: 48vh;
+  }
+
+  .plan-input-row {
+    grid-template-columns: 1fr;
   }
 
   .sidebar {

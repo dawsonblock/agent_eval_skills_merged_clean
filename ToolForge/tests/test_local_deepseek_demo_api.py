@@ -149,8 +149,14 @@ def test_generated_tools_endpoint_lists_created_tool(
 
     generated_dir = tmp_path / "generated_tools" / slug
     generated_dir.mkdir(parents=True, exist_ok=True)
-    (generated_dir / "tool.py").write_text("def run(inputs):\n    return {'ok': True}\n", encoding="utf-8")
-    (generated_dir / "toolforge.yaml").write_text("name: demo-api-tool\nslug: demo-api-tool\n", encoding="utf-8")
+    (generated_dir / "tool.py").write_text(
+        "def run(inputs):\n    return {'ok': True}\n",
+        encoding="utf-8",
+    )
+    (generated_dir / "toolforge.yaml").write_text(
+        "name: demo-api-tool\nslug: demo-api-tool\n",
+        encoding="utf-8",
+    )
     (generated_dir / "README.md").write_text("# demo-api-tool\n", encoding="utf-8")
 
     resp = client.get("/api/generated-tools")
@@ -239,3 +245,55 @@ def test_tool_run_rejects_unknown_argument_key(
     assert payload["validation"]["allowed"] is False
     joined = "\n".join(payload["validation"]["errors"])
     assert "Unknown argument keys" in joined
+
+
+def test_plan_validate_endpoint_returns_normalized_plan(client: TestClient) -> None:
+    resp = client.post(
+        "/api/tools/plan/validate",
+        json={
+            "plan": {
+                "tool_name": "CSV Helper",
+                "purpose": "Clean and normalize CSV content with safe defaults.",
+                "inputs": [
+                    {
+                        "name": "Input Path",
+                        "type": "string",
+                        "description": "Path to source csv",
+                        "required": True,
+                    },
+                    {
+                        "name": "output_path",
+                        "type": "string",
+                        "description": "Path to write normalized csv",
+                        "required": True,
+                    },
+                ],
+            }
+        },
+    )
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["message_type"] == "tool_result"
+    assert payload["result"]["passed"] is True
+    names = [item["name"] for item in payload["result"]["normalized_plan"]["inputs"]]
+    assert names == ["input_path", "output_path"]
+
+
+def test_plan_validate_endpoint_reports_validation_errors(client: TestClient) -> None:
+    resp = client.post(
+        "/api/tools/plan/validate",
+        json={
+            "plan": {
+                "tool_name": "",
+                "purpose": "short",
+                "inputs": [{"name": "bad-name", "type": "nonsense"}],
+            }
+        },
+    )
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["message_type"] == "validation_error"
+    assert payload["result"]["passed"] is False
+    assert payload["result"]["errors"]

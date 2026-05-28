@@ -103,9 +103,21 @@ class ToolForgeAdapter:
                     "has_tests": test_dir.exists() and test_dir.is_dir(),
                     "has_plan": plan_path.exists(),
                     "registered": registry_item is not None,
-                    "validated": bool(registry_item.get("validated", False)) if registry_item else False,
-                    "risk_level": str(registry_item.get("risk_level", "unknown")) if registry_item else "unknown",
-                    "description": str(registry_item.get("description", "")) if registry_item else "",
+                    "validated": (
+                        bool(registry_item.get("validated", False))
+                        if registry_item
+                        else False
+                    ),
+                    "risk_level": (
+                        str(registry_item.get("risk_level", "unknown"))
+                        if registry_item
+                        else "unknown"
+                    ),
+                    "description": (
+                        str(registry_item.get("description", ""))
+                        if registry_item
+                        else ""
+                    ),
                 }
             )
 
@@ -200,7 +212,20 @@ class ToolForgeAdapter:
         return {
             "tool_name": slug,
             "purpose": prompt.strip(),
-            "inputs": ["request", "context"],
+            "inputs": [
+                {
+                    "name": "request",
+                    "type": "string",
+                    "description": "User request",
+                    "required": True,
+                },
+                {
+                    "name": "context",
+                    "type": "string",
+                    "description": "Optional context",
+                    "required": False,
+                },
+            ],
             "outputs": ["result", "artifacts"],
             "file_paths": [
                 str((safe_path / "tool.py").relative_to(self.workspace_root)),
@@ -219,12 +244,80 @@ class ToolForgeAdapter:
             "risk_level": plan.risk_level,
         }
 
+    def validate_tool_plan(self, plan: dict[str, Any]) -> dict[str, Any]:
+        if not isinstance(plan, dict):
+            raise AdapterError("Tool plan must be a JSON object.")
+
+        normalized = self._normalize_tool_plan(plan)
+        errors: list[str] = []
+        warnings: list[str] = []
+
+        tool_name = normalized.get("tool_name", "")
+        if not tool_name:
+            errors.append("tool_name is required.")
+
+        purpose = str(normalized.get("purpose") or "").strip()
+        if not purpose:
+            errors.append("purpose is required.")
+        elif len(purpose) < 10:
+            warnings.append("purpose is very short; add intent and constraints.")
+
+        inputs = normalized.get("inputs") or []
+        if not isinstance(inputs, list) or not inputs:
+            errors.append("inputs must be a non-empty array.")
+        else:
+            seen: set[str] = set()
+            for item in inputs:
+                name = str(item.get("name") or "")
+                if not name:
+                    errors.append("each input requires a name.")
+                    continue
+                if name in seen:
+                    errors.append(f"duplicate input name: {name}")
+                seen.add(name)
+                if not re.fullmatch(r"[a-z][a-z0-9_]{1,40}", name):
+                    errors.append(
+                        f"invalid input name {name!r}; use snake_case alphanumerics only."
+                    )
+
+                input_type = str(item.get("type") or "string")
+                if input_type not in {
+                    "string",
+                    "number",
+                    "integer",
+                    "boolean",
+                    "array",
+                    "object",
+                }:
+                    errors.append(
+                        f"unsupported input type {input_type!r} for {name!r}."
+                    )
+
+        risks = normalized.get("safety_risks") or []
+        if not risks:
+            warnings.append("safety_risks is empty; consider documenting key safeguards.")
+
+        return {
+            "passed": not errors,
+            "errors": errors,
+            "warnings": warnings,
+            "normalized_plan": normalized,
+        }
+
     def create_tool_from_plan(
         self,
         plan: dict[str, Any],
         allow_overwrite: bool = False,
     ) -> dict[str, Any]:
-        requested_name = str(plan.get("tool_name") or "generated-tool")
+        validation = self.validate_tool_plan(plan)
+        if not validation["passed"]:
+            raise AdapterError(
+                "Invalid plan: " + "; ".join(validation["errors"])
+            )
+
+        normalized_plan = validation["normalized_plan"]
+
+        requested_name = str(normalized_plan.get("tool_name") or "generated-tool")
         slug = self._slugify(requested_name)
         tool_root = (self.generated_root / slug).resolve()
         if not is_under(tool_root, self.generated_root):
@@ -238,7 +331,9 @@ class ToolForgeAdapter:
         tool_root.mkdir(parents=True, exist_ok=True)
         (tool_root / "tests").mkdir(parents=True, exist_ok=True)
 
-        purpose = str(plan.get("purpose") or "Generated from ToolForge local demo")
+        purpose = str(
+            normalized_plan.get("purpose") or "Generated from ToolForge local demo"
+        )
 
         tool_py = tool_root / "tool.py"
         tool_yaml = tool_root / "toolforge.yaml"
@@ -279,6 +374,19 @@ class ToolForgeAdapter:
             encoding="utf-8",
         )
 
+        input_blocks: list[str] = []
+        for param in normalized_plan.get("inputs", []):
+            input_blocks.extend(
+                [
+                    "  - name: " + str(param.get("name") or "request"),
+                    "    type: " + str(param.get("type") or "string"),
+                    "    description: "
+                    + str(param.get("description") or "Input value"),
+                    "    required: "
+                    + ("true" if bool(param.get("required")) else "false"),
+                ]
+            )
+
         tool_yaml.write_text(
             "name: " + slug + "\n"
             "slug: " + slug + "\n"
@@ -286,10 +394,8 @@ class ToolForgeAdapter:
             "language: python\n"
             "entry_point: tool.py\n"
             "parameters:\n"
-            "  - name: request\n"
-            "    type: string\n"
-            "    description: User request\n"
-            "    required: false\n"
+            + "\n".join(input_blocks)
+            + "\n"
             "output:\n"
             "  type: object\n"
             "  description: Result payload\n"
@@ -316,7 +422,9 @@ class ToolForgeAdapter:
             "from pathlib import Path\n\n"
             "\n"
             "def _load_run(tool_path: Path):\n"
-            "    spec = importlib.util.spec_from_file_location('generated_tool_module', tool_path)\n"
+            "    spec = importlib.util.spec_from_file_location(\n"
+            "        'generated_tool_module', tool_path\n"
+            "    )\n"
             "    if spec is None or spec.loader is None:\n"
             "        raise RuntimeError('Unable to load generated tool module')\n"
             "    module = importlib.util.module_from_spec(spec)\n"
@@ -334,7 +442,10 @@ class ToolForgeAdapter:
             encoding="utf-8",
         )
 
-        plan_file.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
+        plan_file.write_text(
+            json.dumps(normalized_plan, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
         self.registry.register_tool(
             {
@@ -364,8 +475,79 @@ class ToolForgeAdapter:
             "tool_name": slug,
             "tool_path": str(tool_root.relative_to(self.workspace_root)),
             "created_files": created_files,
+            "plan_warnings": validation["warnings"],
             "validation": validation,
         }
+
+    def _normalize_tool_plan(self, plan: dict[str, Any]) -> dict[str, Any]:
+        tool_name = str(plan.get("tool_name") or "generated-tool").strip()
+        purpose = str(plan.get("purpose") or "").strip()
+
+        raw_inputs = plan.get("inputs")
+        normalized_inputs: list[dict[str, Any]] = []
+        if isinstance(raw_inputs, list):
+            for idx, entry in enumerate(raw_inputs):
+                if isinstance(entry, dict):
+                    name = str(entry.get("name") or "").strip()
+                    if not name:
+                        name = f"input_{idx + 1}"
+                    normalized_inputs.append(
+                        {
+                            "name": self._safe_param_name(name),
+                            "type": str(entry.get("type") or "string"),
+                            "description": str(entry.get("description") or "Input value"),
+                            "required": bool(entry.get("required", False)),
+                        }
+                    )
+                elif isinstance(entry, str):
+                    normalized_inputs.append(
+                        {
+                            "name": self._safe_param_name(entry),
+                            "type": "string",
+                            "description": "Input value",
+                            "required": False,
+                        }
+                    )
+
+        if not normalized_inputs:
+            normalized_inputs = [
+                {
+                    "name": "request",
+                    "type": "string",
+                    "description": "User request",
+                    "required": True,
+                }
+            ]
+
+        outputs = plan.get("outputs")
+        normalized_outputs = outputs if isinstance(outputs, list) else ["result"]
+        file_paths = plan.get("file_paths")
+        normalized_paths = file_paths if isinstance(file_paths, list) else []
+        safety_risks = plan.get("safety_risks")
+        normalized_risks = safety_risks if isinstance(safety_risks, list) else []
+        validation_plan = plan.get("validation_plan")
+        normalized_validation = validation_plan if isinstance(validation_plan, list) else []
+
+        return {
+            "tool_name": self._slugify(tool_name),
+            "purpose": purpose,
+            "inputs": normalized_inputs,
+            "outputs": normalized_outputs,
+            "file_paths": normalized_paths,
+            "safety_risks": normalized_risks,
+            "validation_plan": normalized_validation,
+            "mode": str(plan.get("mode") or "tool_builder"),
+            "risk_level": str(plan.get("risk_level") or "low"),
+        }
+
+    @staticmethod
+    def _safe_param_name(value: str) -> str:
+        slug = re.sub(r"[^a-z0-9_]+", "_", value.lower()).strip("_")
+        if not slug:
+            return "request"
+        if slug[0].isdigit():
+            slug = f"p_{slug}"
+        return slug
 
     def validate_generated_tool(self, path: str) -> dict[str, Any]:
         candidate = (self.workspace_root / path).resolve()

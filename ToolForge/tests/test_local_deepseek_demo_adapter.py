@@ -116,6 +116,60 @@ def test_create_tool_from_plan_generates_expected_files(tmp_path: Path) -> None:
     assert (generated / "README.md").exists()
 
 
+def test_validate_tool_plan_normalizes_input_names(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    result = adapter.validate_tool_plan(
+        {
+            "tool_name": "CSV fixer",
+            "purpose": "Normalize CSV files and write cleaned output safely.",
+            "inputs": [
+                {
+                    "name": "Input Path",
+                    "type": "string",
+                    "description": "Source path",
+                    "required": True,
+                }
+            ],
+        }
+    )
+
+    assert result["passed"] is True
+    assert result["normalized_plan"]["tool_name"] == "csv-fixer"
+    assert result["normalized_plan"]["inputs"][0]["name"] == "input_path"
+
+
+def test_create_tool_from_plan_writes_parameters_from_inputs(tmp_path: Path) -> None:
+    adapter = ToolForgeAdapter(tmp_path)
+    plan = {
+        "tool_name": "csv transformer",
+        "purpose": "Transform CSV rows into normalized output.",
+        "inputs": [
+            {
+                "name": "input_path",
+                "type": "string",
+                "description": "Input CSV path",
+                "required": True,
+            },
+            {
+                "name": "limit",
+                "type": "integer",
+                "description": "Optional row limit",
+                "required": False,
+            },
+        ],
+    }
+
+    result = adapter.create_tool_from_plan(plan)
+    assert result["tool_name"] == "csv-transformer"
+
+    spec_text = (
+        tmp_path / "generated_tools" / "csv-transformer" / "toolforge.yaml"
+    ).read_text(encoding="utf-8")
+    assert "- name: input_path" in spec_text
+    assert "- name: limit" in spec_text
+    assert "type: integer" in spec_text
+
+
 def test_list_generated_tools_includes_registered_metadata(tmp_path: Path) -> None:
     adapter = ToolForgeAdapter(tmp_path)
     entrypoint, working_dir = _write_dummy_tool(tmp_path)
@@ -123,8 +177,14 @@ def test_list_generated_tools_includes_registered_metadata(tmp_path: Path) -> No
 
     generated = tmp_path / "generated_tools" / "demo-tool"
     generated.mkdir(parents=True, exist_ok=True)
-    (generated / "tool.py").write_text("def run(inputs):\n    return {'ok': True}\n", encoding="utf-8")
-    (generated / "toolforge.yaml").write_text("name: demo-tool\nslug: demo-tool\n", encoding="utf-8")
+    (generated / "tool.py").write_text(
+        "def run(inputs):\n    return {'ok': True}\n",
+        encoding="utf-8",
+    )
+    (generated / "toolforge.yaml").write_text(
+        "name: demo-tool\nslug: demo-tool\n",
+        encoding="utf-8",
+    )
     (generated / "README.md").write_text("# demo-tool\n", encoding="utf-8")
     (generated / "plan.json").write_text("{}\n", encoding="utf-8")
 

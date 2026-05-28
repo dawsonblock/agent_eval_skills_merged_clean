@@ -91,6 +91,9 @@ const generatedCountBadge = document.getElementById("generatedCountBadge");
 const chatHint = document.getElementById("chatHint");
 const selectedToolCard = document.getElementById("selectedToolCard");
 const toolArgsInput = document.getElementById("toolArgsInput");
+const planEditor = document.getElementById("planEditor");
+const planInputsRows = document.getElementById("planInputsRows");
+const addPlanInputBtn = document.getElementById("addPlanInput");
 const bodyEl = document.body;
 const toggleLeftSidebar = document.getElementById("toggleLeftSidebar");
 const toggleRightSidebar = document.getElementById("toggleRightSidebar");
@@ -103,6 +106,9 @@ const useToolBtn = document.getElementById("useTool");
 const validateToolBtn = document.getElementById("validateTool");
 const runToolBtn = document.getElementById("runTool");
 const quickPrompts = document.getElementById("quickPrompts");
+const planToolBtn = document.getElementById("planTool");
+const validatePlanBtn = document.getElementById("validatePlan");
+const createToolFromPlanBtn = document.getElementById("createToolFromPlan");
 
 function nowStamp() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -292,6 +298,144 @@ function parseToolArgs() {
     addMessage("validation_error", `Invalid JSON args: ${error.message || error}`);
     return null;
   }
+}
+
+function parsePlanEditor() {
+  if (!planEditor) return null;
+  const raw = planEditor.value.trim() || "{}";
+  planEditor.classList.remove("invalid");
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
+      throw new Error("Plan must be a JSON object.");
+    }
+    return parsed;
+  } catch (error) {
+    planEditor.classList.add("invalid");
+    addMessage("validation_error", `Invalid plan JSON: ${error.message || error}`);
+    return null;
+  }
+}
+
+function parsePlanEditorQuiet() {
+  if (!planEditor) return null;
+  try {
+    const parsed = JSON.parse(planEditor.value.trim() || "{}");
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writePlanEditor(plan) {
+  if (!planEditor) return;
+  planEditor.classList.remove("invalid");
+  planEditor.value = JSON.stringify(plan || {}, null, 2);
+  renderPlanInputsForm(plan || {});
+}
+
+function normalizePlanInputs(plan) {
+  const rawInputs = Array.isArray(plan?.inputs) ? plan.inputs : [];
+  const normalized = rawInputs
+    .filter((entry) => entry && typeof entry === "object")
+    .map((entry) => ({
+      name: String(entry.name || ""),
+      type: String(entry.type || "string"),
+      description: String(entry.description || ""),
+      required: Boolean(entry.required),
+    }));
+
+  if (normalized.length) {
+    return normalized;
+  }
+
+  return [
+    {
+      name: "request",
+      type: "string",
+      description: "User request",
+      required: true,
+    },
+  ];
+}
+
+function collectPlanInputsFromForm() {
+  if (!planInputsRows) return [];
+  const rows = Array.from(planInputsRows.querySelectorAll(".plan-input-row"));
+  return rows.map((row) => {
+    const name = row.querySelector("[data-field='name']")?.value || "";
+    const type = row.querySelector("[data-field='type']")?.value || "string";
+    const description = row.querySelector("[data-field='description']")?.value || "";
+    const required = Boolean(row.querySelector("[data-field='required']")?.checked);
+    return { name, type, description, required };
+  });
+}
+
+function syncPlanEditorFromForm() {
+  if (!planEditor) return;
+  const current = parsePlanEditorQuiet();
+  if (!current) return;
+  current.inputs = collectPlanInputsFromForm();
+  planEditor.value = JSON.stringify(current, null, 2);
+}
+
+function renderPlanInputsForm(plan) {
+  if (!planInputsRows) return;
+
+  const inputTypes = ["string", "number", "integer", "boolean", "array", "object"];
+  const inputs = normalizePlanInputs(plan);
+  planInputsRows.innerHTML = "";
+
+  inputs.forEach((entry) => {
+    const row = document.createElement("div");
+    row.className = "plan-input-row";
+
+    const typeOptions = inputTypes
+      .map((inputType) => {
+        const selected = entry.type === inputType ? " selected" : "";
+        return `<option value="${escapeHtml(inputType)}"${selected}>${escapeHtml(inputType)}</option>`;
+      })
+      .join("");
+
+    row.innerHTML = `
+      <input data-field="name" placeholder="name" value="${escapeHtml(entry.name)}" />
+      <select data-field="type">${typeOptions}</select>
+      <input data-field="description" placeholder="description" value="${escapeHtml(entry.description)}" />
+      <label class="inline-toggle"><input data-field="required" type="checkbox" ${entry.required ? "checked" : ""} />required</label>
+      <button class="remove-input-btn" type="button">Remove</button>
+    `;
+
+    row.querySelectorAll("input, select").forEach((field) => {
+      field.addEventListener("input", () => {
+        syncPlanEditorFromForm();
+      });
+      field.addEventListener("change", () => {
+        syncPlanEditorFromForm();
+      });
+    });
+
+    const removeBtn = row.querySelector(".remove-input-btn");
+    if (removeBtn instanceof HTMLButtonElement) {
+      removeBtn.addEventListener("click", () => {
+        row.remove();
+        if (!planInputsRows.querySelector(".plan-input-row")) {
+          const fallback = {
+            name: "request",
+            type: "string",
+            description: "User request",
+            required: true,
+          };
+          renderPlanInputsForm({ inputs: [fallback] });
+        }
+        syncPlanEditorFromForm();
+      });
+    }
+
+    planInputsRows.appendChild(row);
+  });
 }
 
 function readBool(key) {
@@ -500,24 +644,64 @@ async function planTool() {
       body: JSON.stringify({ prompt, selected_model: selectedModel() }),
     });
     state.lastPlan = response.plan;
+    writePlanEditor(response.plan);
     addMessage("tool_plan", "Tool creation plan ready", response.plan);
   } catch (error) {
     addMessage("validation_error", error.message);
   }
 }
 
+async function validatePlan() {
+  const plan = parsePlanEditor();
+  if (!plan) return;
+
+  try {
+    const response = await request("/api/tools/plan/validate", {
+      method: "POST",
+      body: JSON.stringify({ plan }),
+    });
+    const result = response.result || {};
+    if (result.normalized_plan) {
+      state.lastPlan = result.normalized_plan;
+      writePlanEditor(result.normalized_plan);
+    }
+    const summary = result.passed
+      ? "Plan validation passed"
+      : "Plan validation found issues";
+    addMessage(response.message_type || "tool_result", summary, result);
+  } catch (error) {
+    addMessage("validation_error", error.message);
+  }
+}
+
 async function createTool() {
-  if (!state.lastPlan) {
-    addMessage("validation_error", "No plan available. Use Create Tool after planning.");
+  const draftedPlan = parsePlanEditor();
+  if (!draftedPlan) {
     return;
   }
+
   try {
+    const validation = await request("/api/tools/plan/validate", {
+      method: "POST",
+      body: JSON.stringify({ plan: draftedPlan }),
+    });
+    const validationResult = validation.result || {};
+    if (!validationResult.passed) {
+      addMessage("validation_error", "Fix plan validation errors before create.", validationResult);
+      return;
+    }
+
+    state.lastPlan = validationResult.normalized_plan || draftedPlan;
+    writePlanEditor(state.lastPlan);
+
     const response = await request("/api/tools/create", {
       method: "POST",
       body: JSON.stringify({ plan: state.lastPlan, allow_overwrite: false }),
     });
     addMessage("tool_result", "Tool generated", response.result);
     await loadTools();
+    await loadGeneratedTools();
+    activateTab("generated_tools");
   } catch (error) {
     addMessage("validation_error", error.message);
   }
@@ -632,9 +816,6 @@ chatMode.addEventListener("change", () => {
   } else {
     chatInput.placeholder = "Describe the tool you want to generate, including inputs, outputs, and safety constraints.";
   }
-  if (chatMode.value === "tool_builder") {
-    planTool();
-  }
   updateModeUi();
 });
 
@@ -646,6 +827,38 @@ toolSearch.addEventListener("input", () => {
 toolArgsInput.addEventListener("input", () => {
   toolArgsInput.classList.remove("invalid");
 });
+
+if (planEditor) {
+  planEditor.addEventListener("input", () => {
+    planEditor.classList.remove("invalid");
+    try {
+      const parsed = JSON.parse(planEditor.value || "{}");
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        renderPlanInputsForm(parsed);
+      }
+    } catch {
+      // Ignore transient JSON parse errors while typing.
+    }
+  });
+}
+
+if (addPlanInputBtn) {
+  addPlanInputBtn.addEventListener("click", () => {
+    const current = parsePlanEditor();
+    if (!current) {
+      return;
+    }
+    const nextInputs = normalizePlanInputs(current);
+    nextInputs.push({
+      name: "new_input",
+      type: "string",
+      description: "",
+      required: false,
+    });
+    current.inputs = nextInputs;
+    writePlanEditor(current);
+  });
+}
 
 generatedToolSearch.addEventListener("input", () => {
   applyGeneratedToolFilter();
@@ -761,6 +974,16 @@ deleteTemplateBtn.addEventListener("click", () => {
   renderPromptTemplates();
 });
 
+if (planToolBtn) {
+  planToolBtn.addEventListener("click", planTool);
+}
+if (validatePlanBtn) {
+  validatePlanBtn.addEventListener("click", validatePlan);
+}
+if (createToolFromPlanBtn) {
+  createToolFromPlanBtn.addEventListener("click", createTool);
+}
+
 (async () => {
   try {
     await loadHealth();
@@ -774,6 +997,7 @@ deleteTemplateBtn.addEventListener("click", () => {
     applySidebarState();
     setCompactDensity(readBool(STORAGE_KEYS.compactDensity));
     renderSelectionState();
+    renderPlanInputsForm({});
   } catch (error) {
     addMessage("validation_error", error.message);
   }

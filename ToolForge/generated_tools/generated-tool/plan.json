@@ -1,0 +1,37 @@
+{
+  "id": "081da01f-5f09-4b71-8782-9f60660b056c",
+  "model": "deepseek-v4-flash",
+  "message": {
+    "role": "assistant",
+    "content": "## Goal\nExtract text content from PDF files and output as structured markdown.\n\n## Inputs\n- `pdf_path` (string, required): Absolute path to the PDF file\n- `output_format` (string, optional): \"markdown\" (default) or \"text\"\n\n## Outputs\n- Extracted text content in specified format\n- Metadata: page count, file size, creation date (if available)\n\n## Files\n- `generated_tools/pdf_scraper/extract.py` \u2014 main extraction logic\n- `generated_tools/pdf_scraper/requirements.txt` \u2014 dependencies\n- `generated_tools/pdf_scraper/README.md` \u2014 usage instructions\n\n## Safety Checks\n1. Verify `pdf_path` exists and is a regular file\n2. Validate file extension is `.pdf` (case-insensitive)\n3. Check file size < 100MB to prevent memory issues\n4. Confirm user has read permissions\n5. Do not execute any embedded JavaScript or actions in PDF\n\n## Test Plan\n1. **Happy path**: Extract text from a standard text-based PDF\n2. **Scanned PDF**: Return warning that OCR is not supported; suggest external OCR tool\n3. **Empty PDF**: Return empty string with page count 0\n4. **Corrupted PDF**: Return clear error message\n5. **Permission denied**: Return specific permission error\n6. **Large file (>100MB)**: Return size limit error\n\n## Implementation Notes\n- Use `PyMuPDF` (fitz) for extraction \u2014 lightweight and fast\n- For markdown output: preserve headings by detecting font size changes (>2pt difference from body)\n- For text output: plain extraction with page breaks as `\\n---\\n`\n- Return metadata as YAML frontmatter in markdown mode"
+  },
+  "tool_calls": null,
+  "raw": {
+    "id": "081da01f-5f09-4b71-8782-9f60660b056c",
+    "object": "chat.completion",
+    "created": 1780000120,
+    "model": "deepseek-v4-flash",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "## Goal\nExtract text content from PDF files and output as structured markdown.\n\n## Inputs\n- `pdf_path` (string, required): Absolute path to the PDF file\n- `output_format` (string, optional): \"markdown\" (default) or \"text\"\n\n## Outputs\n- Extracted text content in specified format\n- Metadata: page count, file size, creation date (if available)\n\n## Files\n- `generated_tools/pdf_scraper/extract.py` \u2014 main extraction logic\n- `generated_tools/pdf_scraper/requirements.txt` \u2014 dependencies\n- `generated_tools/pdf_scraper/README.md` \u2014 usage instructions\n\n## Safety Checks\n1. Verify `pdf_path` exists and is a regular file\n2. Validate file extension is `.pdf` (case-insensitive)\n3. Check file size < 100MB to prevent memory issues\n4. Confirm user has read permissions\n5. Do not execute any embedded JavaScript or actions in PDF\n\n## Test Plan\n1. **Happy path**: Extract text from a standard text-based PDF\n2. **Scanned PDF**: Return warning that OCR is not supported; suggest external OCR tool\n3. **Empty PDF**: Return empty string with page count 0\n4. **Corrupted PDF**: Return clear error message\n5. **Permission denied**: Return specific permission error\n6. **Large file (>100MB)**: Return size limit error\n\n## Implementation Notes\n- Use `PyMuPDF` (fitz) for extraction \u2014 lightweight and fast\n- For markdown output: preserve headings by detecting font size changes (>2pt difference from body)\n- For text output: plain extraction with page breaks as `\\n---\\n`\n- Return metadata as YAML frontmatter in markdown mode"
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 90,
+      "completion_tokens": 376,
+      "total_tokens": 466,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 90
+    },
+    "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+  }
+}

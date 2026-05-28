@@ -7,6 +7,7 @@ import zipfile
 from pathlib import Path
 from skillforge_ai.orchestrator import AIOrchestrator
 from skillforge_ai.planner import PlannerResult, SkillPlanner
+from skillforge_ai.response_cleaner import clean_response_text
 from skillforge_ai.skill_registry import SkillRegistry
 from skillforge_ai.tool_registry import SkillForgeRegistry
 
@@ -32,7 +33,7 @@ class ChatRuntime:
         return {
             "mode": plan.mode,
             "skill_name": plan.skill_name,
-            "response": response,
+            "response": clean_response_text(response),
         }
 
     def _dispatch_plan(self, plan: PlannerResult, message: str) -> str:

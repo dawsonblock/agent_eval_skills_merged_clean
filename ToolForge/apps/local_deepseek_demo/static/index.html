@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Local DeepSeek Tool UI Demo</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260527c" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260528a" />
   </head>
   <body>
     <header class="topbar">
@@ -79,6 +79,24 @@
             <textarea id="chatInput" placeholder="Ask DeepSeek to chat, use tools, or design a new tool..."></textarea>
             <button id="sendBtn">Send</button>
           </div>
+          <div class="view-toolbar split">
+            <span class="muted-note">Tool builder workflow: plan -> refine -> validate -> create.</span>
+            <div class="actions">
+              <button id="planTool" type="button">Plan Tool</button>
+              <button id="validatePlan" type="button">Validate Plan</button>
+              <button id="createToolFromPlan" type="button">Create From Plan</button>
+            </div>
+          </div>
+          <label for="planEditor">Tool Plan (JSON)</label>
+          <textarea id="planEditor" class="args-input" placeholder='{"tool_name":"example","purpose":"...","inputs":[{"name":"request","type":"string"}]}'></textarea>
+          <div class="plan-inputs-card">
+            <div class="view-toolbar split">
+              <strong>Plan Inputs (Form)</strong>
+              <button id="addPlanInput" type="button">Add Input</button>
+            </div>
+            <div id="planInputsRows" class="plan-inputs-rows"></div>
+          </div>
+          <div class="muted-note">Edit inputs, types, and descriptions before create.</div>
         </div>
 
         <div id="generatedToolsView" class="tab-view">
@@ -125,6 +143,6 @@
       <pre id="outputViewer" class="pre"></pre>
     </section>
 
-    <script src="/static/app.js?v=20260527c"></script>
+    <script src="/static/app.js?v=20260528a"></script>
   </body>
 </html>

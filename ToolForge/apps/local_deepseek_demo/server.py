@@ -18,6 +18,7 @@ from packages.providers.deepseek_client import (
     DeepSeekClient,
     DeepSeekClientError,
 )
+from skillforge_ai.response_cleaner import clean_response_text
 
 
 load_dotenv()
@@ -79,6 +80,10 @@ class ToolPlanRequest(BaseModel):
 class ToolCreateRequest(BaseModel):
     plan: dict[str, Any]
     allow_overwrite: bool = False
+
+
+class ToolPlanValidateRequest(BaseModel):
+    plan: dict[str, Any]
 
 
 class ToolValidateRequest(BaseModel):
@@ -212,14 +217,14 @@ async def chat(request: ChatRequest) -> dict[str, Any]:
     if request.mode == "tool_builder":
         return {
             "message_type": "tool_plan",
-            "assistant": content,
+            "assistant": clean_response_text(str(content or "")),
             "tool_suggestions": suggestions,
             "raw": response,
         }
 
     return {
         "message_type": "assistant",
-        "assistant": content,
+        "assistant": clean_response_text(str(content or "")),
         "tool_suggestions": suggestions,
         "raw": response,
     }
@@ -306,6 +311,19 @@ def tools_create(request: ToolCreateRequest) -> dict[str, Any]:
 
     return {
         "message_type": "tool_result",
+        "result": result,
+    }
+
+
+@app.post("/api/tools/plan/validate")
+def tools_plan_validate(request: ToolPlanValidateRequest) -> dict[str, Any]:
+    try:
+        result = adapter.validate_tool_plan(request.plan)
+    except AdapterError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return {
+        "message_type": "tool_result" if result.get("passed") else "validation_error",
         "result": result,
     }
 
@@ -402,8 +420,10 @@ def _build_mode_instruction(mode: str) -> str:
     if mode == "tool_builder":
         return (
             base
-            + " In tool_builder mode, produce practical implementation guidance for generated tools. "
-            "Keep outputs structured with sections: Goal, Inputs, Outputs, Files, Safety Checks, Test Plan. "
+            + " In tool_builder mode, produce practical implementation guidance "
+            "for generated tools. "
+            "Keep outputs structured with sections: Goal, Inputs, Outputs, Files, "
+            "Safety Checks, Test Plan. "
             "All file paths must stay under generated_tools/."
         )
     return (

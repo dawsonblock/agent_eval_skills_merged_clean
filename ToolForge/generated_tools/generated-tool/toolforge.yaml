@@ -1,0 +1,21 @@
+name: generated-tool
+slug: generated-tool
+description: Generated from ToolForge local demo
+language: python
+entry_point: tool.py
+parameters:
+  - name: request
+    type: string
+    description: User request
+    required: false
+output:
+  type: object
+  description: Result payload
+security:
+  required_capabilities: [read_files, write_files]
+  requires_network: false
+  requires_shell: false
+  requires_filesystem: true
+  allowed_read_paths: ['./generated_tools/**']
+  allowed_write_paths: ['./generated_tools/_outputs/**']
+sandbox_level: 2
