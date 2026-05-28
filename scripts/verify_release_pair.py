@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import sys
@@ -28,29 +29,65 @@ def _normalize_rel(path_value: str) -> str:
     return text
 
 
+def _resolve_artifact_path(path_value: str) -> Path:
+    candidate = Path(path_value)
+    if candidate.is_absolute():
+        return candidate
+    normalized = path_value.replace("\\", "/")
+    if normalized.startswith("release_artifacts/"):
+        return ROOT / normalized
+    return ROOT / "release_artifacts" / normalized
+
+
 def main() -> int:
-    if not LOCK.exists():
-        print(f"FAIL: missing {LOCK}")
+    parser = argparse.ArgumentParser(description="Verify canonical release/evidence pairing")
+    parser.add_argument("--release", type=Path)
+    parser.add_argument("--evidence", type=Path)
+    parser.add_argument("--lock", type=Path, default=LOCK)
+    parser.add_argument(
+        "--pre-evidence",
+        action="store_true",
+        help="Verify release lock/hash/hygiene before evidence zip exists",
+    )
+    args = parser.parse_args()
+
+    lock_path = args.lock
+    if not lock_path.exists():
+        print(f"FAIL: missing {lock_path}")
         return 1
 
-    lock = json.loads(LOCK.read_text(encoding="utf-8"))
-    release = ROOT / "release_artifacts" / lock["release_zip"]
-    evidence = ROOT / "release_artifacts" / lock["evidence_zip"]
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    release = args.release if args.release else _resolve_artifact_path(str(lock["release_zip"]))
+    evidence = args.evidence if args.evidence else _resolve_artifact_path(str(lock["evidence_zip"]))
 
     if not release.exists():
         print(f"FAIL: missing release ZIP: {release}")
         return 1
-    if not evidence.exists():
+
+    if not args.pre_evidence and not evidence.exists():
         print(f"FAIL: missing evidence ZIP: {evidence}")
         return 1
 
     actual_release = sha256(release)
-    actual_evidence = sha256(evidence)
     if actual_release != lock["release_sha256"]:
         print("FAIL: release hash mismatch")
         print(f"lock:   {lock['release_sha256']}")
         print(f"actual: {actual_release}")
         return 1
+
+    hygiene = run(
+        [sys.executable, str(ROOT / "scripts" / "check_source_bundle_hygiene.py"), str(release)],
+        cwd=ROOT,
+        text=True,
+    )
+    if hygiene.returncode != 0:
+        return hygiene.returncode
+
+    if args.pre_evidence:
+        print("PASS: release pre-evidence checks verified")
+        return 0
+
+    actual_evidence = sha256(evidence)
     if actual_evidence != lock["evidence_sha256"]:
         print("FAIL: evidence hash mismatch")
         print(f"lock:   {lock['evidence_sha256']}")
@@ -104,13 +141,6 @@ def main() -> int:
         print(f"lock:     {lock['release_sha256']}")
         print(f"evidence: {release_hashes.get('release_sha256')}")
         return 1
-    hygiene = run(
-        [sys.executable, str(ROOT / "scripts" / "check_source_bundle_hygiene.py"), str(release)],
-        cwd=ROOT,
-        text=True,
-    )
-    if hygiene.returncode != 0:
-        return hygiene.returncode
 
     print("PASS: release/evidence pair verified")
     return 0

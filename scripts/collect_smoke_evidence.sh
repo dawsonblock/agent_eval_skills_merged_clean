@@ -12,6 +12,12 @@ mkdir -p "$LOG_DIR"
 export TOOLATHLON_PROFILE=smoke
 export ENFORCE_RC_SMOKE_PROFILE=1
 
+CANONICAL_RELEASE="$ROOT/release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip"
+if [ ! -f "$CANONICAL_RELEASE" ]; then
+    echo "Canonical release ZIP missing; building..."
+    python3 "$ROOT/scripts/build_pruned_smoke_release.py"
+fi
+
 python3 --version | tee "$LOG_DIR/environment_python.txt"
 node --version | tee "$LOG_DIR/environment_node.txt"
 npm --version | tee "$LOG_DIR/environment_npm.txt"
@@ -68,11 +74,15 @@ PY
     ./scripts/run_smoke_profile.sh | tee -a "$LOG_DIR/test_results_toolathlon.txt"
 )
 
+python3 "$ROOT/scripts/verify_release_pair.py" --pre-evidence \
+    | tee "$LOG_DIR/release_pair_verification.txt"
+
+python3 "$ROOT/scripts/sanitize_release_paths.py"
+
 python3 "$ROOT/scripts/write_validation_summary.py" \
     --logs-dir "$LOG_DIR" \
     --out "$LOG_DIR/validation_summary.json"
 
-python3 "$ROOT/scripts/sanitize_release_paths.py"
 python3 "$ROOT/scripts/build_evidence_zip.py" \
   --logs "$LOG_DIR" \
   --out "$EVIDENCE_ZIP" \
@@ -89,6 +99,9 @@ with p.open('rb') as f:
 print(h.hexdigest())
 PY
 )"
+
+python3 "$ROOT/scripts/verify_release_pair.py" \
+    | tee "$LOG_DIR/release_pair_verification.txt"
 
 python3 - <<'PY'
 import hashlib

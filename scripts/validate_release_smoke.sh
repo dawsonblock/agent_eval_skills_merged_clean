@@ -21,33 +21,18 @@ if [ ! -f "$CANONICAL_RELEASE" ]; then
     python scripts/build_pruned_smoke_release.py
 fi
 
-echo "Running ToolForge tests..."
-cd "$ROOT_DIR/ToolForge"
-python -m pytest -q | tee "$LOG_DIR/test_results_toolforge.txt"
-toolforge doctor | tee "$LOG_DIR/toolforge_doctor.txt"
-
-echo "Running Agent Skills validation..."
-cd "$ROOT_DIR/agent-skills-curated"
-node bin/cli.js list | tee "$LOG_DIR/agent_skills_list.txt"
-node bin/cli.js eval --json > "$LOG_DIR/agent_skills_summary.json"
-node scripts/validate_packages.js | tee "$LOG_DIR/agent_skill_packages.txt"
-
-echo "Running Toolathlon smoke validation..."
-cd "$ROOT_DIR/toolathlon-gym-curated"
-./scripts/build_smoke_artifacts.sh | tee "$LOG_DIR/toolathlon_build_smoke.txt"
-./scripts/run_smoke_profile.sh | tee "$LOG_DIR/toolathlon_smoke.txt"
-
-echo "Running secret fixture policy check..."
-cd "$ROOT_DIR"
-python scripts/check_for_real_secrets.py | tee "$LOG_DIR/secrets_scan.txt"
-
-echo "Sanitizing absolute paths from evidence logs..."
-python scripts/sanitize_release_paths.py
+echo "Collecting smoke evidence and building evidence ZIP..."
+bash "$ROOT_DIR/scripts/collect_smoke_evidence.sh"
 
 echo "Running canonical release/evidence pair verification..."
-python scripts/verify_release_pair.py | tee "$LOG_DIR/release_pair_verification.txt"
+python "$ROOT_DIR/scripts/verify_release_pair.py" | tee "$LOG_DIR/release_pair_verification.txt"
 
-python scripts/write_validation_summary.py
+python "$ROOT_DIR/scripts/write_validation_summary.py" \
+    --logs-dir "$LOG_DIR" \
+    --out "$LOG_DIR/validation_summary.json"
+
+python "$ROOT_DIR/scripts/build_evidence_zip.py" \
+    --logs "$LOG_DIR"
 
 # Step 5: Run root tests last — they require the canonical release ZIP and
 # evidence to already exist so all archive/hash assertions can pass.
