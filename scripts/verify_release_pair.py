@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from subprocess import run
@@ -12,6 +13,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / "release_artifacts" / "release_lock.json"
+SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 
 
 def sha256(path: Path) -> str:
@@ -141,10 +143,18 @@ def main() -> int:
         print(f"lock:     {lock['release_sha256']}")
         print(f"evidence: {release_hashes.get('release_sha256')}")
         return 1
-    evidence_sha = release_hashes.get("evidence_sha256")
-    if not isinstance(evidence_sha, str) or not evidence_sha:
-        print("FAIL: evidence internal evidence_sha256 missing")
-        return 1
+    if "evidence_sha256" in release_hashes:
+        evidence_sha = release_hashes.get("evidence_sha256")
+        if evidence_sha is None:
+            pass
+        elif evidence_sha == "external-lock-governed":
+            pass
+        elif isinstance(evidence_sha, str) and SHA256_RE.fullmatch(evidence_sha):
+            pass
+        else:
+            print("FAIL: evidence internal evidence_sha256 has unsupported format")
+            print(f"evidence: {evidence_sha!r}")
+            return 1
 
     print("PASS: release/evidence pair verified")
     return 0

@@ -42,8 +42,6 @@ SOURCE_INCLUDE = [
     "VALIDATION_EVIDENCE.md",
     "RELEASE_ATTESTATION_2026-05-27.md",
     "release_artifacts/release_identity.generated.json",
-    "release_artifacts/RELEASE_HANDOFF_2026-05-27.md",
-    "release_artifacts/RELEASE_HANDOFF_2026-05-28.md",
     "setup.cfg",
     "pyrightconfig.json",
     "pytest.ini",
@@ -71,6 +69,12 @@ FIXED_DATE = (2026, 5, 27, 0, 0, 0)
 def should_exclude(path: Path) -> bool:
     rel = path.relative_to(ROOT)
     if rel.parts[:2] == ("release_artifacts", "validation_logs"):
+        return True
+    if rel.parts[:2] == ("release_artifacts", "withdrawn"):
+        return True
+    if rel.parts[:2] == ("release_artifacts", "archived"):
+        return True
+    if rel.parts and rel.parts[0] == "release_artifacts" and "2026-05-28" in rel.name:
         return True
     if any(part in EXCLUDE_PARTS for part in rel.parts):
         return True

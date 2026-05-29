@@ -6,7 +6,7 @@ Release SHA256:
 Canonical evidence ZIP:
 `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
 Evidence SHA256:
-`33153c2ccaa699082084cea3485bf5cba91955edc53d023692fe7b8b7ee275ae`
+`84f1c798093d5e8063078765458936804d38fc9d2ccfc9c5ea87a3218ee06d20`
 Validation profile:
 `smoke`
 Status:

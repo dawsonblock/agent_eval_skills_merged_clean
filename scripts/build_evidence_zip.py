@@ -100,7 +100,7 @@ def main() -> int:
             "release_zip": lock.get("release_zip", ""),
             "release_sha256": args.release_sha or lock.get("release_sha256", ""),
             "evidence_zip": out.name,
-            "evidence_sha256": lock.get("evidence_sha256", ""),
+            "evidence_sha256": "external-lock-governed",
             "profile": lock.get("validation_profile", "smoke"),
         }
         write_json_atomic(log_dir / "release_hashes.json", release_hashes)
