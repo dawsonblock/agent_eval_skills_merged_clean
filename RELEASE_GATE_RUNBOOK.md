@@ -84,6 +84,36 @@ make operator-release-upload-triage \
    JSON_OUTPUT=.validation_logs/release_upload_triage_verdict.json
 ```
 
+## Final Upload Wrapper Build (Required)
+
+Build the final upload wrapper only with:
+
+```bash
+python3 scripts/build_upload_wrapper.py --out /tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip
+```
+
+Do not use `scripts/create_release_zip.sh` or `scripts/package_clean_zip.sh` to produce the final upload wrapper.
+Those scripts are not the authoritative wrapper build path and can include redundant non-canonical payload.
+
+Required wrapper verification sequence:
+
+```bash
+python3 scripts/verify_release_pair.py
+python3 scripts/check_release_hash_consistency.py
+python3 scripts/check_source_bundle_hygiene.py /tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip
+bash scripts/verify_source_bundle_hygiene.sh --zip /tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip
+python3 - <<'PY'
+import zipfile
+z = '/tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip'
+with zipfile.ZipFile(z) as f:
+   has_raw_logs = any(n.startswith('agent_eval_skills_merged_clean-main/release_artifacts/validation_logs/') for n in f.namelist())
+print('HAS_RELEASE_ARTIFACT_VALIDATION_LOGS=', has_raw_logs)
+raise SystemExit(1 if has_raw_logs else 0)
+PY
+```
+
+Required result: `HAS_RELEASE_ARTIFACT_VALIDATION_LOGS= False`.
+
 ## Required Checks
 
 Configure these as required checks on the release path:

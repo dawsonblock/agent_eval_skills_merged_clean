@@ -39,7 +39,7 @@ make skillforge-evidence-bundle
   - `rail_12306`
   - `filesystem`
 
-## 2) Clean ZIP Packaging
+## 2) Canonical Release ZIP Packaging
 
 Build:
 
@@ -54,6 +54,38 @@ unzip -l agent_eval_skills_merged_clean-pruned-smoke.zip | grep -E "__MACOSX|/\.
 ```
 
 Expected: no output.
+
+## 2b) Final Upload Wrapper Packaging (required for uploaded wrapper artifact)
+
+Build:
+
+```bash
+python3 scripts/build_upload_wrapper.py --out /tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip
+```
+
+Important:
+
+- Do not use `scripts/create_release_zip.sh` or `scripts/package_clean_zip.sh` to build the final upload wrapper.
+- The final upload wrapper must include canonical release artifacts and exclude raw `release_artifacts/validation_logs/`.
+
+Verify wrapper integrity:
+
+```bash
+python3 scripts/verify_release_pair.py
+python3 scripts/check_release_hash_consistency.py
+python3 scripts/check_source_bundle_hygiene.py /tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip
+bash scripts/verify_source_bundle_hygiene.sh --zip /tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip
+python3 - <<'PY'
+import zipfile
+z = '/tmp/agent_eval_skills_merged_clean-final-upload-wrapper.zip'
+with zipfile.ZipFile(z) as f:
+  has_raw_logs = any(n.startswith('agent_eval_skills_merged_clean-main/release_artifacts/validation_logs/') for n in f.namelist())
+print('HAS_RELEASE_ARTIFACT_VALIDATION_LOGS=', has_raw_logs)
+raise SystemExit(1 if has_raw_logs else 0)
+PY
+```
+
+Required result: `HAS_RELEASE_ARTIFACT_VALIDATION_LOGS= False`.
 
 ## 3) Toolathlon Smoke Build (fresh)
 
