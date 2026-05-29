@@ -7,7 +7,7 @@ Release SHA256:
 Evidence ZIP:
 `agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip`
 Evidence SHA256:
-`b60e9b919da192253442f6f72be35e662f697dcaa56ed5b71f353820a2f5d215`
+`16e9a433c5b1f223fea3a263cc33c1447ecb386b10bb2a78a2947ebe9ea2fba8`
 Validation profile:
 `smoke`
 Status:
@@ -18,4 +18,4 @@ curated skill packaging.
 Non-scope:
 - Not a production deployment package.
 - Not a full Toolathlon release.
-- Not a security-audited production benchmark environment.
+- Not a security-audited package.

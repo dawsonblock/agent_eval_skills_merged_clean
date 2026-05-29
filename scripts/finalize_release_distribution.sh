@@ -71,7 +71,7 @@ PYEOF
 fi
 
 source_bundle_mode=0
-if [ "$release_classification" = "SOURCE_BUNDLE" ]; then
+if [ "$release_classification" = "SOURCE_BUNDLE" ] || [ "$release_classification" = "SOURCE_BUNDLE_WITH_CANONICAL_SMOKE_RELEASE" ]; then
   source_bundle_mode=1
 fi
 

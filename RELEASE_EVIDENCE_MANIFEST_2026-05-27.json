@@ -1,15 +1,12 @@
 {
   "repository": "agent_eval_skills_merged_clean",
   "branch": "main",
-  "commit": "cebce44",
-  "generated_at_utc": "2026-05-27T06:45:00Z",
   "attestation_event_date": "2026-05-27",
-  "attestation_scope": "repo-local exact artifact pair",
-  "workspace_classification": "SOURCE_BUNDLE",
+  "workspace_classification": "SOURCE_BUNDLE_WITH_CANONICAL_SMOKE_RELEASE",
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
   "release_zip_sha256": "92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad",
   "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip",
-  "evidence_zip_sha256": "b60e9b919da192253442f6f72be35e662f697dcaa56ed5b71f353820a2f5d215",
+  "evidence_zip_sha256": "16e9a433c5b1f223fea3a263cc33c1447ecb386b10bb2a78a2947ebe9ea2fba8",
   "validated_scope": [
     "ToolForge",
     "Agent Skills",
@@ -24,33 +21,7 @@
   ],
   "archive": {
     "path": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "sha256": "92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad",
-    "forbidden_entries_scan": "passed"
+    "sha256": "92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad"
   },
-  "archive_sha256": "92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad",
-  "validation_summary": {
-    "overall_status": "passed",
-    "failed_phase_count": 0,
-    "python_version": "3.12.12",
-    "capabilities": {
-      "docker_available": true,
-      "docker_requested": false,
-      "integration_requested": false,
-      "rc_smoke_gate_enforced": true,
-      "toolathlon_profile": "smoke",
-      "toolforge_python_supported": true
-    }
-  },
-  "toolathlon_artifact_build_summary": {
-    "profile": "smoke",
-    "overall_status": "passed",
-    "expected_package_count": 2,
-    "package_count": 2,
-    "passed_count": 2,
-    "failed_count": 0
-  },
-  "notes": [
-    "This manifest records a repo-local attestation event for the exact artifact pair currently on disk.",
-    "It does not convert the mutable workspace into a new canonical distribution event."
-  ]
+  "archive_sha256": "92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad"
 }

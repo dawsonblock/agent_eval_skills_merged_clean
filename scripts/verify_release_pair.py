@@ -141,6 +141,10 @@ def main() -> int:
         print(f"lock:     {lock['release_sha256']}")
         print(f"evidence: {release_hashes.get('release_sha256')}")
         return 1
+    evidence_sha = release_hashes.get("evidence_sha256")
+    if not isinstance(evidence_sha, str) or not evidence_sha:
+        print("FAIL: evidence internal evidence_sha256 missing")
+        return 1
 
     print("PASS: release/evidence pair verified")
     return 0

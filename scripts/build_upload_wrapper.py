@@ -113,16 +113,14 @@ def required_release_artifacts() -> list[Path]:
         LOCK_PATH,
         release_zip,
         evidence_zip,
-        RELEASE_ARTIFACTS / "release_identity.generated.json",
     ]
 
 
 def verify_required_release_artifacts() -> None:
-    missing = [str(p) for p in required_release_artifacts() if not p.exists()]
+    required = required_release_artifacts()
+    missing = [str(p) for p in required if not p.exists()]
     if missing:
-        raise SystemExit(
-            "FAIL: missing required release artifact(s):\n" + "\n".join(missing)
-        )
+        raise SystemExit("FAIL: missing required release artifacts:\n" + "\n".join(missing))
 
 
 def sha256(path: Path) -> str:

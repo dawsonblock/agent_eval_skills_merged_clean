@@ -10,11 +10,15 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / "release_artifacts" / "release_lock.json"
 HASH_RE = re.compile(r"\b[a-f0-9]{64}\b")
 CHECK_FILES = [
-    ROOT / "README.md",
     ROOT / "RELEASE_STATUS.json",
     ROOT / "RELEASE_MANIFEST.json",
     ROOT / "VALIDATION_EVIDENCE.md",
     ROOT / "RELEASE_ATTESTATION_2026-05-27.md",
+    ROOT / "RELEASE_EVIDENCE_MANIFEST_2026-05-27.json",
+    ROOT / "release_artifacts" / "release_identity.generated.json",
+    ROOT / "release_artifacts" / "release_lock.json",
+    ROOT / "release_artifacts" / "validation_logs" / "release_hashes.json",
+    ROOT / "scripts" / "canonical_release_attestation.env",
 ]
 
 

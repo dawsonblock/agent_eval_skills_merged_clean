@@ -101,11 +101,6 @@ def main() -> int:
             "release_sha256": args.release_sha or lock.get("release_sha256", ""),
             "evidence_zip": out.name,
             "evidence_sha256": lock.get("evidence_sha256", ""),
-            "evidence_sha256_source": "release_lock.json",
-            "evidence_sha256_note": (
-                "authoritative value is read from release_lock.json "
-                "after evidence build completes"
-            ),
             "profile": lock.get("validation_profile", "smoke"),
         }
         write_json_atomic(log_dir / "release_hashes.json", release_hashes)
@@ -133,6 +128,14 @@ def main() -> int:
         lock["evidence_zip"] = out.name
         lock["evidence_sha256"] = digest
         write_json_atomic(lock_path, lock)
+        release_hashes = {
+            "release_zip": lock.get("release_zip", ""),
+            "release_sha256": lock.get("release_sha256", ""),
+            "evidence_zip": out.name,
+            "evidence_sha256": digest,
+            "profile": lock.get("validation_profile", "smoke"),
+        }
+        write_json_atomic(log_dir / "release_hashes.json", release_hashes)
         print(f"Updated {lock_path}")
 
     return 0

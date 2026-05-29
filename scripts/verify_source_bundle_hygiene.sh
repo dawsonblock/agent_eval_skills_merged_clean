@@ -111,11 +111,11 @@ import json, sys
 d = json.load(open(sys.argv[1]))
 print(d.get('release_classification', ''))
 " "$RELEASE_STATUS_JSON")"
-  if [ "$CLASSIFICATION" = "SOURCE_BUNDLE" ]; then
-    pass "release_classification=SOURCE_BUNDLE"
+  if [ "$CLASSIFICATION" = "SOURCE_BUNDLE" ] || [ "$CLASSIFICATION" = "SOURCE_BUNDLE_WITH_CANONICAL_SMOKE_RELEASE" ]; then
+    pass "release_classification is an allowed source-bundle mode"
   else
     if [ -n "$CLASSIFICATION" ]; then
-      fail "release_classification expected SOURCE_BUNDLE, got: $CLASSIFICATION"
+      fail "release_classification expected SOURCE_BUNDLE or SOURCE_BUNDLE_WITH_CANONICAL_SMOKE_RELEASE, got: $CLASSIFICATION"
     else
       pass "release_classification field absent (acceptable for older format)"
     fi

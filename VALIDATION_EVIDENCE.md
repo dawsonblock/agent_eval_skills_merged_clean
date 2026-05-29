@@ -6,7 +6,7 @@ Release SHA256:
 Canonical evidence ZIP:
 `agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip`
 Evidence SHA256:
-`b60e9b919da192253442f6f72be35e662f697dcaa56ed5b71f353820a2f5d215`
+`16e9a433c5b1f223fea3a263cc33c1447ecb386b10bb2a78a2947ebe9ea2fba8`
 Validation profile:
 `smoke`
 Status:
@@ -17,3 +17,4 @@ Limitations:
 - Agent Skills structural validation is release-gated.
 - Agent Skills quality warnings remain.
 - This package is not approved for production deployment.
+- This package is not security-audited.

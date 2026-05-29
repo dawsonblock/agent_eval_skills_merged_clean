@@ -102,7 +102,9 @@ import sys
 
 with open(sys.argv[1], 'r', encoding='utf-8') as fh:
     data = json.load(fh)
-raise SystemExit(0 if data.get('release_classification') == 'SOURCE_BUNDLE' else 1)
+classification = data.get('release_classification')
+allowed = {'SOURCE_BUNDLE', 'SOURCE_BUNDLE_WITH_CANONICAL_SMOKE_RELEASE'}
+raise SystemExit(0 if classification in allowed else 1)
 PYEOF
 then
   manifest_release_sha="$release_sha_actual"
