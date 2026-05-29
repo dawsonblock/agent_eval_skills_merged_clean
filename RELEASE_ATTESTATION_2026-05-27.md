@@ -5,9 +5,9 @@ Release ZIP:
 Release SHA256:
 `92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad`
 Evidence ZIP:
-`agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip`
+`agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
 Evidence SHA256:
-`16e9a433c5b1f223fea3a263cc33c1447ecb386b10bb2a78a2947ebe9ea2fba8`
+`33153c2ccaa699082084cea3485bf5cba91955edc53d023692fe7b8b7ee275ae`
 Validation profile:
 `smoke`
 Status:
