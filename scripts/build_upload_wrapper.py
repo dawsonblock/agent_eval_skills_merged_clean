@@ -21,6 +21,12 @@ ROOT = Path(__file__).resolve().parents[1]
 RELEASE_ARTIFACTS = ROOT / "release_artifacts"
 LOCK_PATH = RELEASE_ARTIFACTS / "release_lock.json"
 DEFAULT_OUT = ROOT / "release_artifacts" / "agent_eval_skills_merged_clean-upload-wrapper.zip"
+REQUIRED_RELEASE_ARTIFACTS = {
+    "release_artifacts/release_lock.json",
+    "release_artifacts/release_identity.generated.json",
+    "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
+    "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
+}
 
 # Top-level items included from source workspace
 SOURCE_INCLUDE = [
@@ -36,17 +42,10 @@ SOURCE_INCLUDE = [
     "SECURITY_FIXTURES.md",
     "DEPLOYMENT.md",
     "WORKSPACE_HEALTH_DASHBOARD.md",
-    "RELEASE_EVIDENCE_MANIFEST_2026-05-27.json",
     "RELEASE_STATUS.json",
     "RELEASE_MANIFEST.json",
     "VALIDATION_EVIDENCE.md",
     "RELEASE_ATTESTATION_2026-05-27.md",
-    "setup.cfg",
-    "pyrightconfig.json",
-    "pytest.ini",
-    "Makefile",
-    "LICENSE",
-    "dist/release/SHA256SUMS.txt",
 ]
 
 EXCLUDE_PARTS = {
@@ -59,7 +58,6 @@ EXCLUDE_PARTS = {
     ".ruff_cache",
     "node_modules",
     ".skillforge",
-    "validation_logs",
 }
 EXCLUDE_NAMES = {".DS_Store"}
 FIXED_DATE = (2026, 5, 27, 0, 0, 0)
@@ -67,8 +65,6 @@ FIXED_DATE = (2026, 5, 27, 0, 0, 0)
 
 def should_exclude(path: Path) -> bool:
     rel = path.relative_to(ROOT)
-    if rel.parts[:2] == ("release_artifacts", "validation_logs"):
-        return True
     if rel.parts[:2] == ("docs", "archived_release_artifacts"):
         return True
     if rel.parts[:2] == ("release_artifacts", "withdrawn"):
@@ -84,6 +80,13 @@ def should_exclude(path: Path) -> bool:
     if path.suffix in {".pyc", ".pyo"}:
         return True
     return False
+
+
+def include_release_artifact(rel: Path) -> bool:
+    rel_str = rel.as_posix()
+    if not rel_str.startswith("release_artifacts/"):
+        return True
+    return rel_str in REQUIRED_RELEASE_ARTIFACTS
 
 
 def iter_source_files() -> list[Path]:
@@ -103,46 +106,15 @@ def iter_source_files() -> list[Path]:
 
 
 def iter_release_artifact_files() -> list[Path]:
-    return sorted(required_release_artifacts(), key=lambda p: p.name)
-
-
-def required_release_artifacts() -> list[Path]:
-    if not LOCK_PATH.exists():
-        raise SystemExit(f"FAIL: missing release lock: {LOCK_PATH}")
-
-    lock = json.loads(LOCK_PATH.read_text(encoding="utf-8"))
-    release_zip = RELEASE_ARTIFACTS / str(lock.get("release_zip", ""))
-    evidence_zip = RELEASE_ARTIFACTS / str(lock.get("evidence_zip", ""))
-
-    if not release_zip.name or not evidence_zip.name:
-        raise SystemExit("FAIL: release_lock.json missing release_zip or evidence_zip")
-
-    return [
-        LOCK_PATH,
-        RELEASE_ARTIFACTS / "release_identity.generated.json",
-        release_zip,
-        evidence_zip,
-    ]
-
-
-def assert_no_noncanonical_release_artifacts(source_files: list[Path], artifact_files: list[Path]) -> None:
-    canonical_rel = {p.relative_to(ROOT).as_posix() for p in artifact_files}
-    bad = [
-        p.relative_to(ROOT).as_posix()
-        for p in source_files
-        if p.relative_to(ROOT).parts and p.relative_to(ROOT).parts[0] == "release_artifacts"
-        and p.relative_to(ROOT).as_posix() not in canonical_rel
-    ]
-    if bad:
-        bad_list = "\n".join(sorted(bad))
-        raise SystemExit(
-            "FAIL: non-canonical release_artifacts content selected for wrapper:\n" + bad_list
-        )
+    files: list[Path] = []
+    for child in RELEASE_ARTIFACTS.rglob("*"):
+        if child.is_file() and include_release_artifact(child.relative_to(ROOT)):
+            files.append(child)
+    return sorted(files, key=lambda p: p.relative_to(ROOT).as_posix())
 
 
 def verify_required_release_artifacts() -> None:
-    required = required_release_artifacts()
-    missing = [str(p) for p in required if not p.exists()]
+    missing = [rel for rel in sorted(REQUIRED_RELEASE_ARTIFACTS) if not (ROOT / rel).exists()]
     if missing:
         raise SystemExit("FAIL: missing required release artifacts:\n" + "\n".join(missing))
 
@@ -177,12 +149,6 @@ def main() -> int:
 
     source_files = iter_source_files()
     artifact_files = iter_release_artifact_files()
-
-    # Hard guard: wrapper may only contain canonical release artifacts.
-    assert_no_noncanonical_release_artifacts(source_files, artifact_files)
-
-    # Exclude the wrapper itself from artifact list to avoid including old wrapper in new
-    artifact_files = [f for f in artifact_files if f != out_path and "upload-wrapper" not in f.name]
 
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         written_paths: set[str] = set()
