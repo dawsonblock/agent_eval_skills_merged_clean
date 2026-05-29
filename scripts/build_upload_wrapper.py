@@ -70,6 +70,8 @@ def should_exclude(path: Path) -> bool:
     rel = path.relative_to(ROOT)
     if rel.parts[:2] == ("release_artifacts", "validation_logs"):
         return True
+    if rel.parts[:2] == ("docs", "archived_release_artifacts"):
+        return True
     if rel.parts[:2] == ("release_artifacts", "withdrawn"):
         return True
     if rel.parts[:2] == ("release_artifacts", "archived"):
@@ -115,6 +117,7 @@ def required_release_artifacts() -> list[Path]:
 
     return [
         LOCK_PATH,
+        RELEASE_ARTIFACTS / "release_identity.generated.json",
         release_zip,
         evidence_zip,
     ]

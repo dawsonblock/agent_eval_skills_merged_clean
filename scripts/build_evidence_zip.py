@@ -102,6 +102,7 @@ def main() -> int:
             "evidence_zip": out.name,
             "evidence_sha256": "external-lock-governed",
             "profile": lock.get("validation_profile", "smoke"),
+            "final_evidence_sha256_authority": "release_artifacts/release_lock.json",
         }
         write_json_atomic(log_dir / "release_hashes.json", release_hashes)
 
@@ -132,8 +133,9 @@ def main() -> int:
             "release_zip": lock.get("release_zip", ""),
             "release_sha256": lock.get("release_sha256", ""),
             "evidence_zip": out.name,
-            "evidence_sha256": digest,
+            "evidence_sha256": "external-lock-governed",
             "profile": lock.get("validation_profile", "smoke"),
+            "final_evidence_sha256_authority": "release_artifacts/release_lock.json",
         }
         write_json_atomic(log_dir / "release_hashes.json", release_hashes)
         print(f"Updated {lock_path}")
