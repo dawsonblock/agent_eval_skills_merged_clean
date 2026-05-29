@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RELEASE_ARTIFACTS = ROOT / "release_artifacts"
 LOCK_PATH = RELEASE_ARTIFACTS / "release_lock.json"
 DEFAULT_OUT = ROOT / "release_artifacts" / "agent_eval_skills_merged_clean-upload-wrapper.zip"
+WRAPPER_ROOT = "agent_eval_skills_merged_clean-main"
 REQUIRED_RELEASE_ARTIFACTS = {
     "release_artifacts/release_lock.json",
     "release_artifacts/release_identity.generated.json",
@@ -42,6 +43,7 @@ SOURCE_INCLUDE = [
     "SECURITY_FIXTURES.md",
     "DEPLOYMENT.md",
     "WORKSPACE_HEALTH_DASHBOARD.md",
+    "RELEASE_EVIDENCE_MANIFEST_2026-05-27.json",
     "RELEASE_STATUS.json",
     "RELEASE_MANIFEST.json",
     "VALIDATION_EVIDENCE.md",
@@ -154,21 +156,23 @@ def main() -> int:
         written_paths: set[str] = set()
         for path in source_files:
             rel = path.relative_to(ROOT).as_posix()
-            if rel in written_paths:
+            wrapper_rel = f"{WRAPPER_ROOT}/{rel}"
+            if wrapper_rel in written_paths:
                 continue
-            info = zipfile.ZipInfo(rel, FIXED_DATE)
+            info = zipfile.ZipInfo(wrapper_rel, FIXED_DATE)
             info.external_attr = (stat.S_IFREG | 0o644) << 16
             zf.writestr(info, path.read_bytes())
-            written_paths.add(rel)
+            written_paths.add(wrapper_rel)
 
         for path in artifact_files:
             rel = path.relative_to(ROOT).as_posix()
-            if rel in written_paths:
+            wrapper_rel = f"{WRAPPER_ROOT}/{rel}"
+            if wrapper_rel in written_paths:
                 continue
-            info = zipfile.ZipInfo(rel, FIXED_DATE)
+            info = zipfile.ZipInfo(wrapper_rel, FIXED_DATE)
             info.external_attr = (stat.S_IFREG | 0o644) << 16
             zf.writestr(info, path.read_bytes())
-            written_paths.add(rel)
+            written_paths.add(wrapper_rel)
 
     digest = sha256(out_path)
     size_mb = out_path.stat().st_size / (1024 * 1024)
