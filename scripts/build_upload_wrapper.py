@@ -152,6 +152,7 @@ def main() -> int:
     source_files = iter_source_files()
     artifact_files = iter_release_artifact_files()
 
+
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         written_paths: set[str] = set()
         for path in source_files:
@@ -173,6 +174,16 @@ def main() -> int:
             info.external_attr = (stat.S_IFREG | 0o644) << 16
             zf.writestr(info, path.read_bytes())
             written_paths.add(wrapper_rel)
+
+        # Always include .release-config/forbidden_entries.txt at the root of the wrapper ZIP if it exists
+        forbidden_entries_path = ROOT / ".release-config/forbidden_entries.txt"
+        if forbidden_entries_path.exists():
+            wrapper_rel = f"{WRAPPER_ROOT}/.release-config/forbidden_entries.txt"
+            if wrapper_rel not in written_paths:
+                info = zipfile.ZipInfo(wrapper_rel, FIXED_DATE)
+                info.external_attr = (stat.S_IFREG | 0o644) << 16
+                zf.writestr(info, forbidden_entries_path.read_bytes())
+                written_paths.add(wrapper_rel)
 
     digest = sha256(out_path)
     size_mb = out_path.stat().st_size / (1024 * 1024)
