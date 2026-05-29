@@ -41,7 +41,6 @@ SOURCE_INCLUDE = [
     "RELEASE_MANIFEST.json",
     "VALIDATION_EVIDENCE.md",
     "RELEASE_ATTESTATION_2026-05-27.md",
-    "release_artifacts/release_identity.generated.json",
     "setup.cfg",
     "pyrightconfig.json",
     "pytest.ini",
@@ -115,12 +114,30 @@ def required_release_artifacts() -> list[Path]:
     release_zip = RELEASE_ARTIFACTS / str(lock.get("release_zip", ""))
     evidence_zip = RELEASE_ARTIFACTS / str(lock.get("evidence_zip", ""))
 
+    if not release_zip.name or not evidence_zip.name:
+        raise SystemExit("FAIL: release_lock.json missing release_zip or evidence_zip")
+
     return [
         LOCK_PATH,
         RELEASE_ARTIFACTS / "release_identity.generated.json",
         release_zip,
         evidence_zip,
     ]
+
+
+def assert_no_noncanonical_release_artifacts(source_files: list[Path], artifact_files: list[Path]) -> None:
+    canonical_rel = {p.relative_to(ROOT).as_posix() for p in artifact_files}
+    bad = [
+        p.relative_to(ROOT).as_posix()
+        for p in source_files
+        if p.relative_to(ROOT).parts and p.relative_to(ROOT).parts[0] == "release_artifacts"
+        and p.relative_to(ROOT).as_posix() not in canonical_rel
+    ]
+    if bad:
+        bad_list = "\n".join(sorted(bad))
+        raise SystemExit(
+            "FAIL: non-canonical release_artifacts content selected for wrapper:\n" + bad_list
+        )
 
 
 def verify_required_release_artifacts() -> None:
@@ -160,6 +177,9 @@ def main() -> int:
 
     source_files = iter_source_files()
     artifact_files = iter_release_artifact_files()
+
+    # Hard guard: wrapper may only contain canonical release artifacts.
+    assert_no_noncanonical_release_artifacts(source_files, artifact_files)
 
     # Exclude the wrapper itself from artifact list to avoid including old wrapper in new
     artifact_files = [f for f in artifact_files if f != out_path and "upload-wrapper" not in f.name]
