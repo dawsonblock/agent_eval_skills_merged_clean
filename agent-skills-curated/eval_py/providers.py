@@ -3,7 +3,7 @@ Provider abstraction for LLM-based judging.
 Initial support: Anthropic Claude, OpenAI, LiteLLM stub.
 """
 from typing import Any, Dict
-from agent_skills_curated.eval_py.exceptions import ProviderError
+from .exceptions import ProviderError
 
 
 class JudgeProvider:
