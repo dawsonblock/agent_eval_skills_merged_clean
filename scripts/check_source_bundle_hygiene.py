@@ -14,6 +14,9 @@ FORBIDDEN_PARTS = {
 FORBIDDEN_NAMES = {
     ".DS_Store",
 }
+FORBIDDEN_PATH_FRAGMENTS = {
+    "release_artifacts/validation_logs",
+}
 
 
 def bad_entry(name: str) -> str | None:
@@ -26,6 +29,8 @@ def bad_entry(name: str) -> str | None:
         return "forbidden_directory"
     if p.name in FORBIDDEN_NAMES:
         return "forbidden_file"
+    if any(fragment in name for fragment in FORBIDDEN_PATH_FRAGMENTS):
+        return "forbidden_path"
     return None
 
 

@@ -6,7 +6,7 @@ import argparse
 import os
 import shutil
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import psycopg2
 
@@ -29,7 +29,7 @@ def clear_schemas(conn):
 
 def inject_noise(conn):
     cur = conn.cursor()
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
 
     # Noise Notion pages (standalone, not in any database)
     for title in ["Team Standup Notes", "Q1 OKR Tracker", "Holiday Schedule 2026"]:
