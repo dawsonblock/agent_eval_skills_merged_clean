@@ -272,25 +272,16 @@ test-root: ## Run root-level release-policy tests
 
 .PHONY: validate-agent-skill-packages
 validate-agent-skill-packages: ## Validate all 23 agent skill package ZIPs
-	@python3 <<'PYEOF'
-import zipfile, sys
-from pathlib import Path
-skills_dir = Path("agent-skills-curated/packages")
-zips = sorted(skills_dir.glob("*.zip"))
-failures = []
-for z in zips:
-    try:
-        with zipfile.ZipFile(z) as zf:
-            zf.testzip()
-    except Exception as e:
-        failures.append(f"{z.name}: {e}")
-if failures:
-    print("FAIL: Invalid skill ZIPs:")
-    for f in failures:
-        print(f"  {f}")
-    sys.exit(1)
-print(f"PASS: {len(zips)} skill packages validated")
-PYEOF
+	@FAIL=0; COUNT=0; \
+	for z in $$(find agent-skills-curated/packages -name '*.zip' -type f | sort); do \
+		COUNT=$$((COUNT + 1)); \
+		if ! python3 -c "import zipfile; zipfile.ZipFile('$$z').testzip()" 2>/dev/null; then \
+			echo "FAIL: Invalid skill ZIP: $$z"; \
+			FAIL=1; \
+		fi; \
+	done; \
+	if [ "$$FAIL" -eq 1 ]; then exit 1; fi; \
+	echo "PASS: $$COUNT skill packages validated"
 
 .PHONY: toolathlon-smoke
 toolathlon-smoke: ## Run Toolathlon smoke profile checks
