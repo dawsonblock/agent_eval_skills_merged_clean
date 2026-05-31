@@ -230,47 +230,113 @@ operator-release-upload-triage: ## Run upload triage helper and print manual che
 CANONICAL_RELEASE_ZIP := release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
 CANONICAL_EVIDENCE_ZIP := release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
 
-.PHONY: final-release-gate
-final-release-gate: ## Run all release gates: hashes, hygiene, evidence, secrets, paths, doc drift, canonical pair
-	@echo "== Final Release Gate =="
-	@echo ""
-	@echo "--- Step 1/9: Hash consistency ---"
+.PHONY: clean-workspace-artifacts
+clean-workspace-artifacts: ## Remove macOS metadata, cache dirs, and transient artifacts
+	@bash scripts/clean_workspace_artifacts.sh
+
+.PHONY: check-release-hash-consistency
+check-release-hash-consistency: ## Verify release hash references are consistent
 	@python3 scripts/check_release_hash_consistency.py
-	@echo ""
-	@echo "--- Step 2/9: Release pair verification ---"
+
+.PHONY: verify-release-pair
+verify-release-pair: ## Verify release+evidence ZIPs match canonical attested filenames/hashes
 	@python3 scripts/verify_release_pair.py
-	@echo ""
-	@echo "--- Step 3/9: Source bundle hygiene ---"
-	@bash scripts/verify_source_bundle_hygiene.sh --zip $(CANONICAL_RELEASE_ZIP)
-	@echo ""
-	@echo "--- Step 4/9: Evidence bundle verification ---"
+
+.PHONY: verify-evidence-bundle
+verify-evidence-bundle: ## Verify evidence bundle satisfies smoke-profile policy
 	@bash scripts/verify_evidence_bundle.sh --evidence $(CANONICAL_EVIDENCE_ZIP)
-	@echo ""
-	@echo "--- Step 5/9: Root release-policy tests ---"
-	@cd tests && python3 -m pytest release_*.py -q 2>/dev/null || echo "No root release tests found (skipped)"
-	@echo ""
-	@echo "--- Step 6/9: Secret scan ---"
-	@python3 scripts/check_for_real_secrets.py
-	@echo ""
-	@echo "--- Step 7/9: Absolute local path scan ---"
-	@python3 scripts/check_no_absolute_local_paths.py
-	@echo ""
-	@echo "--- Step 8/9: Doc drift check ---"
+
+.PHONY: verify-source-bundle-hygiene
+verify-source-bundle-hygiene: ## Verify canonical release ZIP satisfies source hygiene
+	@bash scripts/verify_source_bundle_hygiene.sh --zip $(CANONICAL_RELEASE_ZIP)
+
+.PHONY: validate-release-policy-drift
+validate-release-policy-drift: ## Verify canonical release-policy constants have not drifted
 	@bash scripts/validate_release_policy_drift.sh
-	@echo ""
-	@echo "--- Step 9/9: Canonical release pair verification ---"
+
+.PHONY: verify-canonical-release-pair
+verify-canonical-release-pair: ## Verify dist/release/ contains canonical pair with correct hashes
 	@bash scripts/verify_canonical_release_pair.sh
+
+.PHONY: secret-scan
+secret-scan: ## Scan for real-looking secrets in the workspace
+	@python3 scripts/check_for_real_secrets.py
+
+.PHONY: absolute-path-scan
+absolute-path-scan: ## Scan for absolute local path leaks in artifacts
+	@python3 scripts/check_no_absolute_local_paths.py
+
+.PHONY: test-root
+test-root: ## Run root-level release-policy tests
+	@cd tests && python3 -m pytest release_*.py -q 2>/dev/null || echo "No root release tests found (skipped)"
+
+.PHONY: validate-agent-skill-packages
+validate-agent-skill-packages: ## Validate all 23 agent skill package ZIPs
+	@python3 <<'PYEOF'
+import zipfile, sys
+from pathlib import Path
+skills_dir = Path("agent-skills-curated/packages")
+zips = sorted(skills_dir.glob("*.zip"))
+failures = []
+for z in zips:
+    try:
+        with zipfile.ZipFile(z) as zf:
+            zf.testzip()
+    except Exception as e:
+        failures.append(f"{z.name}: {e}")
+if failures:
+    print("FAIL: Invalid skill ZIPs:")
+    for f in failures:
+        print(f"  {f}")
+    sys.exit(1)
+print(f"PASS: {len(zips)} skill packages validated")
+PYEOF
+
+.PHONY: toolathlon-smoke
+toolathlon-smoke: ## Run Toolathlon smoke profile checks
+	@bash scripts/check_toolathlon_smoke_profile.sh
+
+.PHONY: classify-release
+classify-release: ## Classify the canonical release pair from dist/release/
+	@if [ -f dist/release/$(notdir $(CANONICAL_RELEASE_ZIP)) ]; then \
+		bash scripts/classify_release_upload.sh \
+			--release dist/release/$(notdir $(CANONICAL_RELEASE_ZIP)) \
+			--evidence dist/release/$(notdir $(CANONICAL_EVIDENCE_ZIP)); \
+	else \
+		echo "dist/release/ not synced — run make sync-canonical-to-dist first"; \
+		exit 1; \
+	fi
+
+.PHONY: final-release-gate
+final-release-gate: clean-workspace-artifacts check-release-hash-consistency verify-release-pair verify-evidence-bundle verify-source-bundle-hygiene validate-release-policy-drift sync-canonical-to-dist verify-canonical-release-pair test-root validate-agent-skill-packages toolathlon-smoke secret-scan absolute-path-scan classify-release ## Run all release gates in sequence (syncs dist/release/ before checking)
 	@echo ""
 	@echo "== All release gates passed =="
 
 .PHONY: sync-canonical-to-dist
-sync-canonical-to-dist: ## Copy canonical release artifacts from release_artifacts/ to dist/release/
-	@echo "== Syncing canonical artifacts to dist/release/ =="
-	@mkdir -p dist/release
-	@cp release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip dist/release/
-	@cp release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip dist/release/
-	@cd dist/release && shasum -a 256 agent_eval_skills_merged_clean-pruned-smoke.zip agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip > SHA256SUMS.txt
-	@echo "Synced and regenerated SHA256SUMS.txt"
+sync-canonical-to-dist: ## Sync canonical release artifacts from release_artifacts/ to dist/release/ (verifies hashes)
+	@python3 scripts/sync_canonical_to_dist.py
+
+.PHONY: build-smoke-evidence
+build-smoke-evidence: ## Build smoke evidence ZIP from validation logs
+	@python3 scripts/build_evidence_zip.py --release-zip $(CANONICAL_RELEASE_ZIP)
+
+.PHONY: update-release-lock
+update-release-lock: ## Update release_lock.json with current release/evidence hashes
+	@python3 scripts/build_pruned_smoke_release.py --update-lock
+
+.PHONY: build-canonical-release
+build-canonical-release: ## Full release build: clean → build release → build evidence → sync → final gate
+	@echo "== Building Canonical Release =="
+	@echo ""
+	@$(MAKE) clean-workspace-artifacts
+	@echo ""
+	@$(MAKE) build-pruned-smoke-release
+	@echo ""
+	@$(MAKE) build-smoke-evidence
+	@echo ""
+	@$(MAKE) sync-canonical-to-dist
+	@echo ""
+	@$(MAKE) final-release-gate
 
 .PHONY: rebuild-and-sync
 rebuild-and-sync: ## Rebuild canonical release ZIP and sync to dist/release/

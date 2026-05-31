@@ -1,0 +1,17 @@
+{
+  "default_network": "deny",
+  "default_shell": "deny",
+  "default_filesystem_write": "workspace-only",
+  "strip_environment_patterns": [
+    "*KEY*",
+    "*TOKEN*",
+    "*SECRET*",
+    "*PASSWORD*",
+    "OPENAI_*",
+    "ANTHROPIC_*",
+    "DEEPSEEK_*",
+    "GITHUB_*"
+  ],
+  "max_runtime_seconds": 30,
+  "max_output_bytes": 1048576
+}

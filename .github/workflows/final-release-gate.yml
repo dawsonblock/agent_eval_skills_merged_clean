@@ -1,0 +1,29 @@
+name: Final Release Gate
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+jobs:
+  final-release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f ToolForge/requirements-dev.txt ]; then pip install -r ToolForge/requirements-dev.txt; fi
+          if [ -f ToolForge/requirements.txt ]; then pip install -r ToolForge/requirements.txt; fi
+      - name: Install ToolForge in editable mode
+        run: make install
+      - name: Clean workspace artifacts
+        run: bash scripts/clean_workspace_artifacts.sh
+      - name: Run final release gate
+        run: make final-release-gate
