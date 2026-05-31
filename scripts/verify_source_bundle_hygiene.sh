@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
 # Verify structural hygiene of the source/release bundle.
-# Checks:
+# This is the CANONICAL FULL GATE for source bundle hygiene.
+#
+# Checks performed:
 #   1) Required top-level paths exist inside the ZIP
+#      (ToolForge/, agent-skills-curated/, toolathlon-gym-curated/,
+#       RELEASE_STATUS.json, RELEASE_MANIFEST.json, CLAIMS_MATRIX.md)
 #   2) No forbidden metadata/cache entries (per shared policy)
-#   3) release_classification field == SOURCE_BUNDLE (from RELEASE_STATUS.json)
+#   3) release_classification field == SOURCE_BUNDLE or SOURCE_BUNDLE_WITH_CANONICAL_SMOKE_RELEASE
 #   4) No absolute local paths embedded in any bundled non-documentation file
 #   5) Claims-matrix consistency: CLAIMS_MATRIX.md present and non-empty
 #   6) RELEASE_STATUS.json structural required fields
+#
+# Relationship to check_source_bundle_hygiene.py:
+#   The Python script is a fast "forbidden entries only" pre-check.
+#   This shell script is the canonical full gate (superset).
 #
 # Usage: bash scripts/verify_source_bundle_hygiene.sh --zip PATH
 

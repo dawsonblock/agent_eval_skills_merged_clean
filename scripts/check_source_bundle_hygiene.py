@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+# Fast forbidden-entries-only pre-check for source/release bundles.
+#
+# This script validates ZIP structural hygiene only: no path traversal,
+# no absolute paths, no forbidden directories (node_modules, __pycache__, etc),
+# and no release_artifacts/validation_logs entries.
+#
+# For the FULL release gate, use verify_source_bundle_hygiene.sh which additionally
+# validates required layout paths (RELEASE_STATUS.json, RELEASE_MANIFEST.json,
+# CLAIMS_MATRIX.md), release_classification fields, absolute local path scanning,
+# and claims-matrix consistency.
+#
+# Relationship:
+#   check_source_bundle_hygiene.py  → fast pre-check (forbidden entries only)
+#   verify_source_bundle_hygiene.sh → canonical full gate (superset of this check)
 from __future__ import annotations
 
 import sys

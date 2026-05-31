@@ -24,10 +24,10 @@
   "license": "MIT",
   "description": "This is a 12306 ticket search server based on the Model Context Protocol (MCP). ",
   "dependencies": {
-    "@modelcontextprotocol/inspector": "^0.16.5",
-    "@modelcontextprotocol/sdk": "^1.9.0",
+    "@modelcontextprotocol/inspector": "^0.16.6",
+    "@modelcontextprotocol/sdk": "^1.25.2",
     "@types/pg": "^8.18.0",
-    "axios": "^1.8.4",
+    "axios": "^1.16.0",
     "commander": "^14.0.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",

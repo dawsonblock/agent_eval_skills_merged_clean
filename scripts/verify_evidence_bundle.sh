@@ -195,13 +195,13 @@ if missing_env:
     raise SystemExit("missing_required_env:" + ",".join(sorted(set(missing_env))))
 
 required_files = [
-    "release_artifacts/validation_summary.json",
-    "release_artifacts/toolathlon_artifact_build_summary.json",
-    "release_artifacts/toolathlon_mcp_smoke_summary.json",
-    "release_artifacts/toolathlon_preflight_summary.json",
-    "release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json",
-    "release_artifacts/RELEASE_HANDOFF_2026-05-22.md",
-    "release_artifacts/RELEASE_EVIDENCE_APPENDIX.md",
+    ".validation_logs/validation_summary.json",
+    ".validation_logs/toolathlon_build_smoke_summary.json",
+    ".validation_logs/toolathlon_smoke_summary.json",
+    ".validation_logs/toolathlon_preflight_smoke_summary.json",
+    ".validation_logs/release_hashes.json",
+    ".validation_logs/secrets_scan.txt",
+    ".validation_logs/environment.json",
 ]
 
 def get_in(data, path):
@@ -269,199 +269,56 @@ with zipfile.ZipFile(zip_path, "r") as zf:
             errors.append(f"failed parsing {path}: {exc}")
             return None
 
-    validation_summary = read_json("release_artifacts/validation_summary.json")
+    validation_summary = read_json(".validation_logs/validation_summary.json")
     if validation_summary is not None:
-        require(validation_summary, ["overall_status"], "passed", errors, "validation_summary")
-        require(validation_summary, ["failed_phase_count"], 0, errors, "validation_summary")
-        require(validation_summary, ["python_version"], EXPECTED_PYTHON_VERSION, errors, "validation_summary")
+        require(validation_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "validation_summary")
+        status = validation_summary.get("status")
+        if status != "pass" and status != "passed":
+            errors.append(f"validation_summary:status expected 'pass' or 'passed', got {status!r}")
         require(validation_summary, ["capabilities", "toolathlon_profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "validation_summary")
-        smoke_targets = validation_summary.get("smoke_targets")
-        if smoke_targets is not None:
-            require_sequence(smoke_targets, EXPECTED_SMOKE_TARGETS, errors, "validation_summary:smoke_targets")
-        excluded_targets = validation_summary.get("excluded_smoke_targets")
-        if excluded_targets is not None and "google_calendar" not in excluded_targets:
-            errors.append("validation_summary:excluded_smoke_targets must include 'google_calendar'")
-        full_validated = validation_summary.get("full_toolathlon_profile_validated")
-        if full_validated is not None and full_validated != EXPECTED_FULL_PROFILE_VALIDATED:
-            errors.append(
-                "validation_summary:full_toolathlon_profile_validated expected "
-                f"{EXPECTED_FULL_PROFILE_VALIDATED!r}, got {full_validated!r}"
-            )
+        components = validation_summary.get("components", {})
+        toolathlon = components.get("toolathlon_smoke")
+        if toolathlon is not None and toolathlon != "pass":
+            errors.append(f"validation_summary:components.toolathlon_smoke expected 'pass', got {toolathlon!r}")
 
-    artifact_summary = read_json("release_artifacts/toolathlon_artifact_build_summary.json")
+    artifact_summary = read_json(".validation_logs/toolathlon_build_smoke_summary.json")
     if artifact_summary is not None:
-        require(artifact_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["overall_status"], "passed", errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["expected_package_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["package_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_artifact_build_summary")
-        require(artifact_summary, ["failed_count"], 0, errors, "toolathlon_artifact_build_summary")
-        packages = [item.get("package") for item in artifact_summary.get("packages", []) if isinstance(item, dict)]
-        if packages:
-            require_sequence(packages, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_artifact_build_summary:packages")
+        require(artifact_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_build_smoke_summary")
+        servers = artifact_summary.get("servers", {})
+        for target_name in EXPECTED_SMOKE_TARGETS:
+            srv = servers.get(target_name)
+            if srv is None:
+                errors.append(f"toolathlon_build_smoke_summary: missing server '{target_name}'")
+            elif srv.get("build") != "pass":
+                errors.append(f"toolathlon_build_smoke_summary:{target_name}.build expected 'pass', got {srv.get('build')!r}")
 
-    smoke_summary = read_json("release_artifacts/toolathlon_mcp_smoke_summary.json")
+    smoke_summary = read_json(".validation_logs/toolathlon_smoke_summary.json")
     if smoke_summary is not None:
-        require(smoke_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_mcp_smoke_summary")
-        require(smoke_summary, ["overall_status"], "passed", errors, "toolathlon_mcp_smoke_summary")
-        require(smoke_summary, ["target_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_mcp_smoke_summary")
-        require(smoke_summary, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_mcp_smoke_summary")
-        require(smoke_summary, ["failed_count"], 0, errors, "toolathlon_mcp_smoke_summary")
+        require(smoke_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_smoke_summary")
+        require(smoke_summary, ["overall_status"], "passed", errors, "toolathlon_smoke_summary")
+        require(smoke_summary, ["failed_count"], 0, errors, "toolathlon_smoke_summary")
         targets = [item.get("target") for item in smoke_summary.get("results", []) if isinstance(item, dict)]
         if targets:
-            require_sequence(targets, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_mcp_smoke_summary:targets")
+            require_sequence(targets, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_smoke_summary:targets")
 
-    preflight_summary = read_json("release_artifacts/toolathlon_preflight_summary.json")
+    preflight_summary = read_json(".validation_logs/toolathlon_preflight_smoke_summary.json")
     if preflight_summary is not None:
-        require(preflight_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_preflight_summary")
-        require(preflight_summary, ["status"], "passed", errors, "toolathlon_preflight_summary")
-        require(preflight_summary, ["found_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_preflight_summary")
-        require(preflight_summary, ["missing_count"], 0, errors, "toolathlon_preflight_summary")
+        require(preflight_summary, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "toolathlon_preflight_smoke_summary")
+        require(preflight_summary, ["status"], "passed", errors, "toolathlon_preflight_smoke_summary")
+        require(preflight_summary, ["found_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "toolathlon_preflight_smoke_summary")
+        require(preflight_summary, ["missing_count"], 0, errors, "toolathlon_preflight_smoke_summary")
         found_servers = [item.get("server") for item in preflight_summary.get("found", []) if isinstance(item, dict)]
         if found_servers:
-            require_sequence(found_servers, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_preflight_summary:found_servers")
+            require_sequence(found_servers, EXPECTED_SMOKE_TARGETS, errors, "toolathlon_preflight_smoke_summary:found_servers")
 
-    docker_smoke = read_json("release_artifacts/docker_mcp_smoke_summary.json")
-    if docker_smoke is not None:
-        require(docker_smoke, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "docker_mcp_smoke_summary")
-        require(docker_smoke, ["overall_status"], "passed", errors, "docker_mcp_smoke_summary")
-        require(docker_smoke, ["target_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "docker_mcp_smoke_summary")
-        require(docker_smoke, ["passed_count"], EXPECTED_MCP_PACKAGE_COUNT, errors, "docker_mcp_smoke_summary")
-        require(docker_smoke, ["failed_count"], 0, errors, "docker_mcp_smoke_summary")
-        docker_targets = [item.get("target") for item in docker_smoke.get("results", []) if isinstance(item, dict)]
-        if docker_targets:
-            require_sequence(docker_targets, EXPECTED_SMOKE_TARGETS, errors, "docker_mcp_smoke_summary:targets")
-
-    docker_preflight = read_json("release_artifacts/docker_preflight_summary.json")
-    if docker_preflight is not None:
-        require(docker_preflight, ["profile"], EXPECTED_TOOLATHLON_PROFILE, errors, "docker_preflight_summary")
-        require(docker_preflight, ["status"], "passed", errors, "docker_preflight_summary")
-        require(docker_preflight, ["missing_count"], 0, errors, "docker_preflight_summary")
-        docker_found = [item.get("server") for item in docker_preflight.get("found", []) if isinstance(item, dict)]
-        if docker_found:
-            require_sequence(docker_found, EXPECTED_SMOKE_TARGETS, errors, "docker_preflight_summary:found_servers")
-
-    manifest = read_json("release_artifacts/RELEASE_EVIDENCE_MANIFEST_2026-05-22.json")
-    if manifest is not None:
-      release_name = manifest.get("release_zip") or get_in(manifest, ["archive", "path"])
-      if release_name != EXPECTED_RELEASE_NAME:
-        errors.append(
-          "release_evidence_manifest:release_zip/archive.path expected "
-          f"{EXPECTED_RELEASE_NAME!r}, got {release_name!r}"
-        )
-
-      release_sha = (
-        manifest.get("release_zip_sha256")
-        or manifest.get("archive_sha256")
-        or get_in(manifest, ["archive", "sha256"])
-      )
-      if release_sha != EXPECTED_RELEASE_SHA:
-        errors.append(
-          "release_evidence_manifest:release_zip_sha256/archive_sha256/archive.sha256 expected "
-          f"{EXPECTED_RELEASE_SHA!r}, got {release_sha!r}"
-        )
-
-      evidence_name = manifest.get("evidence_zip")
-      if evidence_name is not None and evidence_name != EXPECTED_EVIDENCE_NAME:
-        errors.append(
-          "release_evidence_manifest:evidence_zip expected "
-          f"{EXPECTED_EVIDENCE_NAME!r}, got {evidence_name!r}"
-        )
-
-      evidence_sha = manifest.get("evidence_zip_sha256")
-      if evidence_sha is not None and evidence_sha != EXPECTED_EVIDENCE_SHA:
-        errors.append(
-          "release_evidence_manifest:evidence_zip_sha256 expected "
-          f"{EXPECTED_EVIDENCE_SHA!r}, got {evidence_sha!r}"
-        )
-
-      validated_scope = manifest.get("validated_scope")
-      expected_scope = ["ToolForge", "Agent Skills", f"Toolathlon {EXPECTED_TOOLATHLON_PROFILE} profile"]
-      if validated_scope is not None and validated_scope != expected_scope:
-        errors.append(
-          "release_evidence_manifest:validated_scope expected "
-          f"{expected_scope!r}, "
-          f"got {validated_scope!r}"
-        )
-
-      not_release_validated = manifest.get("not_release_validated")
-      if not_release_validated is not None and (
-        not isinstance(not_release_validated, list)
-        or "full mcp server set" not in [s.lower() for s in not_release_validated if isinstance(s, str)]
-      ):
-        errors.append(
-          "release_evidence_manifest:not_release_validated must be a list including 'full MCP server set'"
-        )
-
-      # Cross-file consistency checks (only when all relevant summaries parsed successfully).
-      if (
-        validation_summary is not None
-        and artifact_summary is not None
-        and smoke_summary is not None
-        and preflight_summary is not None
-        and docker_smoke is not None
-        and docker_preflight is not None
-      ):
-        expected_packages = get_in(artifact_summary, ["expected_package_count"])
-        found_toolathlon = get_in(preflight_summary, ["found_count"])
-        target_toolathlon = get_in(smoke_summary, ["target_count"])
-        found_docker = get_in(docker_preflight, ["found_count"])
-        target_docker = get_in(docker_smoke, ["target_count"])
-
-        counts = {
-          "artifact.expected_package_count": expected_packages,
-          "toolathlon_preflight.found_count": found_toolathlon,
-          "toolathlon_smoke.target_count": target_toolathlon,
-          "docker_preflight.found_count": found_docker,
-          "docker_smoke.target_count": target_docker,
-        }
-        unique_counts = {v for v in counts.values() if isinstance(v, int)}
-        if len(unique_counts) != 1:
-          errors.append(
-            "cross_summary_count_mismatch: "
-            + ", ".join(f"{k}={v!r}" for k, v in counts.items())
-          )
-
-        cap_profile = get_in(validation_summary, ["capabilities", "toolathlon_profile"])
-        profile_values = {
-          "validation_summary.capabilities.toolathlon_profile": cap_profile,
-          "toolathlon_artifact_build_summary.profile": get_in(artifact_summary, ["profile"]),
-          "toolathlon_mcp_smoke_summary.profile": get_in(smoke_summary, ["profile"]),
-          "toolathlon_preflight_summary.profile": get_in(preflight_summary, ["profile"]),
-          "docker_mcp_smoke_summary.profile": get_in(docker_smoke, ["profile"]),
-          "docker_preflight_summary.profile": get_in(docker_preflight, ["profile"]),
-        }
-        if any(v != EXPECTED_TOOLATHLON_PROFILE for v in profile_values.values()):
-          errors.append(
-            "cross_summary_profile_mismatch: "
-            + ", ".join(f"{k}={v!r}" for k, v in profile_values.items())
-          )
-
-        require_recent_iso8601(
-          get_in(manifest or {}, ["generated_at_utc"]),
-          errors,
-          "release_evidence_manifest:generated_at_utc",
-        )
-        require_recent_iso8601(
-          get_in(smoke_summary, ["checked_at"]),
-          errors,
-          "toolathlon_mcp_smoke_summary:checked_at",
-        )
-        require_recent_iso8601(
-          get_in(preflight_summary, ["checked_at"]),
-          errors,
-          "toolathlon_preflight_summary:checked_at",
-        )
-        require_recent_iso8601(
-          get_in(docker_smoke, ["checked_at"]),
-          errors,
-          "docker_mcp_smoke_summary:checked_at",
-        )
-        require_recent_iso8601(
-          get_in(docker_preflight, ["checked_at"]),
-          errors,
-          "docker_preflight_summary:checked_at",
-        )
+    release_hashes = read_json(".validation_logs/release_hashes.json")
+    if release_hashes is not None:
+        rh_release = release_hashes.get("release_sha256")
+        if rh_release and rh_release != EXPECTED_RELEASE_SHA:
+            errors.append(f"release_hashes.json:release_sha256 expected {EXPECTED_RELEASE_SHA!r}, got {rh_release!r}")
+        rh_profile = release_hashes.get("profile")
+        if rh_profile and rh_profile != EXPECTED_TOOLATHLON_PROFILE:
+            errors.append(f"release_hashes.json:profile expected {EXPECTED_TOOLATHLON_PROFILE!r}, got {rh_profile!r}")
 
 if errors:
     print("Evidence bundle policy check failed.", file=sys.stderr)

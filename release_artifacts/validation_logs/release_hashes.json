@@ -1,7 +1,7 @@
 {
   "release_zip": "agent_eval_skills_merged_clean-pruned-smoke.zip",
-  "release_sha256": "92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad",
-  "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
+  "release_sha256": "e313cb5de93105e653dfd845763a870b45a0504dfb7515a380b9cee83108f22d",
+  "evidence_zip": "agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip",
   "evidence_sha256": "external-lock-governed",
   "profile": "smoke",
   "final_evidence_sha256_authority": "release_artifacts/release_lock.json"

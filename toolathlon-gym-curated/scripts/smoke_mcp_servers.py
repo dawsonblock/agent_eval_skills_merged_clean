@@ -59,6 +59,7 @@ class SmokeTarget:
     cwd: Path
     env: dict[str, str]
     success_on_timeout: bool = True
+    mcp_task: str | None = None
 
 
 def build_targets(workspace_root: Path) -> dict[str, SmokeTarget]:
@@ -83,6 +84,7 @@ def build_targets(workspace_root: Path) -> dict[str, SmokeTarget]:
             ),
             cwd=local / "12306-mcp",
             env=shared_env,
+            mcp_task="rail_12306_health",
         ),
         "filesystem": SmokeTarget(
             name="filesystem",
@@ -95,6 +97,7 @@ def build_targets(workspace_root: Path) -> dict[str, SmokeTarget]:
             ),
             cwd=local / "filesystem",
             env={},
+            mcp_task="filesystem_list",
         ),
         "google_calendar": SmokeTarget(
             name="google_calendar",
@@ -312,6 +315,128 @@ def classify_failure(output: str) -> str:
     return "startup_failed"
 
 
+def execute_mcp_task(
+    target: SmokeTarget, timeout_seconds: float
+) -> dict[str, Any]:
+    if not target.mcp_task:
+        return {
+            "target": target.name,
+            "status": "skipped",
+            "reason": "no_mcp_task_configured",
+        }
+    env = os.environ.copy()
+    env.update(target.env)
+    target.cwd.mkdir(parents=True, exist_ok=True)
+    initialize = {
+        "jsonrpc": "2.0",
+        "id": 0,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {},
+            "clientInfo": {"name": "smoke-task", "version": "0.1.0"},
+        },
+    }
+    initialized = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+    task_messages = {
+        "filesystem_list": [
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}},
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/call",
+                "params": {
+                    "name": "list_allowed_directories",
+                    "arguments": {},
+                },
+            },
+        ],
+        "rail_12306_health": [
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}},
+        ],
+    }
+    messages = task_messages.get(target.mcp_task, [])
+    if not messages:
+        return {
+            "target": target.name,
+            "status": "skipped",
+            "reason": "unknown_mcp_task",
+            "task": target.mcp_task,
+        }
+    all_messages = [initialize, initialized] + messages
+    input_lines = [json.dumps(msg) for msg in all_messages]
+    stdin_data = "\n".join(input_lines) + "\n"
+    started = time.time()
+    try:
+        completed = subprocess.run(
+            target.command,
+            cwd=target.cwd,
+            env=env,
+            input=stdin_data,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds * 2,
+            check=False,
+        )
+    except (FileNotFoundError, PermissionError, subprocess.TimeoutExpired) as exc:
+        duration = round(time.time() - started, 3)
+        reason = "missing_executable"
+        if isinstance(exc, PermissionError):
+            reason = "permission_denied"
+        elif isinstance(exc, subprocess.TimeoutExpired):
+            reason = "task_timeout"
+        return {
+            "target": target.name,
+            "status": "failed",
+            "reason": reason,
+            "task": target.mcp_task,
+            "duration_seconds": duration,
+            "error": str(exc),
+        }
+    duration = round(time.time() - started, 3)
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    responses = []
+    for line in stdout.strip().split("\n"):
+        line = line.strip()
+        if line.startswith("{"):
+            try:
+                responses.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass
+    task_ok = any(
+        isinstance(r, dict) and "result" in r for r in responses
+    )
+    db_unavailable = "postgres" in stderr.lower() or "connection" in stderr.lower()
+    if task_ok:
+        return {
+            "target": target.name,
+            "status": "passed",
+            "reason": "task_executed",
+            "task": target.mcp_task,
+            "duration_seconds": duration,
+            "response_count": len(responses),
+        }
+    if db_unavailable:
+        return {
+            "target": target.name,
+            "status": "degraded",
+            "reason": "database_unavailable",
+            "task": target.mcp_task,
+            "duration_seconds": duration,
+            "warning": "PostgreSQL not available; task-smoke degraded to import-smoke",
+        }
+    return {
+        "target": target.name,
+        "status": "failed",
+        "reason": "task_response_missing",
+        "task": target.mcp_task,
+        "duration_seconds": duration,
+        "stdout_tail": stdout[-500:],
+        "stderr_tail": stderr[-500:],
+    }
+
+
 def output_text(value: object) -> str:
     if isinstance(value, bytes):
         return value.decode("utf-8", errors="replace")
@@ -476,7 +601,20 @@ def main() -> int:
             run_target(targets[name], args.timeout_seconds)
             for name in selected_names
         ]
+        task_results = []
+        for name in selected_names:
+            t = targets[name]
+            startup = next(r for r in results if r["target"] == name)
+            if startup["status"] == "passed" and t.mcp_task:
+                task_result = execute_mcp_task(t, args.timeout_seconds)
+                task_results.append(task_result)
         failed = [result for result in results if result["status"] != "passed"]
+        task_degraded = [
+            r for r in task_results if r["status"] == "degraded"
+        ]
+        task_failed = [
+            r for r in task_results if r["status"] == "failed"
+        ]
 
         summary = {
             "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -488,6 +626,13 @@ def main() -> int:
             "failed_count": len(failed),
             "overall_status": "passed" if not failed else "failed",
             "results": results,
+            "task_smoke": {
+                "executed": len(task_results),
+                "passed": len([r for r in task_results if r["status"] == "passed"]),
+                "degraded": len(task_degraded),
+                "failed": len(task_failed),
+                "details": task_results,
+            },
         }
 
         write_summary(args.json_output, summary)

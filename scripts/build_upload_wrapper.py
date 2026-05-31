@@ -26,7 +26,7 @@ REQUIRED_RELEASE_ARTIFACTS = {
     "release_artifacts/release_lock.json",
     "release_artifacts/release_identity.generated.json",
     "release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip",
-    "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip",
+    "release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip",
 }
 
 # Top-level items included from source workspace

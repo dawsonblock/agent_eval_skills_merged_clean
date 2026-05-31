@@ -1,0 +1,51 @@
+{
+  "server": "12306-mcp",
+  "audit_date": "2026-05-31",
+  "total_vulnerabilities": 14,
+  "severity_summary": {
+    "critical": 0,
+    "high": 7,
+    "moderate": 6,
+    "low": 1
+  },
+  "high_severity": [
+    {
+      "package": "axios",
+      "current_range": "1.0.0 - 1.15.2",
+      "fix_version": ">=1.16.0",
+      "issues": ["SSRF via NO_PROXY bypass", "DoS via unbounded recursion", "Prototype pollution (credential theft, request hijacking, header injection)"]
+    },
+    {
+      "package": "@modelcontextprotocol/sdk",
+      "current_range": "<=1.25.3",
+      "fix_version": ">=1.25.2",
+      "issues": ["ReDoS vulnerability", "Cross-client data leak via shared instance", "DNS rebinding not protected by default"]
+    },
+    {
+      "package": "@modelcontextprotocol/inspector",
+      "current_range": "<0.16.6",
+      "fix_version": ">=0.16.6",
+      "issues": ["XSS-based command execution when connecting to untrusted MCP server"]
+    },
+    {
+      "package": "lodash",
+      "current_range": "<=4.17.23",
+      "fix_version": ">=4.17.24",
+      "issues": ["Code injection via _.template imports"]
+    },
+    {
+      "package": "minimatch",
+      "current_range": "<=3.1.3",
+      "fix_version": ">=3.1.4",
+      "issues": ["ReDoS via repeated wildcards and nested extglobs"]
+    },
+    {
+      "package": "path-to-regexp",
+      "current_range": "8.0.0 - 8.3.0",
+      "fix_version": ">=8.4.0",
+      "issues": ["DoS via sequential optional groups", "ReDoS via multiple wildcards"]
+    }
+  ],
+  "mitigation": "Pin patched versions in package.json. For production use, isolate in disposable containers only. All fixes are available via npm audit fix.",
+  "risk_acceptance": "Acceptable for disposable benchmark containers in controlled environments only. Not suitable for hostile-code execution."
+}

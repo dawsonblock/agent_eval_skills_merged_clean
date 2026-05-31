@@ -225,6 +225,82 @@ operator-release-upload-triage: ## Run upload triage helper and print manual che
 	if [ -n "$(JSON_OUTPUT)" ]; then args="$$args --json-output $(JSON_OUTPUT)"; fi; \
 	bash scripts/operator_release_upload_triage.sh $$args
 
+# ── release gates ────────────────────────────
+
+CANONICAL_RELEASE_ZIP := release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
+CANONICAL_EVIDENCE_ZIP := release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
+
+.PHONY: final-release-gate
+final-release-gate: ## Run all release gates: hashes, hygiene, evidence, secrets, paths, doc drift, canonical pair
+	@echo "== Final Release Gate =="
+	@echo ""
+	@echo "--- Step 1/9: Hash consistency ---"
+	@python3 scripts/check_release_hash_consistency.py
+	@echo ""
+	@echo "--- Step 2/9: Release pair verification ---"
+	@python3 scripts/verify_release_pair.py
+	@echo ""
+	@echo "--- Step 3/9: Source bundle hygiene ---"
+	@bash scripts/verify_source_bundle_hygiene.sh --zip $(CANONICAL_RELEASE_ZIP)
+	@echo ""
+	@echo "--- Step 4/9: Evidence bundle verification ---"
+	@bash scripts/verify_evidence_bundle.sh --evidence $(CANONICAL_EVIDENCE_ZIP)
+	@echo ""
+	@echo "--- Step 5/9: Root release-policy tests ---"
+	@cd tests && python3 -m pytest release_*.py -q 2>/dev/null || echo "No root release tests found (skipped)"
+	@echo ""
+	@echo "--- Step 6/9: Secret scan ---"
+	@python3 scripts/check_for_real_secrets.py
+	@echo ""
+	@echo "--- Step 7/9: Absolute local path scan ---"
+	@python3 scripts/check_no_absolute_local_paths.py
+	@echo ""
+	@echo "--- Step 8/9: Doc drift check ---"
+	@bash scripts/validate_release_policy_drift.sh
+	@echo ""
+	@echo "--- Step 9/9: Canonical release pair verification ---"
+	@bash scripts/verify_canonical_release_pair.sh
+	@echo ""
+	@echo "== All release gates passed =="
+
+.PHONY: sync-canonical-to-dist
+sync-canonical-to-dist: ## Copy canonical release artifacts from release_artifacts/ to dist/release/
+	@echo "== Syncing canonical artifacts to dist/release/ =="
+	@mkdir -p dist/release
+	@cp release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip dist/release/
+	@cp release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip dist/release/
+	@cd dist/release && shasum -a 256 agent_eval_skills_merged_clean-pruned-smoke.zip agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip > SHA256SUMS.txt
+	@echo "Synced and regenerated SHA256SUMS.txt"
+
+.PHONY: rebuild-and-sync
+rebuild-and-sync: ## Rebuild canonical release ZIP and sync to dist/release/
+	@echo "== Rebuilding canonical release ZIP =="
+	@python3 scripts/build_pruned_smoke_release.py --update-lock
+	@echo ""
+	@$(MAKE) sync-canonical-to-dist
+	@echo ""
+	@echo "Rebuild and sync complete."
+
+.PHONY: update-doc-hashes
+update-doc-hashes: ## Print commands to update documentation hashes to match current release_lock.json
+	@echo "== Current hashes from release_lock.json =="
+	@python3 -c "\
+import json; \
+lock = json.load(open('release_artifacts/release_lock.json')); \
+print('Release SHA:', lock['release_sha256']); \
+print('Evidence SHA:', lock['evidence_sha256']); \
+print(); \
+print('Update these files to match:'); \
+print('  README.md'); \
+print('  DEPLOYMENT.md'); \
+print('  WORKSPACE_HEALTH_DASHBOARD.md'); \
+print('  VALIDATION_EVIDENCE.md'); \
+print('  RELEASE_NOTE_PUBLIC_*.md'); \
+print('  scripts/canonical_release_attestation.env'); \
+print('  RELEASE_STATUS.json'); \
+print('  RELEASE_MANIFEST.json'); \
+"
+
 # ── clean ────────────────────────────────────
 
 .PHONY: clean

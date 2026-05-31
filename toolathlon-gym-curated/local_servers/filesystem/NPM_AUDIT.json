@@ -1,0 +1,46 @@
+{
+  "server": "filesystem (MCP server-filesystem)",
+  "audit_date": "2026-05-31",
+  "total_vulnerabilities": 15,
+  "severity_summary": {
+    "critical": 0,
+    "high": 2,
+    "moderate": 13,
+    "low": 0
+  },
+  "high_severity": [
+    {
+      "package": "fast-uri",
+      "current_range": "<=3.1.1",
+      "fix_version": ">=3.1.2",
+      "issues": ["Path traversal via percent-encoded dot segments", "Host confusion via percent-encoded authority delimiters"]
+    },
+    {
+      "package": "path-to-regexp",
+      "current_range": "8.0.0 - 8.3.0",
+      "fix_version": ">=8.4.0",
+      "issues": ["DoS via sequential optional groups", "ReDoS via multiple wildcards"]
+    }
+  ],
+  "notable_moderate": [
+    {
+      "package": "hono",
+      "current_range": "<=4.12.17",
+      "fix_version": ">=4.12.18",
+      "issues": ["Prototype pollution via __proto__ key", "Path traversal in toSSG()", "Middleware bypass via repeated slashes", "CSS injection in JSX SSR"]
+    },
+    {
+      "package": "@hono/node-server",
+      "current_range": "<1.19.13",
+      "fix_version": ">=1.19.13",
+      "issues": ["Middleware bypass via repeated slashes in serveStatic"]
+    },
+    {
+      "package": "vitest/vite",
+      "fix_note": "Fix requires semver-major upgrade to vitest 4.x",
+      "issues": ["Path traversal in optimized deps", "esbuild dev server SSRF"]
+    }
+  ],
+  "mitigation": "Pin patched versions in package.json. vitest/vite fixes require semver-major upgrade. For production use, isolate in disposable containers only.",
+  "risk_acceptance": "Acceptable for disposable benchmark containers in controlled environments only. Not suitable for hostile-code execution."
+}
