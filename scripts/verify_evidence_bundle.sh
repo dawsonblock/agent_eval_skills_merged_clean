@@ -8,13 +8,15 @@ set -euo pipefail
 EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+
+# Use evidence bundle policy for forbidden entries
 FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
 if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
   echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
   exit 1
 fi
 # shellcheck disable=SC1090
-source "$FORBIDDEN_POLICY_FILE"
+EVIDENCE_BUNDLE=1 source "$FORBIDDEN_POLICY_FILE"
 
 ATTESTATION_ENV_FILE="$SCRIPT_DIR/canonical_release_attestation.env"
 if [ ! -f "$ATTESTATION_ENV_FILE" ]; then

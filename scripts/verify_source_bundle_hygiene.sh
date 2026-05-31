@@ -15,13 +15,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+
+# Always use release/source bundle policy for forbidden entries
 FORBIDDEN_POLICY_FILE="$SCRIPT_DIR/release_forbidden_entries.sh"
 if [ ! -f "$FORBIDDEN_POLICY_FILE" ]; then
   echo "Error: forbidden-entry policy file missing: $FORBIDDEN_POLICY_FILE" >&2
   exit 1
 fi
 # shellcheck disable=SC1090
-source "$FORBIDDEN_POLICY_FILE"
+EVIDENCE_BUNDLE= source "$FORBIDDEN_POLICY_FILE"
 
 ZIP_PATH=""
 

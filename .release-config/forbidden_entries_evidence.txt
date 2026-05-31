@@ -1,0 +1,20 @@
+
+# Canonical forbidden entries for evidence ZIP hygiene.
+# This list is LESS STRICT than the release/source bundle policy.
+# Lines are token values consumed by scripts/release_forbidden_entries.sh.
+#
+# .validation_logs and release_artifacts/validation_logs are ALLOWED in evidence bundles.
+
+__MACOSX
+._*
+.DS_Store
+node_modules
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+.skillforge
+ToolForge/.skillforge
+tool/outputs
+# NOTE: .validation_logs and release_artifacts/validation_logs are ALLOWED in evidence bundles.

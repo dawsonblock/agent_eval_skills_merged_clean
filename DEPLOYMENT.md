@@ -3,7 +3,6 @@
 Prerequisite: run smoke validation and ensure required evidence artifacts pass before using this guide for release promotion. See [VALIDATION_EVIDENCE.md](VALIDATION_EVIDENCE.md) and [ACCEPTANCE_CHECKLIST_PHASE_13.md](ACCEPTANCE_CHECKLIST_PHASE_13.md).
 
 Status claims in packaged ZIPs are advisory unless the matching evidence artifact bundle is published for the same archive hash.
-
 Current workspace posture is `SOURCE_BUNDLE` with canonical smoke release-candidate artifacts tracked by lock metadata.
 Historical attestations remain available under [docs/archived_attestations](docs/archived_attestations).
 
@@ -11,8 +10,9 @@ Canonical attested pair:
 
 - `agent_eval_skills_merged_clean-pruned-smoke.zip`
    - SHA256: `92f286a5f7330dd0c2caba794e38c03f46a152de7ac6e50feaca2f3f23edd4ad`
-- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-28.zip`
-   - SHA256: `b60e9b919da192253442f6f72be35e662f697dcaa56ed5b71f353820a2f5d215`
+
+- `agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip`
+   - SHA256: `71655c4f44f0ccfb08fba48ec02de18833095ff398aea265c48c0f5d8159395e`
 
 Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attested release unless their hashes match the attestation.
 

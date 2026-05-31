@@ -1,5 +1,9 @@
-# Canonical forbidden entries for release/evidence ZIP hygiene.
+
+# Canonical forbidden entries for release/source ZIP hygiene.
+# This list is STRICTER than the evidence bundle policy.
 # Lines are token values consumed by scripts/release_forbidden_entries.sh.
+#
+# .validation_logs and release_artifacts/validation_logs are FORBIDDEN in release/source bundles.
 
 __MACOSX
 ._*

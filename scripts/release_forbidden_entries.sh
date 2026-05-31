@@ -1,10 +1,30 @@
 #!/usr/bin/env bash
+
 # Shared forbidden-entry policy for release and evidence ZIP hygiene checks.
+#
+# POLICY:
+#   - For release/source bundles: .validation_logs and release_artifacts/validation_logs are FORBIDDEN.
+#   - For evidence bundles: .validation_logs and release_artifacts/validation_logs are ALLOWED.
+#
+# Use EVIDENCE_BUNDLE=1 to select evidence policy, else default to release/source policy.
 
 set -euo pipefail
 
+
+# Allow override of forbidden policy config for evidence bundles
 FORBIDDEN_POLICY_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RELEASE_FORBIDDEN_CONFIG_PATH="${RELEASE_FORBIDDEN_CONFIG_PATH:-$FORBIDDEN_POLICY_SCRIPT_DIR/../.release-config/forbidden_entries.txt}"
+DEFAULT_RELEASE_FORBIDDEN_CONFIG_PATH="$FORBIDDEN_POLICY_SCRIPT_DIR/../.release-config/forbidden_entries.txt"
+DEFAULT_EVIDENCE_FORBIDDEN_CONFIG_PATH="$FORBIDDEN_POLICY_SCRIPT_DIR/../.release-config/forbidden_entries_evidence.txt"
+
+# Use EVIDENCE_BUNDLE=1 to select evidence policy, else default to release/source policy
+if [ "${EVIDENCE_BUNDLE:-}" = "1" ]; then
+	FORBIDDEN_CONFIG_PATH="$DEFAULT_EVIDENCE_FORBIDDEN_CONFIG_PATH"
+else
+	FORBIDDEN_CONFIG_PATH="$DEFAULT_RELEASE_FORBIDDEN_CONFIG_PATH"
+fi
+
+# Allow override by env var
+RELEASE_FORBIDDEN_CONFIG_PATH="${RELEASE_FORBIDDEN_CONFIG_PATH:-$FORBIDDEN_CONFIG_PATH}"
 
 if [ ! -f "$RELEASE_FORBIDDEN_CONFIG_PATH" ]; then
 	echo "Error: forbidden-entry config file missing: $RELEASE_FORBIDDEN_CONFIG_PATH" >&2
