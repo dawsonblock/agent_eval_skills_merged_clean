@@ -384,14 +384,14 @@ jobs:
 
             - name: Verify canonical release+evidence pair
               env:
-                  RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
+                  RELEASE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
+                  EVIDENCE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/verify_release_pair.sh
 
             - name: Verify evidence bundle policy values
               env:
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
+                  EVIDENCE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_ZIP_PATH"
 
@@ -405,8 +405,8 @@ jobs:
 
             - name: Classify canonical release upload and emit triage verdict
               env:
-                  RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
+                  RELEASE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
+                  EVIDENCE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/classify_release_upload.sh \
                     --release "$RELEASE_ZIP_PATH" \
