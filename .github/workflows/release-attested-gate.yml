@@ -19,13 +19,13 @@ jobs:
             - name: Verify release+evidence pair
               env:
                   RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
+                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/verify_release_pair.sh
 
             - name: Verify evidence bundle policy values
               env:
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
+                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_ZIP_PATH"
 
@@ -35,6 +35,6 @@ jobs:
                   name: attested-release-pair
                   path: |
                       agent_eval_skills_merged_clean-pruned-smoke.zip
-                      agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
+                      agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
                   if-no-files-found: error
                   retention-days: 14

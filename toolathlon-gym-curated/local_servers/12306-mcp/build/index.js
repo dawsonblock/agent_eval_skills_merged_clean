@@ -206,6 +206,7 @@ async function queryTickets(date, fromStation, toStation) {
 export const server = new McpServer({
     name: '12306-mcp',
     version: VERSION,
+}, {
     capabilities: { resources: {}, tools: {} },
     instructions: '该服务用于查询中国铁路火车票信息（本地模拟数据）。',
 });
