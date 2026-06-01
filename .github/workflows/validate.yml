@@ -320,6 +320,7 @@ jobs:
                   name: validation-logs-smoke
                   path: .validation_logs
                   if-no-files-found: error
+                  include-hidden-files: true
                   retention-days: 7
 
             - name: Upload release artifacts
