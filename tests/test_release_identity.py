@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import tempfile
 import zipfile
@@ -78,6 +79,32 @@ def test_verify_release_pair_passes() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stdout + "\n" + result.stderr
+
+
+def test_verify_release_pair_wrapper_passes_with_defaults_and_env_paths() -> None:
+    release_zip, evidence_zip, _ = _artifact_paths()
+    default_result = subprocess.run(
+        ["bash", "scripts/verify_release_pair.sh"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert default_result.returncode == 0, default_result.stdout + "\n" + default_result.stderr
+
+    env_result = subprocess.run(
+        ["bash", "scripts/verify_release_pair.sh"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env={
+            **os.environ,
+            "RELEASE_ZIP_PATH": str(release_zip.relative_to(REPO_ROOT)),
+            "EVIDENCE_ZIP_PATH": str(evidence_zip.relative_to(REPO_ROOT)),
+        },
+    )
+    assert env_result.returncode == 0, env_result.stdout + "\n" + env_result.stderr
 
 
 def test_release_pair_call_sites_do_not_pass_unsupported_strict_flag() -> None:
