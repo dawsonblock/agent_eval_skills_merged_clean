@@ -17,6 +17,7 @@ dependencies = [
     "jinja2>=3.1",
     "ruamel.yaml>=0.18",
     "jsonschema>=4.23",
+    "PyYAML>=6.0",
     "rich>=13.7",
     "termcolor>=2.4",
 ]

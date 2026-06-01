@@ -60,7 +60,7 @@ required_paths=(
   "ToolForge/tests/test_skillforge_ai"
   "ToolForge/apps/cli/skillforge_cli/main.py"
   "release_artifacts"
-  "RELEASE_ATTESTATION_2026-05-22.md"
+  "SKILLFORGE_CANDIDATE_ATTESTATION_2026-05-25.md"
   "scripts/classify_release_upload.sh"
   "scripts/finalize_release_distribution.sh"
   "scripts/verify_release_pair.sh"

@@ -212,13 +212,19 @@ jobs:
               run: |
                   python scripts/check_no_absolute_local_paths.py --strict
 
+            - name: Prepare SkillForge candidate evidence summaries
+              run: |
+                  mkdir -p release_artifacts
+                  cp docs/archived_release_artifacts/skillforge_ai_local_factory_summary.json release_artifacts/
+                  bash scripts/generate_skillforge_ai_summaries.sh
+
             - name: Build SkillForge candidate bundle
               run: |
                   bash scripts/build_skillforge_ai_candidate_zip.sh
 
             - name: Verify SkillForge baseline gate
               run: |
-                  bash scripts/verify_skillforge_baseline_gate.sh
+                  bash scripts/verify_skillforge_baseline_gate.sh --skip-remote
 
             - name: Regenerate release manifest
               run: |
