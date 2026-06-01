@@ -2,8 +2,8 @@
 # Fast forbidden-entries-only pre-check for source/release bundles.
 #
 # This script validates ZIP structural hygiene only: no path traversal,
-# no absolute paths, no forbidden directories (node_modules, __pycache__, etc),
-# and no release_artifacts/validation_logs entries.
+# no absolute paths, no forbidden release/source entries, and no bundled
+# validation logs. It intentionally mirrors .release-config/forbidden_entries.txt.
 #
 # For the FULL release gate, use verify_source_bundle_hygiene.sh which additionally
 # validates required layout paths (RELEASE_STATUS.json, RELEASE_MANIFEST.json,
@@ -20,16 +20,22 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 FORBIDDEN_PARTS = {
+    "__MACOSX",
     ".skillforge",
+    ".validation_logs",
     "node_modules",
     "__pycache__",
     ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
 }
 FORBIDDEN_NAMES = {
     ".DS_Store",
 }
 FORBIDDEN_PATH_FRAGMENTS = {
     "release_artifacts/validation_logs",
+    "tool/outputs",
 }
 
 
@@ -42,6 +48,8 @@ def bad_entry(name: str) -> str | None:
     if any(part in FORBIDDEN_PARTS for part in p.parts):
         return "forbidden_directory"
     if p.name in FORBIDDEN_NAMES:
+        return "forbidden_file"
+    if p.name.startswith("._"):
         return "forbidden_file"
     if any(fragment in name for fragment in FORBIDDEN_PATH_FRAGMENTS):
         return "forbidden_path"

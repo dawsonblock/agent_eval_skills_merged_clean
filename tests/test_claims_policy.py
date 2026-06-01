@@ -63,16 +63,32 @@ def test_release_docs_do_not_make_unqualified_overclaims() -> None:
 
 def test_claims_matrix_contains_required_guardrails() -> None:
     claims = (REPO_ROOT / "CLAIMS_MATRIX.md").read_text(encoding="utf-8")
+    rows = _claims_matrix_rows(claims)
 
-    required_snippets = [
-        "Smoke MCP profile works | Yes",
-        "rail_12306",
-        "filesystem",
-        "Full Toolathlon profile works | No",
-        "Production safe sandbox | No",
-        "Builds any tool | No",
-        "controlled local framework",
-    ]
+    smoke = rows["Toolathlon smoke"]
+    assert smoke["status"] == "Pass"
+    assert "rail_12306" in smoke["allowed wording"]
+    assert "filesystem" in smoke["allowed wording"]
 
-    for snippet in required_snippets:
-        assert snippet in claims, f"Missing expected claim guardrail: {snippet}"
+    assert rows["Full Toolathlon"]["status"] == "Not claimed"
+    assert rows["Production security"]["status"] == "Not claimed"
+    assert rows["Hostile-code safety"]["status"] == "Not claimed"
+    assert rows["Builds any tool"]["status"] == "Not claimed"
+    assert "controlled local framework" in rows["Builds any tool"]["allowed wording"]
+
+
+def _claims_matrix_rows(markdown: str) -> dict[str, dict[str, str]]:
+    rows: dict[str, dict[str, str]] = {}
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or stripped.startswith("|-"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) != 4 or cells[0] == "Claim":
+            continue
+        rows[cells[0]] = {
+            "allowed wording": cells[1],
+            "evidence file": cells[2],
+            "status": cells[3],
+        }
+    return rows

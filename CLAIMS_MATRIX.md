@@ -11,6 +11,7 @@
 | Full Toolathlon | Not validated | none | Not claimed |
 | Production security | Not audited | none | Not claimed |
 | Hostile-code safety | Not proven | none | Not claimed |
+| Builds any tool | Not claimed; this is a controlled local framework with scoped generators and validators | none | Not claimed |
 | All skills high quality | Not all skills scored ≥70 | agent_skills_summary.json | Not claimed |
 | npm vulnerabilities | Known vulnerabilities documented | docs/npm-vulnerability-report.md | Documented |
 | Sandbox isolation | Sandbox profile defined, levels 0–4 available | sandbox_profile.json | Defined |

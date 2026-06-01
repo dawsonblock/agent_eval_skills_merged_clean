@@ -1,6 +1,6 @@
 # Mac / VS Code / No-Docker Setup
 
-This repository should be validated with Python 3.12 and Node 20+.
+This repository should be validated with Python 3.12 and Node 22.
 
 ## Python
 
