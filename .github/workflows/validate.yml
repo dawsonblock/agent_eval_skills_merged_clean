@@ -216,7 +216,9 @@ jobs:
               run: |
                   mkdir -p release_artifacts
                   cp docs/archived_release_artifacts/skillforge_ai_local_factory_summary.json release_artifacts/
-                  bash scripts/generate_skillforge_ai_summaries.sh
+                  cp docs/archived_release_artifacts/skillforge_ai_test_summary.json release_artifacts/
+                  cp docs/archived_release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json release_artifacts/
+                  cp docs/archived_release_artifacts/skillforge_ai_validation_summary.json release_artifacts/
 
             - name: Build SkillForge candidate bundle
               run: |
