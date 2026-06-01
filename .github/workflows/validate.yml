@@ -339,6 +339,12 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - name: Download smoke validation logs
+              uses: actions/download-artifact@v4
+              with:
+                  name: validation-logs-smoke
+                  path: .validation_logs
+
             - name: Verify release policy constants and evidence drift
               run: |
                   bash scripts/validate_release_policy_drift.sh --require-validation-logs
