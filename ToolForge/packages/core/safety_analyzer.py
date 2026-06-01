@@ -8,6 +8,7 @@ Checks:
   - Hardcoded secrets / tokens
   - Capability / sandbox level consistency
 """
+
 from __future__ import annotations
 
 import ast
@@ -52,7 +53,10 @@ class SafetyReport:
 
 # Patterns that are always suspicious in generated code
 _SECRET_PATTERNS = [
-    (re.compile(r'(?i)(password|passwd|secret|api_key|token)\s*=\s*["\'][^"\']{6,}["\']'), "HARDCODED_SECRET"),
+    (
+        re.compile(r'(?i)(password|passwd|secret|api_key|token)\s*=\s*["\'][^"\']{6,}["\']'),
+        "HARDCODED_SECRET",
+    ),
     (re.compile(r"sk-[A-Za-z0-9]{20,}"), "OPENAI_KEY_LITERAL"),
     (re.compile(r'(?i)aws_secret_access_key\s*=\s*["\'][^"\']+["\']'), "AWS_SECRET_LITERAL"),
 ]
@@ -234,9 +238,8 @@ def _analyze_ast(
             if parts and parts[0] in module_aliases:
                 resolved = ".".join([module_aliases[parts[0]], *parts[1:]])
 
-        shell_call = (
-            resolved in _DANGEROUS_CALLS
-            or any(resolved.startswith(prefix) for prefix in _OS_DANGEROUS_PREFIXES)
+        shell_call = resolved in _DANGEROUS_CALLS or any(
+            resolved.startswith(prefix) for prefix in _OS_DANGEROUS_PREFIXES
         )
 
         if shell_call:

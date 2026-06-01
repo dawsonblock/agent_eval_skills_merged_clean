@@ -16,7 +16,7 @@ _INSTALL_HINT = (
 def load_yaml(input_path: Path) -> Any:
     """Read YAML using ruamel.yaml, then PyYAML, else fail with clear guidance."""
     try:
-        from ruamel.yaml import YAML  # type: ignore
+        from ruamel.yaml import YAML
 
         yaml = YAML(typ="safe")
         with input_path.open("r", encoding="utf-8") as handle:
@@ -25,7 +25,7 @@ def load_yaml(input_path: Path) -> Any:
         pass
 
     try:
-        import yaml as pyyaml  # type: ignore
+        import yaml as pyyaml
 
         with input_path.open("r", encoding="utf-8") as handle:
             return pyyaml.safe_load(handle)
@@ -36,7 +36,7 @@ def load_yaml(input_path: Path) -> Any:
 def dump_yaml(payload: dict[str, Any], output_path: Path) -> None:
     """Write YAML using ruamel.yaml, then PyYAML, else fail with clear guidance."""
     try:
-        from ruamel.yaml import YAML  # type: ignore
+        from ruamel.yaml import YAML
 
         yaml = YAML()
         yaml.default_flow_style = False
@@ -47,7 +47,7 @@ def dump_yaml(payload: dict[str, Any], output_path: Path) -> None:
         pass
 
     try:
-        import yaml as pyyaml  # type: ignore
+        import yaml as pyyaml
 
         with output_path.open("w", encoding="utf-8") as handle:
             pyyaml.safe_dump(payload, handle, sort_keys=False, allow_unicode=False)

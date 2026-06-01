@@ -7,6 +7,7 @@ Creates:
     ├── pyproject.toml  OR  package.json
     └── Dockerfile
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -45,6 +46,7 @@ def generate_mcp_server(spec: ToolSpec, output_root: Path, overwrite: bool = Fal
         tool_src = output_root / "tool.py"
         if tool_src.exists():
             import shutil
+
             dst = mcp_dir / "tool.py"
             if not dst.exists() or overwrite:
                 shutil.copy2(tool_src, dst)

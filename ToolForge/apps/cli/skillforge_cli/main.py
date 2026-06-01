@@ -21,6 +21,7 @@ Commands:
   skillforge mcp smoke SLUG         — MCP smoke test
   skillforge doctor                 — workspace health check
 """
+
 from __future__ import annotations
 
 import sys
@@ -606,10 +607,7 @@ def mcp_group() -> None:
 @click.option(
     "--profile",
     default=None,
-    help=(
-        "List Toolathlon profile server targets (e.g. smoke) "
-        "instead of managed processes."
-    ),
+    help=("List Toolathlon profile server targets (e.g. smoke) instead of managed processes."),
 )
 @click.pass_context
 def mcp_list(ctx: click.Context, profile: Optional[str]) -> None:
@@ -632,9 +630,7 @@ def mcp_list(ctx: click.Context, profile: Optional[str]) -> None:
             sys.exit(1)
 
         if not servers:
-            console.print(
-                f"[yellow]No servers configured in profile '{profile}'.[/]"
-            )
+            console.print(f"[yellow]No servers configured in profile '{profile}'.[/]")
             return
 
         table = Table(title=f"Toolathlon MCP Profile — {profile}")
@@ -646,9 +642,7 @@ def mcp_list(ctx: click.Context, profile: Optional[str]) -> None:
 
     rows = list_running_servers(ws_root)
     if not rows:
-        console.print(
-            "[yellow]No managed MCP servers are currently recorded.[/]"
-        )
+        console.print("[yellow]No managed MCP servers are currently recorded.[/]")
         return
 
     table = Table(title="Managed MCP Servers")
@@ -700,15 +694,9 @@ def mcp_start(
         sys.exit(1)
 
     if bool(info.get("already_running")):
-        console.print(
-            f"[yellow]MCP server '{slug}' already running "
-            f"(pid={info.get('pid')}).[/]"
-        )
+        console.print(f"[yellow]MCP server '{slug}' already running (pid={info.get('pid')}).[/]")
     else:
-        console.print(
-            f"[green]✓ MCP server '{slug}' started "
-            f"(pid={info.get('pid')}).[/]"
-        )
+        console.print(f"[green]✓ MCP server '{slug}' started (pid={info.get('pid')}).[/]")
     console.print(f"stdout log: {info.get('stdout_log')}")
     console.print(f"stderr log: {info.get('stderr_log')}")
 

@@ -9,6 +9,7 @@ Creates:
     └── cases/
         └── {case.id}.json    (one JSON file per eval case)
 """
+
 from __future__ import annotations
 
 import json

@@ -3,6 +3,7 @@ Path safety validator for tool inputs.
 
 This module enforces tool-local filesystem boundaries before tool execution.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -81,8 +82,10 @@ def _matches_any(path: Path, patterns: list[str], workspace: Path) -> bool:
 
 def is_path_like_key(key: str) -> bool:
     lowered = key.strip().lower()
-    return lowered in _READ_KEYS or lowered in _WRITE_KEYS or lowered.endswith(
-        ("_path", "_file", "_dir", "_directory", "_folder")
+    return (
+        lowered in _READ_KEYS
+        or lowered in _WRITE_KEYS
+        or lowered.endswith(("_path", "_file", "_dir", "_directory", "_folder"))
     )
 
 
@@ -105,9 +108,7 @@ def classify_path_mode(key: str) -> Literal["read", "write", "unknown"]:
 
 def _enforce_blocked(path: Path, security: SecuritySpec, workspace: Path) -> None:
     if security.blocked_paths and _matches_any(path, security.blocked_paths, workspace):
-        raise PathViolationError(
-            f"Resolved path '{path}' matches blocked_paths policy"
-        )
+        raise PathViolationError(f"Resolved path '{path}' matches blocked_paths policy")
 
 
 def _enforce_extensions(path: Path, security: SecuritySpec) -> None:
@@ -144,9 +145,7 @@ def _enforce_max_size(path: Path, security: SecuritySpec) -> None:
         return
     max_bytes = security.max_file_size_mb * 1024 * 1024
     if path.stat().st_size > max_bytes:
-        raise PathViolationError(
-            f"File exceeds max_file_size_mb={security.max_file_size_mb}"
-        )
+        raise PathViolationError(f"File exceeds max_file_size_mb={security.max_file_size_mb}")
 
 
 def _allowed_roots(
@@ -176,9 +175,7 @@ def validate_path_input(
     workspace_root = workspace.resolve(strict=False)
     raw_candidate = Path(value).expanduser()
     raw_workspace_path = (
-        raw_candidate
-        if raw_candidate.is_absolute()
-        else workspace_root / raw_candidate
+        raw_candidate if raw_candidate.is_absolute() else workspace_root / raw_candidate
     )
     raw_resolved = (
         raw_candidate.resolve(strict=False)
@@ -192,8 +189,7 @@ def validate_path_input(
     ):
         raise PathViolationError("Symlink inputs are not allowed")
     if not security.allow_symlinks and (
-        (raw_resolved.exists() and raw_resolved.is_symlink())
-        or _has_symlink_ancestor(raw_resolved)
+        (raw_resolved.exists() and raw_resolved.is_symlink()) or _has_symlink_ancestor(raw_resolved)
     ):
         raise PathViolationError("Symlink inputs are not allowed")
 
@@ -208,15 +204,11 @@ def validate_path_input(
 
     roots = _allowed_roots(mode, security)
     if not roots:
-        raise PathViolationError(
-            f"No allowed {mode} paths configured for filesystem access"
-        )
+        raise PathViolationError(f"No allowed {mode} paths configured for filesystem access")
 
     if mode == "read":
         if not _matches_any(resolved, roots, workspace_root):
-            raise PathViolationError(
-                f"Read path '{value}' resolved outside allowed_read_paths"
-            )
+            raise PathViolationError(f"Read path '{value}' resolved outside allowed_read_paths")
         _enforce_extensions(resolved, security)
         _enforce_max_size(resolved, security)
         if not resolved.exists():
@@ -225,9 +217,7 @@ def validate_path_input(
     if mode == "write":
         parent = resolved.parent.resolve(strict=False)
         if not _matches_any(parent, roots, workspace_root):
-            raise PathViolationError(
-                f"Write path '{value}' resolved outside allowed_write_paths"
-            )
+            raise PathViolationError(f"Write path '{value}' resolved outside allowed_write_paths")
         _enforce_extensions(resolved, security)
 
 

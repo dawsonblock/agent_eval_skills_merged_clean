@@ -10,6 +10,7 @@ IMPORTANT: AI ROLE BOUNDARIES
 - No autonomous file writes or command execution
 - See ToolForge/docs/AI_ROLE_BOUNDARIES.md for full boundaries
 """
+
 from __future__ import annotations
 
 import os
@@ -45,9 +46,7 @@ class AzureOpenAISpecGenerator(SpecGeneratorProvider):
         """Generate spec using Azure OpenAI with retry logic."""
         return self._generate_with_retry(self._generate_azure_openai, prompt)
 
-    def _generate_with_retry(
-        self, generator_func: Any, prompt: str
-    ) -> ToolSpec:
+    def _generate_with_retry(self, generator_func: Any, prompt: str) -> ToolSpec:
         """Generate spec with retry logic for transient errors."""
         import warnings
 
@@ -125,10 +124,7 @@ class AzureOpenAISpecGenerator(SpecGeneratorProvider):
                 {"role": "system", "content": system},
                 {
                     "role": "user",
-                    "content": (
-                        f"JSON Schema:\n{schema}\n\n"
-                        f"Tool description:\n{prompt}"
-                    ),
+                    "content": (f"JSON Schema:\n{schema}\n\nTool description:\n{prompt}"),
                 },
             ],
             response_format={"type": "json_object"},
@@ -152,6 +148,4 @@ class DeepSeekSpecGeneratorWrapper(SpecGeneratorProvider):
         try:
             return ToolSpec.model_validate(spec_dict)
         except Exception as e:
-            raise ValueError(
-                f"Failed to validate DeepSeek response as ToolSpec: {e}"
-            ) from e
+            raise ValueError(f"Failed to validate DeepSeek response as ToolSpec: {e}") from e

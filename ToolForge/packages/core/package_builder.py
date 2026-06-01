@@ -12,6 +12,7 @@ Archive layout:
   skills/                 — SKILL.md (if present)
   evals/                  — eval directory (if present)
 """
+
 from __future__ import annotations
 
 import fnmatch
@@ -26,18 +27,43 @@ from packages.core.tool_spec import ToolLanguage, ToolSpec
 
 
 # Files/patterns to exclude from package
-_EXCLUDE_PATTERNS = frozenset({
-    ".coverage",
-    ".pytest_report.json",
-    ".env", ".env.local", ".env.*.local",
-    "*.pem", "*.key", "*.p12", "*.pfx", "*.crt",
-    "credentials*", "token*", "secret*", "password*",
-    "__pycache__", ".pytest_cache", "node_modules",
-    ".git", ".gitignore", ".DS_Store", "__MACOSX", "._*",
-    "*.pyc", "*.pyo",
-    "dist", "build", "*.egg-info",
-    "runs", "logs", "outputs", "htmlcov", ".venv", "venv",
-})
+_EXCLUDE_PATTERNS = frozenset(
+    {
+        ".coverage",
+        ".pytest_report.json",
+        ".env",
+        ".env.local",
+        ".env.*.local",
+        "*.pem",
+        "*.key",
+        "*.p12",
+        "*.pfx",
+        "*.crt",
+        "credentials*",
+        "token*",
+        "secret*",
+        "password*",
+        "__pycache__",
+        ".pytest_cache",
+        "node_modules",
+        ".git",
+        ".gitignore",
+        ".DS_Store",
+        "__MACOSX",
+        "._*",
+        "*.pyc",
+        "*.pyo",
+        "dist",
+        "build",
+        "*.egg-info",
+        "runs",
+        "logs",
+        "outputs",
+        "htmlcov",
+        ".venv",
+        "venv",
+    }
+)
 
 _EXCLUDE_SUFFIXES = frozenset({".pyc", ".pyo", ".env"})
 
@@ -167,8 +193,7 @@ def build_package(
     if missing:
         missing_list = ", ".join(sorted(missing))
         raise FileNotFoundError(
-            "Cannot package tool; required artifacts are missing: "
-            + missing_list
+            "Cannot package tool; required artifacts are missing: " + missing_list
         )
 
     # Build manifest with file list and SHA256 hashes
@@ -201,9 +226,7 @@ def build_package(
             dirpath = Path(dirpath_str)
             # Prune excluded directories before descending (sorted for
             # deterministic archive ordering).
-            dirnames[:] = sorted(
-                d for d in dirnames if not _should_exclude(dirpath / d)
-            )
+            dirnames[:] = sorted(d for d in dirnames if not _should_exclude(dirpath / d))
             for filename in sorted(filenames):
                 file_path = dirpath / filename
                 # Skip symlinks and excluded files

@@ -1,6 +1,7 @@
 """
 config_bridge — map toolathlon-gym MCP server YAML configs to ToolForge constructs.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

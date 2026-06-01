@@ -4,6 +4,7 @@ Skill generator — renders SKILL.md for a tool.
 Creates:
   skills/generated/{category}/{slug}/SKILL.md
 """
+
 from __future__ import annotations
 
 from pathlib import Path

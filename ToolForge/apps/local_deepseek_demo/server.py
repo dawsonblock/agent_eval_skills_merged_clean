@@ -34,9 +34,7 @@ cors_origins = [
 ]
 extra_cors = os.getenv("TOOLFORGE_DEMO_CORS_ORIGINS", "").strip()
 if extra_cors:
-    cors_origins.extend(
-        [origin.strip() for origin in extra_cors.split(",") if origin.strip()]
-    )
+    cors_origins.extend([origin.strip() for origin in extra_cors.split(",") if origin.strip()])
 
 app.add_middleware(
     CORSMiddleware,
@@ -412,22 +410,19 @@ def _build_mode_instruction(mode: str) -> str:
     )
     if mode == "tool_use":
         return (
-            base
-            + " In tool_use mode, prefer using available tools for concrete actions. "
+            base + " In tool_use mode, prefer using available tools for concrete actions. "
             "Before suggesting a tool call, provide a one-line rationale and explicit arguments. "
             "Never request blocked capabilities such as shell_commands or read_secrets."
         )
     if mode == "tool_builder":
         return (
-            base
-            + " In tool_builder mode, produce practical implementation guidance "
+            base + " In tool_builder mode, produce practical implementation guidance "
             "for generated tools. "
             "Keep outputs structured with sections: Goal, Inputs, Outputs, Files, "
             "Safety Checks, Test Plan. "
             "All file paths must stay under generated_tools/."
         )
     return (
-        base
-        + " In normal mode, answer directly and clearly. "
+        base + " In normal mode, answer directly and clearly. "
         "When relevant, include short actionable next steps."
     )

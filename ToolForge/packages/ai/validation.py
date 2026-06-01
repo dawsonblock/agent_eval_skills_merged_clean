@@ -9,6 +9,7 @@ IMPORTANT: AI ROLE BOUNDARIES
 - AI must not suggest reducing validation requirements
 - See ToolForge/docs/AI_ROLE_BOUNDARIES.md for full boundaries
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -48,7 +49,9 @@ class ValidationResult:
 
     def add_warning(self, field: str, message: str) -> None:
         """Add a warning to the result."""
-        self.warnings.append(ValidationError(field=field, message=message, severity=Severity.WARNING))
+        self.warnings.append(
+            ValidationError(field=field, message=message, severity=Severity.WARNING)
+        )
 
     def has_errors(self) -> bool:
         """Check if there are any errors."""

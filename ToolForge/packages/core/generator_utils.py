@@ -1,6 +1,7 @@
 """
 ToolForge generator utilities — shared Jinja2 environment and rendering helpers.
 """
+
 from __future__ import annotations
 
 import json

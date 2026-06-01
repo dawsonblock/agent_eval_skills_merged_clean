@@ -1,6 +1,7 @@
 """
 Doc generator — renders README.md (and future API docs) from a ToolSpec.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

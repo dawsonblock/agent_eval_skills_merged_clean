@@ -242,13 +242,13 @@ jobs:
                   print('Release manifest missing-file check passed.')
                   PY
 
+            - name: Sync canonical release pair to dist
+              run: |
+                  python scripts/sync_canonical_to_dist.py
+
             - name: Verify evidence bundle policy
               run: |
                   bash scripts/verify_evidence_bundle.sh --evidence dist/release/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
-
-            - name: Build canonical pruned smoke ZIP
-              run: |
-                  bash scripts/build_pruned_smoke_release.sh --canonical
 
             - name: Verify canonical release pair
               run: |

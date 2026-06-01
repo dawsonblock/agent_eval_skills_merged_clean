@@ -6,6 +6,7 @@ Checks:
   - server.py is importable (Python only via py_compile)
   - Tool name registration matches spec
 """
+
 from __future__ import annotations
 
 import py_compile

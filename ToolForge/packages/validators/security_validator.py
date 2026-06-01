@@ -1,6 +1,7 @@
 """
 Security validator — checks a ToolSpec against the configured security policy.
 """
+
 from __future__ import annotations
 
 import re
@@ -72,16 +73,12 @@ def validate_security(spec: ToolSpec, policy_path: Path | None = None) -> list[s
         ToolCapability.CALL_HTTP in spec.security.required_capabilities
         and not spec.security.requires_network
     ):
-        violations.append(
-            "Capability 'call_http' requires requires_network=true"
-        )
+        violations.append("Capability 'call_http' requires requires_network=true")
 
     if not spec.security.requires_network and (
         spec.security.allowed_domains or spec.security.blocked_domains
     ):
-        violations.append(
-            "Network domain rules are set but requires_network=false"
-        )
+        violations.append("Network domain rules are set but requires_network=false")
 
     # Check privacy level / approval
     if spec.security.privacy_level in (PrivacyLevel.SENSITIVE, PrivacyLevel.EVIDENCE_GRADE):
@@ -104,7 +101,9 @@ def validate_security(spec: ToolSpec, policy_path: Path | None = None) -> list[s
     )
     deny_path_traversal = bool(fs_policy.get("deny_path_traversal", True))
 
-    for allowed in (spec.security.allowed_read_paths or []) + (spec.security.allowed_write_paths or []):
+    for allowed in (spec.security.allowed_read_paths or []) + (
+        spec.security.allowed_write_paths or []
+    ):
         if deny_path_traversal and _PATH_TRAVERSAL_RE.search(allowed):
             violations.append(f"allowed_path '{allowed}' contains path traversal segments")
 
@@ -134,9 +133,7 @@ def validate_security(spec: ToolSpec, policy_path: Path | None = None) -> list[s
     for allowed in spec.security.allowed_write_paths or []:
         normalized = allowed.replace("\\", "/")
         if normalized.startswith("/") or re.match(r"^[A-Za-z]:[/\\]", allowed):
-            violations.append(
-                f"allowed_write_path '{allowed}' must be workspace-relative"
-            )
+            violations.append(f"allowed_write_path '{allowed}' must be workspace-relative")
 
     shell_policy = policy.get("shell", {})
     blocked_command_patterns = list(shell_policy.get("blocked_commands", []))

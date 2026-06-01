@@ -100,7 +100,7 @@ def run_create(
 def _validate_generated_metadata_schema(
     workspace_root: Path, skill_name: str
 ) -> None:
-    from jsonschema import validate  # type: ignore[import-untyped]
+    from jsonschema import validate
 
     schema_path = (
         Path(__file__).resolve().parent.parent

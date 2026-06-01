@@ -1,6 +1,7 @@
 """
 task_adapter — convert toolathlon task definitions into ToolForge EvalCase objects.
 """
+
 from __future__ import annotations
 
 import json

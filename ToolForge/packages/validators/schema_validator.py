@@ -1,6 +1,7 @@
 """
 Schema validator — validates a toolforge.yaml file against the ToolSpec JSON Schema.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

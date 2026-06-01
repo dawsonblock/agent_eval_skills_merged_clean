@@ -1,6 +1,7 @@
 """
 Eval runner — iterates a tool's eval cases, invokes the tool, and scores results.
 """
+
 from __future__ import annotations
 
 import json
@@ -17,7 +18,7 @@ from packages.runners.tool_runner import ToolRunResult, run_tool
 class EvalResult:
     case_id: str
     passed: bool
-    score: float          # 0.0 – 1.0
+    score: float  # 0.0 – 1.0
     details: str
     error: str = ""
 
@@ -85,9 +86,13 @@ def _score_result(
             if criterion.target is not None:
                 ok = str(criterion.target) in result.output
                 scores.append(weight if ok else 0.0)
-                detail_parts.append(f"{criterion.name}: contains '{str(criterion.target)[:30]}' {'✓' if ok else '✗'}")
+                detail_parts.append(
+                    f"{criterion.name}: contains '{str(criterion.target)[:30]}' {'✓' if ok else '✗'}"
+                )
             else:
-                raise ValueError(f"Criterion '{criterion.name}' has type CONTAINS but no target specified")
+                raise ValueError(
+                    f"Criterion '{criterion.name}' has type CONTAINS but no target specified"
+                )
 
         elif criterion.type == EvalCriterionType.REGEX_MATCH:
             if criterion.target is not None:
@@ -99,7 +104,9 @@ def _score_result(
                     scores.append(0.0)
                     detail_parts.append(f"{criterion.name}: regex_match (invalid pattern: {e})")
             else:
-                raise ValueError(f"Criterion '{criterion.name}' has type REGEX_MATCH but no target specified")
+                raise ValueError(
+                    f"Criterion '{criterion.name}' has type REGEX_MATCH but no target specified"
+                )
 
         elif criterion.type == EvalCriterionType.JSON_SCHEMA:
             try:
@@ -111,7 +118,9 @@ def _score_result(
                         detail_parts.append(f"{criterion.name}: json_schema ✓ (schema valid)")
                     except jsonschema.ValidationError as schema_err:
                         scores.append(0.0)
-                        detail_parts.append(f"{criterion.name}: json_schema ✗ ({schema_err.message[:80]})")
+                        detail_parts.append(
+                            f"{criterion.name}: json_schema ✗ ({schema_err.message[:80]})"
+                        )
                 else:
                     scores.append(weight)
                     detail_parts.append(f"{criterion.name}: json_schema ✓ (valid JSON)")
@@ -208,8 +217,7 @@ def run_evals(
     Run all eval cases defined in *spec.eval* and return an EvalReport.
     """
     report = EvalReport(
-        tool_slug=spec.slug,
-        baseline_pass_rate=spec.eval.baseline_pass_rate if spec.eval else 0.8
+        tool_slug=spec.slug, baseline_pass_rate=spec.eval.baseline_pass_rate if spec.eval else 0.8
     )
 
     if not spec.eval:
@@ -243,9 +251,7 @@ def run_evals(
                     if case.expected_output_contains not in tool_result.output:
                         passed = False
                         score = 0.0
-                        details = (
-                            f"Expected output to contain '{case.expected_output_contains}'"
-                        )
+                        details = f"Expected output to contain '{case.expected_output_contains}'"
                 if passed:
                     files_ok, file_details = _check_expected_files(tool_dir, case)
                     if not files_ok:
@@ -258,7 +264,9 @@ def run_evals(
                     passed = False
                     score = 0.0
                     details = "Case expected failure, but tool succeeded"
-                elif case.expected_error_contains and case.expected_error_contains not in error_text:
+                elif (
+                    case.expected_error_contains and case.expected_error_contains not in error_text
+                ):
                     passed = False
                     score = 0.0
                     details = (
@@ -290,4 +298,3 @@ def run_evals(
             )
 
     return report
-

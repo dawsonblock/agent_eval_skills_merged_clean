@@ -6,6 +6,7 @@ A ToolSpec is the authoritative declaration of a tool.  It is stored as
 does — generation, validation, sandbox execution, MCP wrapping, skill
 generation, eval generation, and packaging — is driven from this spec.
 """
+
 from __future__ import annotations
 
 import json
@@ -22,6 +23,7 @@ from skillforge_ai.yaml_utils import dump_yaml, load_yaml
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
+
 
 class ToolLanguage(str, Enum):
     PYTHON = "python"
@@ -69,11 +71,15 @@ class EvalCriterionType(str, Enum):
 # Parameter models
 # ---------------------------------------------------------------------------
 
+
 class ParameterSpec(BaseModel):
     """Declares a single input parameter for a tool."""
 
     name: str = Field(..., description="Parameter name (snake_case)")
-    type: str = Field(..., description="JSON-Schema primitive: string | number | integer | boolean | array | object")
+    type: str = Field(
+        ...,
+        description="JSON-Schema primitive: string | number | integer | boolean | array | object",
+    )
     description: str = Field(..., description="Human-readable description for the LLM / user")
     required: bool = Field(True, description="Whether this parameter is required")
     default: Any = Field(None, description="Default value (only when required=false)")
@@ -119,6 +125,7 @@ class OutputSpec(BaseModel):
 # Security model
 # ---------------------------------------------------------------------------
 
+
 class SecuritySpec(BaseModel):
     """Declares required capabilities and resource constraints for sandboxing."""
 
@@ -129,7 +136,7 @@ class SecuritySpec(BaseModel):
     requires_network: bool = Field(False, description="Tool needs outbound network access")
     requires_shell: bool = Field(False, description="Tool needs shell/subprocess execution")
     requires_filesystem: bool = Field(False, description="Tool needs filesystem write access")
-    
+
     # File access patterns (replaces generic allowed_paths)
     allowed_read_paths: list[str] = Field(
         default_factory=list,
@@ -141,12 +148,16 @@ class SecuritySpec(BaseModel):
     )
     blocked_paths: list[str] = Field(
         default_factory=lambda: [
-            "~/.ssh/**", "~/.aws/**", "~/.config/**",
-            "/etc/**", "/var/**", "/root/**",
+            "~/.ssh/**",
+            "~/.aws/**",
+            "~/.config/**",
+            "/etc/**",
+            "/var/**",
+            "/root/**",
         ],
         description="Filesystem paths blocked regardless of tool permissions",
     )
-    
+
     # File constraints
     allowed_extensions: list[str] = Field(
         default_factory=list,
@@ -154,7 +165,7 @@ class SecuritySpec(BaseModel):
     )
     max_file_size_mb: int = Field(50, ge=1, description="Maximum file size in MB")
     allow_symlinks: bool = Field(False, description="Allow reading/following symlinks")
-    
+
     # Network constraints
     allowed_domains: list[str] = Field(
         default_factory=list,
@@ -164,7 +175,7 @@ class SecuritySpec(BaseModel):
         default_factory=list,
         description="Domains explicitly blocked",
     )
-    
+
     # Command execution constraints
     allowed_commands: list[str] = Field(
         default_factory=list,
@@ -172,20 +183,33 @@ class SecuritySpec(BaseModel):
     )
     blocked_commands: list[str] = Field(
         default_factory=lambda: [
-            "rm", "sudo", "chmod", "chown", "curl", "wget",
-            "ssh", "scp", "kubectl", "docker", "aws",
+            "rm",
+            "sudo",
+            "chmod",
+            "chown",
+            "curl",
+            "wget",
+            "ssh",
+            "scp",
+            "kubectl",
+            "docker",
+            "aws",
         ],
         description="Commands explicitly blocked",
     )
-    
+
     # Resource limits
     max_memory_mb: int | None = Field(None, ge=1, description="Memory ceiling; None = no limit")
-    max_cpu_seconds: int | None = Field(None, ge=1, description="CPU time ceiling; None = uses global timeout")
-    
+    max_cpu_seconds: int | None = Field(
+        None, ge=1, description="CPU time ceiling; None = uses global timeout"
+    )
+
     # Metadata
     privacy_level: PrivacyLevel = Field(PrivacyLevel.INTERNAL, description="Data sensitivity level")
-    approved_by: str | None = Field(None, description="Identity that reviewed and approved security posture")
-    
+    approved_by: str | None = Field(
+        None, description="Identity that reviewed and approved security posture"
+    )
+
     @model_validator(mode="before")
     @classmethod
     def _parse_legacy_fields(cls, data: dict) -> dict:
@@ -194,34 +218,37 @@ class SecuritySpec(BaseModel):
             # Legacy allow_file_read/write → requires_filesystem + paths
             if "allow_file_read" in data:
                 import warnings
+
                 warnings.warn(
                     "security.allow_file_read is deprecated; use requires_filesystem and allowed_read_paths",
                     DeprecationWarning,
-                    stacklevel=2
+                    stacklevel=2,
                 )
                 if data.pop("allow_file_read"):
                     data["requires_filesystem"] = True
-            
+
             if "allow_file_write" in data:
                 import warnings
+
                 warnings.warn(
                     "security.allow_file_write is deprecated; use requires_filesystem and allowed_write_paths",
                     DeprecationWarning,
-                    stacklevel=2
+                    stacklevel=2,
                 )
                 if data.pop("allow_file_write"):
                     data["requires_filesystem"] = True
-            
+
             # Legacy allow_network → requires_network
             if "allow_network" in data:
                 data["requires_network"] = data.pop("allow_network")
-        
+
         return data
 
 
 # ---------------------------------------------------------------------------
 # Eval criterion
 # ---------------------------------------------------------------------------
+
 
 class EvalCriterion(BaseModel):
     """A single acceptance criterion used when evaluating tool outputs."""
@@ -231,8 +258,12 @@ class EvalCriterion(BaseModel):
     description: str = ""
     target: Any = Field(None, description="Expected value / pattern / schema / threshold")
     weight: float = Field(1.0, ge=0.0, description="Relative importance (higher = more important)")
-    max_duration_ms: float | None = Field(None, description="Max duration in ms (for PERFORMANCE criterion)")
-    script_path: str | None = Field(None, description="Relative path to evaluator script (custom_script type)")
+    max_duration_ms: float | None = Field(
+        None, description="Max duration in ms (for PERFORMANCE criterion)"
+    )
+    script_path: str | None = Field(
+        None, description="Relative path to evaluator script (custom_script type)"
+    )
 
     @field_validator("name")
     @classmethod
@@ -245,6 +276,7 @@ class EvalCriterion(BaseModel):
 # ---------------------------------------------------------------------------
 # Eval spec
 # ---------------------------------------------------------------------------
+
 
 class EvalCase(BaseModel):
     """A single eval test case (input → expected)."""
@@ -270,24 +302,39 @@ class EvalSpec(BaseModel):
     """Bundled eval configuration for a tool."""
 
     enabled: bool = Field(True, description="Whether eval is enabled")
-    criteria: list[EvalCriterion] = Field(default_factory=list, description="Global criteria applied to all cases")
+    criteria: list[EvalCriterion] = Field(
+        default_factory=list, description="Global criteria applied to all cases"
+    )
     cases: list[EvalCase] = Field(default_factory=list)
-    baseline_pass_rate: float = Field(0.8, ge=0.0, le=1.0, description="Minimum fraction of cases that must pass")
-    judge_provider: str = Field("rule_based", description="How to judge complex criteria (rule_based | openai | anthropic)")
+    baseline_pass_rate: float = Field(
+        0.8, ge=0.0, le=1.0, description="Minimum fraction of cases that must pass"
+    )
+    judge_provider: str = Field(
+        "rule_based", description="How to judge complex criteria (rule_based | openai | anthropic)"
+    )
 
 
 # ---------------------------------------------------------------------------
 # MCP spec
 # ---------------------------------------------------------------------------
 
+
 class MCPSpec(BaseModel):
     """Describes how this tool is exposed as an MCP server tool."""
 
     enabled: bool = Field(True)
-    tool_name: str | None = Field(None, description="Override the MCP tool name (defaults to tool slug)")
-    description_override: str | None = Field(None, description="Override description shown in MCP tool listing")
-    server_name: str | None = Field(None, description="MCP server name (defaults to tool slug + '-server')")
-    server_language: ToolLanguage = Field(ToolLanguage.PYTHON, description="Language for generated MCP server")
+    tool_name: str | None = Field(
+        None, description="Override the MCP tool name (defaults to tool slug)"
+    )
+    description_override: str | None = Field(
+        None, description="Override description shown in MCP tool listing"
+    )
+    server_name: str | None = Field(
+        None, description="MCP server name (defaults to tool slug + '-server')"
+    )
+    server_language: ToolLanguage = Field(
+        ToolLanguage.PYTHON, description="Language for generated MCP server"
+    )
     transport: Literal["stdio", "http"] = Field("stdio")
     port: int | None = Field(None, description="HTTP transport port (only when transport=http)")
 
@@ -295,6 +342,7 @@ class MCPSpec(BaseModel):
 # ---------------------------------------------------------------------------
 # Skill spec
 # ---------------------------------------------------------------------------
+
 
 class SkillSpec(BaseModel):
     """Describes how this tool is wrapped as an agent skill (SKILL.md)."""
@@ -314,6 +362,7 @@ class SkillSpec(BaseModel):
 # ---------------------------------------------------------------------------
 # Primary ToolSpec
 # ---------------------------------------------------------------------------
+
 
 class ToolSpec(BaseModel):
     """
@@ -365,7 +414,9 @@ class ToolSpec(BaseModel):
     eval: EvalSpec = Field(default_factory=lambda: EvalSpec())
 
     # --- Metadata ---
-    created_at: str | None = Field(None, description="ISO-8601 creation timestamp (set by toolforge)")
+    created_at: str | None = Field(
+        None, description="ISO-8601 creation timestamp (set by toolforge)"
+    )
     source_prompt: str | None = Field(
         None,
         description="The original natural-language prompt used to generate this spec (spec-from-prompt only)",

@@ -7,6 +7,7 @@ Each entry tracks:
   - spec: the full ToolSpec
   - metadata: {status, eval_score, last_run, last_validation, paths, ...}
 """
+
 from __future__ import annotations
 
 import json
@@ -42,7 +43,9 @@ class ToolRegistry:
                 self._entries = json.loads(registry_path.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, ValueError) as exc:
                 logging.getLogger(__name__).warning(
-                    "Registry file %s is corrupt or unreadable (%s); starting empty.", registry_path, exc
+                    "Registry file %s is corrupt or unreadable (%s); starting empty.",
+                    registry_path,
+                    exc,
                 )
                 self._entries = {}
 
@@ -226,7 +229,9 @@ class ToolRegistry:
                 try:
                     specs.append(ToolSpec.model_validate(spec_data))
                 except ValidationError as exc:
-                    logging.getLogger(__name__).warning("Skipping corrupt entry in list_by_status: %s", exc)
+                    logging.getLogger(__name__).warning(
+                        "Skipping corrupt entry in list_by_status: %s", exc
+                    )
         return specs
 
     def search_by_tag(self, tag: str) -> list[ToolSpec]:
@@ -239,7 +244,9 @@ class ToolRegistry:
                 try:
                     specs.append(ToolSpec.model_validate(spec_data))
                 except ValidationError as exc:
-                    logging.getLogger(__name__).warning("Skipping corrupt entry in search_by_tag: %s", exc)
+                    logging.getLogger(__name__).warning(
+                        "Skipping corrupt entry in search_by_tag: %s", exc
+                    )
         return specs
 
     def __iter__(self) -> Iterator[ToolSpec]:

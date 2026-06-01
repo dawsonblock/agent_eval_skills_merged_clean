@@ -3,6 +3,7 @@ DeepSeek provider for AI spec generation.
 
 DeepSeek uses an OpenAI-compatible API endpoint.
 """
+
 from __future__ import annotations
 
 import json
@@ -146,7 +147,10 @@ class DeepSeekProvider(AIProvider):
             model=self._model,
             messages=[
                 {"role": "system", "content": system},
-                {"role": "user", "content": f"JSON Schema:\n{schema}\n\nTool description:\n{prompt}"},
+                {
+                    "role": "user",
+                    "content": f"JSON Schema:\n{schema}\n\nTool description:\n{prompt}",
+                },
             ],
             temperature=temperature,
             max_tokens=max_tokens,

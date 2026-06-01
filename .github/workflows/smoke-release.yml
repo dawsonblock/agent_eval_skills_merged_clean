@@ -44,9 +44,9 @@ jobs:
                   print("Smoke profile target list verified:", servers)
                   PY
 
-            - name: Build Pruned Smoke Release
+            - name: Verify Canonical Pruned Smoke Release
               run: |
-                  python scripts/build_pruned_smoke_release.py --profile smoke
+                  python scripts/verify_release_pair.py --pre-evidence
 
             - name: Collect Smoke Evidence
               run: |
