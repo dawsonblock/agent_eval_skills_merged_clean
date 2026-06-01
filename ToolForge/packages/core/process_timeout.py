@@ -1,4 +1,5 @@
 """Process-tree timeout helper for subprocess execution."""
+
 from __future__ import annotations
 
 import os
@@ -11,6 +12,7 @@ from pathlib import Path
 
 class ProcessTimeoutError(Exception):
     """Raised when a subprocess times out and is killed."""
+
     pass
 
 

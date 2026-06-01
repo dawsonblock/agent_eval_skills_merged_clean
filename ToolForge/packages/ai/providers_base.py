@@ -11,6 +11,7 @@ IMPORTANT: AI ROLE BOUNDARIES
 - No autonomous file writes or command execution
 - See ToolForge/docs/AI_ROLE_BOUNDARIES.md for full boundaries
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -263,8 +264,7 @@ def get_provider(
 
     if provider_name not in providers:
         raise ValueError(
-            f"Unknown provider: {provider_name!r}. "
-            f"Available providers: {sorted(providers.keys())}"
+            f"Unknown provider: {provider_name!r}. Available providers: {sorted(providers.keys())}"
         )
 
     provider_class = providers[provider_name]

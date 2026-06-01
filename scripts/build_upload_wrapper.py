@@ -2,7 +2,8 @@
 """Build the final deterministic upload wrapper ZIP.
 
 Includes source workspace + canonical release artifacts.
-Excludes generated/vendor/cache directories.
+Excludes generated/vendor/cache directories using the release/source
+forbidden-entry policy.
 
 Usage:
     python scripts/build_upload_wrapper.py
@@ -52,6 +53,7 @@ SOURCE_INCLUDE = [
 
 EXCLUDE_PARTS = {
     ".git",
+    "__MACOSX",
     ".venv",
     "venv",
     "__pycache__",
@@ -59,10 +61,20 @@ EXCLUDE_PARTS = {
     ".mypy_cache",
     ".ruff_cache",
     "node_modules",
+    ".validation_logs",
     ".skillforge",
 }
 EXCLUDE_NAMES = {".DS_Store"}
 FIXED_DATE = (2026, 5, 27, 0, 0, 0)
+
+
+def has_path_fragment(parts: tuple[str, ...], fragment: tuple[str, ...]) -> bool:
+    if len(parts) < len(fragment):
+        return False
+    return any(
+        parts[index : index + len(fragment)] == fragment
+        for index in range(len(parts) - len(fragment) + 1)
+    )
 
 
 def should_exclude(path: Path) -> bool:
@@ -73,11 +85,17 @@ def should_exclude(path: Path) -> bool:
         return True
     if rel.parts[:2] == ("release_artifacts", "archived"):
         return True
+    if rel.parts[:2] == ("release_artifacts", "validation_logs"):
+        return True
+    if has_path_fragment(rel.parts, ("tool", "outputs")):
+        return True
     if rel.parts and rel.parts[0] == "release_artifacts" and "2026-05-28" in rel.name:
         return True
     if any(part in EXCLUDE_PARTS for part in rel.parts):
         return True
     if path.name in EXCLUDE_NAMES:
+        return True
+    if path.name.startswith("._"):
         return True
     if path.suffix in {".pyc", ".pyo"}:
         return True

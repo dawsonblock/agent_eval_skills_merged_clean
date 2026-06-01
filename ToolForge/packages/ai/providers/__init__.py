@@ -1,4 +1,5 @@
 """AI provider implementations for spec generation."""
+
 from __future__ import annotations
 
 from packages.ai.providers.ollama_generator import OllamaSpecGenerator

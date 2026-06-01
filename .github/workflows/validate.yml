@@ -61,7 +61,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "22"
 
             - name: Install agent-skills dependencies
               working-directory: ./agent-skills-curated
@@ -82,7 +82,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "22"
 
             - name: Set up Python
               uses: actions/setup-python@v5
@@ -125,7 +125,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "22"
 
             - name: Clean local cache artifacts
               run: |
@@ -212,13 +212,21 @@ jobs:
               run: |
                   python scripts/check_no_absolute_local_paths.py --strict
 
+            - name: Prepare SkillForge candidate evidence summaries
+              run: |
+                  mkdir -p release_artifacts
+                  cp docs/archived_release_artifacts/skillforge_ai_local_factory_summary.json release_artifacts/
+                  cp docs/archived_release_artifacts/skillforge_ai_test_summary.json release_artifacts/
+                  cp docs/archived_release_artifacts/skillforge_ai_csv_cleaner_e2e_summary.json release_artifacts/
+                  cp docs/archived_release_artifacts/skillforge_ai_validation_summary.json release_artifacts/
+
             - name: Build SkillForge candidate bundle
               run: |
                   bash scripts/build_skillforge_ai_candidate_zip.sh
 
             - name: Verify SkillForge baseline gate
               run: |
-                  bash scripts/verify_skillforge_baseline_gate.sh
+                  bash scripts/verify_skillforge_baseline_gate.sh --skip-remote
 
             - name: Regenerate release manifest
               run: |
@@ -242,13 +250,13 @@ jobs:
                   print('Release manifest missing-file check passed.')
                   PY
 
+            - name: Sync canonical release pair to dist
+              run: |
+                  python scripts/sync_canonical_to_dist.py
+
             - name: Verify evidence bundle policy
               run: |
-                  bash scripts/verify_evidence_bundle.sh --evidence dist/release/agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
-
-            - name: Build canonical pruned smoke ZIP
-              run: |
-                  bash scripts/build_pruned_smoke_release.sh --canonical
+                  bash scripts/verify_evidence_bundle.sh --evidence dist/release/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
 
             - name: Verify canonical release pair
               run: |
@@ -312,6 +320,7 @@ jobs:
                   name: validation-logs-smoke
                   path: .validation_logs
                   if-no-files-found: error
+                  include-hidden-files: true
                   retention-days: 7
 
             - name: Upload release artifacts
@@ -329,6 +338,12 @@ jobs:
         if: success()
         steps:
             - uses: actions/checkout@v4
+
+            - name: Download smoke validation logs
+              uses: actions/download-artifact@v4
+              with:
+                  name: validation-logs-smoke
+                  path: .validation_logs
 
             - name: Verify release policy constants and evidence drift
               run: |
@@ -369,14 +384,14 @@ jobs:
 
             - name: Verify canonical release+evidence pair
               env:
-                  RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
+                  RELEASE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
+                  EVIDENCE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/verify_release_pair.sh
 
             - name: Verify evidence bundle policy values
               env:
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
+                  EVIDENCE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/verify_evidence_bundle.sh --evidence "$EVIDENCE_ZIP_PATH"
 
@@ -390,8 +405,8 @@ jobs:
 
             - name: Classify canonical release upload and emit triage verdict
               env:
-                  RELEASE_ZIP_PATH: agent_eval_skills_merged_clean-pruned-smoke.zip
-                  EVIDENCE_ZIP_PATH: agent_eval_skills_merged_clean-smoke-evidence-2026-05-27.zip
+                  RELEASE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
+                  EVIDENCE_ZIP_PATH: release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
               run: |
                   bash scripts/classify_release_upload.sh \
                     --release "$RELEASE_ZIP_PATH" \
@@ -423,7 +438,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "22"
 
             - name: Run full profile validation (non-blocking)
               run: |

@@ -10,6 +10,7 @@ IMPORTANT: AI ROLE BOUNDARIES
 - Default values enforce security by default (shell/network disabled)
 - See ToolForge/docs/AI_ROLE_BOUNDARIES.md for full boundaries
 """
+
 from __future__ import annotations
 
 from enum import Enum
@@ -22,6 +23,7 @@ from packages.core.tool_spec import (
 
 class ValidationSeverity(str, Enum):
     """Severity level for validation errors."""
+
     ERROR = "error"
     WARNING = "warning"
     INFO = "info"
@@ -144,20 +146,14 @@ class SpecSchemaValidator:
             )
 
         if not spec.language:
-            errors.append(
-                SpecValidationError("language", "Tool language is required")
-            )
+            errors.append(SpecValidationError("language", "Tool language is required"))
 
         if not spec.entry_point or not spec.entry_point.strip():
-            errors.append(
-                SpecValidationError("entry_point", "Tool entry point is required")
-            )
+            errors.append(SpecValidationError("entry_point", "Tool entry point is required"))
 
         # Security spec is mandatory
         if not spec.security:
-            errors.append(
-                SpecValidationError("security", "Security spec is required")
-            )
+            errors.append(SpecValidationError("security", "Security spec is required"))
 
         return errors
 

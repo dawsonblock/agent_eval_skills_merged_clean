@@ -1,6 +1,7 @@
 """
 Tool runner — loads a tool spec from disk and executes the tool in a sandbox.
 """
+
 from __future__ import annotations
 
 import json
@@ -69,7 +70,6 @@ def run_tool(
             elapsed_ms=0.0,
             exit_code=1,
         )
-
 
     start = time.monotonic()
     result: SandboxResult = run_in_sandbox(

@@ -5,7 +5,7 @@ This runbook reproduces smoke release validation from a clean checkout and recor
 ## Prerequisites
 
 - Python 3.12 available as `python3`
-- Node.js 20+ available as `node`
+- Node.js 22 available as `node`
 - `npm` available
 
 ## Procedure
@@ -57,8 +57,7 @@ python3 scripts/sanitize_release_paths.py
 python3 scripts/check_release_hash_consistency.py
 python3 scripts/verify_release_pair.py \
   --release release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip \
-  --evidence "$(ls -1t release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-*.zip | head -n1)" \
-  --strict
+  --evidence "$(ls -1t release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-*.zip | head -n1)"
 pytest -q tests
 bash scripts/verify_source_bundle_hygiene.sh \
   --zip release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip

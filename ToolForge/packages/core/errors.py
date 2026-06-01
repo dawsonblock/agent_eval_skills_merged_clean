@@ -1,6 +1,7 @@
 """
 Custom exceptions with better error context and debugging hints.
 """
+
 from typing import Any, Optional
 
 

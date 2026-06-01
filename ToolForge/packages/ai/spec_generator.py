@@ -12,6 +12,7 @@ IMPORTANT: AI ROLE BOUNDARIES
 - User approval is required before scaffolding AI-generated tools
 - See ToolForge/docs/AI_ROLE_BOUNDARIES.md for full boundaries
 """
+
 from __future__ import annotations
 
 from packages.ai.generators import AzureOpenAISpecGenerator, DeepSeekSpecGeneratorWrapper
@@ -81,13 +82,9 @@ class AISpecGenerator:
         # Validate azure_openai provider requirements
         if provider == "azure_openai":
             if not azure_openai_deployment:
-                raise ValueError(
-                    "azure_openai_deployment is required for azure_openai provider"
-                )
+                raise ValueError("azure_openai_deployment is required for azure_openai provider")
             if not azure_openai_endpoint:
-                raise ValueError(
-                    "azure_openai_endpoint is required for azure_openai provider"
-                )
+                raise ValueError("azure_openai_endpoint is required for azure_openai provider")
 
         self._provider = provider
         self._backend = backend

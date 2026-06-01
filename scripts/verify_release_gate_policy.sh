@@ -31,6 +31,8 @@ required_strings=(
 
 expected_release_zip="agent_eval_skills_merged_clean-pruned-smoke.zip"
 expected_evidence_zip="agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip"
+expected_release_zip_path="release_artifacts/$expected_release_zip"
+expected_evidence_zip_path="release_artifacts/$expected_evidence_zip"
 
 declare -a files=(
   "$REPO_ROOT/.github/workflows/validate.yml"
@@ -102,23 +104,33 @@ if ! grep -Fq "name: Classify Uploaded Release Artifact" "$REPO_ROOT/.github/wor
   missing=1
 fi
 
-if ! grep -Fq "RELEASE_ZIP_PATH: $expected_release_zip" "$REPO_ROOT/.github/workflows/validate.yml"; then
-  echo "validate.yml missing canonical release zip path: $expected_release_zip" >&2
+if ! grep -Fq "RELEASE_ZIP_PATH: $expected_release_zip_path" "$REPO_ROOT/.github/workflows/validate.yml"; then
+  echo "validate.yml missing canonical release zip path: $expected_release_zip_path" >&2
   missing=1
 fi
 
-if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip" "$REPO_ROOT/.github/workflows/validate.yml"; then
-  echo "validate.yml missing canonical evidence zip path: $expected_evidence_zip" >&2
+if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip_path" "$REPO_ROOT/.github/workflows/validate.yml"; then
+  echo "validate.yml missing canonical evidence zip path: $expected_evidence_zip_path" >&2
   missing=1
 fi
 
-if ! grep -Fq "RELEASE_ZIP_PATH: $expected_release_zip" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
-  echo "release-attested-gate.yml missing canonical release zip path: $expected_release_zip" >&2
+if ! grep -Fq "RELEASE_ZIP_PATH: $expected_release_zip_path" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
+  echo "release-attested-gate.yml missing canonical release zip path: $expected_release_zip_path" >&2
   missing=1
 fi
 
-if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
-  echo "release-attested-gate.yml missing canonical evidence zip path: $expected_evidence_zip" >&2
+if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip_path" "$REPO_ROOT/.github/workflows/release-attested-gate.yml"; then
+  echo "release-attested-gate.yml missing canonical evidence zip path: $expected_evidence_zip_path" >&2
+  missing=1
+fi
+
+if ! grep -Fq "RELEASE_ZIP_PATH: $expected_release_zip_path" "$REPO_ROOT/.github/workflows/release-upload-triage.yml"; then
+  echo "release-upload-triage.yml missing canonical release zip path: $expected_release_zip_path" >&2
+  missing=1
+fi
+
+if ! grep -Fq "EVIDENCE_ZIP_PATH: $expected_evidence_zip_path" "$REPO_ROOT/.github/workflows/release-upload-triage.yml"; then
+  echo "release-upload-triage.yml missing canonical evidence zip path: $expected_evidence_zip_path" >&2
   missing=1
 fi
 

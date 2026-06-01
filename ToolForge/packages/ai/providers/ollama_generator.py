@@ -3,6 +3,7 @@ Ollama provider for local model-based spec generation.
 
 Uses the Ollama API to generate ToolSpec objects using local models.
 """
+
 from __future__ import annotations
 
 import time
@@ -37,9 +38,7 @@ class OllamaSpecGenerator(SpecGeneratorProvider):
         """Generate spec using Ollama with retry logic."""
         return self._generate_with_retry(self._generate_ollama, prompt)
 
-    def _generate_with_retry(
-        self, generator_func: Any, prompt: str
-    ) -> ToolSpec:
+    def _generate_with_retry(self, generator_func: Any, prompt: str) -> ToolSpec:
         """Generate spec with retry logic for transient errors."""
         import warnings
 
@@ -95,10 +94,7 @@ class OllamaSpecGenerator(SpecGeneratorProvider):
             "Only output the JSON object — no markdown, no explanation."
         )
 
-        user_message = (
-            f"JSON Schema:\n{schema}\n\n"
-            f"Tool description:\n{prompt}"
-        )
+        user_message = f"JSON Schema:\n{schema}\n\nTool description:\n{prompt}"
 
         response = requests.post(
             f"{self._base_url}/api/generate",

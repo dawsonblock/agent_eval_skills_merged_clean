@@ -8,6 +8,7 @@ Sandbox levels:
   3 — Docker container with resource limits
   4 — Docker container with read-only filesystem + seccomp
 """
+
 from __future__ import annotations
 
 import os
@@ -19,16 +20,33 @@ from pathlib import Path
 from packages.core.process_timeout import ProcessTimeoutError, run_with_process_tree_timeout
 
 
-_SAFE_ENV_KEYS = frozenset({
-    "PATH", "HOME", "TMPDIR", "TEMP", "TMP",
-    "LANG", "LC_ALL", "LC_CTYPE",
-    "PYTHONDONTWRITEBYTECODE", "PYTHONUNBUFFERED",
-    "VIRTUAL_ENV", "CONDA_PREFIX",
-})
+_SAFE_ENV_KEYS = frozenset(
+    {
+        "PATH",
+        "HOME",
+        "TMPDIR",
+        "TEMP",
+        "TMP",
+        "LANG",
+        "LC_ALL",
+        "LC_CTYPE",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONUNBUFFERED",
+        "VIRTUAL_ENV",
+        "CONDA_PREFIX",
+    }
+)
 
 _SECRET_SUFFIXES = (
-    "_KEY", "_SECRET", "_TOKEN", "_PASSWORD", "_PASS",
-    "_CREDENTIAL", "_CREDENTIALS", "_API_KEY", "_AUTH",
+    "_KEY",
+    "_SECRET",
+    "_TOKEN",
+    "_PASSWORD",
+    "_PASS",
+    "_CREDENTIAL",
+    "_CREDENTIALS",
+    "_API_KEY",
+    "_AUTH",
 )
 
 _DEFAULT_DOCKER_IMAGE = "python:3.12-slim"
@@ -60,8 +78,7 @@ class SandboxResult:
 def _strip_secrets(env: dict[str, str]) -> dict[str, str]:
     """Return a copy of *env* with likely-secret keys removed."""
     return {
-        k: v for k, v in env.items()
-        if not any(k.upper().endswith(s) for s in _SECRET_SUFFIXES)
+        k: v for k, v in env.items() if not any(k.upper().endswith(s) for s in _SECRET_SUFFIXES)
     }
 
 
@@ -88,9 +105,7 @@ def run_in_sandbox(
     start = time.monotonic()
 
     if sandbox_level >= 3:
-        return _run_docker(
-            cmd, sandbox_level, timeout_s, env, cwd, docker_image, start
-        )
+        return _run_docker(cmd, sandbox_level, timeout_s, env, cwd, docker_image, start)
 
     # Levels 0-2
     run_env: dict[str, str] | None
@@ -178,7 +193,7 @@ def _run_docker(
         if arg.startswith("/") and arg.endswith(".py"):
             # Tool script: if in cwd, map to /workspace
             if cwd_prefix and arg.startswith(cwd_prefix):
-                rel_path = arg[len(cwd_prefix):]
+                rel_path = arg[len(cwd_prefix) :]
                 norm_cmd.append(f"/workspace/{rel_path}")
             else:
                 norm_cmd.append(arg)
@@ -187,13 +202,14 @@ def _run_docker(
             norm_cmd.append("/usr/bin/python3")
         elif arg.startswith("/") and cwd_prefix and arg.startswith(cwd_prefix):
             # Any path within cwd: map to /workspace
-            rel_path = arg[len(cwd_prefix):]
+            rel_path = arg[len(cwd_prefix) :]
             norm_cmd.append(f"/workspace/{rel_path}")
         else:
             norm_cmd.append(arg)
 
     docker_cmd = [
-        "docker", "run",
+        "docker",
+        "run",
         "--rm",
         "--network=none",
         f"--cpus={_DOCKER_CPU_LIMIT}",

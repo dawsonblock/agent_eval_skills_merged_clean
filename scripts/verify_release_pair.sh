@@ -13,11 +13,15 @@ Defaults:
   --lock     release_artifacts/release_lock.json
   --release  value from release_lock.json.release_zip
   --evidence value from release_lock.json.evidence_zip
+
+Environment:
+  RELEASE_ZIP_PATH   Default --release path when no CLI value is provided
+  EVIDENCE_ZIP_PATH  Default --evidence path when no CLI value is provided
 USAGE
 }
 
-RELEASE_PATH=""
-EVIDENCE_PATH=""
+RELEASE_PATH="${RELEASE_ZIP_PATH:-}"
+EVIDENCE_PATH="${EVIDENCE_ZIP_PATH:-}"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -45,32 +49,13 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ -z "$RELEASE_PATH" ]; then
-  RELEASE_PATH="$(python3 - "$LOCK_PATH" <<'PY'
-import json
-import sys
-from pathlib import Path
-p = Path(sys.argv[1])
-lock = json.loads(p.read_text(encoding='utf-8'))
-print(lock['release_zip'])
-PY
-)"
-fi
-
-if [ -z "$EVIDENCE_PATH" ]; then
-  EVIDENCE_PATH="$(python3 - "$LOCK_PATH" <<'PY'
-import json
-import sys
-from pathlib import Path
-p = Path(sys.argv[1])
-lock = json.loads(p.read_text(encoding='utf-8'))
-print(lock['evidence_zip'])
-PY
-)"
-fi
-
 cd "$REPO_ROOT"
-python3 scripts/verify_release_pair.py \
-  --release "$RELEASE_PATH" \
-  --evidence "$EVIDENCE_PATH" \
-  --lock "$LOCK_PATH"
+verify_args=(--lock "$LOCK_PATH")
+if [ -n "$RELEASE_PATH" ]; then
+  verify_args+=(--release "$RELEASE_PATH")
+fi
+if [ -n "$EVIDENCE_PATH" ]; then
+  verify_args+=(--evidence "$EVIDENCE_PATH")
+fi
+
+python3 scripts/verify_release_pair.py "${verify_args[@]}"

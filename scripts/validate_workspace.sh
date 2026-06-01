@@ -253,12 +253,18 @@ smoke_targets = profile_payload.get("servers", [])
 if not isinstance(smoke_targets, list):
     smoke_targets = []
 
+full_profile_path = repo_root / "toolathlon-gym-curated" / "profiles" / "full" / "mcp_servers.json"
+full_profile_payload = load_json(full_profile_path)
+full_targets = full_profile_payload.get("servers", [])
+if not isinstance(full_targets, list):
+    full_targets = []
+
 release_status = load_json(repo_root / "RELEASE_STATUS.json")
 excluded_smoke_targets = release_status.get("excluded_smoke_targets")
 if excluded_smoke_targets is None:
-  excluded_smoke_targets = release_status.get("removed_smoke_targets", [])
+    excluded_smoke_targets = release_status.get("removed_smoke_targets")
 if not isinstance(excluded_smoke_targets, list):
-    excluded_smoke_targets = []
+    excluded_smoke_targets = [target for target in full_targets if target not in smoke_targets]
 
 full_profile_validated = release_status.get("full_profile_validated")
 if not isinstance(full_profile_validated, bool):

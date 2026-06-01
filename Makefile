@@ -116,10 +116,6 @@ release-zip:    ## Build and validate a metadata-clean distribution ZIP
 package-clean-zip: ## Build requested pruned-smoke clean ZIP name/location
 	bash scripts/package_clean_zip.sh
 
-.PHONY: verify-release-pair
-verify-release-pair: ## Verify release+evidence ZIPs match canonical attested filenames/hashes
-	bash scripts/verify_release_pair.sh
-
 .PHONY: prepublish-gate
 prepublish-gate: verify-release-pair ## Fail-closed local pre-publish gate for canonical attested pair
 
@@ -229,6 +225,7 @@ operator-release-upload-triage: ## Run upload triage helper and print manual che
 
 CANONICAL_RELEASE_ZIP := release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip
 CANONICAL_EVIDENCE_ZIP := release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-2026-05-31.zip
+UPLOAD_WRAPPER_ZIP ?= /tmp/agent_eval_skills_merged_clean-upload-wrapper.zip
 
 .PHONY: clean-workspace-artifacts
 clean-workspace-artifacts: ## Remove macOS metadata, cache dirs, and transient artifacts
@@ -249,6 +246,11 @@ verify-evidence-bundle: ## Verify evidence bundle satisfies smoke-profile policy
 .PHONY: verify-source-bundle-hygiene
 verify-source-bundle-hygiene: ## Verify canonical release ZIP satisfies source hygiene
 	@bash scripts/verify_source_bundle_hygiene.sh --zip $(CANONICAL_RELEASE_ZIP)
+
+.PHONY: verify-upload-wrapper-hygiene
+verify-upload-wrapper-hygiene: ## Build upload wrapper ZIP and verify source hygiene
+	@python3 scripts/build_upload_wrapper.py --out $(UPLOAD_WRAPPER_ZIP)
+	@bash scripts/verify_source_bundle_hygiene.sh --zip $(UPLOAD_WRAPPER_ZIP)
 
 .PHONY: validate-release-policy-drift
 validate-release-policy-drift: ## Verify canonical release-policy constants have not drifted
@@ -285,6 +287,7 @@ validate-agent-skill-packages: ## Validate all 23 agent skill package ZIPs
 
 .PHONY: toolathlon-smoke
 toolathlon-smoke: ## Run Toolathlon smoke profile checks
+	@cd toolathlon-gym-curated && TOOLATHLON_PROFILE=smoke bash scripts/build_required_mcp_artifacts.sh
 	@bash scripts/check_toolathlon_smoke_profile.sh
 
 .PHONY: classify-release

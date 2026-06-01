@@ -2,6 +2,7 @@
 Structured logging for ToolForge.
 JSON-formatted logs for production use, human-readable for development.
 """
+
 import json
 import logging
 import sys

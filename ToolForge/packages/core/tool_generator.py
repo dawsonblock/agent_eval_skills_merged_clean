@@ -9,6 +9,7 @@ Creates:
     └── tests/
         └── test_{slug}.py
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -328,8 +329,14 @@ _LOCAL_FILE_HASHER_SAMPLE = """ToolForge local-file-hasher sample file.
 
 
 def _ctx(spec: ToolSpec) -> dict[str, Any]:
-    type_map = {"string": "str", "number": "float", "integer": "int",
-                "boolean": "bool", "array": "list", "object": "dict"}
+    type_map = {
+        "string": "str",
+        "number": "float",
+        "integer": "int",
+        "boolean": "bool",
+        "array": "list",
+        "object": "dict",
+    }
     output_type = type_map.get(spec.output.type, "Any")
     return {
         "spec": spec,
@@ -444,9 +451,9 @@ def _generate_test(spec: ToolSpec) -> str:
 
     slug_id = spec.slug.replace("-", "_")
     lines = [
-        "\"\"\"",
+        '"""',
         f"Auto-generated tests for {spec.slug}.",
-        "\"\"\"",
+        '"""',
         "import pytest",
         "import sys",
         "from pathlib import Path",
@@ -464,7 +471,7 @@ def _generate_test(spec: ToolSpec) -> str:
             lines.append("    try:")
             lines.append(f"        result = run({kw})")
             lines.append("    except NotImplementedError:")
-            lines.append("        pytest.skip(\"Tool implementation is pending\")")
+            lines.append('        pytest.skip("Tool implementation is pending")')
             if case.expected_output is not None:
                 lines.append(f"    assert result == {case.expected_output!r}")
             else:

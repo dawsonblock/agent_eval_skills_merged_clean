@@ -15,6 +15,7 @@ Commands:
   toolforge registry list|search|info     — manage tool registry
   toolforge install SKILL_PATH            — install a legacy skill
 """
+
 from __future__ import annotations
 
 import sys
@@ -111,20 +112,41 @@ def ai() -> None:
 @click.option(
     "--provider",
     default="rule_based",
-    type=click.Choice(["rule_based", "mock", "openai", "anthropic", "ollama", "azure_openai", "deepseek"]),
+    type=click.Choice(
+        ["rule_based", "mock", "openai", "anthropic", "ollama", "azure_openai", "deepseek"]
+    ),
     help="AI provider to use for spec generation.",
 )
-@click.option("--backend", default="openai", type=click.Choice(["openai", "anthropic"]), help="LLM backend for llm provider.")
+@click.option(
+    "--backend",
+    default="openai",
+    type=click.Choice(["openai", "anthropic"]),
+    help="LLM backend for llm provider.",
+)
 @click.option("--model", default=None, help="Override default model for the provider.")
-@click.option("--azure-deployment", default=None, help="Azure OpenAI deployment name (required for azure_openai provider).")
-@click.option("--azure-endpoint", default=None, help="Azure OpenAI endpoint URL (required for azure_openai provider).")
-@click.option("--output", "-o", default=None, type=click.Path(), help="Output file path (default: stdout).")
+@click.option(
+    "--azure-deployment",
+    default=None,
+    help="Azure OpenAI deployment name (required for azure_openai provider).",
+)
+@click.option(
+    "--azure-endpoint",
+    default=None,
+    help="Azure OpenAI endpoint URL (required for azure_openai provider).",
+)
+@click.option(
+    "--output", "-o", default=None, type=click.Path(), help="Output file path (default: stdout)."
+)
 @click.option("--stdout", is_flag=True, help="Print spec to stdout instead of writing file.")
 @click.option("--interactive", is_flag=True, help="Interactive mode: review spec before writing.")
 @click.option("--dry-run", is_flag=True, help="Generate spec without writing any files.")
-@click.option("--max-retries", default=3, type=int, help="Number of retry attempts for transient errors.")
+@click.option(
+    "--max-retries", default=3, type=int, help="Number of retry attempts for transient errors."
+)
 @click.option("--timeout", default=30, type=int, help="Timeout in seconds for API calls.")
-@click.option("--fallback-to-rule-based", is_flag=True, help="Fallback to rule-based on AI failure.")
+@click.option(
+    "--fallback-to-rule-based", is_flag=True, help="Fallback to rule-based on AI failure."
+)
 def ai_spec(
     prompt: str,
     provider: str,
@@ -209,15 +231,36 @@ def new() -> None:
 @new.command("tool")
 @click.option("--from-prompt", "prompt", required=True, help="Natural-language tool description.")
 @click.option("--slug", default=None, help="Override the generated slug.")
-@click.option("--provider", default="rule_based", type=click.Choice(["rule_based", "llm", "openai", "anthropic", "ollama", "azure_openai"]))
-@click.option("--llm-backend", default="openai", type=click.Choice(["openai", "anthropic"]), help="LLM backend for llm provider.")
+@click.option(
+    "--provider",
+    default="rule_based",
+    type=click.Choice(["rule_based", "llm", "openai", "anthropic", "ollama", "azure_openai"]),
+)
+@click.option(
+    "--llm-backend",
+    default="openai",
+    type=click.Choice(["openai", "anthropic"]),
+    help="LLM backend for llm provider.",
+)
 @click.option("--model", default=None, help="Override default model for the provider.")
-@click.option("--azure-deployment", default=None, help="Azure OpenAI deployment name (required for azure_openai provider).")
-@click.option("--azure-endpoint", default=None, help="Azure OpenAI endpoint URL (required for azure_openai provider).")
+@click.option(
+    "--azure-deployment",
+    default=None,
+    help="Azure OpenAI deployment name (required for azure_openai provider).",
+)
+@click.option(
+    "--azure-endpoint",
+    default=None,
+    help="Azure OpenAI endpoint URL (required for azure_openai provider).",
+)
 @click.option("--overwrite", is_flag=True, help="Overwrite existing files.")
 @click.option("--review", is_flag=True, help="Review spec before scaffolding.")
-@click.option("--fallback-to-rule-based", is_flag=True, help="Fallback to rule-based on AI failure.")
-@click.option("--max-retries", default=3, type=int, help="Number of retry attempts for transient errors.")
+@click.option(
+    "--fallback-to-rule-based", is_flag=True, help="Fallback to rule-based on AI failure."
+)
+@click.option(
+    "--max-retries", default=3, type=int, help="Number of retry attempts for transient errors."
+)
 @click.option("--timeout", default=30, type=int, help="Timeout in seconds for API calls.")
 def new_tool(
     prompt: str,
@@ -334,6 +377,7 @@ def generate_mcp(slug: str, overwrite: bool) -> None:
         console.print(f"  [green]+[/] {p.relative_to(workspace_root)}")
 
     from packages.core.registry import ToolRegistry
+
     registry = ToolRegistry(_registry_path(workspace_root))
     registry.set_mcp_path(slug, td / "mcp")
 
@@ -358,6 +402,7 @@ def generate_skill(slug: str, overwrite: bool) -> None:
         console.print(f"  [green]+[/] {p.relative_to(workspace_root)}")
 
     from packages.core.registry import ToolRegistry
+
     registry = ToolRegistry(_registry_path(workspace_root))
     registry.set_skill_path(slug, td / "skill")
 
@@ -382,6 +427,7 @@ def generate_eval(slug: str, overwrite: bool) -> None:
         console.print(f"  [green]+[/] {p.relative_to(workspace_root)}")
 
     from packages.core.registry import ToolRegistry
+
     registry = ToolRegistry(_registry_path(workspace_root))
     registry.set_eval_path(slug, td / "evals")
 
@@ -467,9 +513,15 @@ def validate(slug: str) -> None:
     if spec.eval.enabled:
         console.print("[bold]Eval artifact validation...[/]", end=" ")
         cases_dir = evals_dir / "cases"
-        if not (evals_dir / "task_config.json").exists() or not cases_dir.exists() or not list(cases_dir.glob("*.json")):
+        if (
+            not (evals_dir / "task_config.json").exists()
+            or not cases_dir.exists()
+            or not list(cases_dir.glob("*.json"))
+        ):
             console.print("[red]✗[/]")
-            console.print("  [red]Eval artifacts are incomplete (task_config.json and case files required)[/]")
+            console.print(
+                "  [red]Eval artifacts are incomplete (task_config.json and case files required)[/]"
+            )
             all_ok = False
         else:
             console.print("[green]✓[/]")
@@ -510,6 +562,7 @@ def validate(slug: str) -> None:
         all_ok = False
 
     from packages.core.registry import ToolRegistry
+
     registry = ToolRegistry(_registry_path(workspace_root))
     registry.set_validation_result(slug, all_ok)
     registry.set_status(slug, "validated" if all_ok else "failed")
@@ -526,7 +579,9 @@ def validate(slug: str) -> None:
 
 @cli.command()
 @click.argument("slug")
-@click.option("--input", "inputs", multiple=True, metavar="KEY=VALUE", help="Input key=value pairs.")
+@click.option(
+    "--input", "inputs", multiple=True, metavar="KEY=VALUE", help="Input key=value pairs."
+)
 @click.option("--timeout", default=30.0, help="Timeout in seconds.")
 def run(slug: str, inputs: tuple[str, ...], timeout: float) -> None:
     """Run tool SLUG with the given inputs."""
@@ -548,6 +603,7 @@ def run(slug: str, inputs: tuple[str, ...], timeout: float) -> None:
     result = run_tool(spec, td, parsed, timeout_s=timeout)
 
     from packages.core.registry import ToolRegistry
+
     registry = ToolRegistry(_registry_path(workspace_root))
     run_type = "normal"
     operational_success = result.success
@@ -562,9 +618,7 @@ def run(slug: str, inputs: tuple[str, ...], timeout: float) -> None:
         "matches blocked_paths policy",
         "Symlink inputs are not allowed",
     )
-    if (not result.success) and any(
-        phrase in result.error for phrase in _GUARDRAIL_PHRASES
-    ):
+    if (not result.success) and any(phrase in result.error for phrase in _GUARDRAIL_PHRASES):
         run_type = "safety_test"
         operational_success = True
     registry.set_last_run(
@@ -603,6 +657,7 @@ def eval_cmd(slug: str, timeout: float) -> None:
     report = run_evals(spec, td, timeout_s=timeout)
 
     from packages.core.registry import ToolRegistry
+
     registry = ToolRegistry(_registry_path(workspace_root))
     registry.set_eval_score(slug, report.pass_rate)
     registry.set_status(slug, "eval_passed" if report.overall_pass else "failed")
@@ -645,6 +700,7 @@ def package(slug: str, dist_dir: str | None) -> None:
     archive = build_package(spec, td, dist)
 
     from packages.core.registry import ToolRegistry
+
     registry = ToolRegistry(_registry_path(workspace_root))
     registry.set_package_path(slug, archive)
     registry.set_status(slug, "packaged")
@@ -808,7 +864,9 @@ def doctor() -> None:
             all_ok = False
 
     workspace_root = _find_workspace_root()
-    hygiene_root = workspace_root / "ToolForge" if (workspace_root / "ToolForge").exists() else workspace_root
+    hygiene_root = (
+        workspace_root / "ToolForge" if (workspace_root / "ToolForge").exists() else workspace_root
+    )
     hygiene_report = scan_repo_hygiene(hygiene_root)
     if hygiene_report.has_issues:
         all_ok = False

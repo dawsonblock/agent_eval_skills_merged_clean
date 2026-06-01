@@ -1,4 +1,5 @@
 """Repository hygiene checks for merge markers and duplicated legacy trees."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

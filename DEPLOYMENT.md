@@ -18,7 +18,7 @@ Wrapper/source ZIP uploads and independently regenerated ZIPs are not the attest
 
 ## System Requirements
 
-- Python 3.9-3.12 (3.12 preferred for release-proof validation runs)
+- Python 3.12 for release-proof validation runs (ToolForge supports 3.9-3.12 for development)
 - PostgreSQL 14+ (for toolathlon-gym-curated)
 - Docker & Docker Compose (optional, for sandboxed execution)
 - 2GB free disk space

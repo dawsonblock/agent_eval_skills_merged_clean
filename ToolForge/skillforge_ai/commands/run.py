@@ -249,8 +249,8 @@ def _run_python_entrypoint(
     except subprocess.TimeoutExpired as exc:
         elapsed_ms = (time.monotonic() - start) * 1000
         return ToolRunResult(
-            output=exc.stdout or "",
-            error=exc.stderr or "Tool execution timed out",
+            output=_timeout_output_to_text(exc.stdout),
+            error=_timeout_output_to_text(exc.stderr) or "Tool execution timed out",
             elapsed_ms=elapsed_ms,
             exit_code=1,
         )
@@ -261,3 +261,11 @@ def _run_python_entrypoint(
         elapsed_ms=elapsed_ms,
         exit_code=completed.returncode,
     )
+
+
+def _timeout_output_to_text(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value

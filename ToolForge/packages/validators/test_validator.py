@@ -1,6 +1,7 @@
 """
 Test validator — runs pytest against a tool's test directory and reports results.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -12,12 +13,12 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from packages.core.process_timeout import (  # type: ignore[import-untyped]
+from packages.core.process_timeout import (
     ProcessTimeoutError,
     run_with_process_tree_timeout,
 )
-from packages.core.safety_analyzer import analyze_safety  # type: ignore[import-untyped]
-from packages.core.tool_spec import ToolSpec  # type: ignore[import-untyped]
+from packages.core.safety_analyzer import analyze_safety
+from packages.core.tool_spec import ToolSpec
 
 
 @dataclass
@@ -113,9 +114,7 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
     nested_env["TOOLFORGE_NESTED_PYTEST"] = "1"
 
     try:
-        result = run_with_process_tree_timeout(
-            cmd, tool_dir, nested_env, timeout, grace_period=0.5
-        )
+        result = run_with_process_tree_timeout(cmd, tool_dir, nested_env, timeout, grace_period=0.5)
     except ProcessTimeoutError as exc:
         # Timeout occurred - consolidated helper already killed process
         report.errors = 1
@@ -166,10 +165,12 @@ def run_tests(tool_dir: Path, timeout: float = 60) -> TestReport:
             parsed_json = True
             for test in data.get("tests", []):
                 if test.get("outcome") in ("failed", "error"):
-                    report.failures.append({
-                        "nodeid": test.get("nodeid", ""),
-                        "message": test.get("call", {}).get("longrepr", ""),
-                    })
+                    report.failures.append(
+                        {
+                            "nodeid": test.get("nodeid", ""),
+                            "message": test.get("call", {}).get("longrepr", ""),
+                        }
+                    )
         except (json.JSONDecodeError, KeyError) as exc:
             parse_error = str(exc)
         finally:
@@ -233,12 +234,14 @@ def run_safety_checks(spec: ToolSpec, tool_dir: Path) -> TestReport:
             report.errors = len([i for i in safety_report.issues if i.severity == "error"])
             for issue in safety_report.issues:
                 if issue.severity == "error":
-                    report.failures.append({
-                        "code": issue.code,
-                        "message": issue.message,
-                        "file": issue.file,
-                        "line": issue.line,
-                    })
+                    report.failures.append(
+                        {
+                            "code": issue.code,
+                            "message": issue.message,
+                            "file": issue.file,
+                            "line": issue.line,
+                        }
+                    )
         else:
             # Safety checks passed
             report.passed = 1

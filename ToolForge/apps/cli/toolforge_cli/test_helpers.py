@@ -1,4 +1,5 @@
 """Helpers for subprocess-based ToolForge CLI end-to-end tests."""
+
 from __future__ import annotations
 
 import os
@@ -37,11 +38,8 @@ def running_under_pytest(env: dict[str, str]) -> bool:
 def build_toolforge_command(env: dict[str, str]) -> tuple[list[str], Path | None, dict[str, str]]:
     """Build the toolforge command and cleaned environment for subprocess execution."""
     root = find_toolforge_root()
-    use_module = (
-        env.get("TOOLFORGE_TEST_USE_MODULE_CLI") == "1"
-        or running_under_pytest(env)
-    )
-    
+    use_module = env.get("TOOLFORGE_TEST_USE_MODULE_CLI") == "1" or running_under_pytest(env)
+
     cleaned_env = env.copy()
     for key in (
         "PYTEST_CURRENT_TEST",
@@ -54,20 +52,20 @@ def build_toolforge_command(env: dict[str, str]) -> tuple[list[str], Path | None
     cleaned_env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
     cleaned_env["PYTHONDONTWRITEBYTECODE"] = "1"
     cleaned_env["PYTHONUNBUFFERED"] = "1"
-    
+
     existing_pythonpath = cleaned_env.get("PYTHONPATH", "")
     paths = [str(root), str(root / "apps" / "cli")]
     if existing_pythonpath:
         paths.append(existing_pythonpath)
     cleaned_env["PYTHONPATH"] = os.pathsep.join(paths)
-    
+
     if use_module:
         return [sys.executable, "-m", "apps.cli.toolforge_cli.main"], root, cleaned_env
-    
+
     cli_path = shutil.which("toolforge")
     if cli_path:
         return [cli_path], None, cleaned_env
-    
+
     # Fallback should be deterministic, not implicit-PYTHONPATH-dependent
     return [sys.executable, "-m", "apps.cli.toolforge_cli.main"], root, cleaned_env
 

@@ -4,6 +4,7 @@ Skill validator — checks SKILL.md structure against the toolforge schema.
 Ported from:
   legacy/agent-skills-curated/evals/validators/structural.js
 """
+
 from __future__ import annotations
 
 import re
@@ -48,14 +49,14 @@ def validate_skill_file(skill_path: Path) -> list[str]:
     else:
         fm_text = fm_match.group(1)
         for key in REQUIRED_FRONTMATTER_KEYS:
-            if not re.search(rf'^{re.escape(key)}\s*:', fm_text, re.MULTILINE):
+            if not re.search(rf"^{re.escape(key)}\s*:", fm_text, re.MULTILINE):
                 errors.append(f"Frontmatter missing required key: '{key}'")
 
     # --- Section check ---
     # Anchor the pattern to end-of-line so '## Purposeful' does not satisfy
     # the '## Purpose' requirement.
     for section in REQUIRED_SECTIONS:
-        if not re.search(rf'^#+\s+{re.escape(section)}\s*$', content, re.MULTILINE | re.IGNORECASE):
+        if not re.search(rf"^#+\s+{re.escape(section)}\s*$", content, re.MULTILINE | re.IGNORECASE):
             errors.append(f"Missing required section: '## {section}'")
 
     # --- Minimum length ---

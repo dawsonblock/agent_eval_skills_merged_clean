@@ -2,8 +2,8 @@
 
 **A unified workspace for building and evaluating AI agent tools.**
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://python.org)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Protocol-6B46C1)](https://modelcontextprotocol.io)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
 [![License: Apache--2.0](https://img.shields.io/badge/License-Apache--2.0-22c55e)](LICENSE)
@@ -404,8 +404,8 @@ Toolathlon's terminal-style MCP tooling is powerful. **Only run it inside dispos
 
 | Tool | Version |
 | ------ | --------- |
-| Python | 3.9+ |
-| Node.js | 18+ |
+| Python | 3.12 for release validation; ToolForge supports 3.9-3.12 |
+| Node.js | 22 for release validation |
 | Docker | 24+ |
 | Docker Compose | v2+ |
 

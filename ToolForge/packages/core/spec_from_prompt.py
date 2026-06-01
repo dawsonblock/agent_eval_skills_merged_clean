@@ -5,6 +5,7 @@ Providers:
   RuleBasedSpecGenerator — keyword/heuristic extraction, no LLM required (DEFAULT)
   LLMSpecGenerator       — structured output via OpenAI / Anthropic
 """
+
 from __future__ import annotations
 
 import re
@@ -89,7 +90,7 @@ def _detect_language(prompt: str) -> ToolLanguage:
 def _extract_name(prompt: str) -> str:
     """Best-effort name extraction from prompt."""
     # "Create a tool that …" → use first noun phrase after "tool"
-    m = re.search(r'\btool\s+(?:that|to|for|which)\s+(.+?)(?:[.,!?]|$)', prompt, re.IGNORECASE)
+    m = re.search(r"\btool\s+(?:that|to|for|which)\s+(.+?)(?:[.,!?]|$)", prompt, re.IGNORECASE)
     if m:
         phrase = m.group(1).strip()
         # Capitalise words, limit to 5 words
@@ -102,7 +103,7 @@ def _extract_name(prompt: str) -> str:
         return m2.group(1).strip().title()
 
     # Fall back to first 4 words
-    words = re.sub(r'[^a-zA-Z0-9 ]', '', prompt).split()[:4]
+    words = re.sub(r"[^a-zA-Z0-9 ]", "", prompt).split()[:4]
     return " ".join(w.capitalize() for w in words) or "Generated Tool"
 
 
@@ -121,10 +122,28 @@ def _extract_tags(prompt: str) -> list[str]:
     tags: list[str] = []
     lower = prompt.lower()
     candidates = [
-        "csv", "json", "pdf", "excel", "yaml", "xml",
-        "web", "api", "http", "file", "text", "image",
-        "python", "typescript", "bash", "sql",
-        "lint", "format", "validate", "convert", "parse", "extract",
+        "csv",
+        "json",
+        "pdf",
+        "excel",
+        "yaml",
+        "xml",
+        "web",
+        "api",
+        "http",
+        "file",
+        "text",
+        "image",
+        "python",
+        "typescript",
+        "bash",
+        "sql",
+        "lint",
+        "format",
+        "validate",
+        "convert",
+        "parse",
+        "extract",
     ]
     for c in candidates:
         if c in lower:
@@ -186,7 +205,7 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                     description="Path where cleaned CSV will be written (e.g., outputs/cleaned.csv)",
                     required=False,
                     default="outputs/cleaned.csv",
-                )
+                ),
             ]
         elif slug == "json-schema-validator":
             params = [
@@ -325,7 +344,9 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                     expected_success=True,
                     expected_output_contains='"valid": true',
                     expected_files=[
-                        EvalCase.ExpectedFile(path="outputs/validation_report.json", should_exist=True)
+                        EvalCase.ExpectedFile(
+                            path="outputs/validation_report.json", should_exist=True
+                        )
                     ],
                     tags=["smoke"],
                 ),
@@ -340,7 +361,9 @@ class RuleBasedSpecGenerator(SpecGeneratorProvider):
                     expected_success=True,
                     expected_output_contains='"valid": false',
                     expected_files=[
-                        EvalCase.ExpectedFile(path="outputs/validation_invalid_report.json", should_exist=True)
+                        EvalCase.ExpectedFile(
+                            path="outputs/validation_invalid_report.json", should_exist=True
+                        )
                     ],
                     tags=["edge-case"],
                 ),
@@ -543,9 +566,7 @@ class LLMSpecGenerator(SpecGeneratorProvider):
             return self._generate_with_retry(self._generate_anthropic, prompt)
         raise ValueError(f"Unknown LLM backend: {self._backend!r}")
 
-    def _generate_with_retry(
-        self, generator_func: Any, prompt: str
-    ) -> ToolSpec:
+    def _generate_with_retry(self, generator_func: Any, prompt: str) -> ToolSpec:
         """Generate spec with retry logic for transient errors."""
         last_error: Exception | None = None
 
@@ -599,8 +620,7 @@ class LLMSpecGenerator(SpecGeneratorProvider):
 
         if "OPENAI_API_KEY" not in os.environ:
             raise ValueError(
-                "OPENAI_API_KEY environment variable not set. "
-                "Set it to use OpenAI backend."
+                "OPENAI_API_KEY environment variable not set. Set it to use OpenAI backend."
             )
 
         client = openai.OpenAI(
@@ -620,10 +640,7 @@ class LLMSpecGenerator(SpecGeneratorProvider):
                 {"role": "system", "content": system},
                 {
                     "role": "user",
-                    "content": (
-                        f"JSON Schema:\n{schema}\n\n"
-                        f"Tool description:\n{prompt}"
-                    ),
+                    "content": (f"JSON Schema:\n{schema}\n\nTool description:\n{prompt}"),
                 },
             ],
             response_format={"type": "json_object"},
@@ -644,8 +661,7 @@ class LLMSpecGenerator(SpecGeneratorProvider):
 
         if "ANTHROPIC_API_KEY" not in os.environ:
             raise ValueError(
-                "ANTHROPIC_API_KEY environment variable not set. "
-                "Set it to use Anthropic backend."
+                "ANTHROPIC_API_KEY environment variable not set. Set it to use Anthropic backend."
             )
 
         client = anthropic.Anthropic(
@@ -685,9 +701,7 @@ class LLMSpecGenerator(SpecGeneratorProvider):
         try:
             return ToolSpec.model_validate_json(text)
         except Exception as e:
-            raise ValueError(
-                f"Failed to validate Anthropic response as ToolSpec: {e}"
-            ) from e
+            raise ValueError(f"Failed to validate Anthropic response as ToolSpec: {e}") from e
 
 
 class OpenAISpecGenerator(SpecGeneratorProvider):

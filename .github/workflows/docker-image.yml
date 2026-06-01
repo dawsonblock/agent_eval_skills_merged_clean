@@ -15,4 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the Docker image
-        run: docker build toolathlon-gym-curated/ --file toolathlon-gym-curated/Dockerfile --tag my-image-name:$(date +%s)
+        run: TOOLATHLON_PROFILE=smoke bash toolathlon-gym-curated/scripts/validate_docker.sh

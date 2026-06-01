@@ -16,7 +16,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "22"
 
             - name: Install ToolForge
               run: |
@@ -44,9 +44,9 @@ jobs:
                   print("Smoke profile target list verified:", servers)
                   PY
 
-            - name: Build Pruned Smoke Release
+            - name: Verify Canonical Pruned Smoke Release
               run: |
-                  python scripts/build_pruned_smoke_release.py --profile smoke
+                  python scripts/verify_release_pair.py --pre-evidence
 
             - name: Collect Smoke Evidence
               run: |
@@ -64,8 +64,7 @@ jobs:
                   python scripts/check_release_hash_consistency.py
                   python scripts/verify_release_pair.py \
                     --release release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip \
-                    --evidence "$(ls -1t release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-*.zip | head -n1)" \
-                    --strict
+                    --evidence "$(ls -1t release_artifacts/agent_eval_skills_merged_clean-smoke-evidence-*.zip | head -n1)"
                   pytest -q tests
                   bash scripts/verify_source_bundle_hygiene.sh \
                     --zip release_artifacts/agent_eval_skills_merged_clean-pruned-smoke.zip

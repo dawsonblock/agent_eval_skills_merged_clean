@@ -9,6 +9,7 @@ IMPORTANT: AI ROLE BOUNDARIES
 - No autonomous file writes or command execution
 - See ToolForge/docs/AI_ROLE_BOUNDARIES.md for full boundaries
 """
+
 from __future__ import annotations
 
 from packages.ai.validation import ValidationResult, ValidationError
@@ -17,9 +18,7 @@ from packages.ai.validation import ValidationResult, ValidationError
 class PromptRefiner:
     """Analyzes validation errors and suggests prompt improvements."""
 
-    def suggest_improvements(
-        self, prompt: str, validation_result: ValidationResult
-    ) -> list[str]:
+    def suggest_improvements(self, prompt: str, validation_result: ValidationResult) -> list[str]:
         """
         Generate suggestions for improving the prompt based on validation errors.
 
@@ -65,9 +64,7 @@ class PromptRefiner:
             )
 
         if error.field == "version":
-            suggestions.append(
-                "Specify a version for the tool (e.g., 'version 1.0.0')."
-            )
+            suggestions.append("Specify a version for the tool (e.g., 'version 1.0.0').")
 
         if error.field == "language":
             suggestions.append(
@@ -75,9 +72,7 @@ class PromptRefiner:
             )
 
         if error.field == "entry_point":
-            suggestions.append(
-                "Specify the entry point file (e.g., 'tool.py' or 'index.ts')."
-            )
+            suggestions.append("Specify the entry point file (e.g., 'tool.py' or 'index.ts').")
 
         if error.field.startswith("security"):
             if "allowed_read_paths" in error.field:
@@ -104,9 +99,7 @@ class PromptRefiner:
                     "Specify the data types for each parameter (e.g., string, integer, boolean)."
                 )
             if "description" in error.field:
-                suggestions.append(
-                    "Add descriptions for each parameter explaining what they do."
-                )
+                suggestions.append("Add descriptions for each parameter explaining what they do.")
 
         return suggestions
 
@@ -120,9 +113,7 @@ class PromptRefiner:
             )
 
         if warning.field == "security.privacy_level":
-            suggestions.append(
-                "Specify the privacy level for the tool (e.g., INTERNAL, PUBLIC)."
-            )
+            suggestions.append("Specify the privacy level for the tool (e.g., INTERNAL, PUBLIC).")
 
         if warning.field == "eval":
             suggestions.append(
@@ -140,15 +131,11 @@ class PromptRefiner:
             )
 
         if warning.field == "parameters":
-            suggestions.append(
-                "Consider adding more parameters to make the tool more flexible."
-            )
+            suggestions.append("Consider adding more parameters to make the tool more flexible.")
 
         return suggestions
 
-    def _general_suggestions(
-        self, prompt: str, validation_result: ValidationResult
-    ) -> list[str]:
+    def _general_suggestions(self, prompt: str, validation_result: ValidationResult) -> list[str]:
         """Generate general suggestions based on prompt analysis."""
         suggestions: list[str] = []
 
@@ -186,9 +173,7 @@ class PromptRefiner:
         return suggestions
 
 
-def suggest_prompt_improvements(
-    prompt: str, validation_result: ValidationResult
-) -> list[str]:
+def suggest_prompt_improvements(prompt: str, validation_result: ValidationResult) -> list[str]:
     """
     Convenience function to get prompt improvement suggestions.
 

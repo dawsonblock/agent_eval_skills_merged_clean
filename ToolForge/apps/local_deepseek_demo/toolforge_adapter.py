@@ -104,9 +104,7 @@ class ToolForgeAdapter:
                     "has_plan": plan_path.exists(),
                     "registered": registry_item is not None,
                     "validated": (
-                        bool(registry_item.get("validated", False))
-                        if registry_item
-                        else False
+                        bool(registry_item.get("validated", False)) if registry_item else False
                     ),
                     "risk_level": (
                         str(registry_item.get("risk_level", "unknown"))
@@ -114,9 +112,7 @@ class ToolForgeAdapter:
                         else "unknown"
                     ),
                     "description": (
-                        str(registry_item.get("description", ""))
-                        if registry_item
-                        else ""
+                        str(registry_item.get("description", "")) if registry_item else ""
                     ),
                 }
             )
@@ -289,9 +285,7 @@ class ToolForgeAdapter:
                     "array",
                     "object",
                 }:
-                    errors.append(
-                        f"unsupported input type {input_type!r} for {name!r}."
-                    )
+                    errors.append(f"unsupported input type {input_type!r} for {name!r}.")
 
         risks = normalized.get("safety_risks") or []
         if not risks:
@@ -311,9 +305,7 @@ class ToolForgeAdapter:
     ) -> dict[str, Any]:
         validation = self.validate_tool_plan(plan)
         if not validation["passed"]:
-            raise AdapterError(
-                "Invalid plan: " + "; ".join(validation["errors"])
-            )
+            raise AdapterError("Invalid plan: " + "; ".join(validation["errors"]))
 
         normalized_plan = validation["normalized_plan"]
 
@@ -324,16 +316,13 @@ class ToolForgeAdapter:
             raise AdapterError("Refusing to write outside ToolForge/generated_tools.")
         if tool_root.exists() and not allow_overwrite:
             raise AdapterError(
-                f"Tool already exists: {tool_root}. "
-                "Set allow_overwrite=true to replace."
+                f"Tool already exists: {tool_root}. Set allow_overwrite=true to replace."
             )
 
         tool_root.mkdir(parents=True, exist_ok=True)
         (tool_root / "tests").mkdir(parents=True, exist_ok=True)
 
-        purpose = str(
-            normalized_plan.get("purpose") or "Generated from ToolForge local demo"
-        )
+        purpose = str(normalized_plan.get("purpose") or "Generated from ToolForge local demo")
 
         tool_py = tool_root / "tool.py"
         tool_yaml = tool_root / "toolforge.yaml"
@@ -350,9 +339,7 @@ class ToolForgeAdapter:
             "    output_dir = Path(\n"
             "        os.environ.get(\n"
             "            'TOOLFORGE_DEMO_OUTPUT_DIR',\n"
-            "            str(Path(__file__).resolve().parents[1] / '_outputs' / '"
-            + slug
-            + "'),\n"
+            "            str(Path(__file__).resolve().parents[1] / '_outputs' / '" + slug + "'),\n"
             "        )\n"
             "    )\n"
             "    output_dir.mkdir(parents=True, exist_ok=True)\n"
@@ -380,10 +367,8 @@ class ToolForgeAdapter:
                 [
                     "  - name: " + str(param.get("name") or "request"),
                     "    type: " + str(param.get("type") or "string"),
-                    "    description: "
-                    + str(param.get("description") or "Input value"),
-                    "    required: "
-                    + ("true" if bool(param.get("required")) else "false"),
+                    "    description: " + str(param.get("description") or "Input value"),
+                    "    required: " + ("true" if bool(param.get("required")) else "false"),
                 ]
             )
 
@@ -393,9 +378,7 @@ class ToolForgeAdapter:
             "description: " + purpose.replace("\n", " ") + "\n"
             "language: python\n"
             "entry_point: tool.py\n"
-            "parameters:\n"
-            + "\n".join(input_blocks)
-            + "\n"
+            "parameters:\n" + "\n".join(input_blocks) + "\n"
             "output:\n"
             "  type: object\n"
             "  description: Result payload\n"
@@ -667,8 +650,10 @@ class ToolForgeAdapter:
                 for nested in value:
                     walk(nested)
             elif isinstance(value, str):
-                if "/" in value or "\\" in value or value.endswith(
-                    (".py", ".json", ".txt", ".md", ".yaml", ".yml")
+                if (
+                    "/" in value
+                    or "\\" in value
+                    or value.endswith((".py", ".json", ".txt", ".md", ".yaml", ".yml"))
                 ):
                     out.append(value)
 
@@ -776,9 +761,7 @@ class ToolForgeAdapter:
                 extras["max_items"] = item["max_items"]
 
             required_keys = item.get("required_keys")
-            if isinstance(required_keys, list) and all(
-                isinstance(k, str) for k in required_keys
-            ):
+            if isinstance(required_keys, list) and all(isinstance(k, str) for k in required_keys):
                 extras["required_keys"] = required_keys
 
             if extras:
@@ -838,9 +821,7 @@ class ToolForgeAdapter:
             value = args[key]
             enum_values = meta.get("enum")
             if isinstance(enum_values, list) and enum_values and value not in enum_values:
-                errors.append(
-                    f"Argument {key!r} must be one of {enum_values!r}, got {value!r}."
-                )
+                errors.append(f"Argument {key!r} must be one of {enum_values!r}, got {value!r}.")
 
             min_length = meta.get("min_length")
             max_length = meta.get("max_length")
@@ -858,35 +839,27 @@ class ToolForgeAdapter:
             maximum = meta.get("maximum")
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 if isinstance(minimum, (int, float)) and value < minimum:
-                    errors.append(
-                        f"Argument {key!r} must be >= {minimum}, got {value}."
-                    )
+                    errors.append(f"Argument {key!r} must be >= {minimum}, got {value}.")
                 if isinstance(maximum, (int, float)) and value > maximum:
-                    errors.append(
-                        f"Argument {key!r} must be <= {maximum}, got {value}."
-                    )
+                    errors.append(f"Argument {key!r} must be <= {maximum}, got {value}.")
 
             min_items = meta.get("min_items")
             max_items = meta.get("max_items")
             if isinstance(value, list):
                 if isinstance(min_items, int) and len(value) < min_items:
                     errors.append(
-                        f"Argument {key!r} item count must be >= {min_items}, "
-                        f"got {len(value)}."
+                        f"Argument {key!r} item count must be >= {min_items}, got {len(value)}."
                     )
                 if isinstance(max_items, int) and len(value) > max_items:
                     errors.append(
-                        f"Argument {key!r} item count must be <= {max_items}, "
-                        f"got {len(value)}."
+                        f"Argument {key!r} item count must be <= {max_items}, got {len(value)}."
                     )
 
             required_keys = meta.get("required_keys")
             if isinstance(value, dict) and isinstance(required_keys, list):
                 missing_keys = [k for k in required_keys if k not in value]
                 if missing_keys:
-                    errors.append(
-                        f"Argument {key!r} missing required keys: {missing_keys!r}."
-                    )
+                    errors.append(f"Argument {key!r} missing required keys: {missing_keys!r}.")
 
         return errors
 
