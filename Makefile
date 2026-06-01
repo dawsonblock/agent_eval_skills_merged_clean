@@ -287,6 +287,7 @@ validate-agent-skill-packages: ## Validate all 23 agent skill package ZIPs
 
 .PHONY: toolathlon-smoke
 toolathlon-smoke: ## Run Toolathlon smoke profile checks
+	@cd toolathlon-gym-curated && TOOLATHLON_PROFILE=smoke bash scripts/build_required_mcp_artifacts.sh
 	@bash scripts/check_toolathlon_smoke_profile.sh
 
 .PHONY: classify-release
