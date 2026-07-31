@@ -1,0 +1,6 @@
+interface:
+  display_name: "Agent Eval Skills Merged Clean"
+  short_description: "Repo-specific patterns and workflows for agent_eval_skills_merged_clean"
+  default_prompt: "Use the agent_eval_skills_merged_clean repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true

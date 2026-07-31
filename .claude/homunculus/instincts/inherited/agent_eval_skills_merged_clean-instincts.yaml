@@ -1,0 +1,436 @@
+# Instincts generated from https://github.com/dawsonblock/agent_eval_skills_merged_clean
+# Generated: 2026-05-19T04:48:00.568Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: agent_eval_skills_merged_clean-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: refactor, test, fix
+
+## Evidence
+
+- 3 commits analyzed
+- Detected conventional commit pattern
+- Examples: refactor(core): improve package building and process timeout handling, test(cli): refactor CLI exit tests and improve environment setup
+
+---
+id: agent_eval_skills_merged_clean-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Commit Length
+
+## Action
+
+Write moderate-length commit messages (~66 characters)
+
+## Evidence
+
+- Average commit message length: 66 chars
+- Based on 3 commits
+
+---
+id: agent_eval_skills_merged_clean-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Naming Files
+
+## Action
+
+Use snake_case naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: snake_case
+
+---
+id: agent_eval_skills_merged_clean-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: agent_eval_skills_merged_clean-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: agent_eval_skills_merged_clean-workflow-refactoring
+trigger: "when refactoring code"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Workflow Refactoring
+
+## Action
+
+Follow the refactoring workflow:
+1. Ensure tests pass before refactor
+2. Refactor code structure
+3. Verify tests still pass
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~30x per month
+- Files: src/**/*
+
+---
+id: agent_eval_skills_merged_clean-workflow-refactor-cli-tests-and-environment
+trigger: "when doing refactor cli tests and environment"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Workflow Refactor Cli Tests And Environment
+
+## Action
+
+Follow the refactor-cli-tests-and-environment workflow:
+1. Update test_cli_command_exit.py to use improved fixtures or internal APIs instead of subprocesses.
+2. Update test_registry_cli_exit.py similarly for registry CLI tests.
+3. Adjust or add helper functions (e.g., _cli, _build_env) to centralize environment setup.
+4. Optionally, update related scripts (e.g., demo_csv_cleaner.sh) to ensure correct environment variables.
+5. Update documentation or remove unstable test prompts as needed.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: ToolForge/tests/test_cli_command_exit.py, ToolForge/tests/test_registry_cli_exit.py, scripts/demo_csv_cleaner.sh
+
+---
+id: agent_eval_skills_merged_clean-workflow-prevent-subprocess-hangs-in-cli-and-tests
+trigger: "when doing prevent subprocess hangs in cli and tests"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Workflow Prevent Subprocess Hangs In Cli And Tests
+
+## Action
+
+Follow the prevent-subprocess-hangs-in-cli-and-tests workflow:
+1. Refactor test files to use internal Python API calls instead of subprocess-based setup.
+2. Update CLI main entrypoints (e.g., registry_info) to include explicit sys.exit(0) for clean termination.
+3. Remove unstable or AI-generated prompts from test setup.
+4. Update or add documentation as needed.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: ToolForge/tests/test_cli_command_exit.py, ToolForge/tests/test_registry_cli_exit.py, ToolForge/apps/cli/toolforge_cli/main.py
+
+---
+id: agent_eval_skills_merged_clean-instinct-file-naming
+trigger: "When creating or renaming a file in the repository"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct File Naming
+
+## Action
+
+Use snake_case for file names
+
+## Evidence
+
+- Pattern in namingConventions.files
+- Files like ToolForge/packages/core/package_builder.py
+
+---
+id: agent_eval_skills_merged_clean-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Function Naming
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: agent_eval_skills_merged_clean-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Class Naming
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: agent_eval_skills_merged_clean-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: agent_eval_skills_merged_clean-instinct-import-style
+trigger: "When importing modules within the package"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Import Style
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- Pattern in importStyle: relative
+
+---
+id: agent_eval_skills_merged_clean-instinct-export-style
+trigger: "When exporting functions or classes from a module"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle: named
+
+---
+id: agent_eval_skills_merged_clean-instinct-test-location
+trigger: "When adding new tests"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Test Location
+
+## Action
+
+Place test files in a mixed location, either alongside source files or in dedicated test folders
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation: mixed
+- Files like ToolForge/tests/test_cli_command_exit.py
+
+---
+id: agent_eval_skills_merged_clean-instinct-test-naming
+trigger: "When naming a test file"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Test Naming
+
+## Action
+
+Use the test_ prefix for test files
+
+## Evidence
+
+- Files like ToolForge/tests/test_cli_command_exit.py
+- ToolForge/tests/test_registry_cli_exit.py
+
+---
+id: agent_eval_skills_merged_clean-instinct-test-fixtures
+trigger: "When writing or refactoring tests for CLI or registry components"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Test Fixtures
+
+## Action
+
+Prefer robust fixtures and internal Python APIs over subprocess-based setups
+
+## Evidence
+
+- Workflow: refactor-cli-tests-and-environment
+- Commits updating test_cli_command_exit.py to use improved fixtures
+
+---
+id: agent_eval_skills_merged_clean-instinct-git-commit-format
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Git Commit Format
+
+## Action
+
+Use conventional commit prefixes: refactor, test, fix
+
+## Evidence
+
+- Pattern in commits.prefixes
+- Examples: refactor(core): improve package building and process timeout handling
+
+---
+id: agent_eval_skills_merged_clean-instinct-git-commit-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Git Commit Length
+
+## Action
+
+Keep commit messages concise, around 66 characters on average
+
+## Evidence
+
+- Pattern in commits.averageLength
+
+---
+id: agent_eval_skills_merged_clean-instinct-workflow-refactor-cli-tests
+trigger: "When someone wants to improve the robustness, speed, or determinism of CLI-related tests, especially to prevent hangs or redundant workspace setup"
+confidence: 0.92
+domain: workflow
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Workflow Refactor Cli Tests
+
+## Action
+
+Refactor CLI test files to use improved fixtures/internal APIs, centralize environment setup, update related scripts, and clean up documentation or unstable prompts
+
+## Evidence
+
+- Workflow: refactor-cli-tests-and-environment
+- Commits updating test_cli_command_exit.py and test_registry_cli_exit.py
+
+---
+id: agent_eval_skills_merged_clean-instinct-workflow-prevent-subprocess-hangs
+trigger: "When someone encounters or wants to prevent test or CLI subprocesses from hanging, especially in exit scenarios"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: dawsonblock/agent_eval_skills_merged_clean
+---
+
+# Agent_eval_skills_merged_clean Instinct Workflow Prevent Subprocess Hangs
+
+## Action
+
+Refactor test files to use internal Python API calls, ensure explicit sys.exit(0) in CLI entrypoints, remove unstable prompts, and update documentation
+
+## Evidence
+
+- Workflow: prevent-subprocess-hangs-in-cli-and-tests
+- Commits updating test_cli_command_exit.py, test_registry_cli_exit.py, and main.py
+
